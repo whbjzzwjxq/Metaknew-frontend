@@ -1,0 +1,360 @@
+.graph-toolbar {
+    margin-bottom:20px;
+}
+
+.timeline {
+    border:none;
+    height: 200px;
+    border-radius: 20px;
+    background:#f5f5f51f;
+    font-size:20px;
+    text-align: center;
+    padding-top:20px;
+}
+
+.graph {
+    border:none;
+    min-height: 400px;
+    height: 100%;
+    width: 100%;
+    border-radius: 20px;
+    background:#f5f5f51f;
+    font-size:20px;
+    text-align: center;
+    padding-bottom: 20px;
+    overflow: hidden;
+}
+
+
+/* markdown */
+.marking {
+    background:#f5f5f51f;
+    z-index: 0;
+}
+.markingtext {
+    position: relative;
+}
+.markinggraph {
+    min-height: 400px;
+    height: 100%;
+    width: 100%;
+}
+.v-right-item{
+    max-width:25%!important
+}
+.note-foot-op{
+    text-align: center;
+    height:50px;
+}
+.tagtooltip{
+    z-index:3000!important;
+}
+.foot-button{
+    margin-top:20px;
+    outline:none
+}
+.foot-divider {
+    height: 50px;
+    margin: 0 6px 0 4px;
+}
+.file-reader,.saveDoc,.hideRel {
+    overflow:hidden;
+    display: inline-block;
+    cursor:pointer;
+    font-weight: 0;
+    padding-top:10px;
+}
+.file-reader input,.saveDoc input,.hideRel input {
+    position:absolute;
+    opacity:0;
+    z-index:-1;
+}
+#myCanvas{
+    position: absolute;
+    pointer-events: none;
+    top:0;
+    left: 0;
+}
+
+.subject {
+    border:none;
+    height: 700px;
+    border-radius: 20px;
+    background:#f5f5f51f;
+    text-align: center;
+    margin-bottom:20px;
+    overflow: scroll;
+}
+
+.subjectcontent{
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    text-align: center;
+}
+
+.theme--dark.v-card,.theme--dark.v-tabs__bar,.theme--dark.v-list{
+    background:transparent;
+}
+
+.grade-box {
+    text-align: left;
+    padding-left:10px;
+}
+.comment {
+    margin-bottom:10px;
+    margin-right:10px;
+}
+.rightcomment {
+    margin-right:10px
+}
+.comment-box {
+    border:1px solid white;
+    margin:10px;
+}
+
+.tb_comment{
+    width: 100%;
+/* border: 1px solid; */
+}
+.table>tbody>tr>td{
+    border-top:none;
+}
+.tb_comment img{
+    width:64px;
+    height:64px;
+}
+.tb_user{
+width: 80px;
+}
+
+/* 用户评论内容展示 */
+.div_comment_content{
+    padding: 6px 12px;
+    border: 1px solid #d2d6de;
+}
+.div_comment_content2{
+    margin-bottom: 10px;
+    border: 1px solid #d2d6de;
+}
+
+.score{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button.staruse {
+    outline:none;
+}
+
+.labeltext {
+    text-align: center;
+    padding:0;
+    border:solid 1px black;
+}
+.textleft {
+    text-align: left;
+    padding:1px;
+}
+.headline {
+    padding-left:10px;
+    color:black
+}
+.notetext{
+    color:#000;
+    font-size:14px;
+
+}
+
+.barchart{
+    width:200px;
+    height:80px;
+    position: absolute;
+    z-index: 2;
+}
+div.detailcard {
+    background-color:#d2d6de!important;
+}
+
+#upload{
+    height: 0;
+    width: 0;
+    visibility: hidden;
+}
+
+.brush > .selection{
+    border: none;
+}
+
+div.v-select-list {
+    background-color:darkgray
+
+}
+a .v-list__tile {
+    color:initial
+}
+
+.selectsubject {
+    margin-left:20px;
+    margin-right:20px;
+}
+
+.addbutton {
+    margin-top:15px
+}
+
+
+.fade-enter, .fade-leave-to{
+    transform:translateX(700px);
+    opacity:0
+}
+.fade-enter-to{
+    opacity:1
+}
+.fade-leave-active{
+    transition: all .5s ease
+}
+
+.showdetail {
+    position:absolute;
+    max-width: 400px;
+    right:60px;
+    top:200px;
+}
+
+/* geographicalgraph */
+.tooltip {
+    font-family: 'Lato', 'Arial', sans-serif;
+    position: absolute;
+    text-align: left;
+    width: auto;
+    height: auto;
+    padding: 20px;
+    font: 1em;
+    background: hsla(0, 0%, 100%, .8);
+    pointer-events: none;
+    box-shadow: 0 5px 10px hsla(0, 0%, 0%, .2);
+    line-height: 1.5em;
+}
+
+.def {
+    font-weight: 700;
+}
+
+/* geo style */
+#geo{
+    width: 960px;
+    height: 600px;
+    margin: auto;
+    border-radius: 20px;
+    background-color: #f5f5f51f;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0,0.9), 0 6px 20px 0 rgba(0, 0, 0, 0.75);
+}
+.legend-container{
+    margin-left: 10px;
+    position: absolute;
+    left:20px;
+    top:350px;
+}
+.legendtext {
+    fill:#fff;
+}
+.point{
+    stroke-width: 0.5;
+    stroke: #EAFFD0;
+}
+.point-hovered{
+    stroke-width: 0.75;
+    stroke: crimson;
+}
+
+
+/* graph */
+svg g{
+    cursor: grab
+}
+
+svg .delete{
+    cursor : pointer;
+}
+
+svg line{
+    cursor : pointer;
+}
+
+.links line {
+    stroke: #999;
+    stroke-opacity: 0.6;
+  }
+.nodes circle {
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+#element {
+    position: relative;
+    width: 960px;
+    /*height:600px*/
+}
+
+#shownote,#note {
+    position:absolute;
+}
+
+.selected .highlight {
+   display: block;
+}
+
+.unselected .highlight{
+    display: none;
+}
+
+/* 上传 excel 按钮隐藏*/
+.fileinput-button {
+  display: inline-block;
+  overflow: hidden;
+}
+
+.fileinput-button input{
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  opacity: 0;
+  -ms-filter: 'alpha(opacity=0)';
+}
+
+.tools{
+    border-top: solid 1px;
+    padding-top: 20px;
+}
+
+.centertext{
+    text-align: center
+}
+/* card style */
+.carddivider {
+    margin:10px 10px;
+}
+.cardsetting {
+    overflow: scroll;
+}
+.dragborder {
+    border:10px solid white;
+}
+
+.cardcontainer{
+    padding: 0px;
+}
+
+/* note style */
+.graphcontainer {
+    padding:0
+}
+
+.select{
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+
+}
