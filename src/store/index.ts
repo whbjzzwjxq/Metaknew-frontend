@@ -4,6 +4,7 @@ import userInfo from "@/store/modules/userInfo";
 import componentSnackBar from "@/store/modules/componentSnackBar";
 import dataTextResolveCache from "@/store/modules/dataTextResolveCache";
 import styleLabelColor from "@/store/modules/styleLabelColor";
+import dataManager from "@/store/modules/dataManager";
 
 Vue.use(Vuex);
 
@@ -16,6 +17,7 @@ export default new Vuex.Store({
     userInfo: userInfo,
     componentSnackBar: componentSnackBar,
     dataTextResolveCache: dataTextResolveCache,
-    styleLabelColor: styleLabelColor
+    styleLabelColor: styleLabelColor,
+    dataManager: dataManager
   }
 })

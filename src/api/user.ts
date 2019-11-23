@@ -42,7 +42,7 @@ export function loginCookie() {
   })
 }
 
-export function fileToken() {
+export function getFileToken() {
   return baseService({
     method: 'get',
     url: BASE + '/user/query_other_token',

@@ -204,7 +204,7 @@
             },
 
             // 如果从收藏里获取内容 那么就不需要上传了
-            addFile(files: ArrayMediaInfo, isExist: boolean) {
+            addFile(files: Array<MediaInfoPart>, isExist: boolean) {
                 let vm = this;
                 isExist
                     ? this.currentFiles = this.currentFiles.concat(files.map(file => {
@@ -228,7 +228,7 @@
                     let id = res.data;
                     this.$set(file.Info, 'id', id);
                     this.$set(file, 'status', 'success');
-                    this.$store.commit('dataPushInfo', {item: file, _id: id, _type: 'media', strict: true});
+                    this.$store.commit('dataPushInfo', {item: file, _id: id, _type: 'media'});
                     this.currentFiles.push(id);
                     this.newFiles.splice(index, 1);
                     this.saveMedia()

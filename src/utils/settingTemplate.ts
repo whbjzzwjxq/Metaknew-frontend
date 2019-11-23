@@ -635,31 +635,3 @@ export function noteTemplate() {
     isDeleted: false
   };
 }
-
-export function stateTemplate() {
-  return {
-    isSelected: false, // 是否被选中
-    showCard: false, // 是否显示卡片
-    isMouseOn: false, // 是否鼠标放置在上面
-
-    // 以下的三个需要考虑
-    isSelf: true, // 是否是自己的内容
-    isAdd: true, // 是否是新建的
-    isDeleted: false // 是否被删除
-  };
-}
-
-export function userConcernTemplate() {
-  return {
-    UserConcern: {
-      isStar: false,
-      isGood: false,
-      isBad: false,
-      isShared: false,
-      Imp: -1,
-      Hard: -1,
-      Useful: -1,
-      Labels: []
-    }
-  };
-}

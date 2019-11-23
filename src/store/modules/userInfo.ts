@@ -41,8 +41,8 @@ const mutations = {
     state.isLogin = false
   },
 
-  updateFileToken(state: State, token: FileToken) {
-    state.fileToken = token
+  updateFileToken(state: State, payload: FileToken) {
+    state.fileToken = payload
   }
 };
 

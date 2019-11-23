@@ -1,16 +1,20 @@
-import {getCookie} from '@/utils/utils'
+import deepClone, {getCookie} from '@/utils/utils'
 import Vue from 'vue'
 import {allPropType, fieldDefaultValue, neededProp} from '@/utils/labelField';
 import {settingTemplate} from '@/utils/settingTemplate';
+import {InfoPart} from "@/store/modules/dataManager";
 
 let newIdRegex = new RegExp('\\$_[0-9]*');
 let ctrlPropRegex = new RegExp('\\$.*');
 let crucialRegex = new RegExp('_.*');
 export type id = number | string
 export type type = 'node' | 'link' | 'document' | 'media';
+export type mediaStatus = 'new' | 'remote' | 'uploading' | 'error'
+export var globalIndex = 0;
 export const itemEqual = (itemA: Setting, itemB: Setting) => itemA._id === itemB._id && itemA._type === itemB._type;
-export const findNode = (nodeList: Array<VisualNode>, _id: id) => nodeList.filter(node => node.Setting._id === _id);
+export const findNode = (nodeList: Array<VisualNodeSettingPart>, _id: id) => nodeList.filter(node => node.Setting._id === _id);
 export const findLink = (linkList: Array<LinkSettingPart>, _id: id) => linkList.filter(link => link.Setting._id === _id);
+export const getIsSelf = (ctrl: BaseCtrl) => ctrl.CreateUser.toString() === getCookie('user_id');
 
 export function getType(file: File) {
   const mime = require('mime/lite');
@@ -26,6 +30,27 @@ export function getType(file: File) {
     result = file.name.split('.')[1];
   }
   return result;
+}
+
+export interface QueryObject {
+  _id: id,
+  _type: string,
+  _label: string
+}
+
+export interface GraphBackend {
+  Base: {
+    Info: BaseNodeInfo,
+    Ctrl: BaseNodeCtrl
+  },
+  Graph: {
+    nodes: Array<NodeSetting>,
+    links: Array<compressLinkSetting>,
+    medias: Array<MediaSetting>
+    notes: Array<Notes>
+  },
+  Conf: GraphSetting,
+  Path: Array<Object>
 }
 
 interface Text {
@@ -44,7 +69,6 @@ interface UserConcern {
 }
 
 interface BaseState {
-  isSelf: boolean, // 是否是自己的内容
   isSelected: boolean, // 是否被选中
   isDeleted: boolean // 是否被删除
   [propName: string]: boolean
@@ -79,6 +103,17 @@ interface BaseInfo {
   $IsOpenSource: boolean,
 }
 
+interface BaseCtrl {
+  $IsUserMade: boolean,
+  CreateUser: string | number,
+  UpdateTime: string,
+}
+
+export interface NodeInfoPartBackend {
+  Info: BaseNodeInfo,
+  Ctrl: BaseNodeCtrl
+}
+
 interface BaseNodeInfo extends BaseInfo {
   type: 'node' | 'document',
   Name: string,
@@ -96,10 +131,7 @@ interface BaseNodeInfo extends BaseInfo {
   [propName: string]: any
 }
 
-interface BaseNodeCtrl {
-  $IsUserMade: boolean,
-  CreateUser: string | number,
-  UpdateTime: string,
+interface BaseNodeCtrl extends BaseCtrl {
   PrimaryLabel: string,
   Imp: number,
   HardLevel: number,
@@ -113,7 +145,7 @@ interface BaseNodeCtrl {
   TotalTime: number,
 }
 
-interface BaseMediaInfo extends BaseInfo {
+export interface BaseMediaInfo extends BaseInfo {
   type: 'media',
   Name: string,
   Labels: Array<string>,
@@ -123,10 +155,7 @@ interface BaseMediaInfo extends BaseInfo {
   [propName: string]: any
 }
 
-interface BaseMediaCtrl {
-  $IsUserMade: boolean,
-  CreateUser: string | number,
-  UpdateTime: string,
+interface BaseMediaCtrl extends BaseCtrl {
   FileName: string, // URL
   Format: string, // 格式
   Thumb: string, // 缩略图
@@ -135,6 +164,11 @@ interface BaseMediaCtrl {
   isGood: number,
   isBad: number,
   Labels: Array<string>
+}
+
+export interface MediaInfoPartBackend {
+  Info: BaseMediaInfo,
+  Ctrl: BaseMediaCtrl
 }
 
 interface BaseLinkInfo extends BaseInfo {
@@ -147,12 +181,22 @@ interface BaseLinkInfo extends BaseInfo {
   [propName: string]: any
 }
 
-interface BaseLinkCtrl {
+export interface BaseLinkCtrl extends BaseCtrl {
   Start: NodeSettingPart,
   End: NodeSettingPart,
 }
 
-interface Setting {
+interface LinkCtrlBackend extends BaseCtrl {
+  Start: QueryObject,
+  End: QueryObject
+}
+
+export interface LinkInfoPartBackend {
+  Info: BaseLinkInfo,
+  Ctrl: LinkCtrlBackend
+}
+
+export interface Setting {
   _id: id,
   _type: type,
   _label: string,
@@ -160,35 +204,63 @@ interface Setting {
   [propName: string]: Object
 }
 
-interface NodeSetting extends Setting {
+export interface NodeSetting extends Setting {
   _name: string,
   _image: string
 }
 
-interface MediaSetting extends Setting {
+export interface MediaSetting extends Setting {
   _name: string,
   _src: string // url字符串或者 URL.createObjectUrl返回值
 }
 
-interface LinkSetting extends Setting {
-  _start: VisualNode
-  _end: VisualNode
+export interface LinkSetting extends Setting {
+  _start: VisualNodeSettingPart
+  _end: VisualNodeSettingPart
+}
+
+interface compressLinkSetting extends Setting {
+  _start: Setting,
+  _end: Setting
 }
 
 interface GraphSetting extends Setting {
 
 }
 
-export type VisualNode = NodeSettingPart | MediaSettingPart // 从视觉上来说是Node的对象
+export type VisualNodeSettingPart = NodeSettingPart | MediaSettingPart // 从视觉上来说是Node的对象
 
-export function stateTemplate(...rest: Array<string>) {
+export function nodeStateTemplate(...rest: Array<string>) {
   return <NodeState>{
     'isSelected': false,
     'showCard': false,
     'isMouseOn': false,
     'isDeleted': false,
-    'isSelf': rest.indexOf('isSelf') > -1,
     'isAdd': rest.indexOf('isAdd') > -1
+  };
+}
+
+export function linkStateTemplate(...rest: Array<string>) {
+  return <LinkState>{
+    'isSelected': false,
+    'showCard': false,
+    'isMouseOn': false,
+    'isDeleted': false,
+    'isAdd': rest.indexOf('isAdd') > -1
+  };
+}
+
+export function graphStateTemplate(...rest: Array<string>) {
+  return <GraphState>{
+    'isSelected': false,
+    'showCard': false,
+    'isMouseOn': false,
+    'isDeleted': false,
+    'isChanged': false,
+    'SavedIn5Min': false,
+    'isSelf': rest.indexOf('isSelf') > -1,
+    'isAdd': rest.indexOf('isAdd') > -1,
+    'isLoading': rest.indexOf('isLoading') > -1
   };
 }
 
@@ -227,11 +299,11 @@ export function nodeInfoTemplate(_id: id, _type: string, _label: string) {
 
 export function nodeCtrlTemplate(_label: string) {
   // Ctrl数据
-  let myDate = new Date();
+  let time = new Date();
   return <BaseNodeCtrl>{
     $IsUserMade: true,
     CreateUser: getCookie('user_id'),
-    UpdateTime: myDate.toLocaleDateString().replace('/', '-'),
+    UpdateTime: time.toLocaleDateString(),
     PrimaryLabel: _label,
     Imp: 50,
     HardLevel: 50,
@@ -269,7 +341,7 @@ export function mediaCtrlTemplate(file: File) {
     Format: file.name.split('.')[1],
     Thumb: '',
     UpdateTime: time.toLocaleDateString(),
-    CreateUser: getCookie('user_name'),
+    CreateUser: getCookie('user_id'),
     $IsUserMade: true,
     isStar: 0,
     isGood: 0,
@@ -294,8 +366,12 @@ export function linkInfoTemplate(_id: id, _label: string) {
   }
 }
 
-export function linkCtrlTemplate(_start: NodeSettingPart, _end: NodeSettingPart) {
+export function linkCtrlTemplate(_start: VisualNodeSettingPart, _end: VisualNodeSettingPart) {
+  let time = new Date();
   return <BaseLinkCtrl>{
+    UpdateTime: time.toLocaleDateString(),
+    CreateUser: getCookie('user_id'),
+    $IsUserMade: true,
     Start: _start,
     End: _end
   }
@@ -309,7 +385,8 @@ export class NodeInfoPart {
   Ctrl: BaseNodeCtrl;
   UserConcern: UserConcern;
 
-  constructor(info: BaseNodeInfo, ctrl: BaseNodeCtrl, userConcern: UserConcern, id: id) {
+  constructor(info: BaseNodeInfo, ctrl: BaseNodeCtrl, userConcern: UserConcern) {
+    const id = info.id;
     this.isRemote = newIdRegex.test(id.toString());
     this.isEdit = false;
     this.id = id;
@@ -319,7 +396,7 @@ export class NodeInfoPart {
   }
 
   static emptyNodeInfoPart(_id: id, _type: string, _label: string) {
-    return new NodeInfoPart(nodeInfoTemplate(_id, _type, _label), nodeCtrlTemplate(_label), userConcernTemplate(), _id)
+    return new NodeInfoPart(nodeInfoTemplate(_id, _type, _label), nodeCtrlTemplate(_label), userConcernTemplate())
   }
 
   // info修改值
@@ -339,15 +416,15 @@ export class NodeInfoPart {
       : this.Ctrl[prop] -= 1
   }
 
-  changeId(newId: id, nodeList: Array<NodeSettingPart>) {
+  changeId(newId: id) {
     this.id = newId;
     Vue.set(this.Info, 'id', newId);
-    this.synchronizationSource('_id', newId, nodeList);
+    this.synchronizationSource('_id', newId);
     this.isRemote = newIdRegex.test(newId.toString());
     this.isEdit = false;
   }
 
-  changePrimaryLabel(newLabel: string, nodeList: Array<NodeSettingPart>) {
+  changePrimaryLabel(newLabel: string) {
     if (this.isRemote) {
       console.log('如果是远端节点 那么PLabel不能修改')
     } else {
@@ -364,23 +441,34 @@ export class NodeInfoPart {
       Vue.set(this, 'Info', info);
       Vue.set(this.Ctrl, 'PrimaryLabel', newLabel);
       Vue.set(this.Info, 'PrimaryLabel', newLabel);
-      this.synchronizationSource('_label', newLabel, nodeList);
+      this.synchronizationSource('_label', newLabel);
       this.isEdit = true;
     }
   }
 
-  changeName(newName: string, nodeList: Array<NodeSettingPart>) {
+  changeName(newName: string) {
     Vue.set(this.Info, 'Name', newName);
-    this.synchronizationSource('_name', newName, nodeList)
+    this.synchronizationSource('_name', newName)
   }
 
   changeImage(newImage: string, nodeList: Array<NodeSettingPart>) {
     Vue.set(this.Info, 'MainPic', newImage);
-    this.synchronizationSource('_image', newImage, nodeList)
+    this.synchronizationSource('_image', newImage)
   }
 
-  synchronizationSource(prop: string, value: any, nodeList: Array<NodeSettingPart>) {
+  synchronizationSource(prop: string, value: any) {
+    let nodeList = NodeSettingPart.list;
     crucialRegex.test(prop) && findNode(nodeList, this.id).map(node => node.updateCrucial(prop, value))
+  }
+
+  synchronizationAll() {
+    // 同步所有属性到Setting
+    let nodeList = NodeSettingPart.list;
+    findNode(nodeList, this.id).map(node => {
+      node.updateCrucial('_label', this.Info.PrimaryLabel);
+      node.updateCrucial('_name', this.Info.Name);
+      node.updateCrucial('_image', this.Info.MainPic)
+    })
   }
 
   save() {
@@ -395,41 +483,42 @@ export class LinkInfoPart {
   Info: BaseLinkInfo;
   Ctrl: BaseLinkCtrl;
 
-  constructor(_id: id, _label: string, info: BaseLinkInfo, ctrl: BaseLinkCtrl) {
-    this.id = _id;
-    this.isRemote = newIdRegex.test(_id.toString());
+  constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl) {
+    const id = info.id;
+    this.id = id;
+    this.isRemote = newIdRegex.test(id.toString());
     this.isEdit = false;
     this.Info = info;
     this.Ctrl = ctrl;
   }
 
-  static emptyLinkInfo(_id: id, _label: string, _start: NodeSettingPart, _end: NodeSettingPart) {
-    return new LinkInfoPart(_id, _label, linkInfoTemplate(_id, _label), linkCtrlTemplate(_start, _end))
+  static emptyLinkInfo(_id: id, _label: string, _start: VisualNodeSettingPart, _end: VisualNodeSettingPart) {
+    return new LinkInfoPart(linkInfoTemplate(_id, _label), linkCtrlTemplate(_start, _end))
   }
 
-  changeId(newId: id, linkList: Array<LinkSettingPart>) {
+  changeId(newId: id) {
     this.id = newId;
     this.updateValue('id', newId);
-    this.synchronizationSource('_id', newId, linkList);
+    this.synchronizationSource('_id', newId);
     this.isRemote = newIdRegex.test(newId.toString());
     this.isEdit = false;
   }
 
-  changeLabel(newLabel: string, linkList: Array<LinkSettingPart>) {
+  changeLabel(newLabel: string) {
     this.updateValue('PrimaryLabel', newLabel);
-    this.synchronizationSource('_label', newLabel, linkList)
+    this.synchronizationSource('_label', newLabel)
   }
 
-  changeNode(start: VisualNode | null, end: VisualNode | null, linkList: Array<LinkSettingPart>) {
+  changeNode(start: VisualNodeSettingPart | null, end: VisualNodeSettingPart | null) {
     if (!this.isRemote) {
       if (start && !itemEqual(this.Ctrl.Start.Setting, start.Setting)) {
         Vue.set(this.Ctrl, 'Start', start);
-        this.synchronizationSource('_start', start, linkList);
+        this.synchronizationSource('_start', start);
       }
 
       if (end && !itemEqual(this.Ctrl.End.Setting, end.Setting)) {
         Vue.set(this.Ctrl, 'End', end);
-        this.synchronizationSource('_end', end, linkList);
+        this.synchronizationSource('_end', end);
       }
     } else {
       console.log('远端关系不能改变了')
@@ -445,23 +534,36 @@ export class LinkInfoPart {
     }
   }
 
-  synchronizationSource(prop: string, value: any, linkList: Array<LinkSettingPart>) {
+  synchronizationSource(prop: string, value: any) {
+    let linkList = LinkSettingPart.list;
     crucialRegex.test(prop) && findLink(linkList, this.id).map(link => link.updateCrucial(prop, value))
+  }
+
+  synchronizationAll() {
+    let linkList = LinkSettingPart.list;
+    findLink(linkList, this.id).map(link => {
+      link.updateCrucial('_start', this.Ctrl.Start);
+      link.updateCrucial('_end', this.Ctrl.End);
+    })
   }
 }
 
 export class MediaInfoPart {
   id: id;
-  file: File;
-  status: string;
+  file: File | Blob | Promise<any> | null;
+  status: mediaStatus;
   isRemote: boolean;
   isEdit: boolean;
   Info: BaseMediaInfo;
   Ctrl: BaseMediaCtrl;
   UserConcern: UserConcern;
 
-  constructor(info: BaseMediaInfo, ctrl: BaseMediaCtrl, userConcern: UserConcern, id: id, file: File, status: string) {
-    this.file = file;
+  constructor(info: BaseMediaInfo, ctrl: BaseMediaCtrl, userConcern: UserConcern, status: mediaStatus, file?: File) {
+    let id = info.id;
+    file
+      ? (this.file = file)
+      : (this.file = null);
+    // todo File详细定义
     this.status = status;
     this.id = id;
     this.isRemote = newIdRegex.test(id.toString());
@@ -472,15 +574,19 @@ export class MediaInfoPart {
   }
 
   static emptyMediaInfo(_id: id, file: File) {
-    return new MediaInfoPart(mediaInfoTemplate(_id, file), mediaCtrlTemplate(file), userConcernTemplate(), _id, file, 'new')
+    return new MediaInfoPart(mediaInfoTemplate(_id, file), mediaCtrlTemplate(file), userConcernTemplate(), 'new', file)
   }
 
-  changeId(newId: id, mediaList: Array<MediaSettingPart>) {
+  changeId(newId: id) {
     this.id = newId;
     Vue.set(this.Info, 'id', newId);
-    this.synchronizationSource('_id', newId, mediaList);
+    this.synchronizationSource('_id', newId);
     this.isRemote = newIdRegex.test(newId.toString());
     this.isEdit = false;
+  }
+
+  changeStatus(status: mediaStatus) {
+    Vue.set(this, 'status', status)
   }
 
   // info修改值
@@ -500,9 +606,19 @@ export class MediaInfoPart {
       : this.Ctrl[prop] -= 1
   }
 
-  synchronizationSource(prop: string, value: any, mediaList: Array<MediaSettingPart>) {
+  synchronizationSource(prop: string, value: any) {
+    let mediaList = MediaSettingPart.list;
     crucialRegex.test(prop) && findNode(mediaList, this.id).map(node => node.updateCrucial(prop, value))
   }
+
+  synchronizationAll() {
+    let nodeList = MediaSettingPart.list;
+    findNode(nodeList, this.id).map(node => {
+      node.updateCrucial('_src', this.Ctrl.FileName);
+      node.updateCrucial('_name', this.Info.Name);
+    })
+  }
+
 }
 
 export function nodeSettingTemplate(_id: id, _type: string, _label: string, _name: string, _image: string) {
@@ -541,6 +657,16 @@ export function mediaSettingTemplate(_id: id, _label: string, _name: string, _sr
   return setting
 }
 
+export function graphSettingTemplate(_id: id) {
+  let setting = <GraphSetting>{
+    _id,
+    _type: 'document',
+    _label: 'Doc2Graph'
+  };
+  Object.assign(settingTemplate('document'), setting);
+  return setting
+}
+
 class SettingPart {
   Setting: Setting;
   State: BaseState;
@@ -569,17 +695,19 @@ export class NodeSettingPart extends SettingPart {
   Setting: NodeSetting;
   State: NodeState;
   parent: GraphSelfPart;
+  static list: Array<NodeSettingPart> = [];
 
   constructor(Setting: NodeSetting, State: NodeState, parent: GraphSelfPart) {
     super(Setting, State, parent);
     this.Setting = Setting;
     this.State = State;
     this.parent = parent;
+    NodeSettingPart.list.push(this);
   }
 
   static emptyNodeSetting(_id: id, _type: string, _label: string, _name: string, _image: string, parent: GraphSelfPart) {
     let setting = nodeSettingTemplate(_id, _type, _label, _name, _image);
-    let state = stateTemplate('isSelf', 'isAdd');
+    let state = nodeStateTemplate('isAdd');
     return new NodeSettingPart(setting, state, parent)
   }
 }
@@ -588,17 +716,19 @@ export class MediaSettingPart extends SettingPart {
   Setting: MediaSetting;
   State: NodeState;
   parent: GraphSelfPart;
+  static list: Array<MediaSettingPart> = [];
 
   constructor(Setting: MediaSetting, State: NodeState, parent: GraphSelfPart) {
     super(Setting, State, parent);
     this.Setting = Setting;
     this.State = State;
     this.parent = parent;
+    MediaSettingPart.list.push(this);
   }
 
   static emptyMediaSetting(_id: id, _label: string, _name: string, _src: string, parent: GraphSelfPart) {
     let setting = mediaSettingTemplate(_id, _label, _name, _src);
-    let state = stateTemplate('isSelf', 'isAdd');
+    let state = nodeStateTemplate('isAdd');
     return new MediaSettingPart(setting, state, parent)
   }
 }
@@ -607,18 +737,19 @@ export class LinkSettingPart extends SettingPart {
   Setting: LinkSetting;
   State: LinkState;
   parent: GraphSelfPart;
+  static list: Array<LinkSettingPart> = [];
 
   constructor(Setting: LinkSetting, State: LinkState, parent: GraphSelfPart) {
     super(Setting, State, parent);
     this.Setting = Setting;
     this.State = State;
-    this.parent = parent
+    this.parent = parent;
+    LinkSettingPart.list.push(this);
   }
 
   static emptyLinkSetting(_id: id, _label: string, _start: NodeSettingPart, _end: NodeSettingPart, parent: GraphSelfPart) {
     let setting = linkSettingTemplate(_id, _label, _start, _end);
-    let state = stateTemplate('isSelf', 'isAdd');
-    state.isSelf = true;
+    let state = linkStateTemplate('isAdd');
     return new LinkSettingPart(setting, state, parent)
   }
 }
@@ -634,6 +765,12 @@ export class GraphSettingPart extends SettingPart {
     this.State = State;
     this.parent = parent
   }
+
+  static emptyGraphSetting(_id: id, parent: GraphSelfPart | null) {
+    let setting = graphSettingTemplate(_id);
+    let state = graphStateTemplate('isSelf', 'isAdd');
+    return new GraphSettingPart(setting, state, parent)
+  }
 }
 
 export class Notes {
@@ -641,8 +778,9 @@ export class Notes {
 }
 
 interface Graph {
-  nodes: Array<VisualNode>
+  nodes: Array<NodeSettingPart>
   links: Array<LinkSettingPart>
+  medias: Array<MediaSettingPart>
   notes: Array<Notes>
 }
 
@@ -665,6 +803,8 @@ export class GraphSelfPart {
   id: id;
   draftId: number;
   rootList: Array<GraphSelfPart>; // Graph的遍历链条
+  static list: Array<GraphSelfPart>;
+  static baseList: Array<GraphBackend>; // 原始数据
   constructor(graph: Graph, setting: GraphSettingPart, path: Array<Object>, _id: id) {
     this.draftId = -1;
     this.id = _id;
@@ -674,11 +814,68 @@ export class GraphSelfPart {
     this.Path = path;
   }
 
-  static emptyGraphSelfPart() {
+  static emptyGraphSelfPart(_id: id, parent: GraphSelfPart | null) {
+    let graph: Graph = {
+      nodes: [],
+      links: [],
+      medias: [],
+      notes: [],
+    };
+    let setting = GraphSettingPart.emptyGraphSetting(_id, parent);
+    let path = [{}]; // todo path
+    let graphSelf = new GraphSelfPart(graph, setting, path, _id);
+    let graphSelfNode = NodeSettingPart.emptyNodeSetting(_id, 'document', 'DocGraph', 'NewDocument' + _id, '', graphSelf);
+    graphSelf.Graph.nodes.push(graphSelfNode);
+    return graphSelf
+  }
 
+  static resolveFromBackEnd(baseData: GraphBackend, parent: GraphSelfPart | null) {
+    GraphSelfPart.baseList.push(baseData);
+    let args = [];
+    getIsSelf(baseData.Base.Ctrl) && args.push('isSelf');
+    let state = graphStateTemplate(...args);
+    let setting = new GraphSettingPart(baseData.Conf, state, parent);
+    let graph = <Graph>{
+      nodes: [],
+      links: [],
+      medias: [],
+      notes: baseData.Graph.notes
+    };
+    let result = new GraphSelfPart(graph, setting, baseData.Path, baseData.Base.Info.id);
+    result.Graph.nodes = baseData.Graph.nodes.map(setting => new NodeSettingPart(setting, nodeStateTemplate(), result));
+    result.Graph.medias = baseData.Graph.medias.map(setting => new MediaSettingPart(setting, nodeStateTemplate(), result));
+    result.Graph.links = baseData.Graph.links.map(setting => {
+      let link = <LinkSetting>deepClone(setting);
+      link._start = result.Graph.nodes.filter(node => itemEqual(setting._start, node.Setting))[0];
+      link._end = result.Graph.nodes.filter(node => itemEqual(setting._end, node.Setting))[0];
+      return new LinkSettingPart(link, linkStateTemplate(), result);
+    });
+    return result
   }
 
   autoSave() {
 
+  }
+
+  addNode(node: NodeSettingPart) {
+    this.Graph.nodes.push(node);
+    node.updateState('isAdd', true);
+    newIdRegex.test(node.Setting._id.toString()) && (this.Conf.updateState('isChanged', true))
+  }
+
+  addLink(link: LinkSettingPart) {
+    this.Graph.links.push(link);
+    link.updateState('isAdd', true);
+    newIdRegex.test(link.Setting._id.toString()) && (this.Conf.updateState('isChanged', true))
+  }
+
+  addMedia(media: MediaSettingPart) {
+    this.Graph.medias.push(media);
+    media.updateState('isAdd', true);
+    newIdRegex.test(media.Setting._id.toString()) && (this.Conf.updateState('isChanged', true))
+  }
+
+  changeId(newId: id) {
+    this.id = newId
   }
 }

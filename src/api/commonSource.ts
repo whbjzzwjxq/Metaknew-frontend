@@ -1,6 +1,7 @@
 import {BASE, baseService} from './main';
+import {BaseMediaInfo, GraphSelfPart, id, MediaInfoPart, NodeInfoPart, QueryObject} from "@/utils/graphClass";
 
-export function createMediaNode(data) {
+export function createMediaNode(data: {name: string, item: BaseMediaInfo}) {
   return baseService({
     url: BASE + '/subgraph/create/media/normal',
     method: 'post',
@@ -11,7 +12,7 @@ export function createMediaNode(data) {
   })
 }
 
-export function updateMediaNode(data) {
+export function updateMediaNode(data: MediaInfoPart) {
   return baseService({
     url: BASE + '/subgraph/update/media/normal',
     method: 'post',
@@ -22,7 +23,7 @@ export function updateMediaNode(data) {
   })
 }
 
-export function updateMediaToNode(node, mediaList) {
+export function updateMediaToNode(node: NodeInfoPart, mediaList: Array<id>) {
   return baseService({
     url: BASE + '/subgraph/update/node/media',
     method: 'post',
@@ -33,7 +34,7 @@ export function updateMediaToNode(node, mediaList) {
   })
 }
 
-export function updateSingleNode(data) {
+export function updateSingleNode(data: NodeInfoPart) {
   return baseService({
     url: BASE + '/subgraph/update/node/normal',
     method: 'post',
@@ -44,7 +45,7 @@ export function updateSingleNode(data) {
   })
 }
 
-export function multiNodeCreate(pLabel, nodes) {
+export function multiNodeCreate(pLabel: string, nodes: NodeInfoPart) {
   return baseService({
     url: BASE + '/subgraph/create/node/bulk_create',
     method: 'post',
@@ -58,7 +59,7 @@ export function multiNodeCreate(pLabel, nodes) {
   })
 }
 
-export function queryDocGraph(id) {
+export function queryDocGraph(id: id) {
   return baseService({
     url: BASE + '/document/query/graph',
     method: 'get',
@@ -68,27 +69,23 @@ export function queryDocGraph(id) {
   })
 }
 
-export function querySingleNode(_id, _type, PrimaryLabel) {
+export function querySingleNode(payload: QueryObject) {
   return baseService({
     url: BASE + '/subgraph/query/',
     method: 'get',
-    params: {
-      _id: _id,
-      _type: _type,
-      _label: PrimaryLabel
-    }
+    params: payload
   })
 }
 
-export function queryMultiSource(list) {
+export function queryMultiSource(list: Array<QueryObject>) {
   return baseService({
     url: BASE + '/subgraph/query/multi',
     method: 'post',
-    data: list
+    data: list.map(query => [query._id, query._type, query._label])
   })
 }
 
-export function saveDocGraph(document, isDraft, isAuto) {
+export function saveDocGraph(document: GraphSelfPart, isDraft: boolean, isAuto: boolean) {
   return baseService({
     url: BASE + '/document/create/graph/normal',
     method: 'post',
@@ -103,7 +100,7 @@ export function saveDocGraph(document, isDraft, isAuto) {
   })
 }
 
-export function queryMultiMedia(queryList) {
+export function queryMultiMedia(queryList: Array<id>) {
   return baseService({
     url: BASE + '/subgraph/query/media/multi',
     method: 'post',
@@ -114,7 +111,7 @@ export function queryMultiMedia(queryList) {
   })
 }
 
-export function queryAutoSave(start) {
+export function queryAutoSave(start: number) {
   return baseService({
     url: BASE + '/document/query/auto_save',
     method: 'get',
@@ -124,7 +121,7 @@ export function queryAutoSave(start) {
   })
 }
 
-export function deleteAutoSave(SourceId, VersionId) {
+export function deleteAutoSave(SourceId: id, VersionId: number) {
   return baseService({
     url: BASE + '/document/delete/auto_save',
     method: 'get',
