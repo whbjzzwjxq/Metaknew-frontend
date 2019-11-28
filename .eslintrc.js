@@ -19,7 +19,8 @@ module.exports = {
     'no-trailing-spaces': "off",
     'indent': 'off',
     'quotes': 'off',
-    'comma-dangle': 'off'
+    'comma-dangle': 'off',
+    'spaced-comment': 'off'
   },
   parserOptions: {
     parser: '@typescript-eslint/parser'

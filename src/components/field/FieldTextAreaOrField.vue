@@ -81,6 +81,9 @@
         this.cacheText !== '' &&
         this.$emit('update-text', this.propName, this.cacheText)
       }
+    },
+    record: {
+      status: 'done'
     }
   }
 </script>

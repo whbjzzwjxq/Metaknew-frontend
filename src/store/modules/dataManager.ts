@@ -10,15 +10,13 @@ import {
   LinkSettingPart,
   MediaInfoPart,
   NodeInfoPart,
-  VisualNodeSettingPart,
   userConcernTemplate,
   NodeSetting,
-  MediaSetting,
   QueryObject,
   NodeInfoPartBackend,
   LinkSetting,
   LinkInfoPartBackend,
-  BaseLinkCtrl, MediaInfoPartBackend, MediaSettingPart, NodeSettingPart
+  BaseLinkCtrl, MediaInfoPartBackend, MediaSettingPart, NodeSettingPart, Setting
 } from "@/utils/graphClass";
 import {
   commitInfoRemove,
@@ -36,7 +34,7 @@ const getManager = (_type: string) =>
     ? state.linkManager
     : state.nodeManager;
 
-interface State {
+export interface State {
   currentGraph: GraphSelfPart,
   currentItem: InfoPart,
   graphManager: Record<id, GraphSelfPart>,
@@ -155,16 +153,16 @@ const mutations = {
 
   // ------------以下是Setting内容------------
 
-  nodeSettingPush(state: State, payload: NodeSettingPart) {
-    state.currentGraph.addNode(payload)
+  nodeSettingPush(state: State, payload: Array<NodeSettingPart>) {
+    state.currentGraph.addNodes(payload)
   },
 
-  linkSettingPush(state: State, payload: LinkSettingPart) {
-    state.currentGraph.addLink(payload)
+  linkSettingPush(state: State, payload: Array<LinkSettingPart>) {
+    state.currentGraph.addLinks(payload)
   },
 
-  mediaSettingPush(state: State, payload: MediaSettingPart) {
-    state.currentGraph.addMedia(payload)
+  mediaSettingPush(state: State, payload: Array<MediaSettingPart>) {
+    state.currentGraph.addMedias(payload)
   }
 
 };
@@ -190,7 +188,7 @@ const actions = {
   },
 
   // 异步请求Node
-  nodeQuery(context: { commit: Commit, state: State }, payload: Array<NodeSetting>) {
+  nodeQuery(context: { commit: Commit, state: State }, payload: Array<Setting>) {
     // 未缓存的节点列表
     let noCacheNode = payload.filter(node => !state.nodeManager[node._id]);
     if (noCacheNode.length > 0) {

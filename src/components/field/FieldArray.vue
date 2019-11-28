@@ -47,7 +47,8 @@
 
     <v-card-text v-if="editMode">
       <v-textarea
-        v-model="tagsToString"
+        :value="tagsToString"
+        @input="updateValue"
         outlined
         label="直接使用字符编辑"
         placeholder="使用;分隔内容">
@@ -57,137 +58,150 @@
   </v-card>
 </template>
 
-<script>
-  import Vue from 'vue'
-  import { indexToColor, checkDuplicate } from '@/utils/utils'
+<script lang="ts">
+    import Vue from 'vue'
+    import {indexToColor, checkDuplicate} from '@/utils/utils'
+    import {CombinedVueInstance} from 'vue/types/vue'
+    import {resolveType} from '@/utils/labelField'
 
-  export default Vue.extend({
-    name: 'FieldArray',
-    data () {
-      return {
-        removedTags: [],
-        cacheText: ''
-      }
-    },
-    props: {
-      baseArray: {
-        type: Array,
-        required: true
-      },
-      availableTags: {
-        type: Object,
-        default: function () {
-          return {
-            'recommend': []
-          }
-        }
-      },
-      propName: {
-        type: String,
-        required: true
-      },
-      width: {
-        type: Number,
-        default: 400
-      },
-      resolveType: {
-        type: String,
-        default: 'normal',
-        validator: function (value) {
-          return ['normal', 'time', 'location', 'name'].indexOf(value) !== -1
-        }
-      },
-      basePool: {
-        type: Array,
-        default () {
-          return []
-        }
-      },
-      editMode: {
-        type: Boolean,
-        default: true
-      },
-      defaultValue: {
-        type: Array,
-        default: function () {
-          return []
-        }
-      }
-    },
-    computed: {
-      tagsToString: {
-        get () {
-          return this.existTags.join(';')
+    export default Vue.extend({
+        name: 'FieldArray',
+        data() {
+            return {
+                removedTags: [] as string[],
+                cacheText: ''
+            }
         },
-        set (value) {
-          this.updateTags(value.split(';').filter(item => item !== ''))
+        props: {
+            baseArray: {
+                type: Array as () => string[],
+                default: function () {
+                    return []
+                }
+            },
+            availableTags: {
+                type: Object,
+                default: function () {
+                    return {
+                        'recommend': []
+                    }
+                }
+            },
+            propName: {
+                type: String,
+                required: true
+            },
+            width: {
+                type: Number,
+                default: 400
+            },
+            resolveType: {
+                type: String as () => resolveType,
+                default: 'normal',
+                validator: function (value) {
+                    return ['normal', 'time', 'location', 'name'].indexOf(value) !== -1
+                }
+            },
+            basePool: {
+                type: Array,
+                default() {
+                    return []
+                }
+            },
+            editMode: {
+                type: Boolean,
+                default: true
+            },
+            defaultValue: {
+                type: Array as () => string[],
+                default: function () {
+                    return []
+                }
+            }
+        },
+        computed: {
+            tagsToString() {
+                return this.existTags.join(';');
+            },
+
+            status: (vm: any) => !vm.duplicate
+                ? 'default'
+                : 'error',
+
+            pool: (vm) => vm.existTags.concat(vm.basePool),
+
+            duplicate: (vm) =>
+                vm.existTags.length > 0 &&
+                vm.existTags.filter((tag: string) => checkDuplicate(vm.pool, tag)).length === vm.existTags.length,
+
+            recommendTags: (vm) => vm.editable
+                ? vm.availableTags
+                : {},
+
+            tipsContent: (vm) => vm.duplicate
+                ? 'duplicate tag'
+                : '',
+
+            existTags(): string[] {
+                let vm = this;
+                if (vm.baseArray) {
+                    return vm.baseArray.filter((item: string) => item !== '')
+                } else {
+                    return vm.defaultValue
+                }
+            }
+            //
+        },
+        methods: {
+            removeTag(item: string) {
+                this.removedTags.indexOf(item) === -1 && this.removedTags.push(item);
+                let index = this.existTags.indexOf(item);
+                this.existTags.splice(index, 1);
+                this.updateTags(this.existTags);
+            },
+
+            // 添加标签
+            addTag(item: string) {
+                this.existTags.push(item);
+                this.updateTags(this.existTags)
+            },
+
+            restoreTag(index: number) {
+                let item = this.removedTags[index];
+                this.removedTags.splice(index, 1);
+                this.addTag(item)
+            },
+
+            // 检查标签
+            checkTags() {
+
+            },
+
+            updateTags(value: string[]) {
+                this.$emit('update-value', this.propName, value, this.status)
+            },
+
+            // chip颜色
+            indexToColor(index: number) {
+                return indexToColor(index)
+            },
+
+            updateValue($event: string) {
+                this.updateTags($event.split(';').filter(tag => tag !== ''))
+            }
+        },
+        created() {
+
+        },
+
+        updated() {
+
+        },
+
+        record: {
+            status: 'done'
         }
-      },
-      status: (vm) => !vm.duplicate
-        ? 'default'
-        : 'error',
-
-      pool: (vm) => vm.existTags.concat(vm.basePool),
-
-      duplicate: (vm) =>
-        vm.existTags.length > 0 &&
-        vm.existTags.filter((tag) => checkDuplicate(vm.pool, tag)).length === vm.existTags.length,
-
-      recommendTags: (vm) => vm.editable
-        ? vm.availableTags
-        : {},
-
-      tipsContent: (vm) => vm.duplicate
-        ? 'duplicate tag'
-        : '',
-
-      existTags: (vm) => vm.baseArray
-        ? vm.baseArray.filter((item) => item !== '')
-        : vm.defaultValue
-      //
-    },
-    methods: {
-      removeTag (item) {
-        this.removedTags.indexOf(item) === -1 && this.removedTags.push(item)
-        let index = this.existTags.indexOf(item)
-        this.existTags.splice(index, 1)
-        this.updateTags(this.existTags)
-      },
-
-      // 添加标签
-      addTag (item) {
-        this.existTags.push(item)
-        this.updateTags(this.existTags)
-      },
-
-      restoreTag (index) {
-        let item = this.removedTags[index]
-        this.removedTags.splice(index, 1)
-        this.addTag(item)
-      },
-
-      // 检查标签
-      checkTags () {
-
-      },
-
-      updateTags (value) {
-        this.$emit('update-value', this.propName, value, this.status)
-      },
-
-      // chip颜色
-      indexToColor (index) {
-        return indexToColor(index)
-      }
-    },
-    created () {
-
-    },
-
-    updated () {
-
-    }
-  })
+    })
 </script>
 
 <style scoped>

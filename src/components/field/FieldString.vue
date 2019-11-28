@@ -42,135 +42,138 @@
   </v-card>
 </template>
 
-<script>
-import {checkDuplicate, checkExist} from '../../../utils/fileHandle';
+<script lang="ts">
+    import Vue from 'vue'
+    import {checkDuplicate, checkExist} from '@/utils/utils'
 
-export default {
-  name: 'fieldString',
-  data() {
-    return {
-      editHistory: [],
-      cacheText: this.select ? 'auto' : '',
-      rules: {
-        empty: value => value === ''
-          ? '字符串不能为空！'
-          : false,
-        errorChar: value => new RegExp('[\\\\:*?"<>|]').test({ vm: value })
-          ? '含有异常字符!'
-          : false,
-        duplicate: value => this.checkDuplicate && checkExist(this.textPool, value)
-          ? '重复的' + this.propName + '!'
-          : false
-      }
-    }
-  },
-  computed: {
+    export default Vue.extend({
+        name: 'fieldString',
+        data() {
+            return {
+                editHistory: [] as string[],
+                cacheText: this.select ? 'auto' : '',
+                rules: {
+                    empty: (value: string) => value === ''
+                        ? '字符串不能为空！'
+                        : false,
+                    errorChar: (value: string) => new RegExp('[\\\\:*?"<>|]').test(value)
+                        ? '含有异常字符!'
+                        : false,
+                    duplicate: (value: string) => this.checkDuplicate && checkExist(this.textPool, value)
+                        ? '重复的' + this.propName + '!'
+                        : false
+                }
+            }
+        },
+        computed: {
 
-    renderHistory: vm => !vm.select && vm.editable,
+            renderHistory: vm => !vm.select && vm.editable,
 
-    text: vm => vm.baseText
-      ? vm.baseText.toString()
-      : vm.defaultValue.toString()
-  },
-  props: {
-    // 基础值
-    baseText: {
-      type: [String, Number],
-      required: true
-    },
+            text: (vm): string => vm.baseText
+                ? vm.baseText.toString()
+                : vm.defaultValue.toString()
+        },
+        props: {
+            // 基础值
+            baseText: {
+                type: [String, Number],
+                required: true
+            },
 
-    // 属性名
-    propName: {
-      type: String,
-      required: true
-    },
+            // 属性名
+            propName: {
+                type: String,
+                required: true
+            },
 
-    // 字段池 用于检测重复
-    textPool: {
-      type: Array,
-      default: function () {
-        return []
-      }
-    },
+            // 字段池 用于检测重复
+            textPool: {
+                type: Array,
+                default: function () {
+                    return []
+                }
+            },
 
-    // 是否使用selection
-    select: {
-      type: Boolean,
-      default: false
-    },
+            // 是否使用selection
+            select: {
+                type: Boolean,
+                default: false
+            },
 
-    // 选择内容
-    selection: {
-      type: Array,
-      default: function () {
-        return []
-      }
-    },
+            // 选择内容
+            selection: {
+                type: Array,
+                default: function () {
+                    return []
+                }
+            },
 
-    width: {
-      type: Number,
-      default: 200
-    },
+            width: {
+                type: Number,
+                default: 200
+            },
 
-    editable: {
-      type: Boolean,
-      default: true
-    },
+            editable: {
+                type: Boolean,
+                default: true
+            },
 
-    defaultValue: {
-      type: String,
-      default: function () {
-        return ''
-      }
-    },
+            defaultValue: {
+                type: String,
+                default: function () {
+                    return ''
+                }
+            },
 
-    checkDuplicate: {
-      type: Boolean,
-      default: false
-    }
+            checkDuplicate: {
+                type: Boolean,
+                default: false
+            }
 
-  },
-  methods: {
-    inputText($event) {
-      this.cacheText = $event;
-    },
+        },
+        methods: {
+            inputText($event: string) {
+                this.cacheText = $event
+            },
 
-    saveText() {
-      if (this.cacheText !== '') {
-        this.editHistory.push(this.text);
-        this.update(this.cacheText);
-        this.cacheText = '';
-      }
-    },
+            saveText() {
+                let text = this.text as string;
+                if (this.cacheText !== '') {
+                    this.editHistory.push(text);
+                    this.update(this.cacheText);
+                    this.cacheText = ''
+                }
+            },
 
-    restoreText(index) {
-      index > 0
-        ? this.$set(this.editHistory, index, this.text)
-        : this.$set(this.editHistory, 1, this.text);
-      this.update(this.editHistory[index]);
-    },
+            restoreText(index: number) {
+                index > 0
+                    ? this.$set(this.editHistory, index, this.text)
+                    : this.$set(this.editHistory, 1, this.text);
+                this.update(this.editHistory[index])
+            },
 
-    update($event) {
-      this.$emit('update-value', this.propName, $event, this.status(this.cacheText));
-    },
+            update($event: string) {
+                this.$emit('update-value', this.propName, $event, this.status(this.cacheText))
+            },
 
-    status(text) {
-      let vm = this;
-      let result;
-      vm.rules.empty(text) ||
+            status(text: string) {
+                let vm = this;
+                let result;
+                vm.rules.empty(text) ||
                 vm.rules.errorChar(text) ||
                 (vm.checkDuplicate && checkDuplicate(vm.textPool, text))
-        ? result = 'error'
-        : result = 'default';
-      return result
-    }
-  },
-  watch: {},
+                    ? result = 'error'
+                    : result = 'default';
+                return result
+            }
+        },
+        watch: {},
 
-  created() {
-  }
+        record: {
+            status: 'done'
+        }
 
-}
+    })
 </script>
 
 <style scoped>

@@ -2,9 +2,9 @@
   <v-card :width="width" tile flat>
     <v-card-title v-if="setting.showSetter">
       <v-btn text small @click="multiLanguage = !multiLanguage">
-      <v-icon>
-        {{setterIcon}}
-      </v-icon>
+        <v-icon>
+          {{setterIcon}}
+        </v-icon>
         MultiLanguage ?
       </v-btn>
     </v-card-title>
@@ -69,109 +69,113 @@
   </v-card>
 </template>
 
-<script>
-import {deepClone} from '../../../utils/deepclone';
-import fieldTextAreaOrField from './FieldTextAreaOrField';
+<script lang="ts">
+    import Vue from 'vue'
+    import deepClone from '@/utils/utils'
+    import fieldTextAreaOrField from './FieldTextAreaOrField.vue'
 
-export default {
-  name: 'fieldText',
-  components: {fieldTextAreaOrField},
-  data() {
-    return {
-      cacheText: '',
-      tab: 'tab-auto',
-      newLang: '',
-      status: 'default',
-      multiLanguage: true
-    }
-  },
-  props: {
-    baseText: {
-      type: Object,
-      required: true
-    },
-    propName: {
-      type: String,
-      required: true
-    },
-    width: {
-      type: [String, Number],
-      default: 400
-    },
-    defaultValue: {
-      type: Object,
-      default: function () {
-        return {
-          'auto': ''
+    export default Vue.extend({
+        name: 'fieldText',
+        components: {fieldTextAreaOrField},
+        data() {
+            return {
+                cacheText: '',
+                tab: 'tab-auto',
+                newLang: '',
+                status: 'default',
+                multiLanguage: true
+            }
+        },
+        props: {
+            baseText: {
+                type: Object,
+                required: true
+            },
+            propName: {
+                type: String,
+                required: true
+            },
+            width: {
+                type: [String, Number],
+                default: 400
+            },
+            defaultValue: {
+                type: Object,
+                default: function () {
+                    return {
+                        'auto': ''
+                    }
+                }
+            },
+            placeholder: {
+                type: String,
+                default: ''
+            },
+            label: {
+                type: String,
+                default: ''
+            },
+            editable: {
+                type: Boolean,
+                default: true
+            },
+            singleLine: {
+                type: Boolean,
+                default: false
+            }
+        },
+        computed: {
+            text: vm => Object.keys(vm.baseText).length > 0
+                ? deepClone(vm.baseText)
+                : deepClone(vm.defaultValue),
+
+            lang: vm => Object.keys(vm.text),
+            editModeSetting() {
+                return {
+                    showSetter: true,
+                    multiLanguage: this.multiLanguage,
+                    editable: true,
+                    singleLine: this.singleLine
+                }
+            },
+            normalModeSetting() {
+                return {
+                    showSetter: false,
+                    multiLanguage: this.lang.length > 1,
+                    editable: false,
+                    singleLine: this.singleLine
+                }
+            },
+            setting: vm => vm.editable ? vm.editModeSetting : vm.normalModeSetting,
+            setterIcon: vm => vm.multiLanguage ? 'mdi-check' : 'mdi-close',
+            singleKey: vm => Object.keys(vm.text)[0]
+        },
+        methods: {
+            updateText(key: string, value: string) {
+                this.$set(this.text, key, value);
+                this.$emit('update-value', this.propName, this.text, this.status)
+            },
+
+            createNewText() {
+                if (this.newLang) {
+                    this.$set(this.text, this.newLang, '')
+                    this.$emit('update-value', this.propName, this.text, this.status)
+                    this.newLang = ''
+                }
+            },
+
+            deleteText(key: string) {
+                this.$delete(this.text, key);
+                this.$emit('update-value', this.propName, this.text, this.status)
+            }
+        },
+        created() {
+
+        },
+        record: {
+            status: 'done'
         }
-      }
-    },
-    placeholder: {
-      type: String,
-      default: ''
-    },
-    label: {
-      type: String,
-      default: ''
-    },
-    editable: {
-      type: Boolean,
-      default: true
-    },
-    singleLine: {
-      type: Boolean,
-      default: false
-    }
-  },
-  computed: {
-    text: vm => Object.keys(vm.baseText).length > 0
-      ? deepClone(vm.baseText)
-      : deepClone(vm.defaultValue),
-
-    lang: vm => Object.keys(vm.text),
-    editModeSetting() {
-      return {
-        showSetter: true,
-        multiLanguage: this.multiLanguage,
-        editable: true,
-        singleLine: this.singleLine
-      }
-    },
-    normalModeSetting() {
-      return {
-        showSetter: false,
-        multiLanguage: this.lang.length > 1,
-        editable: false,
-        singleLine: this.singleLine
-      }
-    },
-    setting: vm => vm.editable ? vm.editModeSetting : vm.normalModeSetting,
-    setterIcon: vm => vm.multiLanguage ? 'mdi-check' : 'mdi-close',
-    singleKey: vm => Object.keys(vm.text)[0]
-  },
-  methods: {
-    updateText(key, value) {
-      this.$set(this.text, key, value);
-      this.$emit('update-value', this.propName, this.text, this.status)
-    },
-
-    createNewText() {
-      if (this.newLang) {
-        this.$set(this.text, this.newLang, '');
-        this.$emit('update-value', this.propName, this.text, this.status);
-        this.newLang = '';
-      }
-    },
-
-    deleteText(key) {
-      this.$delete(this.text, key);
-      this.$emit('update-value', this.propName, this.text, this.status)
-    }
-  },
-  created() {
-
-  }
-}
+    })
 </script>
 
 <style scoped>

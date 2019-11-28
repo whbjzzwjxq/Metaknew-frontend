@@ -94,134 +94,134 @@
   </v-card>
 </template>
 
-<script>
+<script lang="ts">
+    import Vue from 'vue'
+    import {fieldTypes, fieldSetting, fieldDefaultValue, resolveTypes, fieldType, resolveType} from '@/utils/labelField'
+    import deepClone from '../../utils/utils';
 
-import {fieldTypes, fieldSetting, fieldDefaultValue, fieldResolveTypes} from '../../../utils/OfficialLabels';
-import {deepClone} from '../../../utils/deepclone'
+    export default Vue.extend({
+        name: 'fieldJson',
+        data() {
+            return {
+                cacheKey: '' as string,
+                rules: {
+                    empty: (key: string) => key === '' && 'Key is empty!!',
+                    tooLong: (key: string) => key.length >= 20 && 'Key is too long!!'
+                },
+                fieldSetting: fieldSetting,
+                types: fieldTypes,
+                resolves: resolveTypes,
+                reg: new RegExp('[\\\\:*?"<>|]')
+            }
+        },
+        components: {
+            dataTableField: () => import('@/views/dataTable/dataTableField.vue')
+        },
+        props: {
+            baseProps: {
+                type: Object,
+                required: true
+            },
+            propName: {
+                type: String,
+                required: true
+            },
+            width: {
+                type: [Number, String],
+                default: 360
+            },
+            // 是否是原生属性
+            changeType: {
+                type: Boolean,
+                default: false
+            },
+            // 是否是editMode
+            editable: {
+                type: Boolean,
+                default: true
+            },
+            pLabel: {
+                type: String,
+                required: true
+            },
 
-export default {
-  name: 'fieldJson',
-  data() {
-    return {
-      cacheKey: '',
-      rules: {
-        empty: key => key === '' && 'Key is empty!!',
-        tooLong: key => key.length >= 20 && 'Key is too long!!'
-      },
-      fieldSetting: fieldSetting,
-      types: fieldTypes,
-      resolves: fieldResolveTypes,
-      reg: new RegExp('[\\\\:*?"<>|]')
-    }
-  },
-  components: {
-    dataTableField: () => import('../../Private/dataTable/dataTableField.vue')
-  },
-  props: {
-    baseProps: {
-      type: Object,
-      required: true
-    },
-    propName: {
-      type: String,
-      required: true
-    },
-    width: {
-      type: [Number, String],
-      default: 360
-    },
-    // 是否是原生属性
-    changeType: {
-      type: Boolean,
-      default: false
-    },
-    // 是否是editMode
-    editable: {
-      type: Boolean,
-      default: true
-    },
-    pLabel: {
-      type: String,
-      required: true
-    },
+            defaultValue: {
+                type: Object,
+                default: function () {
+                    return {}
+                }
+            },
 
-    defaultValue: {
-      type: Object,
-      default: function () {
-        return {}
-      }
-    },
+            newPropType: String as () => fieldType
+        },
+        methods: {
+            inputKey($event: string) {
+                this.cacheKey = $event
+            },
 
-    newPropType: {
-      type: String,
-      default: 'StringField'
-    }
-  },
-  methods: {
-    inputKey($event) {
-      this.cacheKey = $event
-    },
+            updateKey(key: string, item: any) {
+                if (this.cacheKey !== '') {
+                    this.delProp(key);
+                    this.addProp(this.cacheKey, item);
+                    this.cacheKey = ''
+                }
+            },
 
-    updateKey(key, item) {
-      if (this.cacheKey !== '') {
-        this.delProp(key);
-        this.addProp(this.cacheKey, item);
-        this.cacheKey = '';
-      }
-    },
+            updateValue(item: string, value: any) {
+                this.$set(this.dict[item], 'value', value);
+                this.update()
+            },
 
-    updateValue(item, value) {
-      this.$set(this.dict[item], 'value', value);
-      this.update()
-    },
+            delProp(key: string) {
+                this.$delete(this.dict, key);
+                this.update()
+            },
 
-    delProp(key) {
-      this.$delete(this.dict, key);
-      this.update()
-    },
+            addProp(key: string, item: any) {
+                this.$set(this.dict, key, item);
+                this.update()
+            },
 
-    addProp(key, item) {
-      this.$set(this.dict, key, item);
-      this.update()
-    },
+            addNewProp() {
+                let key = '$_new' + this.propNum;
+                let item = {
+                    'value': fieldDefaultValue[this.newPropType],
+                    'type': this.newPropType,
+                    'resolve': 'normal'
+                };
+                this.addProp(key, item)
+            },
 
-    addNewProp() {
-      let key = '$_new' + this.propNum;
-      let item = {
-        'value': fieldDefaultValue[this.newPropType],
-        'type': this.newPropType,
-        'resolve': 'normal'
-      };
-      this.addProp(key, item);
-    },
+            updateType(item: any, type: fieldType) {
+                this.$set(item, 'type', type);
+                this.$set(item, 'value', fieldDefaultValue[type]);
+                this.update()
+            },
 
-    updateType(item, type) {
-      this.$set(item, 'type', type);
-      this.$set(item, 'value', fieldDefaultValue[type]);
-      this.update()
-    },
+            updateResolveType(item: any, resolveType: resolveType) {
+                this.$set(item, 'resolve', resolveType);
+                this.update()
+            },
 
-    updateResolveType(item, resolveType) {
-      this.$set(item, 'resolve', resolveType);
-      this.update()
-    },
+            update() {
+                this.$emit('update-value', this.propName, this.dict, this.status)
+            }
+        },
 
-    update() {
-      this.$emit('update-value', this.propName, this.dict, this.status)
-    }
-  },
-
-  computed: {
-    keys: vm => Object.keys(vm.dict),
-    propNum: vm => vm.keys.length,
-    status: vm => vm.keys.filter(key => (key && key.length <= 20)).length === vm.propNum
-      ? 'default'
-      : 'error',
-    dict: vm => Object.keys(vm.baseProps).length > 0
-      ? deepClone(vm.baseProps)
-      : vm.defaultValue
-  }
-}
+        computed: {
+            keys: vm => Object.keys(vm.dict),
+            propNum: vm => vm.keys.length,
+            status: vm => vm.keys.filter((key: string) => (key && key.length <= 20)).length === vm.propNum
+                ? 'default'
+                : 'error',
+            dict: vm => Object.keys(vm.baseProps).length > 0
+                ? deepClone(vm.baseProps)
+                : vm.defaultValue
+        },
+        record: {
+            status: 'done'
+        }
+    })
 </script>
 
 <style scoped>

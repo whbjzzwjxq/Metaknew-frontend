@@ -1,21 +1,25 @@
-interface componentSize {
+export interface ComponentSize {
   width: number | string,
   height: number | string,
   [propName: string]: number | string
 }
 
-interface LeftCard extends componentSize {
+interface LeftCard extends ComponentSize {
   width: number
 }
 
-interface BottomBar extends componentSize {
+interface BottomBar extends ComponentSize {
   height: number
 }
 
-interface State {
+export interface ToolBar extends ComponentSize{
+  height: number
+}
+
+export interface State {
   screenX: number,
   screenY: number,
-  toolBar: componentSize,
+  toolBar: ToolBar,
   leftCard: LeftCard,
   bottomBar: BottomBar
 }
@@ -46,7 +50,7 @@ const mutations = {
 const actions = {};
 const getters = {
   viewBox: (state: State) => {
-    return <componentSize>{
+    return <ComponentSize>{
       width: state.screenX - state.leftCard.width,
       height: state.screenY - state.bottomBar.height
     }

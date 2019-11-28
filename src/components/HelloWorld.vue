@@ -54,7 +54,10 @@
             msg: String
         },
         computed: {
-            test: (vm): string => vm.msg + 'test'
+            test: (vm): string => vm.msg + 'test',
+        },
+        record: {
+            status: 'done'
         }
     })
 </script>
@@ -79,3 +82,8 @@
     color: #42b983;
   }
 </style>
+
+/**
+* Created by whb on 2019/11/25
+* Updated by []
+*/

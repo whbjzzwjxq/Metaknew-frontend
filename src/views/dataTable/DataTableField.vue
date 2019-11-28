@@ -103,6 +103,11 @@
 
 <script lang="ts">
     import Vue from 'vue'
+    import {fieldSetting} from "@/utils/labelField"
+    import fieldText from '@/components/field/FieldText.vue'
+    import fieldString from '@/components/field/FieldString.vue'
+    import fieldArray from '@/components/field/FieldArray.vue'
+
 
     export default Vue.extend({
         name: "dataTableField",
@@ -176,6 +181,9 @@
 
             jsonView: value => Object.keys(value).length,
 
+        },
+        record: {
+            status: 'done'
         }
     })
 </script>

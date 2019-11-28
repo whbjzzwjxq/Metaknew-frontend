@@ -1,13 +1,13 @@
 <template>
   <v-card :width="width" tile flat class="pa-2">
     <v-card-title>
-      <file-resolver
+      <media-resolver
         multiple
         :rules="rules"
         :props="fileResolverProps"
-        @upload-file="addFile($event, false)"
+        @upload-file="addFile(arguments[0], false)"
       >
-      </file-resolver>
+      </media-resolver>
     </v-card-title>
     <v-card-text>
       <v-simple-table>
@@ -81,9 +81,11 @@
               <v-edit-dialog>
                 <v-icon small>mdi-pencil</v-icon>
                 <template v-slot:input>
-                  <card-root-media :file="file" edit-base>
+                  <card-page-media-info
+                    :file="file"
+                    edit-base>
 
-                  </card-root-media>
+                  </card-page-media-info>
                 </template>
               </v-edit-dialog>
               <v-icon small @click="removeFile(index)">mdi-delete</v-icon>
@@ -110,17 +112,17 @@
 <script lang="ts">
     import Vue from 'vue'
     import {guid} from '@/utils/utils'
-    import CardRootMedia from '../card/cardPageMediaInfo';
-    import fileResolver from '../fileResolver';
+    import CardPageMediaInfo from '../card/page/cardPageMediaInfo.vue';
+    import MediaResolver from '../MediaResolver.vue';
     import {FileToken} from '@/api/user'
-    import {ArrayMediaInfo} from '@/utils/baseType'
     import {id, MediaInfoPart} from '@/utils/graphClass'
+    import {commitInfoAdd} from '@/store/modules/_mutations'
 
     const mime = require('mime/lite');
 
     export default Vue.extend({
         name: 'FieldFile',
-        components: {CardRootMedia, fileResolver},
+        components: {CardPageMediaInfo, MediaResolver},
         data() {
             return {
                 newFiles: [] as Array<MediaInfoPart>,
@@ -145,33 +147,12 @@
             }
         },
         props: {
-            baseFiles: {
-                type: Array,
-                required: true
-            },
-            propName: {
-                type: String,
-                required: true
-            },
-            width: {
-                type: [String, Number],
-                default: 600
-            },
-            rules: {
-                type: Array,
-                default() {
-                    return []
-                }
-            },
-            showCurrent: {
-                type: Boolean,
-                default: true
-            },
-            uploadAble: {
-                type: Boolean,
-                default: true
-            }
-
+            baseFiles: Array as () => id[],
+            propName: String as () => '',
+            width: Number as () => 600,
+            rules: Array as () => (() => {})[],
+            showCurrent: Boolean as () => false,
+            uploadAble: Boolean as () => false
         },
         computed: {
             fileToken: (vm): FileToken => vm.$store.state.userInfo.fileToken,
@@ -186,7 +167,7 @@
                 return result
             },
             currentRealFiles() {
-                return this.baseFiles.map(file => vm.$store.state.dataManager.nodeManager[file])
+                return this.baseFiles.map((id: id) => this.$store.state.dataManager.nodeManager[id])
             },
         },
         methods: {
@@ -205,40 +186,42 @@
 
             // 如果从收藏里获取内容 那么就不需要上传了
             addFile(files: Array<MediaInfoPart>, isExist: boolean) {
-                let vm = this;
                 isExist
                     ? this.currentFiles = this.currentFiles.concat(files.map(file => {
                         let id = file.Info.id;
-                        vm.$store.commit('dataPushInfo', {item: file, _id: id, _type: 'media', strict: false});
+                        commitInfoAdd({item: file});
                         return id
                     }))
                     : this.newFiles = this.newFiles.concat(files)
             },
 
-            uploadFile(index) {
+            uploadFile(index: number) {
                 let file = this.newFiles[index];
                 let storeName = 'userFileCache/' + this.guid() + '.' + file.Ctrl.Format;
                 this.$store.dispatch('fileUpload', {
                     file,
                     storeName,
-                    saveType: 'noSetting',
+                    uploadType: 'normal',
                     realFile: file.file
                 }).then(res => {
-                    file.Ctrl.FileName = storeName;
                     let id = res.data;
-                    this.$set(file.Info, 'id', id);
-                    this.$set(file, 'status', 'success');
-                    this.$store.commit('dataPushInfo', {item: file, _id: id, _type: 'media'});
+                    file.changeId(id);
+                    file.changeSource(storeName);
+                    file.changeStatus('success');
+                    commitInfoAdd({item: file});
                     this.currentFiles.push(id);
                     this.newFiles.splice(index, 1);
                     this.saveMedia()
                 }).catch(() => {
-                    this.$set(file.Info, 'status', 'error')
+                    file.changeStatus('error')
                 })
             }
 
         },
-        watch: {}
+        watch: {},
+        record: {
+            status: 'done'
+        }
     })
 </script>
 

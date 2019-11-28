@@ -9,7 +9,7 @@ export interface snackBarStatePayload {
   timeout?: number,
 }
 
-interface State {
+export interface State {
   on: boolean,
   oncePool: Record<string, boolean>,
   payload: snackBarStatePayload

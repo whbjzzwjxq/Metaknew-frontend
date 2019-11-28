@@ -9,11 +9,10 @@ let ctrlPropRegex = new RegExp('\\$.*');
 let crucialRegex = new RegExp('_.*');
 export type id = number | string
 export type type = 'node' | 'link' | 'document' | 'media';
-export type mediaStatus = 'new' | 'remote' | 'uploading' | 'error'
+export type mediaStatus = 'new' | 'remote' | 'uploading' | 'error' | 'success'
 export var globalIndex = 0;
 export const itemEqual = (itemA: Setting, itemB: Setting) => itemA._id === itemB._id && itemA._type === itemB._type;
-export const findNode = (nodeList: Array<VisualNodeSettingPart>, _id: id) => nodeList.filter(node => node.Setting._id === _id);
-export const findLink = (linkList: Array<LinkSettingPart>, _id: id) => linkList.filter(link => link.Setting._id === _id);
+export const findItem = (list: Array<SettingPart>, _id: id, _type: type) => list.filter(item => item.Setting._id === _id && item.Setting._type === _type);
 export const getIsSelf = (ctrl: BaseCtrl) => ctrl.CreateUser.toString() === getCookie('user_id');
 
 export function getType(file: File) {
@@ -94,6 +93,12 @@ interface GraphState extends BaseState {
   SavedIn5Min: boolean // 5分钟内是否保存
 }
 
+export const InfoToSetting = (payload: { id: id, type: type, PrimaryLabel: string }) => ({
+  _id: payload.id,
+  _type: payload.type,
+  _label: payload.PrimaryLabel
+} as Setting);
+
 interface BaseInfo {
   id: id,
   type: type,
@@ -114,7 +119,7 @@ export interface NodeInfoPartBackend {
   Ctrl: BaseNodeCtrl
 }
 
-interface BaseNodeInfo extends BaseInfo {
+export interface BaseNodeInfo extends BaseInfo {
   type: 'node' | 'document',
   Name: string,
   Alias: Array<string>,
@@ -131,7 +136,7 @@ interface BaseNodeInfo extends BaseInfo {
   [propName: string]: any
 }
 
-interface BaseNodeCtrl extends BaseCtrl {
+export interface BaseNodeCtrl extends BaseCtrl {
   PrimaryLabel: string,
   Imp: number,
   HardLevel: number,
@@ -458,13 +463,13 @@ export class NodeInfoPart {
 
   synchronizationSource(prop: string, value: any) {
     let nodeList = NodeSettingPart.list;
-    crucialRegex.test(prop) && findNode(nodeList, this.id).map(node => node.updateCrucial(prop, value))
+    crucialRegex.test(prop) && findItem(nodeList, this.id, this.Info.type).map(node => node.updateCrucial(prop, value))
   }
 
   synchronizationAll() {
     // 同步所有属性到Setting
     let nodeList = NodeSettingPart.list;
-    findNode(nodeList, this.id).map(node => {
+    findItem(nodeList, this.id, this.Info.type).map(node => {
       node.updateCrucial('_label', this.Info.PrimaryLabel);
       node.updateCrucial('_name', this.Info.Name);
       node.updateCrucial('_image', this.Info.MainPic)
@@ -536,12 +541,12 @@ export class LinkInfoPart {
 
   synchronizationSource(prop: string, value: any) {
     let linkList = LinkSettingPart.list;
-    crucialRegex.test(prop) && findLink(linkList, this.id).map(link => link.updateCrucial(prop, value))
+    crucialRegex.test(prop) && findItem(linkList, this.id, this.Info.type).map(link => link.updateCrucial(prop, value))
   }
 
   synchronizationAll() {
     let linkList = LinkSettingPart.list;
-    findLink(linkList, this.id).map(link => {
+    findItem(linkList, this.id, this.Info.type).map(link => {
       link.updateCrucial('_start', this.Ctrl.Start);
       link.updateCrucial('_end', this.Ctrl.End);
     })
@@ -589,6 +594,11 @@ export class MediaInfoPart {
     Vue.set(this, 'status', status)
   }
 
+  changeSource(newSource: string) {
+    Vue.set(this.Ctrl, 'FileName', newSource);
+    this.synchronizationSource('_src', newSource)
+  }
+
   // info修改值
   updateValue(prop: string, newValue: any) {
     if (ctrlPropRegex.test(prop) || prop === 'PrimaryLabel') {
@@ -608,17 +618,16 @@ export class MediaInfoPart {
 
   synchronizationSource(prop: string, value: any) {
     let mediaList = MediaSettingPart.list;
-    crucialRegex.test(prop) && findNode(mediaList, this.id).map(node => node.updateCrucial(prop, value))
+    crucialRegex.test(prop) && findItem(mediaList, this.id, this.Info.type).map(node => node.updateCrucial(prop, value))
   }
 
   synchronizationAll() {
     let nodeList = MediaSettingPart.list;
-    findNode(nodeList, this.id).map(node => {
+    findItem(nodeList, this.id, this.Info.type).map(node => {
       node.updateCrucial('_src', this.Ctrl.FileName);
       node.updateCrucial('_name', this.Info.Name);
     })
   }
-
 }
 
 export function nodeSettingTemplate(_id: id, _type: string, _label: string, _name: string, _image: string) {
@@ -857,22 +866,42 @@ export class GraphSelfPart {
 
   }
 
-  addNode(node: NodeSettingPart) {
-    this.Graph.nodes.push(node);
-    node.updateState('isAdd', true);
-    newIdRegex.test(node.Setting._id.toString()) && (this.Conf.updateState('isChanged', true))
+  typeToList(_type: type) {
+    let list;
+    _type === 'link'
+      ? list = this.Graph.links
+      : _type === 'media'
+      ? list = this.Graph.medias
+      : list = this.Graph.nodes;
+    return list
   }
 
-  addLink(link: LinkSettingPart) {
-    this.Graph.links.push(link);
-    link.updateState('isAdd', true);
-    newIdRegex.test(link.Setting._id.toString()) && (this.Conf.updateState('isChanged', true))
+  checkExist(_id: id, _type: type) {
+    return findItem(this.typeToList(_type), _id, _type).length > 0
   }
 
-  addMedia(media: MediaSettingPart) {
-    this.Graph.medias.push(media);
-    media.updateState('isAdd', true);
-    newIdRegex.test(media.Setting._id.toString()) && (this.Conf.updateState('isChanged', true))
+  addNodes(nodes: Array<NodeSettingPart>) {
+    nodes.filter(node => !this.checkExist(node.Setting._id, node.Setting._type)).map(node => {
+      this.Graph.nodes.push(node);
+      node.updateState('isAdd', true);
+      newIdRegex.test(node.Setting._id.toString()) && (this.Conf.updateState('isChanged', true))
+    });
+  }
+
+  addLinks(links: Array<LinkSettingPart>) {
+    links.filter(link => !this.checkExist(link.Setting._id, link.Setting._type)).map(link => {
+      this.Graph.links.push(link);
+      link.updateState('isAdd', true);
+      newIdRegex.test(link.Setting._id.toString()) && (this.Conf.updateState('isChanged', true))
+    })
+  }
+
+  addMedias(medias: Array<MediaSettingPart>) {
+    medias.filter(media => !this.checkExist(media.Setting._id, media.Setting._type)).map(media => {
+      this.Graph.medias.push(media);
+      media.updateState('isAdd', true);
+      newIdRegex.test(media.Setting._id.toString()) && (this.Conf.updateState('isChanged', true))
+    })
   }
 
   changeId(newId: id) {

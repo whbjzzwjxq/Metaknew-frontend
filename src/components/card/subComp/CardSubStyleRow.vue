@@ -6,24 +6,26 @@
     import Vue from 'vue'
 
     export default Vue.extend({
-        name: "Test",
+        name: "CardSubStyleRow",
         components: {},
         data() {
-            return {
-                aaa: 1
-            }
+            return {}
         },
         props: {},
-        computed: {
-            test(): string {
-                return this.aaa.toString()
-            }
-        },
+        computed: {},
         methods: {},
-        watch: {}
+        watch: {},
+        record: {
+            status: 'empty'
+        }
     })
 </script>
 
 <style scoped>
 
 </style>
+
+/**
+* Created by whb on 2019/11/25
+* Updated by []
+*/

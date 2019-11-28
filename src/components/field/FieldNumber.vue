@@ -16,73 +16,81 @@
   </v-card>
 </template>
 
-<script>
-import {fieldDefaultValue} from '../../../utils/OfficialLabels';
+<script lang="ts">
+    import Vue from 'vue'
+    import {fieldDefaultValue} from '@/utils/labelField'
 
-export default {
-  name: 'fieldNumber',
-  data() {
-    return {
-      rules: {
-        range: value => this.range.min <= value <= this.range.max ||
+    interface Range {
+        min: number,
+        max: number,
+        check: boolean
+    }
+
+    export default Vue.extend({
+        name: 'fieldNumber',
+        data() {
+            return {}
+        },
+        props: {
+            baseNum: {
+                type: Number as () => number,
+                required: true
+            },
+            propName: {
+                type: String as () => string,
+                required: true
+            },
+            range: {
+                type: Object as () => Range,
+                default: {
+                    min: 0,
+                    max: 100,
+                    check: true
+                } as Range
+            },
+            width: {
+                type: Number,
+                default: 200
+            },
+            intCheck: {
+                type: Boolean,
+                default: false
+            },
+            defaultValue: {
+                type: Number,
+                default: fieldDefaultValue['NumberField']
+            }
+        },
+        computed: {
+            activeRules: (vm): any[] => {
+                let result = [];
+                vm.range.check && result.push(vm.rules.range);
+                vm.intCheck && result.push(vm.rules.int);
+                return result
+            },
+            number: (vm): number => vm.baseNum
+                ? vm.baseNum
+                : vm.defaultValue,
+            rules(): any {
+                let range = this.range as Range;
+                return {
+                    range: (value: number) => (range.min <= value && value <= range.max) ||
                         'Out of Range',
-        int: value => value % 1 === 0 ||
+                    int: (value: number) => value % 1 === 0 ||
                         'Int required'
-      }
-    }
-  },
-  props: {
-    baseNum: {
-      type: Number,
-      required: true
-    },
-    propName: {
-      type: String,
-      required: true
-    },
-    range: {
-      type: Object,
-      default() {
-        return {
-          'check': true,
-          'min': 0,
-          'max': 100
+                }
+            }
+        },
+        methods: {
+            newValue($event: string) {
+                let value = Number($event);
+                this.$emit('update-value', this.propName, value, 'default')
+            }
+        },
+        record: {
+            status: 'done'
         }
-      }
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
-    intCheck: {
-      type: Boolean,
-      default: false
-    },
-    defaultValue: {
-      type: Number,
-      default: fieldDefaultValue['NumberField']
-    }
-  },
-  methods: {
-    newValue($event) {
-      let value = Number($event);
-      this.$emit('update-value', this.propName, value, 'default')
-    }
-  },
-  computed: {
-    activeRules: vm => {
-      let result = [];
-      vm.range.check && result.push(vm.rules.range);
-      vm.intCheck && result.push(vm.rules.int);
-      return result
-    },
-    number: vm => vm.baseNum
-      ? vm.baseNum
-      : vm.defaultValue
-  },
-  created() {
-  }
-}
+    })
 </script>
 
 <style scoped>

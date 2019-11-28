@@ -127,3 +127,9 @@ export const darkColorScaleSet =
   ["#ed9baf", "#edb79b", "#ede79b",
     "#b7da77", "rgb(39,159,125)", "#bfe6f3",
     "#bfc1f3", "#c6b5f2", "#a5a5a5"];
+
+export const checkExist = (arr: Array<any>, item: any) => arr.indexOf('$_any') > -1
+  ? true
+  : arr.indexOf('$_none') > -1
+    ? false
+    : arr.indexOf(item) > -1;

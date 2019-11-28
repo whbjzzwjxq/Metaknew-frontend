@@ -28,7 +28,9 @@
                 isCollapsed: false
             }
         },
-        props: {},
+        props: {
+            collapse: Boolean as () => false
+        },
         computed: {
             collapsedIcon: (vm): string => vm.isCollapsed
                 ? 'mdi-plus'
@@ -37,10 +39,17 @@
         },
         methods: {},
         watch: {},
-        vm: this
+        record: {
+            status: 'done'
+        }
     });
 </script>
 
 <style scoped>
 
 </style>
+
+/**
+* Created by whb on 2019/11/25
+* Updated by []
+*/

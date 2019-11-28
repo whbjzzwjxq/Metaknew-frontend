@@ -1,9 +1,14 @@
 import {mainNationRegionEn} from '@/utils/Nation';
 
-type fieldType = 'TextField' | 'ArrayField' | 'NumberField' | 'StringField' |
+export type fieldType = 'TextField' | 'ArrayField' | 'NumberField' | 'StringField' |
   'JsonField' | 'FileField' | 'ImageField' | 'BooleanField'
 
-type resolveType = 'name' | 'time' | 'location' | 'normal'
+export const fieldTypes: fieldType[] = ['TextField', 'ArrayField', 'NumberField', 'StringField',
+  'JsonField', 'FileField', 'ImageField', 'BooleanField'];
+
+export type resolveType = 'name' | 'time' | 'location' | 'normal'
+
+export const resolveTypes: resolveType[] = ['name', 'time', 'location', 'normal'];
 
 export let fieldDefaultValue: Record<fieldType, string | number | Object | boolean> = {
   'TextField': {},
