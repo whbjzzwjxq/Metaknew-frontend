@@ -16,7 +16,7 @@ export interface ToolBar extends ComponentSize{
   height: number
 }
 
-export interface State {
+export interface StyleManagerState {
   screenX: number,
   screenY: number,
   toolBar: ToolBar,
@@ -24,7 +24,7 @@ export interface State {
   bottomBar: BottomBar
 }
 
-const state: State = {
+const state: StyleManagerState = {
   toolBar: {
     width: '100%',
     height: 48
@@ -42,14 +42,14 @@ const state: State = {
 };
 
 const mutations = {
-  resetScreen: (state: State) => {
+  resetScreen: (state: StyleManagerState) => {
     state.screenX = document.documentElement.clientWidth;
     state.screenY = document.documentElement.clientHeight;
   }
 };
 const actions = {};
 const getters = {
-  viewBox: (state: State) => {
+  viewBox: (state: StyleManagerState) => {
     return <ComponentSize>{
       width: state.screenX - state.leftCard.width,
       height: state.screenY - state.bottomBar.height

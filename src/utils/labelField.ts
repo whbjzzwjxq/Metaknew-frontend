@@ -261,7 +261,7 @@ export const unActiveProp = [
 export const unActivePropLink = [
   'id', 'type', 'start',
   'end', 'Confidence', 'Text', 'PrimaryLabel',
-  'Labels', '$_Is_Common', '$_Is_Shared', '$_Is_OpenSource', 'isEdit'
+  'Labels', '$_IsCommon', '$_IsShared', '$_IsOpenSource'
 ];
 
 export const fieldSetting = {

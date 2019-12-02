@@ -1,5 +1,5 @@
 import {BASE, baseService} from "./main";
-import {type, id} from "@/utils/graphClass";
+import {baseType, id} from "@/utils/graphClass";
 
 export interface SearchQueryObject {
   labels: Array<string>,
@@ -10,7 +10,7 @@ export interface SearchQueryObject {
 
 export interface IndexedInfo {
   id: id,
-  type: type,
+  type: baseType,
   PrimaryLabel: string,
   Language: string,
   CreateUser: number,
@@ -39,7 +39,7 @@ export interface IndexedInfo {
 
 export interface IndexedText {
   id: id,
-  type: type,
+  type: baseType,
   PrimaryLabel: string,
   Language: string,
   Name: string,

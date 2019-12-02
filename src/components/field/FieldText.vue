@@ -73,6 +73,7 @@
     import Vue from 'vue'
     import deepClone from '@/utils/utils'
     import fieldTextAreaOrField from './FieldTextAreaOrField.vue'
+    import {Text} from "@/utils/graphClass";
 
     export default Vue.extend({
         name: 'fieldText',
@@ -88,7 +89,7 @@
         },
         props: {
             baseText: {
-                type: Object,
+                type: Object as () => Text,
                 required: true
             },
             propName: {

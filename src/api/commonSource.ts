@@ -19,11 +19,14 @@ export function updateMediaNode(data: MediaInfoPart) {
     headers: {
       'Content-Type': 'application/json'
     },
-    data: data
+    data: {
+      name: data.Ctrl.FileName,
+      data: data.Info
+    }
   })
 }
 
-export function updateMediaToNode(node: NodeInfoPart, mediaList: Array<id>) {
+export function updateMediaToNode(node: QueryObject, mediaList: Array<id>) {
   return baseService({
     url: BASE + '/subgraph/update/node/media',
     method: 'post',

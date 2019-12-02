@@ -1,5 +1,9 @@
 import {BASE, baseService} from './main';
 
+export interface TagRecommendation {
+  [propName: string]: string[],
+}
+
 export interface loginData {
   phone: number | string,
   password: string,

@@ -1,9 +1,9 @@
 import {getCookie, randomNumberInRange} from '@/utils/utils';
-import {NodeSettingPart, type} from '@/utils/graphClass';
+import {NodeSettingPart, baseType} from '@/utils/graphClass';
 let globalIndex = 0;
 type settingConf = Record<string, Record<string, baseSettingConf>>
 
-interface baseSettingConf {
+export interface baseSettingConf {
   type: string,
   default: any,
   range: Array<any> | '',
@@ -69,6 +69,14 @@ export const nodeSetting: settingConf = {
       tips: '具体形状可以通过宽高比控制',
       required: null,
       explain: '节点形状'
+    },
+    isMain: {
+      type: 'Boolean',
+      default: true,
+      range: '',
+      tips: '合理地主要节点设置会提高内容可信度',
+      required: null,
+      explain: '是否是主要节点'
     }
   },
   Border: {
@@ -145,14 +153,6 @@ export const nodeSetting: settingConf = {
       tips: '',
       required: null,
       explain: '内部文字是否可视'
-    },
-    isMain: {
-      type: 'Boolean',
-      default: true,
-      range: '',
-      tips: '合理地主要节点设置会提高内容可信度',
-      required: null,
-      explain: '是否是主要节点'
     }
   },
   Text: {
@@ -272,6 +272,14 @@ export const linkSetting: settingConf = {
       tips: '终点节点的位置',
       required: null,
       explain: '终点位置'
+    },
+    isMain: {
+      type: 'Boolean',
+      default: true,
+      range: '',
+      tips: '合理地主要节点设置会提高内容可信度',
+      required: null,
+      explain: '是否是主要节点'
     }
   },
   Arrow: {
@@ -422,6 +430,14 @@ export const mediaSetting: settingConf = {
       tips: '',
       required: null,
       explain: '节点透明度'
+    },
+    isMain: {
+      type: 'Boolean',
+      default: true,
+      range: '',
+      tips: '合理地主要节点设置会提高内容可信度',
+      required: null,
+      explain: '是否是主要节点'
     }
   },
   Border: {
@@ -490,14 +506,6 @@ export const mediaSetting: settingConf = {
       tips: '',
       required: null,
       explain: '附加文字是否可视'
-    },
-    isMain: {
-      type: 'Boolean',
-      default: true,
-      range: '',
-      tips: '合理地主要节点设置会提高内容可信度',
-      required: null,
-      explain: '是否是主要节点'
     }
   },
   Text: {
@@ -585,14 +593,14 @@ export const mediaSetting: settingConf = {
 
 };
 
-export const typeSetting: Record<type, settingConf> = {
+export const typeSetting: Record<baseType, settingConf> = {
   'node': nodeSetting,
   'link': linkSetting,
   'document': documentSetting,
   'media': mediaSetting
 };
 
-export function settingTemplate(_type: type) {
+export function settingTemplate(_type: baseType) {
   let settingConf = typeSetting[_type];
   const specialDict: { [prop: string]: any } = {
     'x': randomNumberInRange(0.3, 0.7),

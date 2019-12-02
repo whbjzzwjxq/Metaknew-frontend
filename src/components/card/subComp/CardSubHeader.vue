@@ -5,13 +5,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {MediaInfoPart, NodeInfoPart} from '@/utils/graphClass'
-
-    interface iconItem {
-        icon: string,
-        _func: Function,
-        color: string,
-        render: boolean
-    }
+    import {iconItem} from "@/utils/interfaceInComponent";
 
     export default Vue.extend({
         name: "CardSubHeader",
@@ -41,28 +35,40 @@
                 ? 'mdi-thumb-up'
                 : 'mdi-thumb-up-outline',
 
-            badIcon() {
-                let vm = this;
-                let _func = () => vm.userConcern.isBad
-                    ? 'mdi-thumb-down'
-                    : 'mdi-thumb-down-outline';
-                return _func()
-            },
+            badIcon: vm => vm.userConcern.isBad
+                ? 'mdi-thumb-down'
+                : 'mdi-thumb-down-outline',
 
-            iconList(vm): iconItem[] {
+            shareColor: vm => vm.userConcern.isShared
+                ? 'yellow'
+                : 'white',
+
+            iconList: function (): iconItem[] {
                 return [
-                    {icon: vm.starIcon, _func: vm.starItem, color: 'white', render: true},
-                    {icon: vm.goodIcon, _func: vm.goodItem, color: 'white', render: true},
-                    {icon: vm.badIcon, _func: vm.badItem, color: 'white', render: true},
-                    {icon: 'mdi-share-variant', _func: vm.shareItem, color: vm.shareColor, render: true}
-                ]
+                    {icon: this.starIcon, _func: this.starItem, color: 'white', render: true},
+                    {icon: this.goodIcon, _func: this.goodItem, color: 'white', render: true},
+                    {icon: this.badIcon, _func: this.badItem, color: 'white', render: true},
+                    {icon: 'mdi-share-variant', _func: this.shareItem, color: this.shareColor, render: true}
+                ];
             },
-            renderIcons: vm => vm.normalIconList.filter((item: iconItem) => item.render)
         },
-        methods: {},
+        methods: {
+            starItem: function () {
+
+            },
+            goodItem: function () {
+
+            },
+            badItem: function () {
+
+            },
+            shareItem: function () {
+
+            }
+        },
         watch: {},
         record: {
-            status: 'done'
+            status: 'edit'
         }
     })
 </script>

@@ -61,8 +61,8 @@
 <script lang="ts">
     import Vue from 'vue'
     import {indexToColor, checkDuplicate} from '@/utils/utils'
-    import {CombinedVueInstance} from 'vue/types/vue'
     import {resolveType} from '@/utils/labelField'
+    import {TagRecommendation} from "@/api/user";
 
     export default Vue.extend({
         name: 'FieldArray',
@@ -80,7 +80,7 @@
                 }
             },
             availableTags: {
-                type: Object,
+                type: Object as () => TagRecommendation,
                 default: function () {
                     return {
                         'recommend': []
@@ -199,7 +199,7 @@
         },
 
         record: {
-            status: 'done'
+            status: 'done-old'
         }
     })
 </script>

@@ -90,4 +90,3 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 See [Prop类型推测](https://stackoverflow.com/questions/54391162/typescript-wont-recognize-prop-values-on-vue-component)
     
 ##### vuex
-    

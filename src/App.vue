@@ -41,7 +41,7 @@
     import SearchBar from '@/components/SearchBar.vue';
     import {delCookie, getCookie} from "@/utils/utils"
     import {commitLoginOut, commitScreenResize, commitUserLogin} from '@/store/modules/_mutations'
-    import {State as StyleComponentState, ComponentSize, ToolBar} from '@/store/modules/styleWindowSize'
+    import {StyleManagerState, ComponentSize, ToolBar} from '@/store/modules/styleWindowSize'
     import {FileToken} from "@/api/user"
 
     export default Vue.extend({
@@ -63,7 +63,7 @@
             toolBarSearch(): boolean {
                 return this.$route.name !== 'home'
             },
-            allComponentSize(): StyleComponentState {
+            allComponentSize(): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
             toolBar(): ToolBar {

@@ -68,7 +68,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {State as DataManagerState} from '@/store/modules/dataManager'
+    import {DataManagerState} from '@/store/modules/dataManager'
     import {IndexedInfo, IndexedText, queryHomePage, SearchBackObject, SearchQueryObject} from '@/api/search'
     import {GraphSelfPart, InfoToSetting, MediaSettingPart, NodeSettingPart} from '@/utils/graphClass'
     import {commitSettingPush} from '@/store/modules/_mutations'
