@@ -49,7 +49,7 @@
     import Vue from 'vue'
     import CardSubRow from '@/components/card/subComp/CardSubRow.vue';
     import CardSubStyleRow from '@/components/card/subComp/CardSubStyleRow.vue';
-    import {AllSettingPart, baseType} from '@/utils/graphClass'
+    import {AllSettingPart, BaseType} from '@/utils/graphClass'
     import {typeSetting} from '@/utils/settingTemplate'
 
     export default Vue.extend({
@@ -69,7 +69,7 @@
                 required: true
             },
             compType: {
-                type: String as () => baseType,
+                type: String as () => BaseType,
                 required: true
             }
         },

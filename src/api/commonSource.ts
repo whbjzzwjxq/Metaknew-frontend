@@ -1,5 +1,13 @@
 import {BASE, baseService} from './main';
-import {BaseMediaInfo, GraphSelfPart, id, MediaInfoPart, NodeInfoPart, QueryObject} from "@/utils/graphClass";
+import {
+  BaseMediaInfo,
+  BaseNodeInfo,
+  GraphSelfPart,
+  id,
+  MediaInfoPart,
+  NodeInfoPart,
+  QueryObject
+} from "@/utils/graphClass";
 
 export function createMediaNode(data: {name: string, item: BaseMediaInfo}) {
   return baseService({
@@ -48,7 +56,7 @@ export function updateSingleNode(data: NodeInfoPart) {
   })
 }
 
-export function multiNodeCreate(pLabel: string, nodes: NodeInfoPart) {
+export function multiNodeCreate(pLabel: string, nodes: BaseNodeInfo[]) {
   return baseService({
     url: BASE + '/subgraph/create/node/bulk_create',
     method: 'post',

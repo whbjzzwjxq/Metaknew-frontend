@@ -1,5 +1,11 @@
 <template>
     <div :style="totalCardStyle">
+        <v-container>
+            <v-tabs>
+                <v-tabs-slider color="todo"></v-tabs-slider>
+            </v-tabs>
+
+        </v-container>
 
     </div>
 </template>

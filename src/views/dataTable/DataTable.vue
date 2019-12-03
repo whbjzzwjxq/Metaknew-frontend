@@ -1,94 +1,105 @@
 <template>
-  <v-container class="d-flex flex-column ma-0 pa-0 pt-2" fluid style="background-color: white">
-    <v-row style="height: 64px">
-      <data-table-importer @new-node-from-file="addNode" :disabled="!pLabel">
+    <v-container class="d-flex flex-column ma-0 pa-0 pt-2" fluid style="background-color: white">
+        <v-row style="height: 64px">
+            <data-table-importer @new-node-from-file="addNode" :disabled="!pLabel">
 
-      </data-table-importer>
-    </v-row>
-    <v-divider class="ma-2 mb-0"></v-divider>
-    <v-row dense class="justify-end">
-      <v-col cols="1" class="pt-6">
-        <div class="title">
-          <p>数据控制台</p>
-        </div>
-      </v-col>
-      <v-col cols="3">
-        <p-label-selector :label="pLabel" @update:label="choosePrimaryLabel"></p-label-selector>
-      </v-col>
-      <v-col class="col-xl-6 col-md-5 col-sm-5">
-        <v-text-field
-          v-model="search"
-          append-icon="search"
-          label="Search"
-          hide-details
-          class="pb-5">
-        </v-text-field>
-      </v-col>
-      <v-col class="pt-6">
-        <data-table-button-group
-          :rowNum="rowNum"
-          @add-empty-node="addEmptyNode"
-          @del-selected-node="delSelectedNode"
-          @save-all="saveNodes(nodes)"
-          @save-select-item="saveNodes(selected)">
+            </data-table-importer>
+        </v-row>
+        <v-divider class="ma-2 mb-0"></v-divider>
+        <v-row dense class="justify-end">
+            <v-col cols="1" class="pt-6">
+                <div class="title">
+                    <p>数据控制台</p>
+                </div>
+            </v-col>
+            <v-col cols="3">
+                <p-label-selector :label="pLabel" @update:label="choosePrimaryLabel"></p-label-selector>
+            </v-col>
+            <v-col class="col-xl-6 col-md-5 col-sm-5">
+                <v-text-field
+                    v-model="search"
+                    append-icon="search"
+                    label="Search"
+                    hide-details
+                    class="pb-5">
+                </v-text-field>
+            </v-col>
+            <v-col class="pt-6">
+                <data-table-button-group
+                    :rowNum="rowNum"
+                    @add-empty-node="addEmptyNode"
+                    @del-selected-node="delSelectedNode"
+                    @save-all="saveNodes(nodes)"
+                    @save-select-item="saveNodes(selected)">
 
-        </data-table-button-group>
-      </v-col>
-    </v-row>
-    <v-divider class="ma-2 mb-0"></v-divider>
-    <v-row>
-      <v-container fluid class="pa-0 ma-0">
-        <v-data-table
-          v-model="selected"
-          :dense="isDense"
-          :items-per-page.sync="rowNum"
-          :page.sync="page"
-          :search="search"
-          :items="nodes"
-          :headers="allHeader"
-          :footer-props="footSetting"
-          item-key="id"
-          show-select
-          calculate-widths>
+                </data-table-button-group>
+            </v-col>
+        </v-row>
+        <v-divider class="ma-2 mb-0"></v-divider>
+        <v-row>
+            <v-container fluid class="pa-0 ma-0">
+                <v-data-table
+                    v-model="selected"
+                    :dense="isDense"
+                    :items-per-page.sync="rowNum"
+                    :page.sync="page"
+                    :search="search"
+                    :items="nodes"
+                    :headers="allHeader"
+                    :footer-props="footSetting"
+                    item-key="id"
+                    show-select
+                    calculate-widths>
 
-          <template v-slot:item.$_action="{ item }">
-            <v-icon class="mr-2" small @click="copyItem(item)">mdi-content-copy</v-icon>
-            <v-icon class="mr-2" small @click="deleteItem(item)">mdi-delete</v-icon>
-          </template>
+                    <template v-slot:item.$_action="{ item }">
+                        <v-icon class="mr-2" small @click="copyItem(item)">mdi-content-copy</v-icon>
+                        <v-icon class="mr-2" small @click="deleteItem(item)">mdi-delete</v-icon>
+                    </template>
 
-          <template v-slot:item.id="{item}">
-            <span>{{item.id}}</span>
-          </template>
+                    <template v-slot:item.id="{item}">
+                        <span>{{item.id}}</span>
+                    </template>
 
-          <template v-for="(setting, prop) in headerSlot" v-slot:[getName(prop)]="{ item }">
-            <data-table-field
-              :key="prop"
-              :prop-name="prop"
-              :base-value="item[prop]"
-              :setting="fieldSetting"
-              :p-label="pLabel"
-              :field-type="setting.type"
-              :resolve="setting.resolve"
-              @update="updateProp(item, prop, $event)">
+                    <template v-for="(setting, prop) in headerSlot" v-slot:[getName(prop)]="{ item }">
+                        <data-table-field
+                            :key="prop"
+                            :prop-name="prop"
+                            :base-value="item[prop]"
+                            :setting="fieldSetting"
+                            :p-label="pLabel"
+                            :field-type="setting.type"
+                            :resolve="setting.resolve"
+                            @update="updateProp(item, prop, $event)">
 
-            </data-table-field>
-          </template>
+                        </data-table-field>
+                    </template>
 
-        </v-data-table>
+                </v-data-table>
 
-      </v-container>
-    </v-row>
-  </v-container>
+            </v-container>
+        </v-row>
+    </v-container>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldDefaultValue, fieldSetting, fieldType, neededProp} from "@/utils/labelField"
+    import {fieldDefaultValue, fieldSetting, FieldType, neededProp} from "@/utils/labelField"
     import deepClone from "@/utils/utils"
+    import DataTableImporter from '@/views/dataTable/DataTableImporter.vue';
+    import PLabelSelector from '@/components/PLabelSelector.vue';
+    import DataTableButtonGroup from '@/views/dataTable/DataTableButtonGroup.vue';
+    import DataTableField from '@/views/dataTable/DataTableField.vue';
+    import {BaseNodeInfo, ExtraProps, getIndex} from '@/utils/graphClass'
+    import {multiNodeCreate} from "@/api/commonSource"
 
     export default Vue.extend({
         name: "DataTable",
-        components: {},
+        components: {
+            DataTableImporter,
+            PLabelSelector,
+            DataTableButtonGroup,
+            DataTableField
+        },
         data() {
             return {
                 //页面语言
@@ -106,10 +117,11 @@
                     "BaseHardLevel": "Hard"
                 } as Record<string, string>,
                 //全部的节点
-                nodes: [],
-
+                nodes: [] as BaseNodeInfo[],
+                //被选中的节点
+                selected: [] as BaseNodeInfo[],
                 //不需要编辑值的属性
-                unShowProps: ["type"],
+                unShowProps: ["id", "type"],
                 //数据表底部插槽
                 footSetting: {
                     showFirstLastPage: true,
@@ -127,9 +139,6 @@
 
                 //阻止插入节点
                 unableCopy: false,
-
-                //被选中的节点
-                selected: [],
 
                 actionHeader: {
                     text: "action",
@@ -153,18 +162,23 @@
                     "TextField": (value: any) => ({"auto": value.toString()}),
                     "FileField": (value: any) => value.toString().split(";"),
                     "ImageField": (value: any) => value.toString()
-                }
+                } as Record<FieldType, (value: any) => any>
             }
         },
         props: {},
         computed: {
-            labelDict: vm => neededProp(vm.pLabel),
+            // 需要的标签--属性Dict
+            labelDict() {
+                return neededProp(this.pLabel)
+            },
+            // 属性的keys
             propNames: vm => Object.keys(vm.labelDict),
-            neededProps: (vm: any): string[] => vm.propNames.filter((name: string) => vm.unShowProps.indexOf(name) === -1),
+            // 需要编辑的属性
+            editProps: (vm: any): string[] => vm.propNames.filter((name: string) => vm.unShowProps.indexOf(name) === -1),
             //基本表头
             allHeader() {
                 let result = [this.actionHeader];
-                for (let prop of this.neededProps) {
+                for (let prop of this.editProps) {
                     let text;
                     this.propSimply[prop]
                         ? text = this.propSimply[prop]
@@ -194,7 +208,7 @@
             nodeTemplate() {
                 let object: Record<string, any> = {};
                 Object.entries(this.labelDict).map(([key, value]) => {
-                    let type: fieldType = value.type;
+                    let type: FieldType = value.type;
                     object[key] = this.defaultValue[type];
                 });
                 return object
@@ -204,21 +218,22 @@
             isDense: vm => vm.rowNum >= 20,
 
             //节点名字池
-            nodeNamePool: vm => vm.nodes.map(node => node.Name),
+            nodeNamePool: vm => vm.nodes.map((node: BaseNodeInfo) => node.Name),
 
-            fieldSetting: vm => {
-                let extraSetting = {
+            fieldSetting() {
+                let extraSetting: Record<string, any> = {
                     "Name": {
-                        "textPool": vm.nodeNamePool,
+                        "textPool": this.nodeNamePool,
                         "checkDuplicate": true
                     },
                     "Alias": {
-                        "textPool": vm.nodeNamePool
+                        "textPool": this.nodeNamePool
                     }
                 };
                 let defaultSetting = deepClone(fieldSetting);
-                let result = {};
-                for (let prop of vm.neededProps) {
+                // 这个设置是插槽的prop设置 具体可以看field组件
+                let result: Record<string, any> = {};
+                for (let prop of this.editProps) {
                     prop in defaultSetting
                         ? prop in extraSetting
                         ? result[prop] = Object.assign({}, defaultSetting[prop], extraSetting[prop])
@@ -231,29 +246,21 @@
             },
 
             //现在的index
-            idList: vm => vm.nodes.map(node => node.id)
+            idList: vm => vm.nodes.map((node: BaseNodeInfo) => node.id)
         },
         methods: {
             //添加新节点
-            addNode(nodeList) {
+            addNode(nodeList: Record<string, string>[]) {
                 this.nodes = this.nodes.concat(nodeList.map(node => this.resolveProp(node)))
             },
 
             //添加已经解析好的节点 也可以是后端导入
-            addResolvedNode(nodeList) {
+            addResolvedNode(nodeList: BaseNodeInfo[]) {
                 this.nodes = this.nodes.concat(nodeList);
             },
 
-            //复制行元素
-            copyItem(item) {
-                let index = this.nodes.indexOf(item);
-                let newItem = deepClone(item);
-                newItem.id = this.getIndex();
-                this.nodes.splice(index + 1, 0, newItem);
-            },
-
             //添加元素
-            addEmptyNode(num) {
+            addEmptyNode(num: number) {
                 let result = [];
                 let base = this.nodes.length;
                 for (let i = 0; i < num; i++) {
@@ -265,20 +272,28 @@
                 this.addResolvedNode(result);
             },
 
+            //复制行元素
+            copyItem(item: BaseNodeInfo) {
+                let index = this.nodes.indexOf(item);
+                let newItem = deepClone(item) as BaseNodeInfo;
+                newItem.id = this.getIndex();
+                this.nodes.splice(index + 1, 0, newItem);
+            },
+
             //删除选中对象
             delSelectedNode() {
                 if (confirm("确定删除这些节点吗？")) {
-                    for (let i in this.selected){
-                        let index = this.nodes.indexOf(this.selected[i]);
+                    this.selected.map(node => {
+                        let index = this.nodes.indexOf(node);
                         this.nodes.splice(index, 1);
-                    }
+                    });
                     this.selected = [];
                 }
             },
 
             //删除行元素
-            deleteItem(item) {
-                if (confirm('确定要删除此项吗?')){
+            deleteItem(item: BaseNodeInfo) {
+                if (confirm('确定要删除此项吗?')) {
                     let index = this.nodes.indexOf(item);
                     this.nodes.splice(index, 1);
                     index = this.selected.indexOf(item);
@@ -287,111 +302,107 @@
             },
 
             //解析属性
-            resolveProp(item) {
+            resolveProp(item: Record<string, string>): BaseNodeInfo {
                 //注意这里resolve了item的所有属性
-                let translate = {};
-                let text = {};
-                let extraProps = {};
-                for (let i in item) {
-                    if (this.neededProps.indexOf(i) >= 0) {
-                        let field = this.labelDict[i].type;
+                let translate = {} as Record<string, string>;
+                let text = {} as Record<string, string>;
+                let extraProps = {} as ExtraProps;
+                let node = {} as BaseNodeInfo;
+                Object.entries(item).map(([key, value]) => {
+                    if (this.editProps.indexOf(key) >= 0) {
+                        let field = this.labelDict[key].type;
                         //注意这里源数据都是字符串
-
-                        item[i] = this.fieldHandler[field](item[i])
+                        node[key] = this.fieldHandler[field](value)
                     } else {
-                        let trans = this.reg.trans.test(i);
-                        trans && (translate[i.substring(5, i.length)] = item[i]);
-                        let texts = this.reg.textTrans.test(i);
-                        texts && (text[i.substring(5, i.length)] = item[i]);
-                        (!trans && !texts) && (extraProps[i] = item[i]);
+                        let trans = this.reg.trans.test(key);
+                        // key === Name_zh Text_zh ......
+                        trans && (translate[key.substring(5, key.length)] = value);
+                        let texts = this.reg.textTrans.test(key);
+                        texts && (text[key.substring(5, key.length)] = value);
+                        (!trans && !texts) && (extraProps[key] = {
+                            value: value,
+                            type: 'StringField',
+                            resolve: 'normal'
+                        });
                     }
-                    for (let i of this.neededProps) {
+                    // 补充那些没有的属性
+                    for (let i of this.editProps) {
                         let hasNeededProp = Object.prototype.hasOwnProperty.call(item, i);
                         hasNeededProp || (item[i] = deepClone(this.nodeTemplate[i]));
                     }
-                }
-                item.id = this.getIndex();
+                });
+                node.id = this.getIndex();
+                node.type = 'node';
+                node.PrimaryLabel = this.pLabel;
                 //主要是Json不好在excel上编写
-                this.addProp(item.Translate, translate);
-                this.addProp(item.Text, text);
-                this.addProp(item.ExtraProps, extraProps);
+                this.mergeProp(node.Translate, translate);
+                this.mergeProp(node.Text, text);
+                this.mergeProp(node.ExtraProps, extraProps);
 
-                return item
+                return node
             },
 
-
             //这里是动态插槽名 其实是调用了的
-            getName(prop) {
+            getName(prop: string) {
                 return "item." + prop.toString()
             },
 
             //获取index
             getIndex() {
-                let index = this.$store.state.dataManager.globalIndex;
-                this.$store.commit("newId");
-                return "$_" + index;
+                return getIndex()
             },
 
-            saveNodes(nodes) {
-                let result = [];
+            saveNodes(nodes: BaseNodeInfo[]) {
                 let _this = this;
-                for (let i in nodes) {
-                    let commitNode = deepClone(nodes[i]);
-                    commitNode["$_Is_Common"] = true;
-                    commitNode["$_Is_Shared"] = false;
-                    commitNode["$_Is_OpenSource"] = true;
-                    console.log(commitNode);
-                    commitNode["IncludedMedia"] = commitNode["IncludedMedia"].map(media => media.Info.id);
-                    result.push(commitNode)
-                }
-                multiNodeCreate(this.pLabel, result).then(res => {
+                multiNodeCreate(this.pLabel, nodes).then(res => {
                     if (res.status === 200) {
                         alert(res.data);
-                        for (let i in result) {
-                            this.nodes.splice(_this.idList.indexOf(result[i].id), 1);
-                            this.selected.splice(_this.idList.indexOf(result[i].id), 1)
+                        for (let i in nodes) {
+                            this.nodes.splice(_this.idList.indexOf(nodes[i].id), 1);
+                            this.selected.splice(_this.idList.indexOf(nodes[i].id), 1)
                         }
                     }
                 })
             },
 
             //更新值
-            updateProp(item, prop, value) {
+            updateProp(item: BaseNodeInfo, prop: string, value: any) {
                 this.$set(item, prop, value)
             },
 
             //更新节点
-            updateNode(node, oldLabel, newLabel) {
+            updateNode(node: BaseNodeInfo, oldLabel: string, newLabel: string) {
                 //参数解构使用for of
                 for (let [prop, setting] of Object.entries(neededProp(newLabel))) {
                     Object.prototype.hasOwnProperty.call(node, prop) ||
-                    (this.$set(node, prop, fieldDefaultValue[setting.type]))
+                    (this.updateProp(node, prop, fieldDefaultValue[setting.type]));
+                    this.updateProp(node, 'PrimaryLabel', newLabel);
                 }
             },
 
-            choosePrimaryLabel(label) {
-                let vm = this;
-                vm.nodes.map(node => vm.updateNode(node, vm.pLabel, label));
+            choosePrimaryLabel(label: string) {
+                this.nodes.map(node => this.updateNode(node, this.pLabel, label));
                 this.pLabel = label;
             },
 
-            addProp(propA, propB) {
+            // 合并两个Object
+            mergeProp(propA: Record<string, any>, propB: Record<string, any>) {
                 Object.keys(propB).length !== 0 && Object.assign(propA, propB)
             }
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done-old'
         }
     })
 </script>
 
 <style scoped>
-  .title {
-    font-weight: bolder;
-    text-align: center;
-    text-justify: auto;
-  }
+    .title {
+        font-weight: bolder;
+        text-align: center;
+        text-justify: auto;
+    }
 </style>
 
 /**

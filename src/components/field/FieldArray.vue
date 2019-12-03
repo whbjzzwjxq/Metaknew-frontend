@@ -61,7 +61,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {indexToColor, checkDuplicate} from '@/utils/utils'
-    import {resolveType} from '@/utils/labelField'
+    import {ResolveType} from '@/utils/labelField'
     import {TagRecommendation} from "@/api/user";
 
     export default Vue.extend({
@@ -96,7 +96,7 @@
                 default: 400
             },
             resolveType: {
-                type: String as () => resolveType,
+                type: String as () => ResolveType,
                 default: 'normal',
                 validator: function (value) {
                     return ['normal', 'time', 'location', 'name'].indexOf(value) !== -1

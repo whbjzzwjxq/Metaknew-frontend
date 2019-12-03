@@ -1,4 +1,4 @@
-import {fieldType, resolveType} from "@/utils/labelField";
+import {FieldType, ResolveType} from "@/utils/labelField";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 export interface LabelGroup {
@@ -11,8 +11,8 @@ export interface LabelGroup {
 
 export interface ExtraPropsItem {
   value: any,
-  type: fieldType,
-  resolve: resolveType
+  type: FieldType,
+  resolve: ResolveType
 }
 
 export type ExtraProp = Record<string, ExtraPropsItem>

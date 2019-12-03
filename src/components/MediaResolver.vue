@@ -10,7 +10,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {globalIndex, MediaInfoPart} from "@/utils/graphClass"
+    import {getIndex, MediaInfoPart} from "@/utils/graphClass"
     import {commitInfoAdd} from '@/store/modules/_mutations'
 
     export default Vue.extend({
@@ -36,7 +36,7 @@
         computed: {},
         methods: {
             resolveFile(file: File) {
-                let id = '$_' + globalIndex;
+                let id = getIndex();
                 let fileObj = MediaInfoPart.emptyMediaInfo(id, file); // todo thumb缩略图
                 commitInfoAdd({item: fileObj});
                 return fileObj

@@ -96,7 +96,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldTypes, fieldSetting, fieldDefaultValue, resolveTypes, fieldType, resolveType} from '@/utils/labelField'
+    import {fieldTypes, fieldSetting, fieldDefaultValue, resolveTypes, FieldType, ResolveType} from '@/utils/labelField'
     import deepClone from '../../utils/utils';
 
     export default Vue.extend({
@@ -152,7 +152,7 @@
                 }
             },
 
-            newPropType: String as () => fieldType
+            newPropType: String as () => FieldType
         },
         methods: {
             inputKey($event: string) {
@@ -192,13 +192,13 @@
                 this.addProp(key, item)
             },
 
-            updateType(item: any, type: fieldType) {
+            updateType(item: any, type: FieldType) {
                 this.$set(item, 'type', type);
                 this.$set(item, 'value', fieldDefaultValue[type]);
                 this.update()
             },
 
-            updateResolveType(item: any, resolveType: resolveType) {
+            updateResolveType(item: any, resolveType: ResolveType) {
                 this.$set(item, 'resolve', resolveType);
                 this.update()
             },

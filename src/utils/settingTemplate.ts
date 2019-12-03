@@ -1,5 +1,5 @@
 import {getCookie, randomNumberInRange} from '@/utils/utils';
-import {NodeSettingPart, baseType} from '@/utils/graphClass';
+import {NodeSettingPart, BaseType} from '@/utils/graphClass';
 let globalIndex = 0;
 type settingConf = Record<string, Record<string, baseSettingConf>>
 
@@ -593,14 +593,14 @@ export const mediaSetting: settingConf = {
 
 };
 
-export const typeSetting: Record<baseType, settingConf> = {
+export const typeSetting: Record<BaseType, settingConf> = {
   'node': nodeSetting,
   'link': linkSetting,
   'document': documentSetting,
   'media': mediaSetting
 };
 
-export function settingTemplate(_type: baseType) {
+export function settingTemplate(_type: BaseType) {
   let settingConf = typeSetting[_type];
   const specialDict: { [prop: string]: any } = {
     'x': randomNumberInRange(0.3, 0.7),

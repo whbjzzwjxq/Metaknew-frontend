@@ -1,16 +1,16 @@
 import {mainNationRegionEn} from '@/utils/Nation';
 
-export type fieldType = 'TextField' | 'ArrayField' | 'NumberField' | 'StringField' |
+export type FieldType = 'TextField' | 'ArrayField' | 'NumberField' | 'StringField' |
   'JsonField' | 'FileField' | 'ImageField' | 'BooleanField'
 
-export const fieldTypes: fieldType[] = ['TextField', 'ArrayField', 'NumberField', 'StringField',
+export const fieldTypes: FieldType[] = ['TextField', 'ArrayField', 'NumberField', 'StringField',
   'JsonField', 'FileField', 'ImageField', 'BooleanField'];
 
-export type resolveType = 'name' | 'time' | 'location' | 'normal'
+export type ResolveType = 'name' | 'time' | 'location' | 'normal'
 
-export const resolveTypes: resolveType[] = ['name', 'time', 'location', 'normal'];
+export const resolveTypes: ResolveType[] = ['name', 'time', 'location', 'normal'];
 
-export let fieldDefaultValue: Record<fieldType, string | number | Object | boolean> = {
+export let fieldDefaultValue: Record<FieldType, string | number | Object | boolean> = {
   'TextField': {},
   'ArrayField': [],
   'NumberField': 1,
@@ -21,17 +21,17 @@ export let fieldDefaultValue: Record<fieldType, string | number | Object | boole
   'BooleanField': true
 };
 
-interface propDescription {
-  type: fieldType,
-  resolve: resolveType,
+export interface PropDescription {
+  type: FieldType,
+  resolve: ResolveType,
 }
 
-interface pLabelProps {
-  [propName: string]: propDescription
+interface PLabelProps {
+  [propName: string]: PropDescription
 }
 
 interface pLabelPropsDict {
-  [pLabel: string]: pLabelProps
+  [pLabel: string]: PLabelProps
 }
 
 export const allPropType: pLabelPropsDict = {

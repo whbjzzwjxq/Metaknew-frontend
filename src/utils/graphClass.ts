@@ -1,6 +1,6 @@
 import deepClone, {getCookie} from "@/utils/utils";
 import Vue from "vue";
-import {allPropType, fieldDefaultValue, neededProp} from "@/utils/labelField";
+import {allPropType, fieldDefaultValue, FieldType, neededProp, PropDescription} from "@/utils/labelField";
 import {settingTemplate} from "@/utils/settingTemplate";
 import {InfoPart} from "@/store/modules/dataManager";
 
@@ -8,13 +8,26 @@ let newIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
 let crucialRegex = new RegExp("_.*");
 export type id = number | string;
-export type baseType = "node" | "link" | "document" | "media";
-export type mediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
+export type BaseType = "node" | "link" | "document" | "media";
+export type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
 export type AllSettingPart = NodeSettingPart | MediaSettingPart | LinkSettingPart | GraphSettingPart
+export type Translate = Record<string, string>
+
+export interface ExtraProp extends PropDescription {
+    value: any
+}
+
+export type ExtraProps = Record<string, ExtraProp>
 export var globalIndex = 0;
+
+export function getIndex() {
+    globalIndex += 1;
+    return '$_' + globalIndex
+}
+
 export const itemEqual = (itemA: Setting, itemB: Setting) =>
     itemA._id === itemB._id && itemA._type === itemB._type;
-export const findItem = (list: Array<SettingPart>, _id: id, _type: baseType) =>
+export const findItem = (list: Array<SettingPart>, _id: id, _type: BaseType) =>
     list.filter(
         item => item.Setting._id === _id && item.Setting._type === _type
     );
@@ -122,7 +135,7 @@ interface GraphState extends BaseState {
 
 export const InfoToSetting = (payload: {
     id: id;
-    type: baseType;
+    type: BaseType;
     PrimaryLabel: string;
 }) =>
     ({
@@ -133,7 +146,7 @@ export const InfoToSetting = (payload: {
 
 interface BaseInfo {
     id: id;
-    type: baseType;
+    type: BaseType;
     PrimaryLabel: string;
     $IsCommon: boolean;
     $IsShared: boolean;
@@ -160,8 +173,9 @@ export interface BaseNodeInfo extends BaseInfo {
     Language: string;
     Topic: Array<string>;
     Labels: Array<string>;
-    ExtraProps: Object;
+    ExtraProps: ExtraProps;
     Text: Text;
+    Translate: Translate;
     IncludedMedia: Array<string | number>;
     MainPic: string;
 
@@ -187,7 +201,7 @@ export interface BaseMediaInfo extends BaseInfo {
     Name: string;
     Labels: Array<string>;
     Text: Text;
-    ExtraProps: Object;
+    ExtraProps: ExtraProps;
 
     [propName: string]: any;
 }
@@ -236,7 +250,7 @@ export interface LinkInfoPartBackend {
 
 export interface Setting {
     _id: id;
-    _type: baseType;
+    _type: BaseType;
     _label: string;
 
     [propName: string]: any;
@@ -634,14 +648,14 @@ export class LinkInfoPart {
 export class MediaInfoPart {
     id: id;
     file: File | Blob | Promise<any> | null;
-    status: mediaStatus;
+    status: MediaStatus;
     error: string[]; // file存在的错误
     isRemote: boolean;
     isEdit: boolean;
     Info: BaseMediaInfo;
     Ctrl: BaseMediaCtrl;
     UserConcern: UserConcern;
-    static statusDict: Record<mediaStatus, string> = {
+    static statusDict: Record<MediaStatus, string> = {
         new: 'blue',
         remote: 'yellow',
         error: 'red',
@@ -654,7 +668,7 @@ export class MediaInfoPart {
         info: BaseMediaInfo,
         ctrl: BaseMediaCtrl,
         userConcern: UserConcern,
-        status: mediaStatus,
+        status: MediaStatus,
         error: string[],
         file?: File
     ) {
@@ -690,7 +704,7 @@ export class MediaInfoPart {
         this.isEdit = false;
     }
 
-    changeStatus(status: mediaStatus) {
+    changeStatus(status: MediaStatus) {
         Vue.set(this, "status", status);
     }
 
@@ -1065,7 +1079,7 @@ export class GraphSelfPart {
     autoSave() {
     }
 
-    typeToList(_type: baseType) {
+    typeToList(_type: BaseType) {
         let list;
         _type === "link"
             ? (list = this.Graph.links)
@@ -1075,7 +1089,7 @@ export class GraphSelfPart {
         return list;
     }
 
-    checkExist(_id: id, _type: baseType) {
+    checkExist(_id: id, _type: BaseType) {
         return findItem(this.typeToList(_type), _id, _type).length > 0;
     }
 

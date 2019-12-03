@@ -44,7 +44,7 @@
     NodeSettingPart,
     id,
     itemEqual,
-    baseType,
+    BaseType,
     VisualNodeSettingPart
   } from "@/utils/graphClass";
   import {DataManagerState} from "@/store/modules/dataManager";
@@ -80,7 +80,7 @@
         default: () => ({
           Setting: {
             _id: -1,
-            _type: 'node' as baseType,
+            _type: 'node' as BaseType,
             _label: ''
           }
         })
@@ -90,7 +90,7 @@
         default: () => ({
           Setting: {
             _id: -1,
-            _type: 'node' as baseType,
+            _type: 'node' as BaseType,
             _label: ''
           }
         })

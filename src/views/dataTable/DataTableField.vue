@@ -1,123 +1,125 @@
 <template>
-  <v-edit-dialog v-if="fieldType === 'StringField'">
-    <v-chip label tile small :color="status">
-      {{ textView(baseValue) }}
-    </v-chip>
-    <template v-slot:input>
-      <field-string
-        :prop-name="propName"
-        :base-text="baseValue"
-        v-bind="setting[propName]"
-        @update-value="update">
+    <v-edit-dialog v-if="fieldType === 'StringField'">
+        <v-chip label tile small :color="status">
+            {{ textView(baseValue) }}
+        </v-chip>
+        <template v-slot:input>
+            <field-string
+                :prop-name="propName"
+                :base-text="baseValue"
+                v-bind="setting[propName]"
+                @update-value="update">
 
-      </field-string>
-    </template>
-  </v-edit-dialog>
+            </field-string>
+        </template>
+    </v-edit-dialog>
 
-  <v-edit-dialog v-else-if="fieldType === 'ArrayField'">
-    <v-chip label outlined small :color="status">
-      {{ baseValue.length }}
-    </v-chip>
-    <template v-slot:input>
-      <field-array
-        :prop-name="propName"
-        :base-array="baseValue"
-        v-bind="setting[propName]"
-        @update-value="update">
+    <v-edit-dialog v-else-if="fieldType === 'ArrayField'">
+        <v-chip label outlined small :color="status">
+            {{ baseValue.length }}
+        </v-chip>
+        <template v-slot:input>
+            <field-array
+                :prop-name="propName"
+                :base-array="baseValue"
+                v-bind="setting[propName]"
+                @update-value="update">
 
-      </field-array>
-    </template>
-  </v-edit-dialog>
+            </field-array>
+        </template>
+    </v-edit-dialog>
 
-  <v-edit-dialog v-else-if="fieldType === 'NumberField'">
-    <v-chip
-      label outlined
-      small :color="status">
-      {{ baseValue }}
-    </v-chip>
-    <template v-slot:input>
-      <field-number
-        :prop-name="propName"
-        :base-num="baseValue"
-        v-bind="setting[propName]"
-        @update-value="update">
+    <v-edit-dialog v-else-if="fieldType === 'NumberField'">
+        <v-chip
+            label outlined
+            small :color="status">
+            {{ baseValue }}
+        </v-chip>
+        <template v-slot:input>
+            <field-number
+                :prop-name="propName"
+                :base-num="baseValue"
+                v-bind="setting[propName]"
+                @update-value="update">
 
-      </field-number>
-    </template>
-  </v-edit-dialog>
+            </field-number>
+        </template>
+    </v-edit-dialog>
 
-  <v-edit-dialog v-else-if="fieldType === 'JsonField'">
-    <v-chip
-      label outlined
-      small :color="status">
-      {{ jsonView(baseValue) }}
-    </v-chip>
-    <template v-slot:input>
-      <field-json
-        :prop-name="propName"
-        :base-props="baseValue"
-        :change-type="true"
-        :p-label="pLabel"
-        v-bind="setting[propName]"
-        @update-value="update">
+    <v-edit-dialog v-else-if="fieldType === 'JsonField'">
+        <v-chip
+            label outlined
+            small :color="status">
+            {{ jsonView(baseValue) }}
+        </v-chip>
+        <template v-slot:input>
+            <field-json
+                :prop-name="propName"
+                :base-props="baseValue"
+                :change-type="true"
+                :p-label="pLabel"
+                v-bind="setting[propName]"
+                @update-value="update">
 
-      </field-json>
-    </template>
-  </v-edit-dialog>
+            </field-json>
+        </template>
+    </v-edit-dialog>
 
-  <v-edit-dialog v-else-if="fieldType === 'TextField'">
-    <v-chip
-      label outlined
-      small :color="status">
-      {{ Object.keys(baseValue).length }}
-    </v-chip>
-    <template v-slot:input>
-      <field-text
-        :prop-name="propName"
-        :base-text="baseValue"
-        v-bind="setting[propName]"
-        @update-value="update">
+    <v-edit-dialog v-else-if="fieldType === 'TextField'">
+        <v-chip
+            label outlined
+            small :color="status">
+            {{ Object.keys(baseValue).length }}
+        </v-chip>
+        <template v-slot:input>
+            <field-text
+                :prop-name="propName"
+                :base-text="baseValue"
+                v-bind="setting[propName]"
+                @update-value="update">
 
-      </field-text>
-    </template>
-  </v-edit-dialog>
+            </field-text>
+        </template>
+    </v-edit-dialog>
 
-  <v-edit-dialog v-else-if="fieldType === 'FileField'" large persistent>
-    <v-chip
-      label outlined
-      small :color="status">
-      {{ status }}
-    </v-chip>
-    <template v-slot:input>
-      <field-file
-        :prop-name="propName"
-        :base-files="baseValue"
-        v-bind="setting[propName]"
-        @update-value="update">
+    <v-edit-dialog v-else-if="fieldType === 'FileField'" large persistent>
+        <v-chip
+            label outlined
+            small :color="status">
+            {{ status }}
+        </v-chip>
+        <template v-slot:input>
+            <field-file
+                :prop-name="propName"
+                :base-files="baseValue"
+                v-bind="setting[propName]"
+                @update-value="update">
 
-      </field-file>
-    </template>
-  </v-edit-dialog>
+            </field-file>
+        </template>
+    </v-edit-dialog>
 
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldSetting} from "@/utils/labelField"
-    import fieldText from '@/components/field/FieldText.vue'
-    import fieldString from '@/components/field/FieldString.vue'
-    import fieldArray from '@/components/field/FieldArray.vue'
-
-
+    import {fieldSetting, FieldType} from "@/utils/labelField"
+    import FieldText from '@/components/Field/FieldText.vue'
+    import FieldString from '@/components/Field/FieldString.vue'
+    import FieldArray from '@/components/Field/FieldArray.vue'
+    import FieldFile from '@/components/Field/FieldFile.vue';
+    import FieldJson from '@/components/Field/FieldJson.vue';
+    import FieldNumber from '@/components/Field/FieldNumber.vue';
+    import {indexToColor} from "@/utils/utils"
     export default Vue.extend({
         name: "dataTableField",
         components: {
-            fieldText,
-            fieldString,
-            fieldArray,
-            fieldNumber,
-            fieldJson,
-            fieldFile
+            FieldText,
+            FieldString,
+            FieldArray,
+            FieldNumber,
+            FieldJson,
+            FieldFile
         },
         data() {
             return {
@@ -143,7 +145,7 @@
             },
 
             fieldType: {
-                type: String,
+                type: String as () => FieldType,
                 required: true
             },
 
@@ -157,33 +159,33 @@
             },
             setting: {
                 type: Object,
-                default(){
+                default() {
                     return fieldSetting
                 }
             }
         },
 
         methods: {
-            update(propName, value, status) {
+            update(propName: string, value: any, status: string) {
                 this.status = status;
                 this.$emit("update", value);
             },
 
             //chip颜色
-            indexToColor(index) {
+            indexToColor(index: number) {
                 return indexToColor(index)
             },
 
             //字显示模式
-            textView: value => value.length >= 21
+            textView: (value: string) => value.length >= 21
                 ? value.slice(0, 18) + "..."
                 : value,
 
-            jsonView: value => Object.keys(value).length,
+            jsonView: (value: object) => Object.keys(value).length,
 
         },
         record: {
-            status: 'done'
+            status: 'done-old'
         }
     })
 </script>
