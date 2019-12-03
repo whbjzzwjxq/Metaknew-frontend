@@ -1,112 +1,116 @@
 <template>
-  <v-card :width="width" tile flat class="pa-2">
-    <v-card-title>
-      <media-resolver
-        multiple
-        :rules="rules"
-        :props="fileResolverProps"
-        @upload-file="addFile(arguments[0], false)"
-      >
-      </media-resolver>
-    </v-card-title>
-    <v-card-text>
-      <v-simple-table>
-        <thead>
-        <tr>
-          <th class="text-left">id</th>
-          <th class="text-left">Name</th>
-          <th class="text-left">Format</th>
-          <th class="text-left">Status</th>
-          <th class="text-left">Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        <template v-if="showCurrent">
-          <tr v-if="currentFiles.length === 0">
-            <td colspan="12"></td>
-          </tr>
-          <tr v-for="(file, index) in currentRealFiles" :key="index">
-            <td>
-              {{file.Info.id}}
-            </td>
-            <td>
-              {{ file.Info.Name }}
-            </td>
-            <td>
-              {{file.Info.PrimaryLabel}}
-            </td>
-            <td>
-              <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}</v-chip>
-            </td>
-            <td>
-              <v-edit-dialog>
-                <v-icon small>mdi-pencil</v-icon>
-                <template v-slot:input>
-                  <card-root-media :file="file" edit-base>
+    <v-card :width="width" tile flat class="pa-2">
+        <v-card-title>
+            <media-resolver
+                multiple
+                :rules="rules"
+                :props="fileResolverProps"
+                @upload-file="addFile(arguments[0], false)"
+            >
+            </media-resolver>
+        </v-card-title>
+        <v-card-text>
+            <v-simple-table>
+                <thead>
+                <tr>
+                    <th class="text-left">id</th>
+                    <th class="text-left">Name</th>
+                    <th class="text-left">Format</th>
+                    <th class="text-left">Status</th>
+                    <th class="text-left">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <template v-if="showCurrent">
+                    <tr v-if="currentFiles.length === 0">
+                        <td colspan="12"></td>
+                    </tr>
+                    <tr v-for="(file, index) in currentRealFiles" :key="index">
+                        <td>
+                            {{file.Info.id}}
+                        </td>
+                        <td>
+                            {{ file.Info.Name }}
+                        </td>
+                        <td>
+                            {{file.Info.PrimaryLabel}}
+                        </td>
+                        <td>
+                            <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}
+                            </v-chip>
+                        </td>
+                        <td>
+                            <v-edit-dialog>
+                                <v-icon small>mdi-pencil</v-icon>
+                                <template v-slot:input>
+                                    <card-page-media-info :file="file" edit-base>
 
-                  </card-root-media>
+                                    </card-page-media-info>
+                                </template>
+                            </v-edit-dialog>
+                            <v-icon small @click="removeCurrentFile(index)">mdi-delete</v-icon>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="12">
+                            <div style="height: 64px; text-align: right; font-size: 12px">
+                                <p class="right-subheader ma-0" style="font-size: 16px">Current Files:
+                                    {{currentFiles.length}} files</p>
+                                <p class="right-subheader ma-0" style="font-size: 12px">更换媒体文件会使得所有引用都变成新文件 慎重使用</p>
+                            </div>
+                        </td>
+                    </tr>
                 </template>
-              </v-edit-dialog>
-              <v-icon small @click="removeCurrentFile(index)">mdi-delete</v-icon>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="12">
-              <div style="height: 64px; text-align: right; font-size: 12px">
-                <p class="right-subheader ma-0" style="font-size: 16px">Current Files: {{currentFiles.length}} files</p>
-                <p class="right-subheader ma-0" style="font-size: 12px">更换媒体文件会使得所有引用都变成新文件 慎重使用</p>
-              </div>
-            </td>
-          </tr>
-        </template>
 
-        <template v-if="uploadAble">
-          <tr v-if="newFiles.length === 0">
-            <td colspan="12"></td>
-          </tr>
-          <tr v-for="(file, index) in newFiles" :key="file.Info.id">
-            <td>
-              {{file.Info.id}}
-            </td>
-            <td>
-              {{ file.Info.Name }}
-            </td>
-            <td>
-              {{file.Info.PrimaryLabel}}
-            </td>
-            <td>
-              <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}</v-chip>
-            </td>
-            <td>
-              <v-edit-dialog>
-                <v-icon small>mdi-pencil</v-icon>
-                <template v-slot:input>
-                  <card-page-media-info
-                    :file="file"
-                    edit-base>
+                <template v-if="uploadAble">
+                    <tr v-if="newFiles.length === 0">
+                        <td colspan="12"></td>
+                    </tr>
+                    <tr v-for="(file, index) in newFiles" :key="file.Info.id">
+                        <td>
+                            {{file.Info.id}}
+                        </td>
+                        <td>
+                            {{ file.Info.Name }}
+                        </td>
+                        <td>
+                            {{file.Info.PrimaryLabel}}
+                        </td>
+                        <td>
+                            <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}
+                            </v-chip>
+                        </td>
+                        <td>
+                            <v-edit-dialog>
+                                <v-icon small>mdi-pencil</v-icon>
+                                <template v-slot:input>
+                                    <card-page-media-info
+                                        :file="file"
+                                        edit-base>
 
-                  </card-page-media-info>
+                                    </card-page-media-info>
+                                </template>
+                            </v-edit-dialog>
+                            <v-icon small @click="removeFile(index)">mdi-delete</v-icon>
+                            <v-icon small @click="uploadFile(index)">mdi-publish</v-icon>
+                        </td>
+                    </tr>
+                    <tr>
+                    <tr>
+                        <td colspan="12">
+                            <div style="height: 48px; text-align: right;">
+                                <p class="right-subheader ma-0" style="font-size: 16px">New Files: {{newFiles.length}}
+                                    files</p>
+                                <p class="right-subheader ma-0" style="font-size: 12px">在编辑完所有内容(标题，标签等等)后再点击上传图标</p>
+                            </div>
+                        </td>
+                    </tr>
                 </template>
-              </v-edit-dialog>
-              <v-icon small @click="removeFile(index)">mdi-delete</v-icon>
-              <v-icon small @click="uploadFile(index)">mdi-publish</v-icon>
-            </td>
-          </tr>
-          <tr>
-          <tr>
-            <td colspan="12">
-              <div style="height: 48px; text-align: right;">
-                <p class="right-subheader ma-0" style="font-size: 16px">New Files: {{newFiles.length}} files</p>
-                <p class="right-subheader ma-0" style="font-size: 12px">在编辑完所有内容(标题，标签等等)后再点击上传图标</p>
-              </div>
-            </td>
-          </tr>
-        </template>
-        </tbody>
-      </v-simple-table>
-    </v-card-text>
+                </tbody>
+            </v-simple-table>
+        </v-card-text>
 
-  </v-card>
+    </v-card>
 </template>
 
 <script lang="ts">
@@ -152,7 +156,10 @@
             width: Number as () => 600,
             rules: Array as () => (() => {})[],
             showCurrent: Boolean as () => false,
-            uploadAble: Boolean as () => false
+            uploadAble: {
+                type: Boolean as () => false,
+                default: false
+            }
         },
         computed: {
             fileToken: (vm): FileToken => vm.$store.state.userInfo.fileToken,
@@ -167,7 +174,7 @@
                 return result
             },
             currentRealFiles() {
-                return this.baseFiles.map((id: id) => this.$store.state.dataManager.nodeManager[id])
+                return this.baseFiles.map((id: id) => this.$store.state.dataManager.mediaManager[id])
             },
         },
         methods: {
@@ -226,9 +233,9 @@
 </script>
 
 <style scoped>
-  .right-subheader {
-    color: #999999;
-    opacity: 0.7;
-  }
+    .right-subheader {
+        color: #999999;
+        opacity: 0.7;
+    }
 
 </style>

@@ -18,7 +18,7 @@
             <v-col class="col-xl-6 col-md-5 col-sm-5">
                 <v-text-field
                     v-model="search"
-                    append-icon="mdi-search"
+                    append-icon="mdi-magnify"
                     label="Search"
                     hide-details
                     class="pb-5">
@@ -114,7 +114,10 @@
                 propSimply: {
                     'IncludedMedia': "Medias",
                     'BaseImp': "Imp",
-                    "BaseHardLevel": "Hard"
+                    "BaseHardLevel": "Hard",
+                    "$IsCommon": "Common",
+                    "$IsShared": "Shared",
+                    "$IsOpenSource": "OpenSource"
                 } as Record<string, string>,
                 //全部的节点
                 nodes: [] as BaseNodeInfo[],
@@ -126,10 +129,10 @@
                 footSetting: {
                     showFirstLastPage: true,
                     itemsPerPageOptions: [10, 25, 50, -1],
-                    prevIcon: 'remove',
-                    nextIcon: 'add',
-                    firstIcon: "first_page",
-                    lastIcon: "last_page"
+                    prevIcon: 'mdi-minus',
+                    nextIcon: 'mdi-plus',
+                    firstIcon: "mdi-page-first",
+                    lastIcon: "mdi-page-last"
                 },
 
                 //搜索字段
@@ -327,18 +330,17 @@
                     }
                     // 补充那些没有的属性
                     for (let i of this.editProps) {
-                        let hasNeededProp = Object.prototype.hasOwnProperty.call(item, i);
-                        hasNeededProp || (item[i] = deepClone(this.nodeTemplate[i]));
+                        let hasNeededProp = Object.prototype.hasOwnProperty.call(node, i);
+                        hasNeededProp || (node[i] = deepClone(this.nodeTemplate[i]));
                     }
                 });
                 node.id = this.getIndex();
                 node.type = 'node';
                 node.PrimaryLabel = this.pLabel;
-                //主要是Json不好在excel上编写
+                // 合并Prop
                 this.mergeProp(node.Translate, translate);
                 this.mergeProp(node.Text, text);
                 this.mergeProp(node.ExtraProps, extraProps);
-
                 return node
             },
 

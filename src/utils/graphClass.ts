@@ -713,6 +713,12 @@ export class MediaInfoPart {
         this.synchronizationSource("_src", newSource);
     }
 
+    changeName(newName: string) {
+        Vue.set(this.Info, 'Name', newName);
+        this.isEdit = true;
+        this.synchronizationSource("_name", newName)
+    }
+
     // info修改值
     updateValue(prop: string, newValue: any, doItPassive?: boolean) {
         if (!doItPassive) {

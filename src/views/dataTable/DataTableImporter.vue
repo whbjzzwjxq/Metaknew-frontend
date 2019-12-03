@@ -23,14 +23,13 @@
                     :label="fileUploadSetting.label"
                     :placeholder="fileUploadPlaceHolder"
                     :rule="fileUploadSetting.rules"
-                    :value="filePool"
-                    @change="updateFile"
+                    v-model="addFilePool"
                     autofocus
                     chips
                     dense
                     multiple
                 >
-                    <template v-slot:selection="{file, text, index}">
+                    <template v-slot:selection="{text, index}">
                         <v-chip close @click:close="delResolveFile(index)">
                             {{text}}
                         </v-chip>
@@ -63,6 +62,7 @@
                     format: ['xlsx', 'xls', 'csv'],
                 },
                 filePool: [] as ResolvedFile[],
+                addFilePool: [] as File[]
             }
         },
         props: {
@@ -136,16 +136,20 @@
             },
 
             updateFile(fileList: File[]) {
-                fileList.map(file => {
+                this.filePool = fileList.map(file => {
                     let resolvedFile: ResolvedFile = Object.assign(file, {
-                        warning: fileCheck(file, 20 * MB, this.fileUploadSetting.format, this.filePool)
+                        warning: fileCheck(file, 20 * MB, this.fileUploadSetting.format, this.addFilePool)
                     });
                     this.resolveExcel(file);
-                    this.filePool.push(resolvedFile)
+                    return resolvedFile
                 })
             }
         },
-        watch: {},
+        watch: {
+            addFilePool() {
+                this.updateFile(this.addFilePool)
+            }
+        },
         record: {
             status: 'done'
         }

@@ -240,7 +240,7 @@
                 this.file.updateValue(prop, value);
             },
             updateName(value: string) {
-                this.file.changeName()
+                this.file.changeName(value)
             },
             removeItem(removedLabel: string, prop: string) {
                 this.file.updateValue("Labels", [], true);

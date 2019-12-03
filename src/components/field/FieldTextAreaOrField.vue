@@ -26,7 +26,7 @@
     outlined
     v-else>
     <template v-slot:append>
-      <v-icon @click="updateValue" v-if="!disabled">save</v-icon>
+      <v-icon @click="updateValue" v-if="!disabled">mdi-content-save</v-icon>
     </template>
   </v-textarea>
 </template>

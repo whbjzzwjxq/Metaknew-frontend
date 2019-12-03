@@ -93,11 +93,16 @@
                 :prop-name="propName"
                 :base-files="baseValue"
                 v-bind="setting[propName]"
-                @update-value="update">
+                @update-value="update"
+                upload-able>
 
             </field-file>
         </template>
     </v-edit-dialog>
+
+    <v-checkbox v-else-if="fieldType === 'BooleanField'" :value="baseValue" @change="update(propName, !baseValue, 'default')">
+
+    </v-checkbox>
 
 </template>
 
@@ -140,7 +145,7 @@
                 required: true
             },
             baseValue: {
-                type: [String, Object, Array, Number],
+                type: [String, Object, Array, Number, Boolean],
                 required: true
             },
 
