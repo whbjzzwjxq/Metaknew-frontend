@@ -1,5 +1,5 @@
 <template>
-    <div class="d-flex flex-row defaultToolbar">
+    <div class="d-flex flex-row defaultToolbar" style="width: 100%">
         <v-col cols="2" class="pl-4">
             <v-menu open-on-hover offset>
                 <template v-slot:activator="{ on }">

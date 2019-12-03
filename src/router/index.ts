@@ -19,7 +19,7 @@ const routes = [
     path: IndexUrl + '/login',
     name: 'login',
     component: () => import(/* webpackChunkName: "group-index" */ '@/views/index/Login.vue')
-  }
+  },
   // {
   //   path: IndexUrl + '/register',
   //   name: 'register',
@@ -51,11 +51,11 @@ const routes = [
   //   ]
   // },
   //
-  // {
-  //   path: EditUrl + '/dataTable',
-  //   name: 'dataTable',
-  //   component: () => import(/* webpackChunkName: "group-result" */ './edit/dataTable.vue')
-  // }
+  {
+    path: EditUrl + '/dataTable',
+    name: 'dataTable',
+    component: () => import(/* webpackChunkName: "group-result" */ '@/views/dataTable/DataTable.vue')
+  }
 ];
 
 const router = new VueRouter({

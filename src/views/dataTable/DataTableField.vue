@@ -104,12 +104,12 @@
 <script lang="ts">
     import Vue from 'vue'
     import {fieldSetting, FieldType} from "@/utils/labelField"
-    import FieldText from '@/components/Field/FieldText.vue'
-    import FieldString from '@/components/Field/FieldString.vue'
-    import FieldArray from '@/components/Field/FieldArray.vue'
-    import FieldFile from '@/components/Field/FieldFile.vue';
-    import FieldJson from '@/components/Field/FieldJson.vue';
-    import FieldNumber from '@/components/Field/FieldNumber.vue';
+    import FieldText from '@/components/field/FieldText.vue'
+    import FieldString from '@/components/field/FieldString.vue'
+    import FieldArray from '@/components/field/FieldArray.vue'
+    import FieldFile from '@/components/field/FieldFile.vue';
+    import FieldJson from '@/components/field/FieldJson.vue';
+    import FieldNumber from '@/components/field/FieldNumber.vue';
     import {indexToColor} from "@/utils/utils"
     export default Vue.extend({
         name: "dataTableField",

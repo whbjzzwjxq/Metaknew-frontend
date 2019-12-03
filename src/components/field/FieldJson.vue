@@ -115,7 +115,7 @@
             }
         },
         components: {
-            dataTableField: () => import('@/views/dataTable/dataTableField.vue')
+            dataTableField: () => import('@/views/dataTable/DataTableField.vue')
         },
         props: {
             baseProps: {

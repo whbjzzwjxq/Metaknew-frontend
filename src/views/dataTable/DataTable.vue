@@ -18,7 +18,7 @@
             <v-col class="col-xl-6 col-md-5 col-sm-5">
                 <v-text-field
                     v-model="search"
-                    append-icon="search"
+                    append-icon="mdi-search"
                     label="Search"
                     hide-details
                     class="pb-5">

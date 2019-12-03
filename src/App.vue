@@ -25,7 +25,6 @@
       <div :style="spaceStyle"></div>
       <v-container fluid
                    class="view-container flex-nowrap ma-0 pa-0"
-                   :style="contentStyle"
                    ref="main"
       >
         <router-view></router-view>
@@ -48,9 +47,7 @@
         name: "App",
         components: {GlobalSnackBar, SearchBar},
         data() {
-            return {
-                ok: '123'
-            }
+            return {}
         },
         props: {},
         computed: {
@@ -71,7 +68,7 @@
             },
             spaceStyle(): ComponentSize {
                 return {
-                    height: this.toolBar.height,
+                    height: this.toolBar.height + 'px',
                     width: '100%'
                 }
             },

@@ -112,7 +112,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {guid} from '@/utils/utils'
-    import CardPageMediaInfo from '../card/page/cardPageMediaInfo.vue';
+    import CardPageMediaInfo from '../card/page/CardPageMediaInfo.vue';
     import MediaResolver from '../MediaResolver.vue';
     import {FileToken} from '@/api/user'
     import {id, MediaInfoPart} from '@/utils/graphClass'
