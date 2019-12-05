@@ -288,6 +288,16 @@ interface GraphSetting extends Setting {
 
 export type VisualNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从视觉上来说是Node的对象
 
+export type AllItemSettingPart = VisualNodeSettingPart | LinkSettingPart;
+
+export function isMediaSetting(item: VisualNodeSettingPart): item is MediaSettingPart {
+    return (item as MediaSettingPart).Setting._type === 'media'
+}
+
+export function isLinkSetting(item: SettingPart): item is LinkSettingPart {
+    return (item as LinkSettingPart).Setting._type === 'link'
+}
+
 export function nodeStateTemplate(...rest: Array<string>) {
     return <NodeState>{
         isSelected: false,
@@ -798,8 +808,8 @@ export function nodeSettingTemplate(
 export function linkSettingTemplate(
     _id: id,
     _label: string,
-    _start: NodeSettingPart,
-    _end: NodeSettingPart
+    _start: VisualNodeSettingPart,
+    _end: VisualNodeSettingPart
 ) {
     let setting = <LinkSetting>{
         _id,
@@ -947,8 +957,8 @@ export class LinkSettingPart extends SettingPart {
     static emptyLinkSetting(
         _id: id,
         _label: string,
-        _start: NodeSettingPart,
-        _end: NodeSettingPart,
+        _start: VisualNodeSettingPart,
+        _end: VisualNodeSettingPart,
         parent: GraphSelfPart
     ) {
         let setting = linkSettingTemplate(_id, _label, _start, _end);

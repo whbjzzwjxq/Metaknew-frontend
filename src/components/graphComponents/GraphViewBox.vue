@@ -29,8 +29,8 @@
                 :container="container"
                 :size="impScaleRadius[index]"
                 :scale="realScale"
-                :x="locationX[index]"
-                :y="locationY[index]"
+                :x="nodeLocation[index].x"
+                :y="nodeLocation[index].y"
                 :index="index"
                 @kick-back-x="kickBackX"
                 @kick-back-y="kickBackY"
@@ -151,46 +151,78 @@
     import Vue from 'vue'
     import {DataManagerState} from '@/store/modules/dataManager'
     import {
+        AllItemSettingPart,
         BaseType,
+        getIndex,
         GraphSelfPart,
         GraphSettingPart,
-        GraphState, id,
+        GraphState,
+        id,
+        isLinkSetting,
+        isMediaSetting,
+        LinkInfoPart,
         LinkSettingPart,
-        MediaSettingPart, NodeInfoPart,
-        NodeSettingPart, Notes, VisualNodeSettingPart
+        MediaSettingPart,
+        NodeInfoPart,
+        NodeSettingPart,
+        Notes,
+        SettingPart,
+        VisualNodeSettingPart
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
+    import {AreaRect, Point, RectByPoint, updatePoint} from '@/utils/geoMetric'
+    import * as CSS from 'csstype'
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp'
+
+    interface VisualNodeSetting {
+        height: number,
+        width: number,
+        x: number,
+        y: number,
+        show: boolean,
+        isSelected: boolean,
+        isDeleted: boolean
+    }
+
     export default Vue.extend({
         name: "GraphViewBox",
         components: {},
         data() {
             return {
+
+                // ------ drag ------
                 dragAble: true,
                 //drag起始位置
-                dragStartLoc: {
+                dragStartPoint: {
                     x: 0,
                     y: 0
-                },
+                } as Point,
                 //正在drag
                 isDragging: false,
+
+                // ------ move ------
+                // view起始Point
+                viewPoint: this.container.getMidPoint(),
+
+                // 上一个view起始Point
+                lastViewPoint: this.container.getMidPoint(),
+
+                moveStartPoint: {
+                    x: 0,
+                    y: 0
+                } as Point,
+                //拖动画布
+                isMoving: false,
+
+                // ------ select ------
                 //正在select
-                isSelecting: false,
-                selectLoc: {
-                    startX: 0,
-                    startY: 0,
-                    endX: 0,
-                    endY: 0
-                },
-                viewX: (this.container.lowX + this.container.width / 2),
-                viewY: (this.container.lowY + this.container.height / 2),
-                lastEventX: (this.container.lowX + this.container.width / 2),
-                lastEventY: (this.container.lowY + this.container.height / 2),
+                isSelecting: false as boolean,
+                selectRect: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}),
 
                 // ------card-------
-                showCardId: "",
-                closeCardId: "",
+                showCardId: 0 as number,
+                closeCardId: 0 as number,
                 mouseOnCard: false,
                 //card属性
                 card: {
@@ -198,7 +230,7 @@
                     height: 300
                 },
                 //card的位置
-                cardLocList: [],
+                cardLocList: [] as any[],
                 //控制可视的标签
                 labelViewDict: {
                     "node": {},
@@ -210,15 +242,13 @@
                 scale: 100,
 
                 //新增关系
-                startNode: {},
-                endX: 0,
-                endY: 0,
+                startNode: null as null | VisualNodeSettingPart,
+                newLinkEndPoint: {
+                    x: 0,
+                    y: 0
+                },
                 isLinking: false,
 
-                //拖动画布
-                isMoving: false,
-                moveStartX: 0,
-                moveStartY: 0,
             }
         },
         props: {
@@ -228,7 +258,7 @@
             },
             //容器尺寸
             container: {
-                type: Object,
+                type: Object as () => RectByPoint,
                 required: true
             },
 
@@ -290,6 +320,9 @@
             },
             setting(): GraphSettingPart {
                 return this.document.Conf
+            },
+            containerRect(): AreaRect {
+                return this.container.getPositiveRect()
             },
             // 不包含本身的graph
             activeGraphList(): GraphSelfPart[] {
@@ -364,13 +397,18 @@
             },
 
             //Node包含的label
-            nodeLabels() {
+            nodeLabels(): string[] {
                 let result = [];
                 for (let i of this.nodeInfoList) {
                     result.indexOf(i.Info.PrimaryLabel) === -1 &&
                     result.push(i.Info.PrimaryLabel)
                 }
                 return result
+            },
+
+            mediaLabels(): string[] {
+                let result = [];
+                return []
             },
 
             impList(): number[] {
@@ -399,7 +437,9 @@
                 }
             },
 
-            realScale: vm => vm.scale / 100,
+            realScale(): number {
+                return this.scale / 100
+            },
 
             links(): LinkSettingPart[] {
                 let baseLinks = this.document.Graph.links;
@@ -429,102 +469,40 @@
                 return baseMedias
             },
 
-            mediaWidth() {
-                return this.medias.map((media: MediaSettingPart) =>
-                    media.Setting.Base.size * this.realScale >= 50
-                        ? media.Setting.Base.size * this.realScale
-                        : 50
-                )
-            },
-
-            mediaHeight() {
-                return this.medias.map(media =>
-                    media.Setting.Base.size * this.realScale >= 50
-                        ? media.Setting.Base.size * this.realScale * media.Setting.Base.scaleX
-                        : 50 * media.Setting.Base.scaleX
-                )
-            },
-
             //节点locationX
-            locationX() {
-                let result;
-                switch (this.mode) {
-                    case 'normal':
-                        result = this.nodes.map(node => {
-                                return this.lastEventX - (this.viewX - node.Setting.Base.x * this.container.width) * this.realScale
-                            }
-                        );
-                        break;
+            nodeLocation(): AreaRect[] {
+                return this.nodes.map((node, index) => {
+                    let width = node.Setting.Base.size !== 0
+                        ? node.Setting.Base.size * this.realScale
+                        : this.impScaleRadius[index] * this.realScale;
 
-                    case 'geo':
-                        result = [];
-                        break;
-
-                    case 'timeline':
-                        result = [];
-                        break;
-                    case 'imp':
-
-                        result = [];
-                        break;
-                }
-                return result
-            },
-
-            //节点locationY
-            locationY() {
-                let result;
-                switch (this.mode) {
-                    case 'normal':
-                        result = this.nodes.map(node =>
-                            this.lastEventY - (this.viewY - node.Setting.Base.y * this.container.height) * this.realScale
-                        );
-                        break;
-
-                    case 'geo':
-                        result = this.nodes.map(node =>
-                            this.lastEventY - (this.viewY - node.Setting.Base.y * this.container.height) * this.realScale
-                        );
-                        break;
-
-                    case 'timeline':
-                        result = this.nodes.map(node =>
-                            this.lastEventY - (this.viewY - node.Setting.Base.y * this.container.height) * this.realScale
-                        );
-                        break;
-                    case 'imp':
-
-                        result = this.nodes.map(node =>
-                            this.lastEventY - (this.viewY - node.Setting.Base.y * this.container.height) * this.realScale
-                        );
-                        break;
-                    default:
-                        result = this.nodes.map(node =>
-                            this.lastEventY - (this.viewY - node.Setting.Base.y * this.container.height) * this.realScale
-                        );
-                        break;
-                }
-                return result
-            },
-
-            //媒体locationX
-            mediaLocationX() {
-                return this.medias.map(media => {
-                    return this.lastEventX - (this.viewX - media.Setting.Base.x * this.container.width) * this.realScale
+                    return {
+                        x: this.lastViewPoint.x - (this.viewPoint.x - node.Setting.Base.x * this.containerRect.width) * this.realScale,
+                        y: this.lastViewPoint.y - (this.viewPoint.y - node.Setting.Base.y * this.containerRect.height) * this.realScale,
+                        width,
+                        height: width * node.Setting.Base.scaleX
+                    } as AreaRect
                 })
             },
 
-            //媒体locationY
-            mediaLocationY() {
+            mediaLocation(): AreaRect[] {
                 return this.medias.map(media => {
-                    return this.lastEventY - (this.viewY - media.Setting.Base.y * this.container.height) * this.realScale
+                    return {
+                        x: this.lastViewPoint.x - (this.viewPoint.x - media.Setting.Base.x * this.containerRect.width) * this.realScale,
+                        y: this.lastViewPoint.y - (this.viewPoint.y - media.Setting.Base.y * this.containerRect.height) * this.realScale,
+                        width: media.Setting.Base.size * this.realScale >= 50
+                            ? media.Setting.Base.size * this.realScale * media.Setting.Base.scaleX
+                            : 50 * media.Setting.Base.scaleX,
+                        height: media.Setting.Base.size * this.realScale >= 50
+                            ? media.Setting.Base.size * this.realScale * media.Setting.Base.scaleX
+                            : 50 * media.Setting.Base.scaleX
+                    } as AreaRect
                 })
             },
 
             //关系midX
-            midLocation() {
-                let vm = this;
-                return vm.links.map(link => {
+            midLocation(): Point[] {
+                return this.links.map(link => {
                     let result;
                     let x1 = this.getTargetInfo(link.Setting._start).x;
                     let y1 = this.getTargetInfo(link.Setting._start).y;
@@ -553,33 +531,45 @@
             },
 
             //压缩版本的nodeSetting
-            nodeSettingList() {
+            nodeSettingList(): VisualNodeSetting[] {
                 return this.nodes.map((node, index) => {
-                    let size;
-                    node.Setting.Base.size !== 0
-                        ? size = node.Setting.Base.size * this.realScale
-                        : size = this.impScaleRadius[index] * this.realScale;
+                    let {x, y, width, height} = this.nodeLocation[index];
                     return {
-                        "height": size,
-                        "width": size * node.Setting.Base.scaleX,
-                        "x": this.locationX[index],
-                        "y": this.locationY[index],
-                        "show": this.showNode[index],
-                        "isSelected": node.State.isSelected,
-                        "isDeleted": node.State.isDeleted
+                        height,
+                        width,
+                        x,
+                        y,
+                        show: this.showNode[index],
+                        isSelected: node.State.isSelected,
+                        isDeleted: node.State.isDeleted
                     }
                 });
             },
 
+            mediaSettingList(): VisualNodeSetting[] {
+                return this.medias.map((media, index) => {
+                    let {x, y, width, height} = this.mediaLocation[index];
+                    return {
+                        height,
+                        width,
+                        x,
+                        y,
+                        show: this.showMedia[index],
+                        isSelected: media.State.isSelected,
+                        isDeleted: media.State.isDeleted
+                    }
+                })
+            },
+
             //显示节点
-            showNode() {
+            showNode(): boolean[] {
                 return this.nodes.map(node =>
                     this.labelViewDict.node[node.Setting._label] &&
                     !node.State.isDeleted && node.Setting.Show.showAll)
             },
 
             //显示边
-            showLink() {
+            showLink(): boolean[] {
                 return this.links.map(link =>
                     this.labelViewDict.link[link.Setting._label] &&
                     !link.State.isDeleted &&
@@ -588,7 +578,7 @@
                 )
             },
 
-            showMedia() {
+            showMedia(): boolean[] {
                 return this.medias.map(media =>
                     this.labelViewDict.media[media.Setting._label] &&
                     !media.State.isDeleted &&
@@ -597,54 +587,50 @@
             },
 
             //选择框的相关设置
-            selectorStyle: vm => {
+            selectorStyle(): CSS.Properties {
                 return {
                     "fill": "#000000",
-                    "fill-opacity": (1 & vm.isSelecting) * 0.3,
-                    "stroke-opacity": (1 & vm.isSelecting) * 0.7,
+                    "fillOpacity": this.isSelecting ? 0.3 : 0,
+                    "strokeOpacity": this.isSelecting ? 0.7 : 0,
                     "stroke": "#000000",
-                    "stroke-width": 1,
-                    "display": vm.isSelecting ? "inline" : "none"
+                    "strokeWidth": "1px",
+                    "display": this.isSelecting ? "inline" : "none"
                 }
             },
-            selectorWidth: vm => Math.abs(vm.selectLoc.startX - vm.selectLoc.endX),
-            selectorHeight: vm => Math.abs(vm.selectLoc.startY - vm.selectLoc.endY),
-            selectorX: vm => vm.selectLoc.startX >= vm.selectLoc.endX
-                ? vm.selectLoc.endX
-                : vm.selectLoc.startX,
-            selectorY: vm => vm.selectLoc.startY >= vm.selectLoc.endY
-                ? vm.selectLoc.endY
-                : vm.selectLoc.startY,
 
-            viewBoxToolStyle: vm => ({
-                position: 'absolute',
-                left: vm.container.width * 0.9 + 'px',
-                top: vm.container.height * 0.8 + 'px',
-            })
+            viewBoxToolStyle(): CSS.Properties {
+                return {
+                    position: 'absolute',
+                    left: this.containerRect.width * 0.9 + 'px',
+                    top: this.containerRect.height * 0.8 + 'px',
+                }
+            },
+
+            selector(): AreaRect {
+                return this.selectRect.getPositiveRect()
+            },
 
         },
         methods: {
 
-            dragStart(event) {
+            dragStart($event: MouseEvent) {
                 if (this.dragAble) {
-                    this.$set(this.dragStartLoc, "x", event.x);
-                    this.$set(this.dragStartLoc, "y", event.y);
+                    updatePoint(this.dragStartPoint, $event);
                     this.isDragging = true;
                 }
             },
 
             //注意坐标运算使用小数
-            drag(target, event) {
+            drag(target: VisualNodeSettingPart, event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
-                    let deltaX = (event.x - this.dragStartLoc.x) / this.container.width / this.realScale;
-                    let deltaY = (event.y - this.dragStartLoc.y) / this.container.height / this.realScale;
+                    let deltaX = (event.x - this.dragStartPoint.x) / this.containerRect.width / this.realScale;
+                    let deltaY = (event.y - this.dragStartPoint.y) / this.containerRect.height / this.realScale;
                     this.dragStart(event);
                     if (this.selectedNodes.length > 0) {
-                        for (let i in this.selectedNodes) {
-                            let node = this.selectedNodes[i];
+                        this.selectedNodes.map(node => {
                             this.$set(node.Setting.Base, 'x', node.Setting.Base.x + deltaX);
                             this.$set(node.Setting.Base, 'y', node.Setting.Base.y + deltaY);
-                        }
+                        });
                     } else {
                         let node = target;
                         this.$set(node.Setting.Base, 'x', node.Setting.Base.x + deltaX);
@@ -655,7 +641,7 @@
                 }
             },
 
-            dragEnd(target, event) {
+            dragEnd(target: VisualNodeSettingPart, event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
                     this.drag(target, event);
                     this.isDragging = false;
@@ -667,59 +653,52 @@
                 this.isLinking = false;
                 this.clearSelected('all')
             },
-            clearSelected(items) {
-                let vm = this;
+
+            clearSelected(items: 'all' | SettingPart[]) {
                 if (items === 'all') {
-                    this.nodes.map(node => vm.$set(node.State, 'isSelected', false));
-                    this.links.map(link => vm.$set(link.State, 'isSelected', false));
-                    vm.$set(this.state, 'isSelected', false)
+                    this.nodes.map(node => this.$set(node.State, 'isSelected', false));
+                    this.links.map(link => this.$set(link.State, 'isSelected', false));
+                    this.$set(this.state, 'isSelected', false)
                 } else {
-                    items.map(item => vm.$set(item.State, 'isSelected', false));
+                    items.map(item => this.$set(item.State, 'isSelected', false));
                 }
                 this.isDragging = false;
             },
 
             //检查鼠标是否在svg外部
-            checkOutside(event) {
-                let result = false;
-                let border = this.container.border;
-                event.x <= this.container.lowX + border && (result = true);
-                event.x >= this.container.width - border && (result = true);
-                event.y <= this.container.lowY + border && (result = true);
-                event.y >= this.container.height - border && (result = true);
-                result && console.log('outside')
+            checkOutside($event: MouseEvent) {
+                return this.container.checkInRect($event)
             },
 
             //x方向限定区域
-            kickBackX(node, X) {
+            kickBackX(node: VisualNodeSettingPart, X: number) {
                 if (this.isDragging) {
-                    this.$set(node.Setting.Base, 'x', X / this.container.width);
-                    node.isSelected = false;
+                    this.$set(node.Setting.Base, 'x', X / this.containerRect.width);
+                    node.State.isSelected = false;
                     this.isDragging = false;
                 }
             },
 
             //y方向限定区域
-            kickBackY(node, Y) {
+            kickBackY(node: VisualNodeSettingPart, Y: number) {
                 if (this.isDragging) {
-                    this.$set(node.Setting.Base, 'y', Y / this.container.height);
-                    node.isSelected = false;
+                    this.$set(node.Setting.Base, 'y', Y / this.containerRect.height);
+                    node.State.isSelected = false;
                     this.isDragging = false;
                 }
             },
 
             //node的原生事件
-            mouseEnter(node) {
+            mouseEnter(node: NodeSettingPart) {
                 this.$set(node.State, "isMouseOn", true);
                 this.$set(node.State, "showCard", true);
                 this.showCardId = setTimeout(() => {
                     this.$set(node.State, "showCard", true);
                 }, 1000)
-
             },
 
             //node的原生事件
-            mouseLeave(node) {
+            mouseLeave(node: NodeSettingPart) {
                 this.$set(node.State, "isMouseOn", false);
                 this.isDragging = false;
                 clearTimeout(this.showCardId);
@@ -734,7 +713,7 @@
                 clearTimeout(this.closeCardId)
             },
 
-            mouseLeaveCard(node) {
+            mouseLeaveCard(node: NodeSettingPart) {
                 this.mouseOnCard = false;
                 this.closeCardId = setTimeout(() => {
                     this.$set(node.State, "showCard", false);
@@ -742,14 +721,15 @@
             },
 
             //自适应位置 取得卡片数据 不需要计算属性 显示的时候重新计算位置就好
-            locationCard(node, index) {
+            locationCard(node: NodeSettingPart) {
                 let x, y;
+                let index = this.nodes.indexOf(node);
                 node.Setting.Base.x >= 0.5
-                    ? x = this.locationX[index] - this.card.width
-                    : x = this.locationX[index];
+                    ? x = this.nodeLocation[index].x - this.card.width + this.containerRect.x
+                    : x = this.nodeLocation[index].x + this.containerRect.x;
                 node.Setting.Base.y >= 0.5
-                    ? y = this.locationY[index] - this.card.height + this.container.lowY
-                    : y = this.locationY[index] + this.container.lowY;
+                    ? y = this.nodeLocation[index].y - this.card.height + this.containerRect.y
+                    : y = this.nodeLocation[index].y + this.containerRect.y;
                 return {
                     "posLeft": x,
                     "posTop": y,
@@ -761,129 +741,116 @@
 
             updateCardLoc() {
                 let result;
-                let vm = this;
-                result = this.nodes.map((node, index) => vm.locationCard(node, index));
+                result = this.nodes.map(node => this.locationCard(node));
                 this.cardLocList = result
             },
 
-            clickNode(node) {
+            clickNode(node: VisualNodeSettingPart) {
                 this.selectItem([node]);
-
-                if (this.isLinking && node) {
-                    let id = "$_" + this.$store.state.dataManager.globalIndex;
-                    this.$store.commit("newId");
-                    let payload = {
-                        _id: id,
-                        _type: 'link',
-                        _label: "default",
-                        _start: this.startNode,
-                        _end: node,
-                        isSelf: true,
-                        changed: true
-                    };
-                    this.$store.commit('dataAddEmptyLinkInfo', payload);
-                    this.$store.commit('dataAddEmptyLinkSetting', payload);
+                if (this.isLinking && node && this.startNode) {
+                    let id = getIndex();
+                    let linkSetting = LinkSettingPart.emptyLinkSetting(id, "default", this.startNode, node, this.document);
+                    let linkInfo = LinkInfoPart.emptyLinkInfo(id, "default", this.startNode, node);
+                    let linkList = [linkSetting];
+                    this.document.addLinks(linkList);
+                    this.$store.commit('infoAdd', {item: linkInfo, strict: true});
                     this.isLinking = false;
+                } else {
+                    //
                 }
             },
             //框选
-            selectItem(itemList) {
+            selectItem(itemList: (LinkSettingPart | VisualNodeSettingPart)[]) {
                 //选择
-                let vm = this;
-                itemList.map(item => vm.$set(item.State, 'isSelected', true));
+                itemList.map(item => this.$set(item.State, 'isSelected', true));
+                //如果是单选就切换内容
                 if (itemList.length === 1) {
                     let item = itemList[0];
                     let info;
-                    item._type === 'link'
+                    isLinkSetting(item)
                         ? info = this.dataManager.linkManager[item.Setting._id]
+                        : isMediaSetting(item)
+                        ? info = this.dataManager.mediaManager[item.Setting._id]
                         : info = this.dataManager.nodeManager[item.Setting._id];
                     info &&
-                    this.$store.commit('changeCurrentItem', info);
+                    this.$store.commit('currentItemChange', info);
                 }
             },
 
-            selectLabel(label) {
-                let result = this.nodes.filter(node => node.Setting._label === label);
+            selectLabel(_type: BaseType, _label: string) {
+                let result = this.nodes.filter(node => node.Setting._label === _label);
                 this.selectItem(result)
             },
 
-            startSelect($event) {
+            startSelect($event: MouseEvent) {
                 if ($event.ctrlKey) {
                     this.isMoving = true;
-                    this.moveStartX = $event.x;
-                    this.moveStartY = $event.y;
+                    updatePoint(this.moveStartPoint, $event)
                 } else {
                     if (this.renderSelector) {
                         this.$set(this, 'isSelecting', true);
-                        let startX = $event.x;
-                        let startY = $event.y - this.container.lowY;
-                        this.$set(this.selectLoc, 'startX', startX);
-                        this.$set(this.selectLoc, 'startY', startY);
-                        this.$set(this.selectLoc, 'endX', startX);
-                        this.$set(this.selectLoc, 'endY', startY);
+                        let x = $event.x - this.containerRect.x;
+                        let y = $event.y - this.containerRect.y;
+                        updatePoint(this.selectRect.start, {x, y});
+                        updatePoint(this.selectRect.end, {x, y});
                     }
                 }
             },
 
-            selecting($event) {
+            selecting($event: MouseEvent) {
                 //选择集
                 if ($event.ctrlKey && this.isMoving) {
-                    this.lastEventX += $event.x - this.moveStartX;
-                    this.lastEventY += $event.y - this.moveStartY;
-                    this.moveStartX = $event.x;
-                    this.moveStartY = $event.y;
+                    let x = this.lastViewPoint.x + $event.x - this.moveStartPoint.x;
+                    let y = this.lastViewPoint.y + $event.y - this.moveStartPoint.y;
+                    updatePoint(this.lastViewPoint, {x, y});
+                    updatePoint(this.moveStartPoint, $event)
                 } else {
                     if (this.isSelecting && this.renderSelector) {
-                        let endX = $event.x;
-                        let endY = $event.y - this.container.lowY;
-                        this.$set(this.selectLoc, 'endX', endX);
-                        this.$set(this.selectLoc, 'endY', endY);
+                        let endX = $event.x + this.containerRect.x;
+                        let endY = $event.y - this.containerRect.y;
+                        updatePoint(this.selectRect.end, {x: endX, y: endY})
                     }
                     //移动
                     if (this.isLinking) {
-                        this.endX = $event.x;
-                        this.endY = $event.y
+                        updatePoint(this.newLinkEndPoint, $event)
                     }
                 }
             },
 
-            endSelect($event) {
+            endSelect($event: MouseEvent) {
                 this.isMoving = false;
                 this.selecting($event);
                 this.$set(this, 'isSelecting', false);
-                let vm = this;
-                let result1 = this.nodes.filter((node, index) =>
-                    vm.selectorX <= vm.locationX[index] &&
-                    vm.locationX[index] <= (vm.selectorX + vm.selectorWidth) &&
-                    vm.selectorY <= vm.locationY[index] &&
-                    vm.locationY[index] <= (vm.selectorY + vm.selectorHeight)
+                let nodes: (AllItemSettingPart)[] = this.nodes.filter((node, index) =>
+                    this.selectRect.checkInRect(this.nodeLocation[index])
                 );
-                let result2 = this.links.filter((link, index) =>
-                    vm.selectorX <= vm.midLocation[index].x &&
-                    vm.locationX[index] <= (vm.selectorX + vm.selectorWidth) &&
-                    vm.selectorY <= vm.midLocation[index].y &&
-                    vm.locationY[index] <= (vm.selectorY + vm.selectorHeight)
+                let links = this.links.filter((link, index) =>
+                    this.selectRect.checkInRect(this.midLocation[index])
                 );
-                let result = result1.concat(result2);
+                let medias = this.medias.filter((media, index) =>
+                    this.selectRect.checkInRect(this.mediaLocation[index])
+                );
+                let result = nodes.concat(links).concat(medias);
                 this.clearSelected("all");
                 this.selectItem(result)
             },
 
             getLabelViewDict() {
                 this.nodeLabels.map(label => {
-                    this.labelViewDict[label] === undefined &&
+                    this.labelViewDict.node[label] === undefined &&
                     this.$set(this.labelViewDict, label, true)
-                })
+                }) // todo
             },
 
             //取得link所用数据
-            getTargetInfo(item: VisualNodeSettingPart) {
+            getTargetInfo(item: VisualNodeSettingPart | null) {
                 //注意这里index肯定不能是-1
-                let index = this.nodes.indexOf(item);
                 let result;
-                index >= 0
-                    ? result = this.nodeSettingList[index]
-                    : result = {x: 0, y: 0};
+                item
+                    ? isMediaSetting(item)
+                    ? result = this.mediaSettingList[this.medias.indexOf(item)]
+                    : result = this.nodeSettingList[this.nodes.indexOf(item)]
+                    : result = {x: 0, y: 0, show: true};
                 return result
             },
 
@@ -909,11 +876,10 @@
                 this.scale += delta;
                 this.scale < 25 && (this.scale = 25);
                 this.scale > 300 && (this.scale = 300);
-
-                this.viewX += ($event.clientX - this.lastEventX) / oldScale;
-                this.viewY += ($event.clientY - this.lastEventY) / oldScale;
-                this.lastEventX = $event.clientX;
-                this.lastEventY = $event.clientY;
+                let x = this.viewPoint.x + ($event.clientX - this.lastViewPoint.x) / oldScale;
+                let y = this.viewPoint.y + ($event.clientY - this.lastViewPoint.y) / oldScale;
+                updatePoint(this.viewPoint, {x, y});
+                updatePoint(this.lastViewPoint, $event);
             },
 
             explode(node: NodeSettingPart) {
