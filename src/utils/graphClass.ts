@@ -110,7 +110,7 @@ interface UserConcern {
 interface BaseState {
     isSelected: boolean; // 是否被选中
     isDeleted: boolean; // 是否被删除
-    [propName: string]: boolean;
+    [propName: string]: boolean | number;
 }
 
 interface NodeState extends BaseState {
@@ -127,10 +127,13 @@ interface LinkState extends BaseState {
     isAdd: boolean; // 是否是新建的
 }
 
-interface GraphState extends BaseState {
+export interface GraphState extends BaseState {
     isLoading: boolean;
     isChanged: boolean;
     SavedIn5Min: boolean; // 5分钟内是否保存
+    isExplode: boolean;
+    viewBoxWidth: number;
+    viewBoxHeight: number;
 }
 
 export const InfoToSetting = (payload: {
@@ -313,9 +316,12 @@ export function graphStateTemplate(...rest: Array<string>) {
         isDeleted: false,
         isChanged: false,
         SavedIn5Min: false,
+        isExplode: false,
         isSelf: rest.indexOf("isSelf") > -1,
         isAdd: rest.indexOf("isAdd") > -1,
-        isLoading: rest.indexOf("isLoading") > -1
+        isLoading: rest.indexOf("isLoading") > -1,
+        viewBoxWidth: 400,
+        viewBoxHeight: 300
     };
 }
 
@@ -989,9 +995,9 @@ export const findRoot = (item: SettingPart) => {
         return [];
     } else {
         let result: Array<GraphSelfPart> = [];
-        item.parent.Conf
+        item.parent
             ? (result = result.concat(findRoot(item.parent.Conf)))
-            : result.push(item.parent.Conf);
+            : result.push(item.parent);
         return result;
     }
 };
@@ -1083,6 +1089,7 @@ export class GraphSelfPart {
     }
 
     autoSave() {
+
     }
 
     typeToList(_type: BaseType) {
@@ -1141,5 +1148,10 @@ export class GraphSelfPart {
 
     changeId(newId: id) {
         this.id = newId;
+    }
+
+    getRoot() {
+        let length = this.rootList.length;
+        return this.rootList[length - 1]
     }
 }

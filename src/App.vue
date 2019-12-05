@@ -1,37 +1,40 @@
 <template>
-  <v-app id="page">
-    <v-content class="d-flex flex-nowrap">
-      <div style="width: 100%; position: absolute; left: 0; top: 0; z-index: 2">
-        <v-toolbar tile color="white" :height="toolBar.height + 'px'">
-          <v-toolbar-title class="font-weight-bold">META-KNEW</v-toolbar-title>
-          <v-toolbar-items>
-            <search-bar edit-mode class="mt-n2 pl-4" v-if="toolBarSearch"></search-bar>
-          </v-toolbar-items>
-          <v-spacer></v-spacer>
-          <v-toolbar-items class="hidden-sm-and-down">
-            <v-btn text href="/index">Home</v-btn>
-            <v-btn text href="/index/about">About</v-btn>
-            <template v-if="isLogin">
-              <v-btn text href="/index/userCenter">{{userName}}</v-btn>
-              <v-btn text @click="logout">Sign Out</v-btn>
-            </template>
-            <template v-else>
-              <v-btn text href="/index/login">Sign in</v-btn>
-              <v-btn text href="/index/register">Sign up</v-btn>
-            </template>
-          </v-toolbar-items>
-        </v-toolbar>
-      </div>
-      <div :style="spaceStyle"></div>
-      <v-container fluid
-                   class="view-container flex-nowrap ma-0 pa-0"
-                   ref="main"
-      >
-        <router-view></router-view>
-      </v-container>
-    </v-content>
-    <global-snack-bar></global-snack-bar>
-  </v-app>
+    <v-app id="page">
+        <v-content class="d-flex flex-nowrap">
+            <div style="width: 100%; position: absolute; left: 0; top: 0; z-index: 2">
+                <v-toolbar tile color="white" :height="toolBar.height + 'px'">
+                    <div :style="toolbarSpaceStyle">
+                        <p class="font-weight-bold" style="text-align: justify; text-justify: auto; font-size: x-large">META-KNEW</p>
+                    </div>
+                    <v-toolbar-items>
+                        <search-bar edit-mode class="mt-n2 pl-4" v-if="toolBarSearch"></search-bar>
+                    </v-toolbar-items>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items class="hidden-sm-and-down">
+                        <v-btn text href="/index">Home</v-btn>
+                        <v-btn text href="/index/about">About</v-btn>
+                        <template v-if="isLogin">
+                            <v-btn text href="/index/userCenter">{{userName}}</v-btn>
+                            <v-btn text @click="logout">Sign Out</v-btn>
+                        </template>
+                        <template v-else>
+                            <v-btn text href="/index/login">Sign in</v-btn>
+                            <v-btn text href="/index/register">Sign up</v-btn>
+                        </template>
+                    </v-toolbar-items>
+                </v-toolbar>
+            </div>
+            <div :style="spaceStyle"></div>
+                <v-container fluid
+                             class="view-container flex-nowrap ma-0 pa-0"
+                             ref="main"
+                             :style="contentStyle"
+                >
+                    <router-view></router-view>
+                </v-container>
+        </v-content>
+        <global-snack-bar></global-snack-bar>
+    </v-app>
 </template>
 
 <script lang="ts">
@@ -78,6 +81,12 @@
                     "height": this.allComponentSize.screenY - this.toolBar.height + "px"
                 }
             },
+            toolbarSpaceStyle(): ComponentSize {
+                return {
+                    height: this.toolBar.height + 'px',
+                    width: this.allComponentSize.leftCard.width + 'px'
+                }
+            }
 
         },
         methods: {

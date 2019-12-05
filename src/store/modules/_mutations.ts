@@ -33,10 +33,6 @@ export const commitScreenResize = () => {
   return store.commit('resetScreen')
 };
 
-export const commitGraphChange = (payload: GraphSelfPart) => {
-  return store.commit('currentGraphChange', payload)
-};
-
 export const commitItemChange = (payload: InfoPart) => {
   return store.commit('currentItemChange', payload)
 };

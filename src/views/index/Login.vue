@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-md-3">
       </div>
-      <div class="col-md-6 center">
+      <div class="col-md-6 justify-center">
         <div class="MontSerra" id="welcome">WELCOME TO META-KNEW</div>
           <v-text-field
             v-model="loginData.phone"
@@ -18,11 +18,11 @@
             v-model="loginData.password"
             dense
             clearable
-            label="phone"
+            label="password"
             :rules="passwordRules"
           >
           </v-text-field>
-        <v-btn @click="login" class="submit">LOGIN</v-btn>
+        <v-btn outlined block @click="login"> Login </v-btn>
       </div>
     </div>
   </div>
@@ -87,5 +87,5 @@
 </script>
 
 <style scoped>
-  @import "../../style/css/login_register.css";
+
 </style>

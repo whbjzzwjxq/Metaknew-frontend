@@ -136,6 +136,8 @@ export const checkExist = (arr: Array<any>, item: any) => arr.indexOf('$_any') >
         ? false
         : arr.indexOf(item) > -1;
 
+export const minN = (arr: number[], n = 1) => [...arr].sort((a, b) => a - b).slice(0, n);
+export const maxN = (arr: number[], n = 1) => [...arr].sort((a, b) => b - a).slice(0, n);
 export const test = (list: (MediaInfoPart | undefined)[]) => {
     return list.filter(item => item instanceof MediaInfoPart)
 };

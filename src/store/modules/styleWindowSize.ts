@@ -1,3 +1,4 @@
+import Vue from 'vue'
 export interface ComponentSize {
   width: number | string,
   height: number | string,
@@ -45,6 +46,10 @@ const mutations = {
   resetScreen: (state: StyleManagerState) => {
     state.screenX = document.documentElement.clientWidth;
     state.screenY = document.documentElement.clientHeight;
+  },
+
+  resetLeftCard: (state: StyleManagerState, payload: number) => {
+    Vue.set(state.leftCard, 'width', payload)
   }
 };
 const actions = {};
@@ -52,7 +57,7 @@ const getters = {
   viewBox: (state: StyleManagerState) => {
     return <ComponentSize>{
       width: state.screenX - state.leftCard.width,
-      height: state.screenY - state.bottomBar.height
+      height: state.screenY - state.bottomBar.height - state.toolBar.height
     }
   }
 };

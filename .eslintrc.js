@@ -20,7 +20,7 @@ module.exports = {
     'indent': 'off',
     'quotes': 'off',
     'comma-dangle': 'off',
-    'spaced-comment': 'off'
+    'spaced-comment': 'off',
   },
   parserOptions: {
     parser: '@typescript-eslint/parser'
