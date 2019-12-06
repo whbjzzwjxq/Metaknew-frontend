@@ -22,7 +22,7 @@
             ></graph-link>
 
             <graph-node
-                v-for="(node, index) in typeNodes"
+                v-for="(node, index) in nodes"
                 v-show="showNode[index]"
                 :key="node.Setting._id"
                 :node="node"
@@ -46,10 +46,10 @@
             <rect
                 v-if="renderSelector"
                 :style="selectorStyle"
-                :x="selectorX"
-                :y="selectorY"
-                :width="selectorWidth"
-                :height="selectorHeight">
+                :x="selector.x"
+                :y="selector.y"
+                :width="selector.width"
+                :height="selector.height">
 
             </rect>
 
@@ -57,8 +57,8 @@
                 v-if="isLinking"
                 :x1="getTargetInfo(startNode).x"
                 :y1="getTargetInfo(startNode).y"
-                :x2="endX"
-                :y2="endY"
+                :x2="newLinkEndPoint.x"
+                :y2="newLinkEndPoint.y"
                 stroke="grey">
 
             </line>
@@ -66,15 +66,12 @@
         </svg>
 
         <graph-media
-            v-for="(node, index) in typeMedias"
+            v-for="(node, index) in medias"
             :key="node.Setting._id"
             :media="node"
             :container="container"
-            :width="mediaWidth[index]"
-            :height="mediaHeight[index]"
+            :location="mediaLocation[index]"
             :scale="realScale"
-            :x="locationX[index + typeNodeLength]"
-            :y="locationY[index + typeNodeLength]"
             :index="index"
             @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
@@ -107,23 +104,23 @@
 
         </graph-node-button>
 
-        <card-doc-node-simplify
-            v-for="(node, index) in renderCardList"
-            :key="node.Setting._id"
-            :base-data="nodeInfoList[index]"
-            :container="container"
-            :is-hard-hidden="isDragging"
-            :is-hidden="!node.State.showCard"
-            :position="cardLocList[index]"
-            @mouseenter.native.stop="mouseEnterCard"
-            @mouseleave.native.stop="mouseLeaveCard(node)">
+        <!--        <card-doc-node-simplify-->
+        <!--            v-for="(node, index) in renderCardList"-->
+        <!--            :key="node.Setting._id"-->
+        <!--            :base-data="nodeInfoList[index]"-->
+        <!--            :container="container"-->
+        <!--            :is-hard-hidden="isDragging"-->
+        <!--            :is-hidden="!node.State.showCard"-->
+        <!--            :position="cardLocList[index]"-->
+        <!--            @mouseenter.native.stop="mouseEnterCard"-->
+        <!--            @mouseleave.native.stop="mouseLeaveCard(node)">-->
 
-        </card-doc-node-simplify>
+        <!--        </card-doc-node-simplify>-->
 
         <div :style="viewBoxToolStyle" class="d-flex flex-row">
             <graph-label-selector
                 v-if="renderLabelSelector"
-                :base-label-dict="labelViewDict"
+                :label-view-dict="labelViewDict"
                 @selectItem-label="selectLabel"
                 class="justify-end">
             </graph-label-selector>
@@ -161,7 +158,7 @@
         isLinkSetting,
         isMediaSetting,
         LinkInfoPart,
-        LinkSettingPart,
+        LinkSettingPart, MediaInfoPart,
         MediaSettingPart,
         NodeInfoPart,
         NodeSettingPart,
@@ -172,8 +169,15 @@
     import {maxN, minN} from "@/utils/utils"
     import {AreaRect, Point, RectByPoint, updatePoint} from '@/utils/geoMetric'
     import * as CSS from 'csstype'
+    import GraphNode from './GraphNode.vue';
+    import GraphLink from './GraphLink.vue';
+    import GraphMedia from './GraphMedia.vue';
+    import GraphNote from './GraphNote.vue';
+    import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
+    import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
+    import {item, LabelViewDict} from '@/utils/interfaceInComponent'
 
-    type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp'
+    type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 
     interface VisualNodeSetting {
         height: number,
@@ -187,7 +191,14 @@
 
     export default Vue.extend({
         name: "GraphViewBox",
-        components: {},
+        components: {
+            GraphNode,
+            GraphLink,
+            GraphMedia,
+            GraphNote,
+            GraphNodeButton,
+            GraphLabelSelector
+        },
         data() {
             return {
 
@@ -236,7 +247,7 @@
                     "node": {},
                     "media": {},
                     "link": {}
-                } as Record<BaseType, Record<string, boolean>>,
+                } as LabelViewDict,
 
                 //缩放比例
                 scale: 100,
@@ -396,19 +407,44 @@
                 return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id]).filter(info => info && info)
             },
 
+            mediaInfoList(): MediaInfoPart[] {
+                return this.medias.map(media => this.dataManager.mediaManager[media.Setting._id]).filter(info => info && info)
+            },
+
+            linkInfoList(): LinkInfoPart[] {
+                return this.links.map(link => this.dataManager.linkManager[link.Setting._id]).filter(info => info && info)
+            },
+
             //Node包含的label
             nodeLabels(): string[] {
-                let result = [];
-                for (let i of this.nodeInfoList) {
-                    result.indexOf(i.Info.PrimaryLabel) === -1 &&
-                    result.push(i.Info.PrimaryLabel)
-                }
+                let result: string[] = [];
+                this.nodeInfoList.map(node => {
+                    result.indexOf(node.Info.PrimaryLabel) === -1 &&
+                    result.push(node.Info.PrimaryLabel)
+                });
                 return result
             },
 
             mediaLabels(): string[] {
-                let result = [];
-                return []
+                let result: string[] = [];
+                this.mediaInfoList.map(media => {
+                    result.indexOf(media.Info.PrimaryLabel) === -1 &&
+                    result.push(media.Info.PrimaryLabel)
+                });
+                return result;
+            },
+
+            linkLabels(): string[] {
+                let result: string[] = [];
+                this.linkInfoList.map(link => {
+                    result.indexOf(link.Info.PrimaryLabel) === -1 &&
+                    result.push(link.Info.PrimaryLabel)
+                });
+                return result;
+            },
+
+            activeNotes(): Notes[] {
+                return this.notes.filter(note => !note.isDeleted)
             },
 
             impList(): number[] {
@@ -836,10 +872,12 @@
             },
 
             getLabelViewDict() {
-                this.nodeLabels.map(label => {
-                    this.labelViewDict.node[label] === undefined &&
-                    this.$set(this.labelViewDict, label, true)
-                }) // todo
+                let typeList: item[] = ['node', 'link', 'media'];
+                typeList.map(_type => {
+                    Object.entries(this.labelViewDict[_type]).map(([key, value]) => {
+                        value === undefined && this.$set(this.labelViewDict[_type], key, true)
+                    });
+                })
             },
 
             //取得link所用数据

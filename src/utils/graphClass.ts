@@ -990,7 +990,18 @@ export class GraphSettingPart extends SettingPart {
     }
 }
 
-export class Notes {
+export interface Notes {
+    isDeleted: boolean,
+    Content: string,
+    Setting: {
+        Conf: {
+            x: number,
+            y: number,
+            width: number,
+            height: number,
+            dark: boolean
+        }
+    }
 }
 
 interface Graph {

@@ -36,6 +36,10 @@
     "tests/**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/components/graphComponents/GraphLink.vue",
+    "src/components/graphComponents/GraphNote.vue",
+    "src/components/graphComponents/GraphMedia.vue",
+    "src/components/graphComponents/GraphNode.vue"
   ]
 }
