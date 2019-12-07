@@ -57,7 +57,8 @@
     import {updateMediaToNode} from "@/api/commonSource";
     import {id, NodeInfoPart, MediaInfoPart, MediaSettingPart, QueryObject, getIsSelf} from "@/utils/graphClass";
     import {DataManagerState} from "@/store/modules/dataManager";
-    import {FileToken} from '@/api/user'
+    import {FileToken, getFileToken} from '@/api/user'
+    import {commitFileToken} from "@/store/modules/_mutations";
 
     type SortProp = 'UpdateTime' | 'isStar' | 'PrimaryLabel'
     export default Vue.extend({
@@ -157,9 +158,9 @@
             let now = (new Date()).valueOf();
             //先判断Token情况
             if ((fileToken.Expiration * 1000 - now <= 0) || !fileToken.AccessKeyId) {
-                this.$store.dispatch("fileToken").then(res => {
+                getFileToken().then(res => {
                     if (res.status === 200) {
-                        this.$store.commit('updateFileToken', res.data.fileToken);
+                        commitFileToken(res.data.fileToken);
                     } else {
                         alert("与图片服务器连接暂时中断")
                     }

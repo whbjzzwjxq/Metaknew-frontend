@@ -85,8 +85,8 @@
 
         <graph-note
             v-show="renderNotes"
-            v-for="note in activeNotes"
-            :key="note.Setting._id"
+            v-for="(note, index) in activeNotes"
+            :key="index"
             :note="note"
             :container="container"
         >
@@ -155,8 +155,6 @@
         GraphSettingPart,
         GraphState,
         id,
-        isLinkSetting,
-        isMediaSetting,
         LinkInfoPart,
         LinkSettingPart, MediaInfoPart,
         MediaSettingPart,
@@ -176,6 +174,7 @@
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import {item, LabelViewDict} from '@/utils/interfaceInComponent'
+    import {isLinkSetting, isMediaSetting} from "@/utils/typeCheck";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 
@@ -214,10 +213,16 @@
 
                 // ------ move ------
                 // view起始Point
-                viewPoint: this.container.getMidPoint(),
+                viewPoint: {
+                    x: this.container.getPositiveRect().width / 2,
+                    y: this.container.getPositiveRect().height / 2
+                },
 
                 // 上一个view起始Point
-                lastViewPoint: this.container.getMidPoint(),
+                lastViewPoint: {
+                    x: this.container.getPositiveRect().width / 2,
+                    y: this.container.getPositiveRect().height / 2
+                },
 
                 moveStartPoint: {
                     x: 0,
@@ -294,7 +299,7 @@
             //是否渲染label - selector
             renderLabelSelector: {
                 type: Boolean,
-                default: true
+                default: false
             },
 
             //是否渲染rect - selector
@@ -337,10 +342,16 @@
             },
             // 不包含本身的graph
             activeGraphList(): GraphSelfPart[] {
-                return GraphSelfPart.list.filter(graph => (graph.getRoot().id === this.document.id &&
+                let result: GraphSelfPart[] = [];
+                GraphSelfPart.list.map(graph => {
+                    let root = graph.getRoot();
+                    if (root && root.id === this.document.id) {
+                        result.push(graph)
+                    }
+                });
+                return result.filter(graph => graph &&
                     !graph.Conf.State.isDeleted &&
                     graph.Conf.State.isExplode)
-                )
             },
 
             //不包含本身的node
@@ -404,15 +415,15 @@
             },
 
             nodeInfoList(): NodeInfoPart[] {
-                return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id]).filter(info => info && info)
+                return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id])
             },
 
             mediaInfoList(): MediaInfoPart[] {
-                return this.medias.map(media => this.dataManager.mediaManager[media.Setting._id]).filter(info => info && info)
+                return this.medias.map(media => this.dataManager.mediaManager[media.Setting._id])
             },
 
             linkInfoList(): LinkInfoPart[] {
-                return this.links.map(link => this.dataManager.linkManager[link.Setting._id]).filter(info => info && info)
+                return this.links.map(link => this.dataManager.linkManager[link.Setting._id])
             },
 
             //Node包含的label
@@ -513,8 +524,8 @@
                         : this.impScaleRadius[index] * this.realScale;
 
                     return {
-                        x: this.lastViewPoint.x - (this.viewPoint.x - node.Setting.Base.x * this.containerRect.width) * this.realScale,
-                        y: this.lastViewPoint.y - (this.viewPoint.y - node.Setting.Base.y * this.containerRect.height) * this.realScale,
+                        x: this.lastViewPoint.x - (this.viewPoint.x - (node.Setting.Base.x * this.containerRect.width)) * this.realScale,
+                        y: this.lastViewPoint.y - (this.viewPoint.y - (node.Setting.Base.y * this.containerRect.height)) * this.realScale,
                         width,
                         height: width * node.Setting.Base.scaleX
                     } as AreaRect
@@ -638,7 +649,7 @@
                 return {
                     position: 'absolute',
                     left: this.containerRect.width * 0.9 + 'px',
-                    top: this.containerRect.height * 0.8 + 'px',
+                    top: this.containerRect.height * 0.75 + 'px',
                 }
             },
 
@@ -725,7 +736,7 @@
             },
 
             //node的原生事件
-            mouseEnter(node: NodeSettingPart) {
+            mouseEnter(node: VisualNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", true);
                 this.$set(node.State, "showCard", true);
                 this.showCardId = setTimeout(() => {
@@ -734,7 +745,7 @@
             },
 
             //node的原生事件
-            mouseLeave(node: NodeSettingPart) {
+            mouseLeave(node: VisualNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", false);
                 this.isDragging = false;
                 clearTimeout(this.showCardId);
@@ -836,13 +847,13 @@
             selecting($event: MouseEvent) {
                 //选择集
                 if ($event.ctrlKey && this.isMoving) {
-                    let x = this.lastViewPoint.x + $event.x - this.moveStartPoint.x;
-                    let y = this.lastViewPoint.y + $event.y - this.moveStartPoint.y;
+                    let x = this.lastViewPoint.x + $event.x - this.container.start.x - this.moveStartPoint.x;
+                    let y = this.lastViewPoint.y + $event.y - this.container.start.y - this.moveStartPoint.y;
                     updatePoint(this.lastViewPoint, {x, y});
                     updatePoint(this.moveStartPoint, $event)
                 } else {
                     if (this.isSelecting && this.renderSelector) {
-                        let endX = $event.x + this.containerRect.x;
+                        let endX = $event.x - this.containerRect.x;
                         let endY = $event.y - this.containerRect.y;
                         updatePoint(this.selectRect.end, {x: endX, y: endY})
                     }
@@ -872,11 +883,18 @@
             },
 
             getLabelViewDict() {
-                let typeList: item[] = ['node', 'link', 'media'];
-                typeList.map(_type => {
-                    Object.entries(this.labelViewDict[_type]).map(([key, value]) => {
-                        value === undefined && this.$set(this.labelViewDict[_type], key, true)
-                    });
+                let typeDict: { [K in item]: string[] } = {
+                    node: this.nodeLabels,
+                    link: this.linkLabels,
+                    media: this.mediaLabels
+                };
+                Object.entries(typeDict).map(([_type, labels]) => {
+                    labels.map(label => {
+                        console.log(label)
+                        if (this.labelViewDict[_type][label] === undefined) {
+                            this.labelViewDict[_type][label] = true
+                        }
+                    })
                 })
             },
 
@@ -908,16 +926,20 @@
             onScroll($event: WheelEvent) {
                 let oldScale = this.realScale;
                 let delta;
-                $event.deltaY > 0
+                $event.deltaY < 0
                     ? delta = 10
                     : delta = -10;
                 this.scale += delta;
                 this.scale < 25 && (this.scale = 25);
                 this.scale > 300 && (this.scale = 300);
-                let x = this.viewPoint.x + ($event.clientX - this.lastViewPoint.x) / oldScale;
-                let y = this.viewPoint.y + ($event.clientY - this.lastViewPoint.y) / oldScale;
+                let event = {
+                    x: $event.clientX - this.container.start.x,
+                    y: $event.clientY - this.container.start.y
+                }
+                let x = this.viewPoint.x + (event.x - this.lastViewPoint.x) / oldScale;
+                let y = this.viewPoint.y + (event.y - this.lastViewPoint.y) / oldScale;
                 updatePoint(this.viewPoint, {x, y});
-                updatePoint(this.lastViewPoint, $event);
+                updatePoint(this.lastViewPoint, {x: event.x, y: event.y});
             },
 
             explode(node: NodeSettingPart) {

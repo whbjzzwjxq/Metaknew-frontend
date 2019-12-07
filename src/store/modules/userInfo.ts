@@ -1,6 +1,7 @@
 import {loginCookie, FileToken, UserLoginResponse} from '@/api/user'
 import {setCookie} from '@/utils/utils'
 import {Commit, Dispatch} from "vuex";
+import {commitFileToken, commitUserLogin} from "@/store/modules/_mutations";
 
 export type userId = number;
 export type userName = string;
@@ -48,15 +49,14 @@ const mutations = {
 
 const actions = {
   loginCookie: (context: { commit: Commit, state: State, dispatch: Dispatch }) => {
-    loginCookie().then(res => {
-      let data: UserLoginResponse = res.data;
+    loginCookie().then((res) => {
+      const {data} = res;
       setCookie('user_name', data.userName, 7);
       setCookie('token', data.token, 7);
-      context.commit('loginSuccess', data);
-      context.commit('updateFileToken', data.fileToken)
+      commitUserLogin(data);
+      commitFileToken(data.fileToken)
     })
   }
-
 };
 
 const getters = {};

@@ -25,10 +25,11 @@ export interface iconItem {
     render: boolean
 }
 
-export interface LabelViewDict {
-    node: Record<string, boolean>,
-    media: Record<string, boolean>,
-    link: Record<string, boolean>
-}
+export type LabelViewDict = Record<any, Record<string, boolean>>
 
 export type item = 'node' | 'media' | 'link'
+
+export interface TabContent {
+    icon: string,
+    props: Record<string, any>
+}

@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import {createMediaNode, queryDocGraph, queryMultiMedia, queryMultiSource} from '@/api/commonSource';
+import {createMedia, queryDocGraph, queryMultiMedia, queryMultiSource} from '@/api/commonSource';
 import {FileToken, getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
@@ -26,6 +26,8 @@ import {
     commitGraphChangeId, commitItemChange, commitFileToken
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
+import {AreaRect} from "@/utils/geoMetric";
+import {isNodeBackend} from "@/utils/typeCheck";
 
 export type InfoPart = NodeInfoPart | MediaInfoPart | LinkInfoPart;
 export type idMap = Record<id, id>;
@@ -93,13 +95,12 @@ const getters = {
 const mutations = {
 
     // ------------单纯的操作------------
-    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart, viewBoxWidth: number, viewBoxHeight: number }) {
-        let {graph, viewBoxWidth, viewBoxHeight} = payload;
+    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart, viewBox?: AreaRect }) {
+        let {graph, viewBox} = payload;
         let id = graph.id; // 这里payload是document
         state.currentGraph = graph;
-        graph.Conf.State.viewBoxWidth = viewBoxWidth;
-        graph.Conf.State.viewBoxHeight = viewBoxHeight;
-
+        viewBox &&
+        (graph.Conf.State.viewBox = viewBox);
         commitItemChange(state.nodeManager[id]);
     },
 
@@ -201,7 +202,7 @@ const actions = {
     },
 
     // 异步请求Node
-    nodeQuery(context: { commit: Commit, state: DataManagerState }, payload: Array<Setting>) {
+    nodeQuery(context: { commit: Commit, state: DataManagerState }, payload: Array<NodeSetting>) {
         // 未缓存的节点列表
         let noCacheNode = payload.filter(node => !state.nodeManager[node._id]);
         if (noCacheNode.length > 0) {
@@ -213,11 +214,13 @@ const actions = {
             });
             // 请求节点
             queryMultiSource(nodeQuery).then(res => {
-                let data: Array<NodeInfoPartBackend> = res.data;
+                const {data} = res;
                 data.map(node => {
-                    let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl, userConcernTemplate());
-                    nodeInfo.synchronizationAll();
-                    commitInfoAdd({item: nodeInfo})
+                    if (isNodeBackend(node)) {
+                        let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl, userConcernTemplate());
+                        nodeInfo.synchronizationAll();
+                        commitInfoAdd({item: nodeInfo})
+                    }
                 });
             });
         }
@@ -237,15 +240,17 @@ const actions = {
             });
             // 请求关系
             queryMultiSource(linkQuery).then(res => {
-                let data: Array<LinkInfoPartBackend> = res.data;
+                const {data} = res;
                 data.map(link => {
-                    let linkSetting = noCacheLink.filter(setting => setting._id === link.Info.id)[0];
-                    let linkInfo = new LinkInfoPart(link.Info, <BaseLinkCtrl>Object.assign(link.Ctrl, {
-                        Start: linkSetting._start,
-                        End: linkSetting._end,
-                    }));
+                    if (!isNodeBackend(link)) {
+                        let linkSetting = noCacheLink.filter(setting => setting._id === link.Info.id)[0];
+                        let linkInfo = new LinkInfoPart(link.Info, <BaseLinkCtrl>Object.assign(link.Ctrl, {
+                            Start: linkSetting._start,
+                            End: linkSetting._end,
+                        }));
 
-                    commitInfoAdd({item: linkInfo})
+                        commitInfoAdd({item: linkInfo})
+                    }
                 });
             });
         }
@@ -268,7 +273,7 @@ const actions = {
             });
 
             return queryMultiMedia(noCacheMedia).then(res => {
-                let data: Array<MediaInfoPartBackend> = res.data;
+                const {data} = res;
                 data.map(media => {
                     let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, userConcernTemplate(), 'remote', []);
                     mediaInfo.synchronizationAll();
@@ -303,7 +308,7 @@ const actions = {
         await filePutBlob(fileToken, realFile, storeName).then(returnObj => {
             if (uploadType === 'normal' && item) {
                 let data = {name: storeName, item: item.Info};
-                request = createMediaNode(data);
+                request = createMedia(data);
                 return request
             } else if (uploadType === 'mainImage') {
                 return new Promise(() => {

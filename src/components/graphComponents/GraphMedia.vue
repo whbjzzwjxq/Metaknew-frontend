@@ -13,7 +13,7 @@
 </template>
 
 <script lang="js">
-    import CardRootMedia from '../card/page/cardPageMediaInfo'
+    import CardRootMedia from '../card/page/CardPageMediaInfo'
 
     export default {
         name: 'GraphMedia',

@@ -94,7 +94,7 @@
                 :base-files="baseValue"
                 v-bind="setting[propName]"
                 @update-value="update"
-                upload-able>
+                upload-mode>
 
             </field-file>
         </template>

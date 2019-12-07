@@ -9,7 +9,7 @@
                     <v-subheader :key="_type">
                         {{ keyTrans[_type] }}
                     </v-subheader>
-                    <v-list-item v-for="(bool, label) in value" :key="label">
+                    <v-list-item v-for="(bool, label, index) in value" :key="label">
                         <global-chip
                             :label="label"
                             :index="index"

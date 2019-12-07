@@ -90,7 +90,7 @@
     import DataTableButtonGroup from '@/views/dataTable/DataTableButtonGroup.vue';
     import DataTableField from '@/views/dataTable/DataTableField.vue';
     import {BaseNodeInfo, ExtraProps, getIndex} from '@/utils/graphClass'
-    import {multiNodeCreate} from "@/api/commonSource"
+    import {createNodeMulti} from "@/api/commonSource"
 
     export default Vue.extend({
         name: "DataTable",
@@ -356,7 +356,7 @@
 
             saveNodes(nodes: BaseNodeInfo[]) {
                 let _this = this;
-                multiNodeCreate(this.pLabel, nodes).then(res => {
+                createNodeMulti(this.pLabel, nodes).then(res => {
                     if (res.status === 200) {
                         alert(res.data);
                         for (let i in nodes) {

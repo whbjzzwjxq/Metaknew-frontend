@@ -43,7 +43,7 @@
     import SearchBar from '@/components/SearchBar.vue';
     import {delCookie, getCookie} from "@/utils/utils"
     import {commitLoginOut, commitScreenResize, commitUserLogin} from '@/store/modules/_mutations'
-    import {StyleManagerState, ComponentSize, ToolBar} from '@/store/modules/styleWindowSize'
+    import {StyleManagerState, ComponentSize, ToolBar} from '@/store/modules/styleComponentSize'
     import {FileToken} from "@/api/user"
 
     export default Vue.extend({

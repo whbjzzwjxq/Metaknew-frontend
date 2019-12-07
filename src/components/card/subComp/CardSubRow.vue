@@ -3,15 +3,15 @@
         <hr class="cardHr"/>
         <v-row class="pl-4 pr-4 justify-content-between">
             <v-col class="pa-0 ma-0" cols="11">
-                <v-subheader class="ml-n4 card-subheader">{{text}}</v-subheader>
+                <v-subheader class="ml-n4 card-subheader" style="height: 36px">{{text}}</v-subheader>
             </v-col>
             <v-col class="pa-0 ma-0" cols="1">
-                <v-btn icon x-small v-if="collapse">
+                <v-btn icon x-small v-if="!noCollapse">
                     <v-icon @click="input">{{collapsedIcon}}</v-icon>
                 </v-btn>
             </v-col>
         </v-row>
-        <v-row class="pl-4 pr-4" v-show="!isCollapsed">
+        <v-row class="pl-4 pr-4 pb-2" v-show="!isCollapsed">
             <slot name="content"></slot>
         </v-row>
     </div>
@@ -21,7 +21,7 @@
     import Vue from 'vue'
 
     export default Vue.extend({
-        name: "cardSubRow",
+        name: "CardSubRow",
         components: {},
         data() {
             return {
@@ -29,17 +29,28 @@
             }
         },
         props: {
-            collapse: Boolean as () => boolean
+            noCollapse: {
+                type: Boolean as () => boolean,
+                default: false
+            },
+            text: {
+                type: String as () => string,
+                default: ''
+            }
         },
         computed: {
-            collapsedIcon: function (vm): string {
-                return vm.isCollapsed
+            collapsedIcon(): string {
+                return this.isCollapsed
                     ? 'mdi-plus'
                     : 'mdi-minus'
             },
 
         },
-        methods: {},
+        methods: {
+            input() {
+                this.isCollapsed = !this.isCollapsed
+            }
+        },
         watch: {},
         record: {
             status: 'done'

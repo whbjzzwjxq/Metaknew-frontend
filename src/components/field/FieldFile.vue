@@ -151,13 +151,28 @@
             }
         },
         props: {
-            baseFiles: Array as () => id[],
-            propName: String as () => '',
-            width: Number as () => 600,
-            rules: Array as () => (() => {})[],
-            showCurrent: Boolean as () => false,
-            uploadAble: {
-                type: Boolean as () => false,
+            baseFiles: {
+                type: Array as () => id[],
+                required: true
+            },
+            propName: {
+                type: String as () => string,
+                required: true
+            },
+            width: {
+                type: Number as () => number,
+                default: 400
+            },
+            rules: {
+                type: Array as () => (() => {})[],
+                default: []
+            },
+            showCurrent: {
+                type: Boolean as () => boolean,
+                default: false
+            },
+            uploadMode: {
+                type: Boolean as () => boolean,
                 default: false
             }
         },

@@ -70,7 +70,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {DataManagerState} from '@/store/modules/dataManager'
-    import {IndexedInfo, IndexedText, queryHomePage, SearchBackObject, SearchQueryObject} from '@/api/search'
+    import {IndexedInfo, IndexedText, queryHomePage, HomePageSearchResponse, SearchQueryObject} from '@/api/search'
     import {GraphSelfPart, InfoToSetting, MediaSettingPart, NodeSettingPart} from '@/utils/graphClass'
     import {commitSettingPush} from '@/store/modules/_mutations'
 
@@ -111,7 +111,7 @@
                     recent: [],
                     info: [],
                     text: []
-                } as SearchBackObject,
+                } as HomePageSearchResponse,
                 regexLabel: new RegExp(':.{3,12}'),
                 regexProps: new RegExp('-.{3,12}'),
                 regexSymbol: new RegExp('\\s[-\\\\:*?",;<>|]'),

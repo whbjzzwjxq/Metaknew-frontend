@@ -1,12 +1,12 @@
 <template>
-    <div></div>
+
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
 
     export default Vue.extend({
-        name: "CardSubRating",
+        name: "ResultDocGraphToolbar",
         components: {},
         data() {
             return {}
@@ -26,6 +26,6 @@
 </style>
 
 /**
-* Created by whb on 2019/11/25
+* Created by whb on 2019/12/7
 * Updated by []
 */

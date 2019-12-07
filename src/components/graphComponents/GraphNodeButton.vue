@@ -40,17 +40,17 @@
                 return {
                     width: '36px',
                     height: '120px',
-                    left: this.x + 5 + 'px',
-                    top: this.y + 5 + 'px',
+                    left: this.x + 'px',
+                    top: this.y + 'px',
                     position: 'absolute'
                 }
             },
-            x: vm => vm.nodeSetting.x + vm.nodeSetting.width + 18,
-            y: vm => vm.nodeSetting.y + vm.nodeSetting.height,
+            x: vm => vm.nodeSetting.x + vm.nodeSetting.width + 12,
+            y: vm => vm.nodeSetting.y - vm.nodeSetting.height - 12,
             showNode: vm => vm.nodeSetting.show,
             arrowIcon: vm => !vm.boundGraph
                 ? 'mdi-magnify'
-                : !vm.boundGraph.State.isExplode
+                : !vm.boundGraph.Conf.State.isExplode
                     ? 'mdi-arrow-expand-all'
                     : 'mdi-arrow-collapse-all',
             boundGraph: vm => vm.$store.state.dataManager.graphManager[vm.node.Setting._id],

@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import {AreaRect} from "@/utils/geoMetric";
 export interface ComponentSize {
   width: number | string,
   height: number | string,
@@ -31,7 +32,7 @@ const state: StyleManagerState = {
     height: 48
   },
   leftCard: {
-    width: 420,
+    width: 400,
     height: '100%'
   },
   bottomBar: {
@@ -55,9 +56,11 @@ const mutations = {
 const actions = {};
 const getters = {
   viewBox: (state: StyleManagerState) => {
-    return <ComponentSize>{
+    return <AreaRect>{
+      x: state.leftCard.width,
+      y: state.toolBar.height,
       width: state.screenX - state.leftCard.width,
-      height: state.screenY - state.bottomBar.height - state.toolBar.height
+      height: state.screenY - state.toolBar.height - 10
     }
   }
 };

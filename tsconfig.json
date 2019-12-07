@@ -33,7 +33,8 @@
     "src/**/*.vue",
     "src/**/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
+    "tests/**/*.tsx",
+    "node_modules/vue-cropper"
   ],
   "exclude": [
     "node_modules",

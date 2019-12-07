@@ -1,4 +1,4 @@
-import {mainNationRegionEn} from '@/utils/Nation';
+import {mainNationRegionEn} from '@/utils/nation';
 
 export type FieldType = 'TextField' | 'ArrayField' | 'NumberField' | 'StringField' |
   'JsonField' | 'FileField' | 'ImageField' | 'BooleanField'
@@ -248,7 +248,7 @@ export const labelItems = {
 };
 
 // 不需要编辑的属性
-export const unActiveProp = [
+export const unActivePropNode = [
   'PrimaryLabel', 'MainPic', 'IncludedMedia',
   'Name', 'Alias', 'Topic', 'Language',
   'Labels', 'Text', 'Translate',

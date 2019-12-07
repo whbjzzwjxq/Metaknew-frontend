@@ -86,7 +86,7 @@
 </template>
 
 <script lang="js">
-    export default Vue.extend({
+    export default {
         name: 'GraphNode',
         components: {},
         data () {
@@ -149,7 +149,7 @@
             //注意是实际二分之一的宽度
             width: vm => vm.height * vm.setting.Base.scaleX,
 
-            colorStyle() {
+            colorStyle () {
                 return {
                     'fill': this.circleColor,
                     'fill-opacity': this.setting.Base.opacity & !this.showPic,
@@ -160,30 +160,21 @@
                 }
             },
             //圆的颜色
-            circleColor: {
-                get () {
-                    if (this.setting.Base.color !== '') {
-                        return this.setting.Base.color
-                    } else {
-                        return this.$store.state.labelColor[this.setting._type]
-                    }
-                },
-                set () {
-                    this.$store.commit('addLabel', this.setting._type)
+            circleColor () {
+                if (this.setting.Base.color !== '') {
+                    return this.setting.Base.color
+                } else {
+                    this.$store.commit('addLabelColor', [this.setting._type])
+                    return this.$store.state.styleLabelColor[this.setting._type]
                 }
             },
             //边框颜色
-            borderColor: {
-                get () {
-                    if (this.setting.Border.color !== '') {
-                        return this.setting.Border.color
-                    } else {
-                        return this.$store.state.labelColor[this.setting._label]
-                    }
-                },
-
-                set () {
-                    this.$store.commit('addLabel', this.setting._label)
+            borderColor () {
+                if (this.setting.Border.color !== '') {
+                    return this.setting.Border.color
+                } else {
+                    this.$store.commit('addLabelColor', [this.setting._label])
+                    return this.$store.state.styleLabelColor[this.setting._label]
                 }
             },
 
@@ -324,8 +315,10 @@
                 let deltaKick = 10
                 let border = this.container.border
                 let newX = 0
-                this.x <= this.container.start.x + border && (newX = this.container.start.x + border + deltaKick)
-                this.x >= this.container.end.x - border && (newX = this.container.end.x - border - deltaKick)
+                let left = border + this.width
+                let right = this.container.getPositiveRect().width - border - this.width
+                this.x <= left && (newX = left + deltaKick)
+                this.x >= right && (newX = right - deltaKick)
                 newX !== 0 && this.$emit('kick-back-x', this.node, newX)
             },
             y () {
@@ -333,7 +326,7 @@
                 let border = this.container.border
                 let newY = 0
                 let top = border + this.height
-                let bottom = this.container.end.y - border - this.height
+                let bottom = this.container.getPositiveRect().height - border - this.height
                 this.y <= top && (newY = top + deltaKick)
                 this.y >= bottom && (newY = bottom - deltaKick)
                 newY !== 0 && this.$emit('kick-back-y', this.node, newY)
@@ -342,7 +335,7 @@
         record: {
             status: 'empty'
         }
-    })
+    }
 </script>
 
 <style scoped>

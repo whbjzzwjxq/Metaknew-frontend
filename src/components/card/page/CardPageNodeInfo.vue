@@ -2,7 +2,7 @@
     <div v-if="!loading">
         <card-sub-row :text="nameTrans[type] + '标题'">
             <template v-slot:content>
-                <v-col cols="4" class="pa-0 ma-0">
+                <v-col cols="4" class="pa-0 ma-0 pb-1">
                     <node-avatar
                         :src="mainImage"
                         :imageList="imageList"
@@ -11,7 +11,7 @@
 
                     </node-avatar>
                 </v-col>
-                <v-col cols="8" class="pt-0 pb-0 ma-0 pl-4">
+                <v-col cols="8" class="pt-1 ma-0 pl-4">
                     <v-row>
                         <v-text-field
                             v-model="name"
@@ -156,6 +156,10 @@
                 </field-text>
             </template>
         </card-sub-row>
+
+        <v-btn text>
+            Learn More
+        </v-btn>
     </div>
 </template>
 
@@ -174,9 +178,9 @@
         allPropType,
         availableLabel,
         labelItems,
-        linkLabels,
+        linkLabels, neededProp,
         topicItems,
-        unActivePropLink
+        unActivePropLink, unActivePropNode
     } from "@/utils/labelField";
     import {DataManagerState} from "@/store/modules/dataManager";
     import {ExtraProp, LabelGroup} from "@/utils/interfaceInComponent"
@@ -251,6 +255,9 @@
                     ? this.nodeLabels
                     : this.allLabels
             },
+            neededProp() {
+                return neededProp(this.label)
+            },
             alias: {
                 get(): string {
                     let output = this.info.Alias.join(";");
@@ -298,12 +305,12 @@
             extraProps: function () {
                 let result: ExtraProp = {};
                 Object.entries(this.info).map(([key, value]) => {
-                    if (unActivePropLink.indexOf(key) === -1) {
+                    if (unActivePropNode.indexOf(key) === -1) {
                         key !== "ExtraProps"
                             ? result[key] = {
                                 "value": value,
-                                "type": allPropType["node"][key].type,
-                                "resolve": allPropType["node"][key].resolve
+                                "type": this.neededProp[key].type,
+                                "resolve": this.neededProp[key].resolve
                             }
                             : result[key] = {
                                 "value": this.info[key],
@@ -351,6 +358,10 @@
                             'prop': 'UserConcern'
                         }
                     ]
+            },
+
+            levelGroup() {
+                return {}
             },
 
             imageList() {

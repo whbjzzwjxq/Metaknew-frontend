@@ -10,25 +10,27 @@
         <v-tabs-items v-model="currentTab">
             <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
                 <card-eco-system v-if=" tab === 'eco'" v-bind="value.props"></card-eco-system>
-                <card-document v-if="tab === 'document'"></card-document>
-                <card-meta-knowledge v-if="tab === 'node'"></card-meta-knowledge>
+                <card-document v-if="tab === 'document'" v-bind="value.props"></card-document>
+                <card-meta-knowledge
+                    v-if="tab === 'node'"
+                    :node-info="dataManager.currentItem"
+                    :width="allComponentSize.leftCard.width"
+                    >
+
+                </card-meta-knowledge>
             </v-tab-item>
         </v-tabs-items>
-
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {StyleManagerState, ToolBar} from "@/store/modules/styleWindowSize"
+    import {StyleManagerState, ToolBar} from "@/store/modules/styleComponentSize"
     import CardEcoSystem from '@/components/card/CardEcoSystem.vue';
     import CardDocument from '@/components/card/CardDocument.vue';
     import CardMetaKnowledge from '@/components/card/CardMetaKnowledge.vue';
-
-    interface TabContent {
-        icon: string,
-        props: Record<string, any>
-    }
+    import {TabContent} from "@/utils/interfaceInComponent";
+    import {DataManagerState} from "@/store/modules/dataManager";
 
     export default Vue.extend({
         name: "CardRoot",
@@ -39,20 +41,6 @@
         },
         data() {
             return {
-                tabItems: {
-                    "eco": {
-                        icon: 'mdi-earth',
-                        props: {}
-                    },
-                    "document": {
-                        icon: 'mdi-graph-outline',
-                        props: {}
-                    },
-                    "node": {
-                        icon: 'mdi-numeric-1-circle-outline',
-                        props: {}
-                    }
-                } as Record<string, TabContent>,
                 tabTrans: {
                     "eco": {
                         "zh": "知识生态"
@@ -70,6 +58,9 @@
         },
         props: {},
         computed: {
+            dataManager(): DataManagerState {
+                return this.$store.state.dataManager
+            },
             allComponentSize(): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
@@ -83,6 +74,25 @@
                     'z-index': 1
                 }
             },
+            tabItems(): Record<string, TabContent> {
+                return {
+                    "eco": {
+                        icon: 'mdi-earth',
+                        props: {}
+                    },
+                    "document": {
+                        icon: 'mdi-google-circles-communities',
+                        props: {}
+                    },
+                    "node": {
+                        icon: 'mdi-numeric-1-circle-outline',
+                        props: {
+                            nodeInfo: this.dataManager.currentItem
+                        }
+                    }
+                }
+            },
+
             availableTabs(): Record<string, TabContent> {
                 return this.tabItems
             }

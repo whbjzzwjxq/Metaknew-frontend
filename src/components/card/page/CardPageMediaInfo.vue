@@ -77,7 +77,7 @@
     import {DataManagerState} from "@/store/modules/dataManager";
     import {LabelGroup, iconItem} from "@/utils/interfaceInComponent";
     import {labelItems} from "@/utils/labelField";
-    import {updateMediaNode} from '@/api/commonSource'
+    import {updateMedia} from '@/api/commonSource'
 
     export default Vue.extend({
         name: "CardPageMediaInfo",
@@ -269,7 +269,7 @@
             saveMedia() {
                 let status = this.file.status;
                 if (status === "success" || status === "remote") {
-                    updateMediaNode(this.file).then(res => {
+                    updateMedia(this.file).then(res => {
                         res.status === 200
                             ? alert("保存成功")
                             : alert("保存失败 请重试");

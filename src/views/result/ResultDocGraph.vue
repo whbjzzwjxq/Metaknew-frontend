@@ -6,7 +6,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {ComponentSize, StyleManagerState} from '@/store/modules/styleWindowSize'
+    import {ComponentSize, StyleManagerState} from '@/store/modules/styleComponentSize'
 
     export default Vue.extend({
         name: "ResultDocGraph",

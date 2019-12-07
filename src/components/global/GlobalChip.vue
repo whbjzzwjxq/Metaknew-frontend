@@ -1,19 +1,20 @@
 <template>
-  <v-chip @click="click"
-          :color="labelColor"
-          :small="small"
-          :x-small="xSmall"
-          :large="large"
-          :x-large="xLarge"
-          :close="closeable"
-          @click:close="deleteChip"
-          v-show="show">
-    {{label}}
-  </v-chip>
+    <v-chip @click="click"
+            :color="labelColor"
+            :small="small"
+            :x-small="xSmall"
+            :large="large"
+            :x-large="xLarge"
+            :close="closeable"
+            @click:close="deleteChip"
+            v-show="show">
+        {{label}}
+    </v-chip>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
+    import {commitNewLabel} from "@/store/modules/_mutations";
 
     export default Vue.extend({
         name: "GlobalChip",
@@ -75,10 +76,10 @@
                 if (this.color) {
                     return this.color
                 } else {
-                    if (!this.$store.getters.findLabel(this.label)) {
-                        this.$store.commit('addLabel', [this.label]);
+                    if (this.$store.getters.currentLabels.indexOf(this.label) < 0) {
+                        commitNewLabel([this.label]);
                     }
-                    return this.$store.state.labelColor[this.label].color
+                    return this.$store.state.styleLabelColor[this.label].color
                 }
             }
         },

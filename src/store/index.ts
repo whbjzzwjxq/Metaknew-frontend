@@ -5,7 +5,7 @@ import componentSnackBar from "@/store/modules/componentSnackBar";
 import dataTextResolveCache from "@/store/modules/dataTextResolveCache";
 import styleLabelColor from "@/store/modules/styleLabelColor";
 import dataManager from "@/store/modules/dataManager";
-import styleWindowSize from "@/store/modules/styleWindowSize";
+import styleComponentSize from "@/store/modules/styleComponentSize";
 
 Vue.use(Vuex);
 
@@ -20,6 +20,6 @@ export default new Vuex.Store({
     dataTextResolveCache: dataTextResolveCache,
     dataManager: dataManager,
     styleLabelColor: styleLabelColor,
-    styleComponentSize: styleWindowSize
+    styleComponentSize: styleComponentSize
   }
 })

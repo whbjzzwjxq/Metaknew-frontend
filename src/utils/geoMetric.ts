@@ -30,25 +30,26 @@ export class RectByPoint {
             x: this.start.x,
             y: this.start.y,
             width: this.end.x - this.start.x,
-            height: this.end.y - this.end.y
+            height: this.end.y - this.start.y
         } as AreaRect
     }
 
     getPositiveRect() {
         let {x, y, width, height} = this.getOriginAreaRect();
         return {
-            x: x > 0 ? this.end.x : this.start.x,
-            y: y > 0 ? this.end.y : this.start.y,
+            x: width < 0 ? this.end.x : this.start.x,
+            y: height < 0 ? this.end.y : this.start.y,
             width: Math.abs(width),
             height: Math.abs(height)
         } as AreaRect
     }
 
     checkInRect(point: Point) {
-        return this.start.x <= point.x &&
-            this.end.x >= point.x &&
-            this.start.y <= point.y &&
-            this.end.y >= point.y
+        let {x, y, width, height} = this.getPositiveRect();
+        return x <= point.x &&
+            x + width >= point.x &&
+            y <= point.y &&
+            y + height >= point.y
     }
 
     getMidPoint() {

@@ -1,10 +1,11 @@
 import deepClone, {getCookie} from "@/utils/utils";
 import Vue from "vue";
-import {allPropType, fieldDefaultValue, FieldType, neededProp, PropDescription} from "@/utils/labelField";
+import {allPropType, fieldDefaultValue, neededProp, PropDescription} from "@/utils/labelField";
 import {settingTemplate} from "@/utils/settingTemplate";
-import {InfoPart} from "@/store/modules/dataManager";
+import {AreaRect} from "@/utils/geoMetric";
+import {isBooleanConcern, isLevelConcern} from "@/utils/typeCheck";
 
-let newIdRegex = new RegExp("\\$_[0-9]*");
+export let newIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
 let crucialRegex = new RegExp("_.*");
 export type id = number | string;
@@ -79,23 +80,6 @@ export type LevelConcern = "Imp" | "HardLevel" | "Useful";
 export const LevelConcernList: LevelConcern[] = ["Imp", "HardLevel", "Useful"];
 export type BooleanConcern = "isStar" | "isBad" | "isGood" | "isShared";
 
-export function isBooleanConcern(
-    prop: LevelConcern | BooleanConcern | "Labels"
-): prop is BooleanConcern {
-    return (
-        prop === "isStar" ||
-        prop === "isBad" ||
-        prop === "isGood" ||
-        prop === "isShared"
-    );
-}
-
-export function isLevelConcern(
-    prop: LevelConcern | BooleanConcern | "Labels"
-): prop is LevelConcern {
-    return prop === "Imp" || prop === "HardLevel" || prop === "Useful";
-}
-
 interface UserConcern {
     Imp: number;
     HardLevel: number;
@@ -109,8 +93,7 @@ interface UserConcern {
 
 interface BaseState {
     isSelected: boolean; // 是否被选中
-    isDeleted: boolean; // 是否被删除
-    [propName: string]: boolean | number;
+    isDeleted: boolean; // 是否被删除;
 }
 
 interface NodeState extends BaseState {
@@ -132,8 +115,7 @@ export interface GraphState extends BaseState {
     isChanged: boolean;
     SavedIn5Min: boolean; // 5分钟内是否保存
     isExplode: boolean;
-    viewBoxWidth: number;
-    viewBoxHeight: number;
+    viewBox: AreaRect
 }
 
 export const InfoToSetting = (payload: {
@@ -226,7 +208,7 @@ export interface MediaInfoPartBackend {
     Ctrl: BaseMediaCtrl;
 }
 
-interface BaseLinkInfo extends BaseInfo {
+export interface BaseLinkInfo extends BaseInfo {
     type: "link";
     Labels: Array<string>;
     ExtraProps: Object;
@@ -290,14 +272,6 @@ export type VisualNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从�
 
 export type AllItemSettingPart = VisualNodeSettingPart | LinkSettingPart;
 
-export function isMediaSetting(item: VisualNodeSettingPart): item is MediaSettingPart {
-    return (item as MediaSettingPart).Setting._type === 'media'
-}
-
-export function isLinkSetting(item: SettingPart): item is LinkSettingPart {
-    return (item as LinkSettingPart).Setting._type === 'link'
-}
-
 export function nodeStateTemplate(...rest: Array<string>) {
     return <NodeState>{
         isSelected: false,
@@ -330,8 +304,12 @@ export function graphStateTemplate(...rest: Array<string>) {
         isSelf: rest.indexOf("isSelf") > -1,
         isAdd: rest.indexOf("isAdd") > -1,
         isLoading: rest.indexOf("isLoading") > -1,
-        viewBoxWidth: 400,
-        viewBoxHeight: 300
+        viewBox: {
+            x: 0,
+            y: 0,
+            height: 300,
+            width: 400
+        }
     };
 }
 
@@ -348,11 +326,8 @@ export function userConcernTemplate() {
     };
 }
 
-export function nodeInfoTemplate(_id: id, _type: string, _label: string) {
-    let info = <BaseNodeInfo>{
-        id: _id,
-        type: _type
-    };
+export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: string) {
+    let info = <BaseNodeInfo>{};
     let dict = Object.assign({}, allPropType.BaseNode, allPropType[_label]);
     Object.entries(dict).forEach(([key, value]) => {
         let type = value.type;
@@ -365,6 +340,8 @@ export function nodeInfoTemplate(_id: id, _type: string, _label: string) {
     info.Language = "auto";
     info.PrimaryLabel = _label;
     info.$IsOpenSource = false;
+    info.id = _id;
+    info.type = _type;
     return info;
 }
 
@@ -474,7 +451,7 @@ export class NodeInfoPart {
         this.UserConcern = userConcern;
     }
 
-    static emptyNodeInfoPart(_id: id, _type: string, _label: string) {
+    static emptyNodeInfoPart(_id: id, _type: 'node' | 'document', _label: string) {
         return new NodeInfoPart(
             nodeInfoTemplate(_id, _type, _label),
             nodeCtrlTemplate(_label),
@@ -801,7 +778,7 @@ export function nodeSettingTemplate(
         _name,
         _image
     };
-    Object.assign(settingTemplate("node"), setting);
+    Object.assign(setting, settingTemplate("node"));
     return setting;
 }
 
@@ -818,7 +795,7 @@ export function linkSettingTemplate(
         _start,
         _end
     };
-    Object.assign(settingTemplate("link"), setting);
+    Object.assign(setting, settingTemplate("link"));
     return setting;
 }
 
@@ -835,7 +812,7 @@ export function mediaSettingTemplate(
         _name,
         _src
     };
-    Object.assign(settingTemplate("media"), setting);
+    Object.assign(setting, settingTemplate("media"));
     return setting;
 }
 
@@ -845,7 +822,7 @@ export function graphSettingTemplate(_id: id) {
         _type: "document",
         _label: "Doc2Graph"
     };
-    Object.assign(settingTemplate("document"), setting);
+    Object.assign(setting, settingTemplate("document"));
     return setting;
 }
 
@@ -1044,6 +1021,11 @@ export class GraphSelfPart {
         this.Conf = setting;
         this.Graph = graph;
         this.Path = path;
+        if (GraphSelfPart.list === undefined) {
+            GraphSelfPart.list = [this]
+        } else {
+            GraphSelfPart.list.push(this)
+        }
     }
 
     static emptyGraphSelfPart(_id: id, parent: GraphSelfPart | null) {
@@ -1173,6 +1155,10 @@ export class GraphSelfPart {
 
     getRoot() {
         let length = this.rootList.length;
-        return this.rootList[length - 1]
+        if (length > 0) {
+            return this.rootList[length - 1]
+        } else {
+            return null
+        }
     }
 }
