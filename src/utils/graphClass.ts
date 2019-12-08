@@ -1,7 +1,7 @@
 import deepClone, {getCookie} from "@/utils/utils";
 import Vue from "vue";
 import {allPropType, fieldDefaultValue, neededProp, PropDescription} from "@/utils/labelField";
-import {settingTemplate} from "@/utils/settingTemplate";
+import {noteTemplate, settingTemplate} from "@/utils/settingTemplate";
 import {AreaRect} from "@/utils/geoMetric";
 import {isBooleanConcern, isLevelConcern} from "@/utils/typeCheck";
 
@@ -34,6 +34,19 @@ export const findItem = (list: Array<SettingPart>, _id: id, _type: BaseType) =>
     );
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");
+
+const mediaIconDict = {
+    'image': 'mdi-image',
+    'text': 'mdi-message-text',
+    'audio': 'mdi-volume-high',
+    'video': 'mdi-video',
+    'pdf': 'mdi-file-pdf',
+    'markdown': 'mdi-markdown',
+} as Record<string, string>;
+
+export const getMediaIcon = (_label: string) => mediaIconDict[_label] === undefined
+    ? mediaIconDict[_label]
+    : 'mdi-help-circle-outline';
 
 export function getType(file: File) {
     const mime = require("mime/lite");
@@ -77,7 +90,6 @@ export interface Text {
 }
 
 export type LevelConcern = "Imp" | "HardLevel" | "Useful";
-export const LevelConcernList: LevelConcern[] = ["Imp", "HardLevel", "Useful"];
 export type BooleanConcern = "isStar" | "isBad" | "isGood" | "isShared";
 
 interface UserConcern {
@@ -94,6 +106,7 @@ interface UserConcern {
 interface BaseState {
     isSelected: boolean; // 是否被选中
     isDeleted: boolean; // 是否被删除;
+    isSelf: boolean; // 是否是自己的内容
 }
 
 interface NodeState extends BaseState {
@@ -968,17 +981,23 @@ export class GraphSettingPart extends SettingPart {
 }
 
 export interface Notes {
-    isDeleted: boolean,
-    Content: string,
     Setting: {
-        Conf: {
+        _id: '',
+        _type: 'note',
+        _label: 'note',
+        Base: {
             x: number,
             y: number,
             width: number,
             height: number,
             dark: boolean
         }
-    }
+    },
+    State: {
+        isDeleted: boolean,
+    },
+    Content: string,
+    parent: GraphSelfPart
 }
 
 interface Graph {
@@ -1149,6 +1168,10 @@ export class GraphSelfPart {
             });
     }
 
+    addNote() {
+        this.Graph.notes.push(noteTemplate(this))
+    }
+
     changeId(newId: id) {
         this.id = newId;
     }
@@ -1160,5 +1183,16 @@ export class GraphSelfPart {
         } else {
             return null
         }
+    }
+
+    getChildGraph() {
+        let result: GraphSelfPart[] = [];
+        GraphSelfPart.list.map(graph => {
+            let root = graph.getRoot();
+            if (root && root.id === this.id) {
+                result.push(graph)
+            }
+        });
+        return result
     }
 }

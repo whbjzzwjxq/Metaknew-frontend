@@ -1,29 +1,41 @@
 <template>
     <v-card width="width" height="100%" flat tile>
         <v-card-text class="pa-2 pl-3 pt-0">
-        <v-tabs v-model="currentTab" fixed-tabs height="36px" color="grey">
-            <v-tabs-slider class="subTab"></v-tabs-slider>
-            <v-tab v-for="(value, tab) in availableTabs" :key="tab">
-                <v-icon left small> {{ value.icon }}</v-icon>
-                {{ tabTrans[tab][lang] }}
-            </v-tab>
-            <v-tabs-items v-model="currentTab">
-                <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
-                    <card-page-node-info
-                        v-if="tab === 'info'"
-                        :base-data="nodeInfo"
-                    >
+            <v-tabs v-model="currentTab" fixed-tabs height="36px" color="grey">
+                <v-tabs-slider class="subTab"></v-tabs-slider>
+                <v-tab v-for="(value, tab) in availableTabs" :key="tab">
+                    <v-icon left small> {{ value.icon }}</v-icon>
+                    {{ tabTrans[tab][lang] }}
+                </v-tab>
+                <v-tabs-items v-model="currentTab">
+                    <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
+                        <template v-if="tab === 'info'">
+                            <card-page-node-info
+                                v-if="type === 'node'"
+                                :base-data="info"
+                                :edit-mode="editMode"
+                            >
 
-                    </card-page-node-info>
+                            </card-page-node-info>
+                            <card-page-link-info
+                                v-else
+                                :base-data="info"
+                                :edit-mode="editMode"
+                                :document="document"
+                            >
 
-                    <card-page-media-list
-                        v-if="tab === 'medias'"
-                        :base-data="nodeInfo">
+                            </card-page-link-info>
 
-                    </card-page-media-list>
-                </v-tab-item>
-            </v-tabs-items>
-        </v-tabs>
+                        </template>
+                        <card-page-media-list
+                            v-if="tab === 'medias'  && type === 'node'"
+                            :base-data="info">
+
+                        </card-page-media-list>
+
+                    </v-tab-item>
+                </v-tabs-items>
+            </v-tabs>
         </v-card-text>
     </v-card>
 </template>
@@ -32,13 +44,16 @@
     import Vue from 'vue'
     import {TabContent} from "@/utils/interfaceInComponent";
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
+    import CardPageLinkInfo from "@/components/card/page/CardPageLinkInfo.vue";
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
-    import {NodeInfoPart} from "@/utils/graphClass";
+    import {BaseType, GraphSelfPart, NodeInfoPart} from "@/utils/graphClass";
+    import {InfoPart} from "@/store/modules/dataManager";
 
     export default Vue.extend({
         name: "CardMetaKnowledge",
         components: {
             CardPageNodeInfo,
+            CardPageLinkInfo,
             CardPageMediaList,
         },
         data() {
@@ -59,13 +74,21 @@
             }
         },
         props: {
-            nodeInfo: {
-                type: Object as () => NodeInfoPart,
+            info: {
+                type: Object as () => InfoPart,
                 required: true
             },
             width: {
                 type: Number as () => number,
                 default: 400
+            },
+            editMode: {
+                type: Boolean as () => boolean,
+                default: false
+            },
+            document: {
+                type: Object as () => GraphSelfPart,
+                required: true
             }
         },
         computed: {
@@ -73,15 +96,11 @@
                 return {
                     "info": {
                         icon: 'mdi-information-outline',
-                        props: {
-                            baseData: this.nodeInfo
-                        }
+                        props: {}
                     },
                     "medias": {
                         icon: 'mdi-folder-multiple-image',
-                        props: {
-                            baseData: this.nodeInfo
-                        }
+                        props: {}
                     },
                     "eco": {
                         icon: 'mdi-expand-all-outline',
@@ -91,6 +110,14 @@
             },
             availableTabs(): Record<string, TabContent> {
                 return this.tabItems
+            },
+            type(): BaseType {
+                let _type = this.info.Info.type;
+                if (_type === 'document') {
+                    return 'node'
+                } else {
+                    return _type
+                }
             }
         },
         methods: {},

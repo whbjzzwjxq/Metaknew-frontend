@@ -12,7 +12,9 @@
                         <field-file
                             :prop-name="'IncludeMedia'"
                             :base-files="mediaIdList"
-                            @update-value="updateIncludedMediaCache(arguments[1])">
+                            :width="540"
+                            @update-value="updateIncludedMediaCache(arguments[1])"
+                            upload-mode>
 
                         </field-file>
                         <v-card-actions>

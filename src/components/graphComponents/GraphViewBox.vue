@@ -57,8 +57,8 @@
                 v-if="isLinking"
                 :x1="getTargetInfo(startNode).x"
                 :y1="getTargetInfo(startNode).y"
-                :x2="newLinkEndPoint.x"
-                :y2="newLinkEndPoint.y"
+                :x2="newLinkEndPoint.x - 5"
+                :y2="newLinkEndPoint.y - 5"
                 stroke="grey">
 
             </line>
@@ -175,6 +175,8 @@
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import {item, LabelViewDict} from '@/utils/interfaceInComponent'
     import {isLinkSetting, isMediaSetting} from "@/utils/typeCheck";
+    import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
+    import componentSnackBar, {snackBarStatePayload} from "@/store/modules/componentSnackBar";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 
@@ -342,14 +344,7 @@
             },
             // 不包含本身的graph
             activeGraphList(): GraphSelfPart[] {
-                let result: GraphSelfPart[] = [];
-                GraphSelfPart.list.map(graph => {
-                    let root = graph.getRoot();
-                    if (root && root.id === this.document.id) {
-                        result.push(graph)
-                    }
-                });
-                return result.filter(graph => graph &&
+                return this.document.getChildGraph().filter(graph => graph &&
                     !graph.Conf.State.isDeleted &&
                     graph.Conf.State.isExplode)
             },
@@ -455,7 +450,7 @@
             },
 
             activeNotes(): Notes[] {
-                return this.notes.filter(note => !note.isDeleted)
+                return this.notes.filter(note => !note.State.isDeleted)
             },
 
             impList(): number[] {
@@ -796,11 +791,10 @@
                 this.selectItem([node]);
                 if (this.isLinking && node && this.startNode) {
                     let id = getIndex();
-                    let linkSetting = LinkSettingPart.emptyLinkSetting(id, "default", this.startNode, node, this.document);
-                    let linkInfo = LinkInfoPart.emptyLinkInfo(id, "default", this.startNode, node);
-                    let linkList = [linkSetting];
-                    this.document.addLinks(linkList);
-                    this.$store.commit('infoAdd', {item: linkInfo, strict: true});
+                    let setting = LinkSettingPart.emptyLinkSetting(id, "default", this.startNode, node, this.document);
+                    let info = LinkInfoPart.emptyLinkInfo(id, "default", this.startNode, node);
+                    this.document.addLinks([setting]);
+                    commitInfoAdd({item: info, strict: true});
                     this.isLinking = false;
                 } else {
                     //
@@ -820,7 +814,7 @@
                         ? info = this.dataManager.mediaManager[item.Setting._id]
                         : info = this.dataManager.nodeManager[item.Setting._id];
                     info &&
-                    this.$store.commit('currentItemChange', info);
+                    commitItemChange(info);
                 }
             },
 
@@ -845,21 +839,21 @@
             },
 
             selecting($event: MouseEvent) {
+                let endX = $event.x - this.containerRect.x;
+                let endY = $event.y - this.containerRect.y;
                 //选择集
                 if ($event.ctrlKey && this.isMoving) {
-                    let x = this.lastViewPoint.x + $event.x - this.container.start.x - this.moveStartPoint.x;
-                    let y = this.lastViewPoint.y + $event.y - this.container.start.y - this.moveStartPoint.y;
+                    let x = this.lastViewPoint.x + $event.x - this.moveStartPoint.x;
+                    let y = this.lastViewPoint.y + $event.y - this.moveStartPoint.y;
                     updatePoint(this.lastViewPoint, {x, y});
                     updatePoint(this.moveStartPoint, $event)
                 } else {
                     if (this.isSelecting && this.renderSelector) {
-                        let endX = $event.x - this.containerRect.x;
-                        let endY = $event.y - this.containerRect.y;
                         updatePoint(this.selectRect.end, {x: endX, y: endY})
                     }
                     //移动
                     if (this.isLinking) {
-                        updatePoint(this.newLinkEndPoint, $event)
+                        updatePoint(this.newLinkEndPoint, {x: endX, y: endY})
                     }
                 }
             },
@@ -915,10 +909,10 @@
                     "timeout": 2000,
                     "content": "再次双击节点生成关系， 双击画布取消生成",
                     "color": "success",
-                    "name": "addLink",
-                    "once": false
-                };
-                this.$store.commit('snackBarOn', payload);
+                    "actionName": "addLink",
+                    "once": false,
+                } as snackBarStatePayload;
+                commitSnackbarOn(payload);
                 this.isLinking = true;
                 this.startNode = node;
             },

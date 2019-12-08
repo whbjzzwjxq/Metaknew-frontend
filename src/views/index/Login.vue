@@ -30,7 +30,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {login, loginData, UserLoginData} from '@/api/user'
+    import {login, loginData} from '@/api/user'
     import {getCookie, setCookie, delCookie} from '@/utils/utils'
     import {commitFileToken, commitUserLogin} from '@/store/modules/_mutations'
 
@@ -63,7 +63,7 @@
             login(): any {
                 login(this.loginData).then(res => {
                     if (res.status !== 400) {
-                        let data: UserLoginData = res.data;
+                        let data = res.data;
                         setCookie('user_name', data.userName, 7);
                         setCookie('token', data.token, 7);
                         setCookie('user_id', data.userId.toString(), 7);

@@ -232,7 +232,7 @@
                     ? 0.2
                     : vm.state.isMouseOn
                         ? 0.2
-                        : 0.05
+                        : 0
                 : 0,
             hoverHeight: vm => vm.height + vm.borderWidth + 5,
             hoverWidth: vm => vm.width + vm.borderWidth + 5,

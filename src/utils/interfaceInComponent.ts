@@ -31,5 +31,6 @@ export type item = 'node' | 'media' | 'link'
 
 export interface TabContent {
     icon: string,
-    props: Record<string, any>
+    props?: Record<string, any>,
+    name?: string | Record<string, string>
 }

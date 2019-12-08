@@ -1,5 +1,5 @@
 <template>
-    <div :style="toolbarStyle" class="d-flex ">
+    <div :style="toolbarStyle" class="d-flex">
         <div class="empty"></div>
         <v-menu
             top offset-y
@@ -92,6 +92,10 @@
             document: {
                 type: Object as () => GraphSelfPart,
                 required: true
+            },
+            editMode: {
+                type: Boolean as () => boolean,
+                default: false
             }
         },
         computed: {

@@ -10,12 +10,19 @@
         <v-tabs-items v-model="currentTab">
             <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
                 <card-eco-system v-if=" tab === 'eco'" v-bind="value.props"></card-eco-system>
-                <card-document v-if="tab === 'document'" v-bind="value.props"></card-document>
+                <card-document
+                    v-if="tab === 'document'"
+                    v-bind="value.props"
+                    :document="document">
+
+                </card-document>
                 <card-meta-knowledge
                     v-if="tab === 'node'"
-                    :node-info="dataManager.currentItem"
+                    :info="dataManager.currentItem"
                     :width="allComponentSize.leftCard.width"
-                    >
+                    :edit-mode="editMode"
+                    :document="document"
+                >
 
                 </card-meta-knowledge>
             </v-tab-item>
@@ -31,6 +38,7 @@
     import CardMetaKnowledge from '@/components/card/CardMetaKnowledge.vue';
     import {TabContent} from "@/utils/interfaceInComponent";
     import {DataManagerState} from "@/store/modules/dataManager";
+    import {GraphSelfPart} from "@/utils/graphClass";
 
     export default Vue.extend({
         name: "CardRoot",
@@ -53,13 +61,17 @@
                     }
                 },
                 currentTab: 1,
-                lang: 'zh'
+                lang: 'zh',
+                editPageRegex: new RegExp('edit-.*')
             }
         },
         props: {},
         computed: {
             dataManager(): DataManagerState {
                 return this.$store.state.dataManager
+            },
+            document(): GraphSelfPart {
+                return this.dataManager.currentGraph
             },
             allComponentSize(): StyleManagerState {
                 return this.$store.state.styleComponentSize
@@ -86,15 +98,17 @@
                     },
                     "node": {
                         icon: 'mdi-numeric-1-circle-outline',
-                        props: {
-                            nodeInfo: this.dataManager.currentItem
-                        }
+                        props: {}
                     }
                 }
             },
 
             availableTabs(): Record<string, TabContent> {
                 return this.tabItems
+            },
+
+            editMode(): boolean {
+                return this.editPageRegex.test(String(this.$route.name))
             }
         },
         methods: {},

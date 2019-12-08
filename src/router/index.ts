@@ -47,15 +47,15 @@ const routes = [
                 props: true
             },
             {
+                path: 'graph/edit',
+                name: 'edit-graph',
+                component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocGraph.vue'),
+            },
+            {
                 path: 'paper/id=:id',
                 name: 'paper',
                 component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocPaper.vue'),
                 props: true
-            },
-            {
-                path: 'graph/edit',
-                name: 'edit',
-                component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocGraphEdit.vue'),
             }
         ]
     },

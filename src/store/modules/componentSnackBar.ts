@@ -2,8 +2,8 @@ export interface snackBarStatePayload {
   color: string,
   content: string,
   buttonText: string,
-  action: Function | null,
-  actionObject: Object | null,
+  action?: Function,
+  actionObject?: Object,
   actionName: string,
   once: boolean,
   timeout?: number,
@@ -22,8 +22,8 @@ const state: State = {
     color: "success",
     content: "",
     buttonText: "",
-    action: null,
-    actionObject: null,
+    action: undefined,
+    actionObject: undefined,
     actionName: '',
     once: false,
     timeout: 2000
@@ -36,6 +36,7 @@ const mutations = {
     if (!payload.once || !state.oncePool[name]) {
       state.on = true;
       state.oncePool[name] = true;
+      state.payload = payload;
       Object.prototype.hasOwnProperty.call(payload, 'timeout')
         ? (state.payload.timeout = payload.timeout)
         : (state.payload.timeout = 2000);

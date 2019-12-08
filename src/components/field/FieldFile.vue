@@ -62,7 +62,7 @@
                     </tr>
                 </template>
 
-                <template v-if="uploadAble">
+                <template v-if="uploadMode">
                     <tr v-if="newFiles.length === 0">
                         <td colspan="12"></td>
                     </tr>
@@ -165,7 +165,7 @@
             },
             rules: {
                 type: Array as () => (() => {})[],
-                default: []
+                default: () => []
             },
             showCurrent: {
                 type: Boolean as () => boolean,

@@ -1,5 +1,5 @@
 import {getCookie, randomNumberInRange} from '@/utils/utils';
-import {NodeSettingPart, BaseType} from '@/utils/graphClass';
+import {NodeSettingPart, BaseType, Notes, GraphSelfPart, getIndex} from '@/utils/graphClass';
 let globalIndex = 0;
 type settingConf = Record<string, Record<string, baseSettingConf>>
 
@@ -620,13 +620,13 @@ export function settingTemplate(_type: BaseType) {
   return result
 }
 
-export function noteTemplate() {
-  const id = `$_${globalIndex}`;
-  globalIndex += 1;
+export function noteTemplate(parent: GraphSelfPart) {
+  const id = getIndex();
   return {
     Setting: {
       _id: id,
       _type: 'note',
+      _label: 'note',
       Base: {
         x: randomNumberInRange(0.2, 0.8),
         y: randomNumberInRange(0.2, 0.8),
@@ -636,10 +636,10 @@ export function noteTemplate() {
         dark: true
       }
     },
-    Info: {
-      Content: '',
-      DocumentId: '0'
+    Content: '',
+    State: {
+      isDeleted: false
     },
-    isDeleted: false
-  };
+    parent: parent
+  } as Notes;
 }
