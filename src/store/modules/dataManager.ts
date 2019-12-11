@@ -26,7 +26,7 @@ import {
     commitGraphChangeId, commitItemChange, commitFileToken
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
-import {AreaRect} from "@/utils/geoMetric";
+import {AreaRect, RectByPoint} from "@/utils/geoMetric";
 import {isNodeBackend} from "@/utils/typeCheck";
 
 export type InfoPart = NodeInfoPart | MediaInfoPart | LinkInfoPart;
@@ -47,19 +47,17 @@ export interface DataManagerState {
     mediaManager: Record<id, MediaInfoPart>,
     userConcernManager: Object, // todo
     fileToken: FileToken,
-    newIdRegex: RegExp
+    newIdRegex: RegExp,
 }
 
 interface Context {
     state: DataManagerState,
     commit: Commit,
     dispatch: Dispatch,
-
 }
 
 const state: DataManagerState = {
     currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null),
-
     currentItem: NodeInfoPart.emptyNodeInfoPart('$_-1', 'node', 'BaseNode'),
     graphManager: {},
     nodeManager: {},
@@ -76,31 +74,28 @@ const state: DataManagerState = {
 };
 
 const getters = {
-    currentGraphNodeIds: (state: DataManagerState) => {
-        return state.currentGraph.Graph.nodes.map(node => node.Setting._id)
-    },
-    currentGraphIsRemote: (state: DataManagerState) => {
-        return state.newIdRegex.test(state.currentGraph.id.toString())
-    },
-
-    graphList: (state: DataManagerState) => {
-        return Object.entries(state.graphManager).map(([id, graph]) => graph)
-    },
-
     currentGraphInfo: (state: DataManagerState) => {
         return state.nodeManager[state.currentGraph.id]
+    },
+
+    currentChildGraphList: (state: DataManagerState) => {
+        return state.currentGraph.getChildGraph()
+    },
+
+    currentGraphDict: (state: DataManagerState) => {
+        return {}
     }
 
 };
 const mutations = {
 
     // ------------单纯的操作------------
-    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart, viewBox?: AreaRect }) {
+    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart, viewBox?: RectByPoint }) {
         let {graph, viewBox} = payload;
         let id = graph.id; // 这里payload是document
         state.currentGraph = graph;
         viewBox &&
-        (graph.Conf.State.viewBox = viewBox);
+        (graph.viewBox = viewBox);
         commitItemChange(state.nodeManager[id]);
     },
 
@@ -164,20 +159,6 @@ const mutations = {
             commitGraphChangeId({oldId: newId})
         });
     },
-
-    // ------------以下是Setting内容------------
-
-    nodeSettingPush(state: DataManagerState, payload: Array<NodeSettingPart>) {
-        state.currentGraph.addNodes(payload)
-    },
-
-    linkSettingPush(state: DataManagerState, payload: Array<LinkSettingPart>) {
-        state.currentGraph.addLinks(payload)
-    },
-
-    mediaSettingPush(state: DataManagerState, payload: Array<MediaSettingPart>) {
-        state.currentGraph.addMedias(payload)
-    }
 
 };
 const actions = {

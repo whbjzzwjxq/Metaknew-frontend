@@ -1,8 +1,8 @@
 <template>
-    <div class="ma-0 pa-0" :style="viewBoxStyle" id="viewBox" v-if="!loading">
+    <div v-if="!loading">
         <graph-view-box
-            :container="container"
             :document="document"
+            :base-node="baseNode"
             render-selector
             render-label-selector
             render-media>
@@ -29,6 +29,7 @@
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
     import {AreaRect, Point, RectByPoint} from "@/utils/geoMetric";
     import {
+        addItems,
         getIndex,
         GraphSelfPart,
         LinkInfoPart, LinkSettingPart,
@@ -53,7 +54,11 @@
             return {
                 container: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}),
                 loading: true,
-                editPageRegex: new RegExp('edit-.*')
+                editPageRegex: new RegExp('edit-.*'),
+                baseNode: {
+                    x: 0,
+                    y: 0
+                }
             }
         },
         props: {},
@@ -64,18 +69,10 @@
             allComponentsStyle(): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            viewBox(): AreaRect {
-                return this.$store.getters.viewBox
+            viewBox(): RectByPoint {
+                return this.allComponentsStyle.viewBox
             },
-            viewBoxStyle(): CSS.Properties {
-                return {
-                    position: "absolute",
-                    left: this.viewBox.x + 'px',
-                    top: this.viewBox.y + 'px',
-                    width: this.viewBox.width + 'px',
-                    height: this.viewBox.height + 'px'
-                }
-            },
+
             document(): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
@@ -84,21 +81,13 @@
             }
         },
         methods: {
-            getContainer(): { start: Point, end: Point, border: number } {
-                let {x, y, width, height} = this.viewBox;
-                return {
-                    start: {x, y},
-                    end: {x: x + width, y: y + height},
-                    border: 10
-                };
-            },
             newNode(_type: 'node' | 'document', _label: string) {
                 //Info Ctrl部分
                 let id = getIndex();
                 let info = NodeInfoPart.emptyNodeInfoPart(id, 'node', _label);
                 commitInfoAdd({item: info});
                 let setting = NodeSettingPart.emptyNodeSetting(id, 'node', _label, 'NewNode' + id, '', this.document);
-                this.document.addNodes([setting]);
+                addItems(this.document.Graph.nodes, [setting]);
             },
 
             newLink(start: VisualNodeSettingPart, end: VisualNodeSettingPart) {
@@ -106,7 +95,7 @@
                 let info = LinkInfoPart.emptyLinkInfo(id, 'default', start, end);
                 commitInfoAdd({item: info});
                 let setting = LinkSettingPart.emptyLinkSetting(id, 'default', start, end, this.document);
-                this.document.addLinks([setting])
+                addItems(this.document.Graph.links, [setting]);
             },
 
             addNote() {
@@ -116,14 +105,7 @@
 
             }
         },
-        watch: {
-            viewBoxStyle() {
-                let {start, end, border} = this.getContainer();
-                this.$set(this.container, 'start', start);
-                this.$set(this.container, 'end', end);
-                this.$set(this.container, 'border', border);
-            }
-        },
+        watch: {},
         created(): void {
             if (this.document.id === '$_-1') {
                 let id = getIndex();
@@ -131,13 +113,24 @@
                 let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
                 commitGraphAdd({graph, strict: true});
                 commitInfoAdd({item: info, strict: true});
-                commitGraphChange({graph, viewBox: this.container.getPositiveRect()})
+                commitGraphChange({graph, viewBox: this.viewBox});
                 this.loading = false
             } else {
                 this.loading = false
             }
-            let {start, end, border} = this.getContainer();
-            this.container = new RectByPoint(start, end, border)
+
+            // TEST
+            let id = getIndex();
+            let graph = GraphSelfPart.emptyGraphSelfPart(id, this.dataManager.currentGraph);
+            let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
+            commitInfoAdd({item: info, strict: true});
+            let nodeId = getIndex();
+            let node = NodeSettingPart.emptyNodeSetting(nodeId, 'node', 'test', '1', '', graph);
+            let nodeInfo = NodeInfoPart.emptyNodeInfoPart(nodeId, 'node', 'test');
+            commitInfoAdd({item: nodeInfo});
+            addItems(graph.Graph.nodes, [node]);
+            commitGraphAdd({graph, strict: true});
+            addItems(this.dataManager.currentGraph.Graph.nodes, [graph.baseNode]);
         },
         mounted(): void {
 

@@ -5,23 +5,17 @@
                 <v-tabs-slider class="subTab"></v-tabs-slider>
                 <v-tab v-for="(value, tab) in availableTabs" :key="tab">
                     <v-icon left small> {{ value.icon }}</v-icon>
-                    {{ tabTrans[tab][lang] }}
+                    {{ value.name }}
                 </v-tab>
                 <v-tabs-items v-model="currentTab">
                     <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
-                        <card-page-node-info
+                        <card-page-directory
                             v-if="tab === 'directory'"
-                            :base-data="nodeInfo"
                             :edit-mode="editMode"
+                            :document="document"
                         >
 
-                        </card-page-node-info>
-
-                        <card-page-media-list
-                            v-if="tab === 'medias'"
-                            :base-data="nodeInfo">
-
-                        </card-page-media-list>
+                        </card-page-directory>
                     </v-tab-item>
                 </v-tabs-items>
             </v-tabs>
@@ -33,10 +27,13 @@
     import Vue from 'vue'
     import {TabContent} from "@/utils/interfaceInComponent";
     import {GraphSelfPart} from "@/utils/graphClass";
+    import CardPageDirectory from "@/components/card/page/CardPageDirectory.vue";
 
     export default Vue.extend({
         name: "CardDocument",
-        components: {},
+        components: {
+            CardPageDirectory
+        },
         data() {
             return {
                 currentTab: 0,
@@ -60,21 +57,21 @@
                         icon: 'mdi-format-list-checkbox',
                         name: '专题目录'
                     },
-                    "document-style": {
+                    "documentStyle": {
                         icon: 'mdi-palette',
                         name: '专题样式'
                     },
-                    "node-style": {
+                    "nodeStyle": {
                         icon: 'mdi-palette',
                         name: '节点样式'
                     },
-                    'link-style': {
+                    'linkStyle': {
                         icon: 'mdi-palette',
                         name: '关系样式'
                     },
-                    'history&branch': {
+                    'historyBranch': {
                         icon: 'mdi-source-branch',
-                        name: '历史与分支'
+                        name: '其他版本'
                     },
                     'comment': {
                         icon: 'mdi-comment-multiple-outline',
@@ -83,7 +80,12 @@
                 }
             },
             availableTabs(): Record<string, TabContent> {
-                return this.tabItems
+                let result: Record<string, TabContent>;
+                let {directory, documentStyle, nodeStyle, linkStyle, historyBranch, comment} = this.tabItems;
+                this.editMode
+                    ? result = {directory, documentStyle, nodeStyle, linkStyle, historyBranch}
+                    : result = {directory, historyBranch, comment};
+                return result
             }
         },
         methods: {},

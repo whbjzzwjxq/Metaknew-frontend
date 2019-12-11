@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import * as CSS from 'csstype'
 
 export interface Point {
     x: number,
@@ -15,13 +16,29 @@ export interface AreaRect extends Point {
 }
 
 export class RectByPoint {
-    start: Point;
-    end: Point;
+    protected _start: Point;
+    get start(): Point {
+        return this._start
+    }
+
+    set start(payload) {
+        updatePoint(this._start, payload)
+    }
+
+    protected _end: Point;
+    get end(): Point {
+        return this._end
+    }
+
+    set end(payload) {
+        updatePoint(this._end, payload)
+    }
+
     border ?: number;
 
     constructor(start: Point, end: Point, border?: number) {
-        this.start = start;
-        this.end = end;
+        this._start = start;
+        this._end = end;
         this.border = border
     }
 
@@ -58,9 +75,37 @@ export class RectByPoint {
             y: (this.start.y + this.start.y) / 2
         } as Point
     }
+
+    getDivCSS(css?: CSS.Properties): CSS.Properties {
+        css || (css = {});
+        let rect = this.getPositiveRect();
+        return Object.assign({
+            position: "absolute",
+            left: rect.x + 'px',
+            top: rect.y + 'px',
+            width: rect.width + 'px',
+            height: rect.height + 'px',
+            borderWidth: this.border + 'px',
+            borderStyle: "solid"
+        }, css)
+    }
 }
 
 export const updatePoint = (point: Point, payload: Point) => {
     Vue.set(point, 'x', payload.x);
     Vue.set(point, 'y', payload.y)
+};
+
+export const addPoint = (pointA: Point, pointB: Point) => {
+    return {
+        x: pointA.x + pointB.x,
+        y: pointA.y + pointB.y
+    }
+};
+
+export const decreasePoint = (pointA: Point, pointB: Point) => {
+    return {
+        x: pointA.x - pointB.x,
+        y: pointA.y - pointB.y
+    }
 };

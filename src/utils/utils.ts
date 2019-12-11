@@ -2,7 +2,9 @@
 // (^| )name=([^;]*)(;|$),match[0]为与整个正则表达式匹配的字符串
 // match[i]为正则表达式捕获数组相匹配的数组；
 
-import {MediaInfoPart} from "@/utils/graphClass";
+import {BaseType, id, MediaInfoPart} from "@/utils/graphClass";
+import store from "@/store";
+import {DataManagerState} from "@/store/modules/dataManager";
 
 export function getCookie(name: string) {
     const arr = document.cookie.match(new RegExp(`(^| )${name}=([^;]*)(;|$)`));
@@ -143,6 +145,7 @@ export const test = (list: (MediaInfoPart | undefined)[]) => {
 };
 
 export const MB = 1000000;
+
 export function fileCheck(file: File, size?: number, formats?: string[], filePool?: File[]) {
     let nameSplit = file.name.split('.');
     let fileName: string;
@@ -173,4 +176,14 @@ export function fileCheck(file: File, size?: number, formats?: string[], filePoo
             : ''
     ];
     return rules.map(rule => rule()).filter(result => result !== '')
+}
+
+export function getInfoPart(_id: id, _type: BaseType, dataManager: DataManagerState) {
+    let manager;
+    _type === 'link'
+        ? manager = dataManager.linkManager
+        : _type === 'media'
+        ? manager = dataManager.mediaManager
+        : manager = dataManager.nodeManager;
+    return manager[_id]
 }

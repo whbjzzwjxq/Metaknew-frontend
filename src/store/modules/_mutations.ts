@@ -4,8 +4,7 @@ import {FileToken} from "@/api/user";
 import {snackBarStatePayload} from "@/store/modules/componentSnackBar";
 import {GraphSelfPart, id, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/utils/graphClass";
 import {InfoPart, idMap} from "@/store/modules/dataManager";
-import {stream} from "xlsx";
-import {AreaRect} from "@/utils/geoMetric";
+import {AreaRect, RectByPoint} from "@/utils/geoMetric";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)
@@ -39,9 +38,9 @@ export const commitItemChange = (payload: InfoPart) => {
     return store.commit('currentItemChange', payload)
 };
 
-export const commitGraphChange = (payload: { graph: GraphSelfPart, viewBox?: AreaRect }) => {
+export const commitGraphChange = (payload: { graph: GraphSelfPart, viewBox?: RectByPoint }) => {
     return store.commit('currentGraphChange', payload)
-}
+};
 
 export const commitInfoAdd = (payload: { item: InfoPart, strict?: boolean }) => {
     return store.commit('infoAdd', payload)

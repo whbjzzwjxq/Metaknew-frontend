@@ -1,6 +1,5 @@
 <template>
-    <div
-        style="width: 100%; height: 100%;">
+    <div :style="containerStyle">
         <svg
             width="100%"
             height="100%"
@@ -10,6 +9,17 @@
             @mouseup="endSelect"
             @wheel="onScroll"
         >
+            <rect
+                v-for="(graph,index) in activeGraphList"
+                :x="graph.viewBox.getPositiveRect().x"
+                :y="graph.viewBox.getPositiveRect().y"
+                :width="graph.viewBox.getPositiveRect().width"
+                :height="graph.viewBox.getPositiveRect().height"
+                style="stroke-width: 2;stroke: black; fill-opacity: 0"
+                :key="index">
+
+            </rect>
+
             <graph-link
                 v-for="(link, index) in links"
                 v-show="showLink[index]"
@@ -140,7 +150,6 @@
 
             </div>
         </div>
-
     </div>
 </template>
 
@@ -148,6 +157,7 @@
     import Vue from 'vue'
     import {DataManagerState} from '@/store/modules/dataManager'
     import {
+        addItems,
         AllItemSettingPart,
         BaseType,
         getIndex,
@@ -165,7 +175,7 @@
         VisualNodeSettingPart
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
-    import {AreaRect, Point, RectByPoint, updatePoint} from '@/utils/geoMetric'
+    import {addPoint, AreaRect, decreasePoint, Point, RectByPoint, updatePoint} from '@/utils/geoMetric'
     import * as CSS from 'csstype'
     import GraphNode from './GraphNode.vue';
     import GraphLink from './GraphLink.vue';
@@ -216,14 +226,14 @@
                 // ------ move ------
                 // view起始Point
                 viewPoint: {
-                    x: this.container.getPositiveRect().width / 2,
-                    y: this.container.getPositiveRect().height / 2
+                    x: 960,
+                    y: 480
                 },
 
                 // 上一个view起始Point
                 lastViewPoint: {
-                    x: this.container.getPositiveRect().width / 2,
-                    y: this.container.getPositiveRect().height / 2
+                    x: 960,
+                    y: 480
                 },
 
                 moveStartPoint: {
@@ -274,9 +284,9 @@
                 type: Object as () => GraphSelfPart,
                 required: true
             },
-            //容器尺寸
-            container: {
-                type: Object as () => RectByPoint,
+
+            baseNode: {
+                type: Object as () => Point,
                 required: true
             },
 
@@ -339,21 +349,34 @@
             setting(): GraphSettingPart {
                 return this.document.Conf
             },
+            container(): RectByPoint {
+                return this.document.viewBox
+            },
+
+            containerStyle(): CSS.Properties {
+                return this.container.getDivCSS({borderColor: '#105060'})
+            },
+
             containerRect(): AreaRect {
                 return this.container.getPositiveRect()
             },
             // 不包含本身的graph
             activeGraphList(): GraphSelfPart[] {
                 return this.document.getChildGraph().filter(graph => graph &&
-                    !graph.Conf.State.isDeleted &&
-                    graph.Conf.State.isExplode)
+                    !graph.Conf.State.isDeleted && graph.Conf.State.isExplode)
+            },
+
+            graphStyleList(): CSS.Properties[] {
+                return this.activeGraphList.map(graph => {
+                    return graph.viewBox.getDivCSS({borderColor: '#105060'})
+                })
             },
 
             //不包含本身的node
             allNodes(): NodeSettingPart[] {
                 let result: NodeSettingPart[] = [];
                 this.activeGraphList.map(graph => {
-                    result.concat(graph.Graph.nodes)
+                    result = result.concat(graph.Graph.nodes)
                 });
                 return result
             },
@@ -392,17 +415,8 @@
 
             //merge 之后的node
             nodes(): NodeSettingPart[] {
-                let baseNodes = this.document.Graph.nodes;
-                let idList = baseNodes.map(item => item.Setting._id);
-                this.allNodes.map(node => {
-                    if (idList.indexOf(node.Setting._id) >= 0) {
-                        //
-                    } else {
-                        baseNodes.push(node);
-                        idList.push(node.Setting._id)
-                    }
-                });
-                return baseNodes
+                let result = this.document.Graph.nodes.concat(this.allNodes)
+                return result
             },
 
             selectedNodes(): NodeSettingPart[] {
@@ -517,10 +531,11 @@
                     let width = node.Setting.Base.size !== 0
                         ? node.Setting.Base.size * this.realScale
                         : this.impScaleRadius[index] * this.realScale;
-
+                    let baseX = node.Setting.Base.x * this.containerRect.width
+                    let baseY = node.Setting.Base.y * this.containerRect.height
                     return {
-                        x: this.lastViewPoint.x - (this.viewPoint.x - (node.Setting.Base.x * this.containerRect.width)) * this.realScale,
-                        y: this.lastViewPoint.y - (this.viewPoint.y - (node.Setting.Base.y * this.containerRect.height)) * this.realScale,
+                        x: this.lastViewPoint.x - (this.viewPoint.x - baseX) * this.realScale,
+                        y: this.lastViewPoint.y - (this.viewPoint.y - baseY) * this.realScale,
                         width,
                         height: width * node.Setting.Base.scaleX
                     } as AreaRect
@@ -530,8 +545,8 @@
             mediaLocation(): AreaRect[] {
                 return this.medias.map(media => {
                     return {
-                        x: this.lastViewPoint.x - (this.viewPoint.x - media.Setting.Base.x * this.containerRect.width) * this.realScale,
-                        y: this.lastViewPoint.y - (this.viewPoint.y - media.Setting.Base.y * this.containerRect.height) * this.realScale,
+                        x: this.lastViewPoint.x - (this.viewPoint.x - (this.baseNode.x + media.Setting.Base.x * this.containerRect.width)) * this.realScale,
+                        y: this.lastViewPoint.y - (this.viewPoint.y - (this.baseNode.y + media.Setting.Base.y * this.containerRect.height)) * this.realScale,
                         width: media.Setting.Base.size * this.realScale >= 50
                             ? media.Setting.Base.size * this.realScale * media.Setting.Base.scaleX
                             : 50 * media.Setting.Base.scaleX,
@@ -789,11 +804,12 @@
 
             clickNode(node: VisualNodeSettingPart) {
                 this.selectItem([node]);
+                console.log(this.isLinking, node, this.startNode)
                 if (this.isLinking && node && this.startNode) {
                     let id = getIndex();
                     let setting = LinkSettingPart.emptyLinkSetting(id, "default", this.startNode, node, this.document);
                     let info = LinkInfoPart.emptyLinkInfo(id, "default", this.startNode, node);
-                    this.document.addLinks([setting]);
+                    addItems(this.document.Graph.links, [setting]);
                     commitInfoAdd({item: info, strict: true});
                     this.isLinking = false;
                 } else {
@@ -940,17 +956,40 @@
                 let _id = node.Setting._id;
                 let graph = this.dataManager.graphManager[_id];
                 if (graph === undefined) {
-                    this.$store.dispatch('dataQueryGraph', {
+                    this.$store.dispatch('graphQuery', {
                         _id,
                         parent: this.document.id,
-                        currentNodes: this.nodes
                     }).then(() => {
                         let graph = this.dataManager.graphManager[_id];
                         this.$set(graph.Conf.State, 'isExplode', true)
                     });
                 } else {
                     let value = graph.Conf.State.isExplode;
-                    this.$set(graph.Conf.State, 'isExplode', !value)
+                    let nodes = graph.Graph.nodes;
+                    if (value) {
+                        nodes.splice(0, 0, graph.baseNode)
+                        this.$set(graph.Conf.State, 'isExplode', false)
+                    } else {
+                        let index = 0;
+                        nodes.map(item => {
+                            if (item.Setting._id === graph.id) {
+                                index = nodes.indexOf(item)
+                            }
+                        })
+                        nodes.splice(index, 1)
+                        let {width, height} = graph.viewBox.getPositiveRect()
+                        let originPoint = {
+                            x: graph.baseNode.Setting.Base.x * width,
+                            y: graph.baseNode.Setting.Base.y * height
+                        } as Point
+                        let currentPoint = {
+                            x: graph.baseNode.Setting.Base.x * this.containerRect.width,
+                            y: graph.baseNode.Setting.Base.y * this.containerRect.height
+                        } as Point
+                        graph.viewBox.start = decreasePoint(currentPoint, originPoint)
+                        graph.viewBox.end = addPoint(graph.viewBox.start, {x: width, y: height})
+                        this.$set(graph.Conf.State, 'isExplode', true)
+                    }
                 }
             }
 

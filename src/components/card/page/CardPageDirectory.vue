@@ -1,15 +1,16 @@
 <template>
     <v-treeview
+        :items="[graphItem[0]]"
+        :load-children="getDocument"
+        :selectable="editMode"
+        activatable
         dense
         hoverable
-        activatable
-        :selectable="editMode"
-        :items="[graphItem[0]]"
-        :value="selection"
-        @input="selection = $event"
+        return-object
+        v-model="selection"
     >
         <template v-slot:prepend="{ item }">
-            <v-icon>{{typeIcon(item)}}</v-icon>
+            <v-icon>{{ item.icon }}</v-icon>
         </template>
 
         <template v-if="editMode" v-slot:append="{ item }">
@@ -30,16 +31,16 @@
 <script lang="ts">
     import Vue from 'vue'
     import {DataManagerState} from "@/store/modules/dataManager";
-    import {commitItemChange} from "@/store/modules/_mutations";
+    import {commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {
         id,
         BaseType,
-        LinkInfoPart,
         LinkSettingPart,
         MediaSettingPart,
-        NodeInfoPart,
         NodeSettingPart, getMediaIcon, GraphSelfPart
     } from "@/utils/graphClass";
+    import {snackBarStatePayload} from "@/store/modules/componentSnackBar";
+    import {getInfoPart} from "@/utils/utils";
 
     interface DirectoryItem {
         id: id,
@@ -49,8 +50,14 @@
         icon: string,
         deletable: boolean,
         editable: boolean,
-        root: boolean,
+        parent: GraphSelfPart,
         children?: DirectoryItem[]
+    }
+
+    interface SettingPartDict {
+        nodes: NodeSettingPart[]
+        links: LinkSettingPart[]
+        medias: MediaSettingPart[]
     }
 
     export default Vue.extend({
@@ -73,11 +80,16 @@
             dataManager(): DataManagerState {
                 return this.$store.state.dataManager
             },
+            // 不包含自身
+            childGraphList(): GraphSelfPart[] {
+                return this.document.getChildGraph()
+            },
+            // 不包含自身
             activeGraphList(): GraphSelfPart[] {
-                return this.document.getChildGraph().filter(graph => graph &&
+                return this.childGraphList.filter(graph => graph &&
                     !graph.Conf.State.isDeleted &&
                     graph.Conf.State.isExplode)
-            }
+            },
 
         },
         methods: {
@@ -87,9 +99,10 @@
                 label: node.Setting._label,
                 name: node.Setting._name,
                 icon: 'mdi-cube-outline',
+                isSelected: node.State.isSelected,
                 deletable: node.parent.Conf.State.isSelf,
                 editable: node.State.isSelf,
-                root: false,
+                parent: node.parent,
                 children: node.Setting._type === 'node' ? undefined : []
             }) as DirectoryItem,
 
@@ -98,10 +111,11 @@
                 type: link.Setting._type,
                 label: link.Setting._label,
                 icon: 'mdi-arrow-top-right',
+                isSelected: link.State.isSelected,
                 name: link.Setting._start.Setting._name + ' --> ' + link.Setting._end.Setting._name,
                 deletable: link.parent.Conf.State.isSelf,
                 editable: link.State.isSelf,
-                root: false
+                parent: link.parent
             }) as DirectoryItem,
 
             mediaToItem: (media: MediaSettingPart) => ({
@@ -110,17 +124,47 @@
                 label: media.Setting._label,
                 name: media.Setting._name,
                 icon: getMediaIcon(media.Setting._label),
+                isSelected: media.State.isSelected,
                 deletable: media.parent.Conf.State.isSelf,
                 editable: false,
-                root: false
+                parent: media.parent
             }) as DirectoryItem,
 
             deleteItem(item: DirectoryItem) {
-
+                this.$set(this.getOriginItem(item).State, 'isDeleted', true);
+                let payload = {
+                    timeout: 3000,
+                    color: 'warning',
+                    content: '删除了' + item.type,
+                    buttonText: '撤销',
+                    action: this.rollBackDelete,
+                    actionObject: this.getOriginItem(item),
+                    actionName: 'deleteItemFromGraph',
+                    once: false
+                } as snackBarStatePayload;
+                commitSnackbarOn(payload)
             },
+
+            rollBackDelete(item: DirectoryItem) {
+                this.$set(this.getOriginItem(item).State, "isDeleted", false)
+            },
+
             editItem(item: DirectoryItem) {
+                let info = getInfoPart(item.id, item.type, this.dataManager);
+                commitItemChange(info)
+            },
+
+            getOriginItem(item: DirectoryItem) {
+                return item.parent.getOriginSetting(item.id, item.type)
+            },
+
+            async getDocument() {
 
             },
+
+            buildDirectory() {
+
+            }
 
         },
         watch: {},

@@ -2,7 +2,7 @@ import deepClone, {getCookie} from "@/utils/utils";
 import Vue from "vue";
 import {allPropType, fieldDefaultValue, neededProp, PropDescription} from "@/utils/labelField";
 import {noteTemplate, settingTemplate} from "@/utils/settingTemplate";
-import {AreaRect} from "@/utils/geoMetric";
+import {AreaRect, Point, RectByPoint} from "@/utils/geoMetric";
 import {isBooleanConcern, isLevelConcern} from "@/utils/typeCheck";
 
 export let newIdRegex = new RegExp("\\$_[0-9]*");
@@ -128,7 +128,6 @@ export interface GraphState extends BaseState {
     isChanged: boolean;
     SavedIn5Min: boolean; // 5分钟内是否保存
     isExplode: boolean;
-    viewBox: AreaRect
 }
 
 export const InfoToSetting = (payload: {
@@ -396,7 +395,6 @@ export function mediaInfoTemplate(_id: id, file: File) {
 
 export function mediaCtrlTemplate(file: File) {
     const time = new Date();
-    // todo thumb提取 文件格式
     return <BaseMediaCtrl>{
         FileName: URL.createObjectURL(file),
         Format: file.name.split(".")[1],
@@ -1011,10 +1009,10 @@ export const findRoot = (item: SettingPart) => {
     if (!item.parent) {
         return [];
     } else {
-        let result: Array<GraphSelfPart> = [];
+        let result: Array<GraphSelfPart>;
         item.parent
-            ? (result = result.concat(findRoot(item.parent.Conf)))
-            : result.push(item.parent);
+            ? (result = item.parent.rootList.concat(item.parent))
+            : (result = [item.parent]);
         return result;
     }
 };
@@ -1026,25 +1024,40 @@ export class GraphSelfPart {
     id: id;
     draftId: number;
     rootList: Array<GraphSelfPart>; // Graph的遍历链条
+    root: GraphSelfPart | null;
+    viewBox: RectByPoint; // Graph viewBox
+    baseNode: NodeSettingPart;
+    deltaPoint: Point; // Graph在实际图里的delta
     static list: Array<GraphSelfPart>;
     static baseList: Array<GraphBackend>; // 原始数据
     constructor(
         graph: Graph,
         setting: GraphSettingPart,
         path: Array<Object>,
-        _id: id
+        _id: id,
     ) {
         this.draftId = -1;
         this.id = _id;
         this.rootList = findRoot(setting);
+        this.root = this.getRoot();
         this.Conf = setting;
         this.Graph = graph;
         this.Path = path;
+        this.viewBox = new RectByPoint({x: 600, y: 600}, {x: 900, y: 1000}, 3);
+        this.deltaPoint = {x: 0, y: 0};
         if (GraphSelfPart.list === undefined) {
             GraphSelfPart.list = [this]
         } else {
             GraphSelfPart.list.push(this)
         }
+        this.baseNode = NodeSettingPart.emptyNodeSetting(
+            _id,
+            "document",
+            "DocGraph",
+            "NewDocument" + _id,
+            "",
+            this
+        );
     }
 
     static emptyGraphSelfPart(_id: id, parent: GraphSelfPart | null) {
@@ -1057,16 +1070,8 @@ export class GraphSelfPart {
         let setting = GraphSettingPart.emptyGraphSetting(_id, parent);
         let path = [{}]; // todo path
         let graphSelf = new GraphSelfPart(graph, setting, path, _id);
-        let graphSelfNode = NodeSettingPart.emptyNodeSetting(
-            _id,
-            "document",
-            "DocGraph",
-            "NewDocument" + _id,
-            "",
-            graphSelf
-        );
-        graphSelf.Graph.nodes.push(graphSelfNode);
-        return graphSelf;
+        graphSelf.Graph.nodes.push(graphSelf.baseNode);
+        return graphSelf
     }
 
     static resolveFromBackEnd(
@@ -1091,7 +1096,11 @@ export class GraphSelfPart {
             baseData.Base.Info.id
         );
         result.Graph.nodes = baseData.Graph.nodes.map(
-            setting => new NodeSettingPart(setting, nodeStateTemplate(), result)
+            setting => {
+                let node = new NodeSettingPart(setting, nodeStateTemplate(), result);
+                setting._id === result.id && (result.baseNode = node);
+                return node
+            }
         );
         result.Graph.medias = baseData.Graph.medias.map(
             setting =>
@@ -1124,50 +1133,6 @@ export class GraphSelfPart {
         return list;
     }
 
-    checkExist(_id: id, _type: BaseType) {
-        return findItem(this.typeToList(_type), _id, _type).length > 0;
-    }
-
-    addNodes(nodes: Array<NodeSettingPart>) {
-        nodes
-            .filter(
-                node => !this.checkExist(node.Setting._id, node.Setting._type)
-            )
-            .map(node => {
-                this.Graph.nodes.push(node);
-                node.updateState("isAdd", true);
-                newIdRegex.test(node.Setting._id.toString()) &&
-                this.Conf.updateState("isChanged", true);
-            });
-    }
-
-    addLinks(links: Array<LinkSettingPart>) {
-        links
-            .filter(
-                link => !this.checkExist(link.Setting._id, link.Setting._type)
-            )
-            .map(link => {
-                this.Graph.links.push(link);
-                link.updateState("isAdd", true);
-                newIdRegex.test(link.Setting._id.toString()) &&
-                this.Conf.updateState("isChanged", true);
-            });
-    }
-
-    addMedias(medias: Array<MediaSettingPart>) {
-        medias
-            .filter(
-                media =>
-                    !this.checkExist(media.Setting._id, media.Setting._type)
-            )
-            .map(media => {
-                this.Graph.medias.push(media);
-                media.updateState("isAdd", true);
-                newIdRegex.test(media.Setting._id.toString()) &&
-                this.Conf.updateState("isChanged", true);
-            });
-    }
-
     addNote() {
         this.Graph.notes.push(noteTemplate(this))
     }
@@ -1188,11 +1153,32 @@ export class GraphSelfPart {
     getChildGraph() {
         let result: GraphSelfPart[] = [];
         GraphSelfPart.list.map(graph => {
-            let root = graph.getRoot();
+            let root = graph.root;
             if (root && root.id === this.id) {
                 result.push(graph)
             }
         });
         return result
     }
+
+    getOriginSetting(_id: id, _type: BaseType) {
+        let result;
+        _type === 'link'
+            ? (result = this.Graph.links.filter(link => link.Setting._id === _id)[0])
+            : _type === 'media'
+            ? (result = this.Graph.medias.filter(media => media.Setting._id === _id)[0])
+            : (result = this.Graph.nodes.filter(node => node.Setting._id === _id)[0]);
+        return result
+    }
 }
+
+export const addItems = (baseList: AllItemSettingPart[], itemList: AllItemSettingPart[]) => {
+    itemList.filter(item => !checkExist(item.Setting._id, item.Setting._type, baseList)).map(item => {
+        baseList.push(item);
+        item.updateState("isAdd", true)
+    })
+};
+
+export const checkExist = (_id: id, _type: BaseType, itemList: AllItemSettingPart[]) => {
+    return findItem(itemList, _id, _type).length > 0;
+};

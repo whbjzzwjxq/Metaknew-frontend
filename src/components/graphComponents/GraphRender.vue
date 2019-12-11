@@ -1,26 +1,15 @@
 <template>
-    <v-card>
-        <v-tabs>
-
-        </v-tabs>
-    </v-card>
+    <div></div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
 
     export default Vue.extend({
-        name: "CardEcoSystem",
+        name: "GraphRender",
         components: {},
         data() {
-            return {
-                tabItems: {
-                    "knownMap": {},
-                    "fragment": {},
-                    "community": {},
-
-                },
-            }
+            return {}
         },
         props: {},
         computed: {},
@@ -37,6 +26,6 @@
 </style>
 
 /**
-* Created by whb on 2019/12/4
+* Created by whb on 2019/12/11
 * Updated by []
 */
