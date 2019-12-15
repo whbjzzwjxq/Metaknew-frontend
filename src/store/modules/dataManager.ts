@@ -90,12 +90,10 @@ const getters = {
 const mutations = {
 
     // ------------单纯的操作------------
-    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart, viewBox?: RectByPoint }) {
-        let {graph, viewBox} = payload;
+    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart}) {
+        let {graph} = payload;
         let id = graph.id; // 这里payload是document
         state.currentGraph = graph;
-        viewBox &&
-        (graph.viewBox = viewBox);
         commitItemChange(state.nodeManager[id]);
     },
 

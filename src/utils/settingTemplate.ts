@@ -219,7 +219,7 @@ export const linkSetting: settingConf = {
   Base: {
     width: {
       type: 'Number',
-      default: 5,
+      default: 2,
       range: [1, 10],
       tips: '',
       required: null,

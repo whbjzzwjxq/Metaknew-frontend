@@ -1025,7 +1025,6 @@ export class GraphSelfPart {
     draftId: number;
     rootList: Array<GraphSelfPart>; // Graph的遍历链条
     root: GraphSelfPart | null;
-    viewBox: RectByPoint; // Graph viewBox
     baseNode: NodeSettingPart;
     deltaPoint: Point; // Graph在实际图里的delta
     static list: Array<GraphSelfPart>;
@@ -1043,7 +1042,6 @@ export class GraphSelfPart {
         this.Conf = setting;
         this.Graph = graph;
         this.Path = path;
-        this.viewBox = new RectByPoint({x: 600, y: 600}, {x: 900, y: 1000}, 3);
         this.deltaPoint = {x: 0, y: 0};
         if (GraphSelfPart.list === undefined) {
             GraphSelfPart.list = [this]
@@ -1107,13 +1105,15 @@ export class GraphSelfPart {
                 new MediaSettingPart(setting, nodeStateTemplate(), result)
         );
         result.Graph.links = baseData.Graph.links.map(setting => {
-            let link = <LinkSetting>deepClone(setting);
-            link._start = result.Graph.nodes.filter(node =>
-                itemEqual(setting._start, node.Setting)
-            )[0];
-            link._end = result.Graph.nodes.filter(node =>
-                itemEqual(setting._end, node.Setting)
-            )[0];
+            let linkNode = {
+                _start: result.Graph.nodes.filter(node =>
+                    itemEqual(setting._start, node.Setting)
+                )[0],
+                _end: result.Graph.nodes.filter(node =>
+                    itemEqual(setting._end, node.Setting)
+                )[0]
+            };
+            let link = Object.assign(deepClone(setting), linkNode) as LinkSetting;
             return new LinkSettingPart(link, linkStateTemplate(), result);
         });
         return result;

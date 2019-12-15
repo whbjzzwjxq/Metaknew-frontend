@@ -34,3 +34,13 @@ export interface TabContent {
     props?: Record<string, any>,
     name?: string | Record<string, string>
 }
+
+export interface VisualNodeSetting {
+    height: number,
+    width: number,
+    x: number,
+    y: number,
+    show: boolean,
+    isSelected: boolean,
+    isDeleted: boolean
+}

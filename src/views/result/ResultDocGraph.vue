@@ -3,6 +3,7 @@
         <graph-view-box
             :document="document"
             :base-node="baseNode"
+            :container="viewBox"
             render-selector
             render-label-selector
             render-media>
@@ -42,6 +43,7 @@
     import {commitGraphAdd, commitGraphChange, commitInfoAdd} from "@/store/modules/_mutations";
     import ResultDocGraphToolbarEdit from "@/views/result/ResultDocGraphToolbarEdit.vue";
     import ResultDocGraphToolbar from "@/views/result/ResultDocGraphToolbar.vue";
+    import deepClone from "@/utils/utils";
 
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -52,7 +54,6 @@
         },
         data() {
             return {
-                container: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}),
                 loading: true,
                 editPageRegex: new RegExp('edit-.*'),
                 baseNode: {
@@ -113,7 +114,11 @@
                 let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
                 commitGraphAdd({graph, strict: true});
                 commitInfoAdd({item: info, strict: true});
-                commitGraphChange({graph, viewBox: this.viewBox});
+                let viewBox = new RectByPoint({x: 0, y: 0}, {
+                    x: this.viewBox.getPositiveRect().width,
+                    y: this.viewBox.getPositiveRect().height
+                }, 2);
+                commitGraphChange({graph});
                 this.loading = false
             } else {
                 this.loading = false
@@ -123,14 +128,16 @@
             let id = getIndex();
             let graph = GraphSelfPart.emptyGraphSelfPart(id, this.dataManager.currentGraph);
             let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
+            let newBaseNode = NodeSettingPart.emptyNodeSetting(id, 'document', 'test', 'NewDocument', '', graph);
             commitInfoAdd({item: info, strict: true});
+
             let nodeId = getIndex();
             let node = NodeSettingPart.emptyNodeSetting(nodeId, 'node', 'test', '1', '', graph);
             let nodeInfo = NodeInfoPart.emptyNodeInfoPart(nodeId, 'node', 'test');
             commitInfoAdd({item: nodeInfo});
             addItems(graph.Graph.nodes, [node]);
             commitGraphAdd({graph, strict: true});
-            addItems(this.dataManager.currentGraph.Graph.nodes, [graph.baseNode]);
+            addItems(this.dataManager.currentGraph.Graph.nodes, [newBaseNode]);
         },
         mounted(): void {
 

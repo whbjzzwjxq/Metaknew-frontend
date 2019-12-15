@@ -1,5 +1,6 @@
 <template>
-    <div :style="containerStyle">
+    <div @wheel="onScroll" :style="containerStyle">
+        <!--        基础的Graph-->
         <svg
             width="100%"
             height="100%"
@@ -7,18 +8,24 @@
             @mousedown.self="startSelect"
             @mousemove="selecting"
             @mouseup="endSelect"
-            @wheel="onScroll"
-        >
-            <rect
-                v-for="(graph,index) in activeGraphList"
-                :x="graph.viewBox.getPositiveRect().x"
-                :y="graph.viewBox.getPositiveRect().y"
-                :width="graph.viewBox.getPositiveRect().width"
-                :height="graph.viewBox.getPositiveRect().height"
-                style="stroke-width: 2;stroke: black; fill-opacity: 0"
-                :key="index">
+            @wheel="onScroll">
 
-            </rect>
+            <foreignObject height="100%" width="100%">
+                <!--        展开的Graph-->
+                <graph-render
+                    v-for="(graph, index) in activeGraphList"
+                    :key="index"
+                    :document="graph"
+                    :label-view-dict="labelViewDict"
+                    :real-scale="realScale"
+                    :base-node="activeGraphNodeList[index]"
+                    :base-location="getTargetInfo(activeGraphNodeList[index])"
+                    @on-scroll="onScroll"
+                    render-selector
+                >
+
+                </graph-render>
+            </foreignObject>
 
             <graph-link
                 v-for="(link, index) in links"
@@ -39,8 +46,7 @@
                 :container="container"
                 :size="impScaleRadius[index]"
                 :scale="realScale"
-                :x="nodeLocation[index].x"
-                :y="nodeLocation[index].y"
+                :point="nodeLocation[index]"
                 :index="index"
                 @kick-back-x="kickBackX"
                 @kick-back-y="kickBackY"
@@ -49,7 +55,7 @@
                 @mousedown.native="dragStart"
                 @mousemove.native="drag(node, $event)"
                 @mouseup.native="dragEnd(node, $event)"
-                @dblclick.native.stop="clickNode(node)">
+                @dblclick.native.stop="dbClickNode(node)">
 
             </graph-node>
 
@@ -72,7 +78,6 @@
                 stroke="grey">
 
             </line>
-
         </svg>
 
         <graph-media
@@ -88,11 +93,10 @@
             @mousedown.native="dragStart"
             @mousemove.native="drag(node, $event)"
             @mouseup.native="dragEnd(node, $event)"
-            @dblclick.native.stop="clickNode(node)"
+            @dblclick.native.stop="dbClickNode(node)"
         >
 
         </graph-media>
-
         <graph-note
             v-show="renderNotes"
             v-for="(note, index) in activeNotes"
@@ -166,7 +170,8 @@
         GraphState,
         id,
         LinkInfoPart,
-        LinkSettingPart, MediaInfoPart,
+        LinkSettingPart,
+        MediaInfoPart,
         MediaSettingPart,
         NodeInfoPart,
         NodeSettingPart,
@@ -183,22 +188,13 @@
     import GraphNote from './GraphNote.vue';
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
-    import {item, LabelViewDict} from '@/utils/interfaceInComponent'
+    import {item, LabelViewDict, VisualNodeSetting} from '@/utils/interfaceInComponent'
     import {isLinkSetting, isMediaSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
-    import componentSnackBar, {snackBarStatePayload} from "@/store/modules/componentSnackBar";
+    import {snackBarStatePayload} from "@/store/modules/componentSnackBar";
+    import GraphRender from "@/components/graphComponents/GraphRender.vue";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
-
-    interface VisualNodeSetting {
-        height: number,
-        width: number,
-        x: number,
-        y: number,
-        show: boolean,
-        isSelected: boolean,
-        isDeleted: boolean
-    }
 
     export default Vue.extend({
         name: "GraphViewBox",
@@ -208,7 +204,8 @@
             GraphMedia,
             GraphNote,
             GraphNodeButton,
-            GraphLabelSelector
+            GraphLabelSelector,
+            GraphRender
         },
         data() {
             return {
@@ -285,8 +282,8 @@
                 required: true
             },
 
-            baseNode: {
-                type: Object as () => Point,
+            container: {
+                type: Object as () => RectByPoint,
                 required: true
             },
 
@@ -320,12 +317,6 @@
                 default: false
             },
 
-            // 是否渲染rect - graph
-            renderGraphRect: {
-                type: Boolean,
-                default: false
-            },
-
             //模式
             mode: {
                 type: String as () => GraphMode,
@@ -349,30 +340,28 @@
             setting(): GraphSettingPart {
                 return this.document.Conf
             },
-            container(): RectByPoint {
-                return this.document.viewBox
-            },
-
-            containerStyle(): CSS.Properties {
-                return this.container.getDivCSS({borderColor: '#105060'})
-            },
-
             containerRect(): AreaRect {
                 return this.container.getPositiveRect()
             },
+            containerStyle(): CSS.Properties {
+                return this.container.getDivCSS({borderWidth: 0})
+            },
+
             // 不包含本身的graph
             activeGraphList(): GraphSelfPart[] {
                 return this.document.getChildGraph().filter(graph => graph &&
                     !graph.Conf.State.isDeleted && graph.Conf.State.isExplode)
             },
 
-            graphStyleList(): CSS.Properties[] {
-                return this.activeGraphList.map(graph => {
-                    return graph.viewBox.getDivCSS({borderColor: '#105060'})
-                })
+            activeGraphIdList(): id[] {
+                return this.activeGraphList.map(graph => graph.id)
             },
 
-            //不包含本身的node
+            activeGraphNodeList(): NodeSettingPart[] {
+                return this.nodes.filter(node => this.activeGraphIdList.indexOf(node.Setting._id) >= 0)
+            },
+
+            // 包含所有的Node
             allNodes(): NodeSettingPart[] {
                 let result: NodeSettingPart[] = [];
                 this.activeGraphList.map(graph => {
@@ -415,8 +404,7 @@
 
             //merge 之后的node
             nodes(): NodeSettingPart[] {
-                let result = this.document.Graph.nodes.concat(this.allNodes)
-                return result
+                return this.document.Graph.nodes
             },
 
             selectedNodes(): NodeSettingPart[] {
@@ -544,9 +532,11 @@
 
             mediaLocation(): AreaRect[] {
                 return this.medias.map(media => {
+                    let baseX = media.Setting.Base.x * this.containerRect.width
+                    let baseY = media.Setting.Base.y * this.containerRect.height
                     return {
-                        x: this.lastViewPoint.x - (this.viewPoint.x - (this.baseNode.x + media.Setting.Base.x * this.containerRect.width)) * this.realScale,
-                        y: this.lastViewPoint.y - (this.viewPoint.y - (this.baseNode.y + media.Setting.Base.y * this.containerRect.height)) * this.realScale,
+                        x: this.lastViewPoint.x - (this.viewPoint.x - (baseX + media.Setting.Base.x * this.containerRect.width)) * this.realScale,
+                        y: this.lastViewPoint.y - (this.viewPoint.y - (baseY + media.Setting.Base.y * this.containerRect.height)) * this.realScale,
                         width: media.Setting.Base.size * this.realScale >= 50
                             ? media.Setting.Base.size * this.realScale * media.Setting.Base.scaleX
                             : 50 * media.Setting.Base.scaleX,
@@ -621,14 +611,16 @@
             //显示节点
             showNode(): boolean[] {
                 return this.nodes.map(node =>
-                    this.labelViewDict.node[node.Setting._label] &&
-                    !node.State.isDeleted && node.Setting.Show.showAll)
+                    // this.labelViewDict.node[node.Setting._label] &&
+                    !node.State.isDeleted &&
+                    node.Setting.Show.showAll
+                )
             },
 
             //显示边
             showLink(): boolean[] {
                 return this.links.map(link =>
-                    this.labelViewDict.link[link.Setting._label] &&
+                    // this.labelViewDict.link[link.Setting._label] &&
                     !link.State.isDeleted &&
                     this.getTargetInfo(link.Setting._start).show &&
                     this.getTargetInfo(link.Setting._end).show
@@ -802,7 +794,7 @@
                 this.cardLocList = result
             },
 
-            clickNode(node: VisualNodeSettingPart) {
+            dbClickNode(node: VisualNodeSettingPart) {
                 this.selectItem([node]);
                 console.log(this.isLinking, node, this.startNode)
                 if (this.isLinking && node && this.startNode) {
@@ -954,41 +946,32 @@
 
             explode(node: NodeSettingPart) {
                 let _id = node.Setting._id;
-                let graph = this.dataManager.graphManager[_id];
-                if (graph === undefined) {
+                let subGraph = this.dataManager.graphManager[_id];
+                if (subGraph === undefined) {
                     this.$store.dispatch('graphQuery', {
                         _id,
                         parent: this.document.id,
                     }).then(() => {
-                        let graph = this.dataManager.graphManager[_id];
-                        this.$set(graph.Conf.State, 'isExplode', true)
+                        let subGraph = this.dataManager.graphManager[_id];
+                        this.$set(subGraph.Conf.State, 'isExplode', true)
                     });
                 } else {
-                    let value = graph.Conf.State.isExplode;
-                    let nodes = graph.Graph.nodes;
+                    let value = subGraph.Conf.State.isExplode;
+                    let nodes = subGraph.Graph.nodes;
+                    // 从baseNode里恢复
                     if (value) {
-                        nodes.splice(0, 0, graph.baseNode)
-                        this.$set(graph.Conf.State, 'isExplode', false)
+                        nodes.splice(0, 0, subGraph.baseNode)
+                        this.$set(subGraph.Conf.State, 'isExplode', false)
                     } else {
+                        // 删除掉subGraph里已有的节点
                         let index = 0;
                         nodes.map(item => {
-                            if (item.Setting._id === graph.id) {
+                            if (item.Setting._id === subGraph.id) {
                                 index = nodes.indexOf(item)
                             }
                         })
                         nodes.splice(index, 1)
-                        let {width, height} = graph.viewBox.getPositiveRect()
-                        let originPoint = {
-                            x: graph.baseNode.Setting.Base.x * width,
-                            y: graph.baseNode.Setting.Base.y * height
-                        } as Point
-                        let currentPoint = {
-                            x: graph.baseNode.Setting.Base.x * this.containerRect.width,
-                            y: graph.baseNode.Setting.Base.y * this.containerRect.height
-                        } as Point
-                        graph.viewBox.start = decreasePoint(currentPoint, originPoint)
-                        graph.viewBox.end = addPoint(graph.viewBox.start, {x: width, y: height})
-                        this.$set(graph.Conf.State, 'isExplode', true)
+                        this.$set(subGraph.Conf.State, 'isExplode', true)
                     }
                 }
             }

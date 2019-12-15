@@ -89,6 +89,17 @@ export class RectByPoint {
             borderStyle: "solid"
         }, css)
     }
+
+    updateFromArea(areaRect: AreaRect) {
+        let {x, y, width, height} = areaRect;
+        this.start = {x, y};
+        this.end = {x: x + width, y: y + height};
+        return this
+    }
+
+    static emptyRect() {
+        return new RectByPoint({x: 0, y: 0}, {x: 400, y: 600}, 1)
+    }
 }
 
 export const updatePoint = (point: Point, payload: Point) => {

@@ -64,6 +64,7 @@
 
             </polygon>
         </template>
+
         <foreignObject
             v-show="showText"
             :x="textXOffset"
@@ -116,13 +117,8 @@
                 required: true
             },
 
-            x: {
-                type: Number,
-                required: true
-            },
-
-            y: {
-                type: Number,
+            point: {
+                type: Object,
                 required: true
             },
 
@@ -132,7 +128,7 @@
             },
         },
         computed: {
-            transform: vm => 'translate(' + vm.x + ' ' + vm.y + ')',
+            transform: vm => 'translate(' + vm.point.x + ' ' + vm.point.y + ')',
 
             setting: vm => vm.node.Setting,
             state: vm => vm.node.State,
@@ -307,31 +303,29 @@
                 let loc = [-vm.hoverWidth + ',0', '0,' + -vm.hoverHeight, vm.hoverWidth + ',0', '0,' + vm.hoverHeight]
                 return loc.join(' ')
             },
-            geometryType: vm => vm.setting.Base.type
-        },
-        methods: {},
-        watch: {
-            x () {
-                let deltaKick = 10
-                let border = this.container.border
-                let newX = 0
-                let left = border + this.width
-                let right = this.container.getPositiveRect().width - border - this.width
-                this.x <= left && (newX = left + deltaKick)
-                this.x >= right && (newX = right - deltaKick)
-                newX !== 0 && this.$emit('kick-back-x', this.node, newX)
+            geometryType: vm => vm.setting.Base.type,
+
+            graphButtonX () {
+                return this.hoverWidth / 2 + 5
             },
-            y () {
-                let deltaKick = 10
-                let border = this.container.border
-                let newY = 0
-                let top = border + this.height
-                let bottom = this.container.getPositiveRect().height - border - this.height
-                this.y <= top && (newY = top + deltaKick)
-                this.y >= bottom && (newY = bottom - deltaKick)
-                newY !== 0 && this.$emit('kick-back-y', this.node, newY)
+
+            graphButtonY () {
+                return this.hoverHeight / 2 + 5
+            },
+            arrowIcon: vm => !vm.boundGraph
+                ? 'mdi-magnify'
+                : !vm.boundGraph.Conf.State.isExplode
+                    ? 'mdi-arrow-expand-all'
+                    : 'mdi-arrow-collapse-all',
+            boundGraph: vm => vm.$store.state.dataManager.graphManager[vm.node.Setting._id],
+
+        },
+        methods: {
+            explode () {
+                this.$emit('explode')
             }
         },
+        watch: {},
         record: {
             status: 'empty'
         }

@@ -32,7 +32,7 @@ export function delCookie(name: string) {
 }
 
 // 深拷贝
-export default function deepClone(item: any) {
+export default function deepClone<T>(item: T): T {
     // null, undefined values check
     if (!item) {
         return item;
@@ -48,36 +48,37 @@ export default function deepClone(item: any) {
     });
 
     if (typeof result === 'undefined') {
-        if (Object.prototype.toString.call(item) === '[object Array]') {
+        if (item instanceof Array) {
             result = [];
             item.forEach((child: any, index: any) => {
                 result[index] = deepClone(child);
             });
-        } else if (typeof item === 'object') {
+        } else if (item instanceof Node) {
             // testing that this is DOM
             if (item.nodeType && typeof item.cloneNode === 'function') {
                 result = item.cloneNode(true);
-            } else if (!item.prototype) { // check that this is a literal
-                if (item instanceof Date) {
-                    result = new Date(item);
-                } else {
-                    // it is an object literal
-                    result = {};
-                    Object.entries(item)
-                        .forEach(([prop, value]) => {
-                            result[prop] = deepClone(value);
-                        });
-                }
+            }
+        } else if (item instanceof Object) { // check that this is a literal
+            if (item instanceof Date) {
+                result = new Date(item);
             } else {
-                // depending what you would like here,
-                // just keep the reference, or create new object
-                // item.constructor
-                //   ? (result = new item.constructor())
-                //   : (result = item);
+                // it is an object literal
+                result = {};
+                Object.entries(item)
+                    .forEach(([prop, value]) => {
+                        result[prop] = deepClone(value);
+                    });
             }
         } else {
-            result = item;
+            // depending what you would like here,
+            // just keep the reference, or create new object
+            // item.constructor
+            //   ? (result = new item.constructor())
+            //   : (result = item);
+            throw TypeError('Dont deepClone Class Instance')
         }
+    } else {
+        result = item;
     }
     return result;
 }
