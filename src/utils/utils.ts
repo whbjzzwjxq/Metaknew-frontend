@@ -47,7 +47,7 @@ export default function deepClone<T>(item: T): T {
         }
     });
 
-    if (typeof result === 'undefined') {
+    if (result === undefined) {
         if (item instanceof Array) {
             result = [];
             item.forEach((child: any, index: any) => {
@@ -72,10 +72,7 @@ export default function deepClone<T>(item: T): T {
         } else {
             // depending what you would like here,
             // just keep the reference, or create new object
-            // item.constructor
-            //   ? (result = new item.constructor())
-            //   : (result = item);
-            throw TypeError('Dont deepClone Class Instance')
+            result = item
         }
     } else {
         result = item;

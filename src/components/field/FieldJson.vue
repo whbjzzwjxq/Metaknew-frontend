@@ -86,7 +86,7 @@
         <v-col cols="3">
           <v-btn text small @click="update">
             Save
-            <v-icon right small>save</v-icon>
+            <v-icon right small>mdi-content-save</v-icon>
           </v-btn>
         </v-col>
       </div>

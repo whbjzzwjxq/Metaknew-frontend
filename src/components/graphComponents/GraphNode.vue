@@ -87,6 +87,8 @@
 </template>
 
 <script lang="js">
+    import { commitNewLabel } from '@/store/modules/_mutations'
+
     export default {
         name: 'GraphNode',
         components: {},
@@ -160,7 +162,7 @@
                 if (this.setting.Base.color !== '') {
                     return this.setting.Base.color
                 } else {
-                    this.$store.commit('addLabelColor', [this.setting._type])
+                    commitNewLabel([this.setting._type])
                     return this.$store.state.styleLabelColor[this.setting._type]
                 }
             },
@@ -169,7 +171,7 @@
                 if (this.setting.Border.color !== '') {
                     return this.setting.Border.color
                 } else {
-                    this.$store.commit('addLabelColor', [this.setting._label])
+                    commitNewLabel([this.setting._label])
                     return this.$store.state.styleLabelColor[this.setting._label]
                 }
             },

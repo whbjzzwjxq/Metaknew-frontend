@@ -1,4 +1,5 @@
 import {FieldType, ResolveType} from "@/utils/labelField";
+import {BaseType} from "@/utils/graphClass";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -25,7 +26,7 @@ export interface iconItem {
     render: boolean
 }
 
-export type LabelViewDict = Record<any, Record<string, boolean>>
+export type LabelViewDict = Record<string, Record<string, boolean>>
 
 export type item = 'node' | 'media' | 'link'
 

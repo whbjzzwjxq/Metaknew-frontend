@@ -107,16 +107,26 @@ export const updatePoint = (point: Point, payload: Point) => {
     Vue.set(point, 'y', payload.y)
 };
 
-export const addPoint = (pointA: Point, pointB: Point) => {
+export const addPoint = (pointA: Point, ...rest: Point[]) => {
+    let delta = {x: 0, y: 0} as Point;
+    rest.map(point => {
+        delta.x += point.x;
+        delta.y += point.y
+    });
     return {
-        x: pointA.x + pointB.x,
-        y: pointA.y + pointB.y
+        x: pointA.x + delta.x,
+        y: pointA.y + delta.y
     }
 };
 
-export const decreasePoint = (pointA: Point, pointB: Point) => {
+export const decreasePoint = (pointA: Point, ...rest: Point[]) => {
+    let delta = {x: 0, y: 0} as Point;
+    rest.map(point => {
+        delta.x += point.x;
+        delta.y += point.y
+    });
     return {
-        x: pointA.x - pointB.x,
-        y: pointA.y - pointB.y
+        x: pointA.x - delta.x,
+        y: pointA.y - delta.y
     }
 };

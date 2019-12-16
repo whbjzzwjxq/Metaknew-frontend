@@ -1,5 +1,5 @@
 <template>
-  <div class="title">
+  <div class="title unselected">
     <v-text-field
       :value="text"
       @input="updateText"
@@ -46,6 +46,7 @@
 </script>
 
 <style scoped>
+  @import "../style/css/unselected.css";
   .title {
     height: 48px;
     color: grey;

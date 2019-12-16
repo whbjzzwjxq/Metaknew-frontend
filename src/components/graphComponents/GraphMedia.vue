@@ -1,6 +1,6 @@
 <template>
     <div :style="containerStyle">
-        <card-root-media
+        <card-page-media-info
             in-view-box
             :file="mediaInfo"
             :index="index"
@@ -8,60 +8,60 @@
             :height="location.height"
         >
 
-        </card-root-media>
+        </card-page-media-info>
     </div>
 </template>
 
-<script lang="js">
-    import CardRootMedia from '../card/page/CardPageMediaInfo'
-
-    export default {
+<script lang="ts">
+    import Vue from 'vue';
+    import CardPageMediaInfo from '../card/page/CardPageMediaInfo'
+    import {AreaRect} from "@/utils/geoMetric";
+    import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
+    import * as CSS from 'csstype'
+    export default Vue.extend({
         name: 'GraphMedia',
-        components: { CardRootMedia },
+        components: {CardPageMediaInfo},
         props: {
             //基础数据
             media: {
-                type: Object,
+                type: Object as () => MediaSettingPart,
                 required: true,
             },
 
-            //容器的尺寸信息
-            container: {
-                type: Object,
-                required: true
-            },
-
             location: {
-                type: Object,
+                type: Object as () => AreaRect,
                 required: true
             },
 
             //缩放情况
             scale: {
-                type: Number,
+                type: Number as () => number,
                 required: true
             },
 
             index: {
-                type: Number,
+                type: Number as () => number,
                 required: true
             }
         },
         computed: {
-            containerStyle () {
+            containerStyle(): CSS.Properties {
                 return {
                     'width': this.location.width + 'px',
                     'height': this.location.height + 'px',
                     'position': 'absolute',
                     'left': this.location.x + 'px',
                     'top': this.location.y + 'px',
-                    'z-index': 0
                 }
             },
-            setting: vm => vm.media.Setting,
-            mediaInfo: vm => vm.$store.state.dataManager.nodeManager[vm.setting._id]
+            mediaInfo(): MediaInfoPart {
+                return this.$store.state.dataManager.mediaManager[this.media.Setting._id]
+            }
+        },
+        record: {
+            status: 'done-old'
         }
-    }
+    })
 </script>
 
 <style scoped>

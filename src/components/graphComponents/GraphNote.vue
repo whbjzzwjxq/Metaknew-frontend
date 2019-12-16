@@ -72,6 +72,7 @@
 
 <script lang="js">
     import {randomIntegerInRange} from "30-seconds-of-code";
+    import { commitSnackbarOn } from '@/store/modules/_mutations'
 
     export default {
         name: "GraphNote",
@@ -239,10 +240,10 @@
                             let payload = {
                                 "content": "便签宽度不能小于100像素",
                                 "color": "warning",
-                                "name": "noteTooNarrow",
+                                "actionName": "noteTooNarrow",
                                 "once": false
                             };
-                            this.$store.commit("snackBarOn", payload);
+                            commitSnackbarOn(payload);
                             this.isSliderDragging = false;
                             this.$set(this.conf, 'width', this.conf.width + 5);
                         }
@@ -250,10 +251,10 @@
                         let payload = {
                             "content": "不可以改变作者发布的便签",
                             "color": "warning",
-                            "name": "moveUnSelfObj",
+                            "actionName": "moveUnSelfObj",
                             "once": true
                         };
-                        this.$store.commit("snackBarOn", payload);
+                        commitSnackbarOn(payload);
                         this.isSliderDragging = false
                     }
                 }
@@ -283,11 +284,11 @@
                     "content": "删除了便签",
                     "buttonText": "撤销",
                     "action": this.rollBackDelete,
-                    "actionObj": this.note,
-                    "name": "rollBackNote",
+                    "actionObject": this.note,
+                    "actionName": "rollBackNote",
                     "once": false
                 };
-                this.$store.commit('snackBarOn', payload)
+                commitSnackbarOn(payload)
             },
 
             //恢复Note

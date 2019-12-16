@@ -10,18 +10,24 @@
             @mouseup="endSelect"
             @wheel="onScroll">
 
-            <foreignObject height="100%" width="100%">
+            <foreignObject
+                v-for="(graph, index) in activeGraphList"
+                :key="index"
+                :x="activeGraphRectList[index].x"
+                :y="activeGraphRectList[index].y"
+                :width="activeGraphRectList[index].width"
+                :height="activeGraphRectList[index].height"
+                @mousedown.self="startSelect"
+            >
                 <!--        展开的Graph-->
                 <graph-render
-                    v-for="(graph, index) in activeGraphList"
-                    :key="index"
                     :document="graph"
                     :label-view-dict="labelViewDict"
                     :real-scale="realScale"
                     :base-node="activeGraphNodeList[index]"
-                    :base-location="getTargetInfo(activeGraphNodeList[index])"
-                    @on-scroll="onScroll"
+                    :base-rect="activeGraphRectList[index]"
                     render-selector
+                    @on-scroll="onScroll"
                 >
 
                 </graph-render>
@@ -84,7 +90,6 @@
             v-for="(node, index) in medias"
             :key="node.Setting._id"
             :media="node"
-            :container="container"
             :location="mediaLocation[index]"
             :scale="realScale"
             :index="index"
@@ -191,7 +196,7 @@
     import {item, LabelViewDict, VisualNodeSetting} from '@/utils/interfaceInComponent'
     import {isLinkSetting, isMediaSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
-    import {snackBarStatePayload} from "@/store/modules/componentSnackBar";
+    import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
     import GraphRender from "@/components/graphComponents/GraphRender.vue";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
@@ -260,7 +265,8 @@
                 labelViewDict: {
                     "node": {},
                     "media": {},
-                    "link": {}
+                    "link": {},
+                    "document": {}
                 } as LabelViewDict,
 
                 //缩放比例
@@ -359,6 +365,22 @@
 
             activeGraphNodeList(): NodeSettingPart[] {
                 return this.nodes.filter(node => this.activeGraphIdList.indexOf(node.Setting._id) >= 0)
+            },
+
+            activeGraphRectList(): AreaRect[] {
+                return this.activeGraphList.map((graph, index) => {
+                    let width = graph.rect.width * this.realScale;
+                    let height = graph.rect.height * this.realScale;
+                    let {x, y} = graph.baseNode.Setting.Base;
+                    let baseLocation = this.getTargetInfo(this.activeGraphNodeList[index])
+                    let area = {
+                        x: baseLocation.x - width * x,
+                        y: baseLocation.y - height * y,
+                        width,
+                        height
+                    } as AreaRect;
+                    return area
+                })
             },
 
             // 包含所有的Node
@@ -611,7 +633,7 @@
             //显示节点
             showNode(): boolean[] {
                 return this.nodes.map(node =>
-                    // this.labelViewDict.node[node.Setting._label] &&
+                    this.labelViewDict[node.Setting._type][node.Setting._label] &&
                     !node.State.isDeleted &&
                     node.Setting.Show.showAll
                 )
@@ -620,7 +642,7 @@
             //显示边
             showLink(): boolean[] {
                 return this.links.map(link =>
-                    // this.labelViewDict.link[link.Setting._label] &&
+                    this.labelViewDict.link[link.Setting._label] &&
                     !link.State.isDeleted &&
                     this.getTargetInfo(link.Setting._start).show &&
                     this.getTargetInfo(link.Setting._end).show
@@ -838,17 +860,15 @@
                 } else {
                     if (this.renderSelector) {
                         this.$set(this, 'isSelecting', true);
-                        let x = $event.x - this.containerRect.x;
-                        let y = $event.y - this.containerRect.y;
-                        updatePoint(this.selectRect.start, {x, y});
-                        updatePoint(this.selectRect.end, {x, y});
+                        let start = decreasePoint($event, this.containerRect)
+                        updatePoint(this.selectRect.start, start);
+                        updatePoint(this.selectRect.end, start);
                     }
                 }
             },
 
             selecting($event: MouseEvent) {
-                let endX = $event.x - this.containerRect.x;
-                let endY = $event.y - this.containerRect.y;
+                let end = decreasePoint($event, this.containerRect)
                 //选择集
                 if ($event.ctrlKey && this.isMoving) {
                     let x = this.lastViewPoint.x + $event.x - this.moveStartPoint.x;
@@ -857,11 +877,11 @@
                     updatePoint(this.moveStartPoint, $event)
                 } else {
                     if (this.isSelecting && this.renderSelector) {
-                        updatePoint(this.selectRect.end, {x: endX, y: endY})
+                        updatePoint(this.selectRect.end, end)
                     }
                     //移动
                     if (this.isLinking) {
-                        updatePoint(this.newLinkEndPoint, {x: endX, y: endY})
+                        updatePoint(this.newLinkEndPoint, end)
                     }
                 }
             },
@@ -885,14 +905,14 @@
             },
 
             getLabelViewDict() {
-                let typeDict: { [K in item]: string[] } = {
+                let typeDict: Record<BaseType, string[]> = {
                     node: this.nodeLabels,
                     link: this.linkLabels,
-                    media: this.mediaLabels
+                    media: this.mediaLabels,
+                    document: ['DocGraph', 'DocPaper']
                 };
                 Object.entries(typeDict).map(([_type, labels]) => {
                     labels.map(label => {
-                        console.log(label)
                         if (this.labelViewDict[_type][label] === undefined) {
                             this.labelViewDict[_type][label] = true
                         }
@@ -919,7 +939,7 @@
                     "color": "success",
                     "actionName": "addLink",
                     "once": false,
-                } as snackBarStatePayload;
+                } as SnackBarStatePayload;
                 commitSnackbarOn(payload);
                 this.isLinking = true;
                 this.startNode = node;
@@ -980,6 +1000,14 @@
 
         watch: {
             nodeLabels() {
+                this.getLabelViewDict()
+            },
+
+            linkLabels() {
+                this.getLabelViewDict()
+            },
+
+            mediaLabels() {
                 this.getLabelViewDict()
             },
 

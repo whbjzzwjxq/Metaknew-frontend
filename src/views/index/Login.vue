@@ -1,31 +1,31 @@
 <template>
-  <div class="login">
-    <div class="row">
-      <div class="col-md-3">
-      </div>
-      <div class="col-md-6 justify-center">
-        <div class="MontSerra" id="welcome">WELCOME TO META-KNEW</div>
-          <v-text-field
-            v-model="loginData.phone"
-            dense
-            clearable
-            label="phone"
-            :rules="phoneRules"
-          >
+    <div class="login">
+        <div class="row">
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-6 justify-center">
+                <div class="MontSerra" id="welcome">WELCOME TO META-KNEW</div>
+                <v-text-field
+                    v-model="loginData.phone"
+                    dense
+                    clearable
+                    label="phone"
+                    :rules="phoneRules"
+                >
 
-          </v-text-field>
-          <v-text-field
-            v-model="loginData.password"
-            dense
-            clearable
-            label="password"
-            :rules="passwordRules"
-          >
-          </v-text-field>
-        <v-btn outlined block @click="login"> Login </v-btn>
-      </div>
+                </v-text-field>
+                <v-text-field
+                    v-model="loginData.password"
+                    dense
+                    clearable
+                    label="password"
+                    :rules="passwordRules"
+                >
+                </v-text-field>
+                <v-btn outlined block @click="login"> Login</v-btn>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <script lang="ts">

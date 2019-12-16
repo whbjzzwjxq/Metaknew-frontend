@@ -9,8 +9,8 @@ import {
   QueryObject
 } from "@/utils/graphClass";
 
-export function createMedia(data: {name: string, item: BaseMediaInfo}) {
-  return baseService()({
+export function createMedia(data: {name: string, Info: BaseMediaInfo}) {
+  return baseService<id>()({
     url: BASE + '/subgraph/create/media/normal',
     method: 'post',
     headers: {

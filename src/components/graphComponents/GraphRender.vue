@@ -1,5 +1,5 @@
 <template>
-    <div :style="containerStyle">
+    <div :style="containerStyle" class="pa-2">
         <svg
             width="100%"
             height="100%"
@@ -64,7 +64,7 @@
             @mousedown.native="dragStart"
             @mousemove.native="drag(node, $event)"
             @mouseup.native="dragEnd(node, $event)"
-            @dblclick.native.stop="clickNode(node)"
+            @dblclick.native.stop="dbClickNode(node)"
         >
 
         </graph-media>
@@ -94,6 +94,7 @@
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import GraphMedia from "@/components/graphComponents/GraphMedia.vue";
     import GraphNodeButton from "@/components/graphComponents/GraphNodeButton.vue";
+    import {StyleManagerState} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
         name: "GraphRender",
@@ -142,9 +143,9 @@
                 required: true
             },
 
-            // 在根图中的节点
-            baseLocation: {
-                type: Object as () => Point,
+            // 在根图中的矩形
+            baseRect: {
+                type: Object as () => AreaRect,
                 required: true
             },
 
@@ -200,25 +201,20 @@
                 return this.$store.state.dataManager
             },
 
+            allComponentsStyle(): StyleManagerState {
+                return this.$store.state.styleComponentSize
+            },
+
+            viewBox(): RectByPoint {
+                return this.allComponentsStyle.viewBox
+            },
+
             container(): RectByPoint {
-                let width = this.width * this.realScale;
-                let height = this.height * this.realScale;
-                let {x, y} = this.document.baseNode.Setting.Base;
-                let area = {
-                    x: this.baseLocation.x - width * x,
-                    y: this.baseLocation.y - height * y,
-                    width,
-                    height
-                } as AreaRect;
-                // baseContainer 的别名
-                return this.baseContainer.updateFromArea(area)
+                return this.baseContainer.updateFromArea(this.baseRect)
             },
 
             containerStyle(): CSS.Properties {
-                return this.container.getDivCSS({borderColor: '#105060'})
-            },
-            containerRect(): AreaRect {
-                return this.container.getPositiveRect()
+                return this.container.getDivCSS({left: 0, top: 0, borderColor: '#105060'})
             },
 
             //显示节点
@@ -253,8 +249,8 @@
                     let width = node.Setting.Base.size !== 0
                         ? node.Setting.Base.size * this.realScale
                         : this.impScaleRadius[index] * this.realScale;
-                    let baseX = node.Setting.Base.x * this.containerRect.width;
-                    let baseY = node.Setting.Base.y * this.containerRect.height;
+                    let baseX = node.Setting.Base.x * this.baseRect.width;
+                    let baseY = node.Setting.Base.y * this.baseRect.height;
                     return {
                         x: baseX,
                         y: baseY,
@@ -266,8 +262,8 @@
 
             mediaLocation(): AreaRect[] {
                 return this.medias.map(media => {
-                    let baseX = media.Setting.Base.x * this.containerRect.width;
-                    let baseY = media.Setting.Base.y * this.containerRect.height;
+                    let baseX = media.Setting.Base.x * this.baseRect.width;
+                    let baseY = media.Setting.Base.y * this.baseRect.height;
                     return {
                         x: baseX * this.realScale,
                         y: baseY * this.realScale,
@@ -383,6 +379,7 @@
             //选择框的相关设置
             selectorStyle(): CSS.Properties {
                 return {
+                    "position": "absolute",
                     "fill": "#000000",
                     "fillOpacity": this.isSelecting ? 0.3 : 0,
                     "strokeOpacity": this.isSelecting ? 0.7 : 0,
@@ -404,8 +401,8 @@
             //注意坐标运算使用小数
             drag(target: VisualNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
-                    let deltaX = ($event.x - this.dragStartPoint.x) / this.containerRect.width / this.realScale;
-                    let deltaY = ($event.y - this.dragStartPoint.y) / this.containerRect.height / this.realScale;
+                    let deltaX = ($event.x - this.dragStartPoint.x) / this.baseRect.width / this.realScale;
+                    let deltaY = ($event.y - this.dragStartPoint.y) / this.baseRect.height / this.realScale;
                     this.dragStart($event);
                     if (this.selectedNodes.length > 0) {
                         this.selectedNodes.map(node => {
@@ -444,14 +441,14 @@
             startSelect($event: MouseEvent) {
                 if (this.renderSelector) {
                     this.$set(this, 'isSelecting', true);
-                    let start = decreasePoint($event, this.containerRect);
+                    let start = decreasePoint($event, this.baseRect, this.viewBox.start);
                     updatePoint(this.selectRect.start, start);
                     updatePoint(this.selectRect.end, start);
                 }
             },
 
             selecting($event: MouseEvent) {
-                let end = decreasePoint($event, this.containerRect);
+                let end = decreasePoint($event, this.baseRect, this.viewBox.start);
                 //选择集
                 if (this.isSelecting && this.renderSelector) {
                     updatePoint(this.selectRect.end, end)
@@ -511,16 +508,6 @@
             },
             dbClickNode(node: VisualNodeSettingPart) {
                 this.selectItem([node]);
-                if (this.isLinking && node && this.startNode) {
-                    let id = getIndex();
-                    let setting = LinkSettingPart.emptyLinkSetting(id, "default", this.startNode, node, this.document);
-                    let info = LinkInfoPart.emptyLinkInfo(id, "default", this.startNode, node);
-                    addItems(this.document.Graph.links, [setting]);
-                    commitInfoAdd({item: info, strict: true});
-                    this.isLinking = false;
-                } else {
-                    //
-                }
             },
 
             explode(node: NodeSettingPart) {
@@ -557,7 +544,9 @@
 
             }
         },
-        watch: {},
+        watch: {
+
+        },
         record: {
             status: 'empty'
         }

@@ -3,7 +3,6 @@
         @mouseenter.stop="showTool = true"
         @mouseleave.stop="showTool = false"
         :width="width"
-        :height="height"
         flat
         tile
         outlined
@@ -11,7 +10,7 @@
         <media-viewer :file="file" :width="width">
             <template v-slot:button-group>
                 <div
-                    :style="{ opacity: toolOpacity }"
+                    :style="buttonGroupStyle"
                     class="d-flex flex-column button-group pl-1"
                     v-show="showTool"
                 >
@@ -19,7 +18,7 @@
                         :disabled="item.icon === ''"
                         :key="item.icon"
                         @click="item._func"
-                        color="white"
+                        color="black"
                         icon
                         small
                         v-for="item in iconList"
@@ -77,7 +76,8 @@
     import {DataManagerState} from "@/store/modules/dataManager";
     import {LabelGroup, iconItem} from "@/utils/interfaceInComponent";
     import {labelItems} from "@/utils/labelField";
-    import {updateMedia} from '@/api/commonSource'
+    import {updateMedia} from '@/api/commonSource';
+    import * as CSS from 'csstype';
 
     export default Vue.extend({
         name: "CardPageMediaInfo",
@@ -194,8 +194,14 @@
             title: function () {
                 return this.info.PrimaryLabel + " --> " + this.info.Name;
             },
-
-            toolOpacity: vm => (vm.showTool ? "50%" : "0%"),
+            buttonGroupStyle(): CSS.Properties {
+                return {
+                    opacity: this.showTool ? '50%' : '0%',
+                    position: "absolute",
+                    right: 0,
+                    top: 0
+                }
+            },
             arrowIcon: vm =>
                 vm.detailOn ? "mdi-chevron-double-up" : "mdi-chevron-double-down",
             editText: vm => (vm.editMode ? "Edit Off" : "Edit On"),
@@ -209,16 +215,17 @@
             },
 
             //能够变成media节点:不在画布里而且画布是isSelf的
-            showExportIcon: vm =>
-                !vm.inViewBox &&
-                vm.$store.state.dataManager.currentGraph.State.isSelf,
+            showExportIcon() {
+                return !this.inViewBox &&
+                    this.dataManager.currentGraph.Conf.State.isSelf
+            },
 
             normalIconList(): iconItem[] {
                 let vm = this;
                 return [
                     {icon: "mdi-magnify", _func: vm.dialogWatch, render: true},
                     {icon: vm.arrowIcon, _func: vm.changeDetail, render: true},
-                    {icon: "", _func: null, render: true},
+                    {icon: "", _func: vm.doNothing, render: true},
                     {icon: "mdi-pencil", _func: vm.editSrc, render: vm.isSelf},
                     {
                         icon: "mdi-delete",
@@ -226,7 +233,7 @@
                         render: vm.isSelf || vm.showDeleteIcon
                     },
                     {
-                        icon: "mdi-arrow-left-bold-circle-outline",
+                        icon: "mdi-arrow-right-bold-circle-outline",
                         _func: vm.addMediaToGraph,
                         render: vm.showExportIcon
                     }
@@ -254,7 +261,6 @@
             changeDetail() {
                 this.detailOn = !this.detailOn;
             },
-
             deleteMediaFromNode() {
                 this.$emit("delete-item");
             },
@@ -275,6 +281,9 @@
                             : alert("保存失败 请重试");
                     });
                 }
+            },
+            doNothing() {
+
             }
         },
         watch: {},

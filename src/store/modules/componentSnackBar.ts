@@ -1,7 +1,7 @@
-export interface snackBarStatePayload {
+export interface SnackBarStatePayload {
   color: string,
   content: string,
-  buttonText: string,
+  buttonText?: string,
   action?: Function,
   actionObject?: Object,
   actionName: string,
@@ -12,7 +12,7 @@ export interface snackBarStatePayload {
 export interface State {
   on: boolean,
   oncePool: Record<string, boolean>,
-  payload: snackBarStatePayload
+  payload: SnackBarStatePayload
 }
 
 const state: State = {
@@ -31,15 +31,14 @@ const state: State = {
 };
 
 const mutations = {
-  snackBarOn(state: State, payload: snackBarStatePayload) {
+  snackBarOn(state: State, payload: SnackBarStatePayload) {
     let name = payload.actionName;
     if (!payload.once || !state.oncePool[name]) {
       state.on = true;
       state.oncePool[name] = true;
+      payload.timeout || (payload.timeout = 2000);
+      payload.buttonText || (payload.buttonText = '');
       state.payload = payload;
-      Object.prototype.hasOwnProperty.call(payload, 'timeout')
-        ? (state.payload.timeout = payload.timeout)
-        : (state.payload.timeout = 2000);
     }
   },
 

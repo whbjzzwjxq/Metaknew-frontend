@@ -14,7 +14,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {commitNewLabel} from "@/store/modules/_mutations";
+    import {commitNewLabel, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
 
     export default Vue.extend({
         name: "GlobalChip",
@@ -101,11 +102,12 @@
                     "content": "移除了标签",
                     "buttonText": "撤销",
                     "action": this.rollBackDelete,
-                    "actionObj": this.show,
+                    "actionName": 'deleteGlobalChip',
+                    "actionObject": this.show,
                     "name": "deleteLabel",
                     "once": false
-                };
-                this.$store.commit('snackBarOn', payload);
+                } as SnackBarStatePayload;
+                commitSnackbarOn(payload);
                 let vm = this;
                 this.closeChip = setTimeout(() => {
                         vm.$emit("close-chip", vm.index)
@@ -115,7 +117,7 @@
 
             rollBackDelete(target: any) {
                 this.resetChip();
-                this.$store.commit('snackBarOff')
+                commitSnackbarOff()
             },
             resetChip() {
                 this.$set(this, 'show', true);

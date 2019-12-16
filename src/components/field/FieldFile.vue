@@ -121,6 +121,7 @@
     import {FileToken} from '@/api/user'
     import {id, MediaInfoPart} from '@/utils/graphClass'
     import {commitInfoAdd} from '@/store/modules/_mutations'
+    import {dispatchUploadFile} from "@/store/modules/_dispatch";
 
     const mime = require('mime/lite');
 
@@ -220,8 +221,9 @@
             uploadFile(index: number) {
                 let file = this.newFiles[index];
                 let storeName = 'userFileCache/' + this.guid() + '.' + file.Ctrl.Format;
-                this.$store.dispatch('fileUpload', {
-                    file,
+                file.file &&
+                dispatchUploadFile({
+                    item: file,
                     storeName,
                     uploadType: 'normal',
                     realFile: file.file
@@ -234,7 +236,8 @@
                     this.currentFiles.push(id);
                     this.newFiles.splice(index, 1);
                     this.saveMedia()
-                }).catch(() => {
+                }).catch((res) => {
+                    console.log(res);
                     file.changeStatus('error')
                 })
             }

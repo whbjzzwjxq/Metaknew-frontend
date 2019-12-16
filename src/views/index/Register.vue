@@ -4,6 +4,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
+    import {commitScreenResize} from "@/store/modules/_mutations";
 
     export default Vue.extend({
         name: "Register",
@@ -15,7 +16,7 @@
         computed: {},
         methods: {
             onResize() {
-                this.$store.commit('resetScreen')
+                commitScreenResize()
             }
         },
         watch: {},

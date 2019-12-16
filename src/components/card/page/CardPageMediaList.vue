@@ -2,7 +2,7 @@
     <div>
         <card-sub-row text="New Media">
             <template v-slot:content>
-                <v-dialog width="540" persistent v-model="dialogOn">
+                <v-dialog width="720" persistent v-model="dialogOn">
                     <template v-slot:activator="{ on }">
                         <v-btn text v-on="on">
                             Click Upload File
@@ -12,8 +12,9 @@
                         <field-file
                             :prop-name="'IncludeMedia'"
                             :base-files="mediaIdList"
-                            :width="540"
+                            :width="720"
                             @update-value="updateIncludedMediaCache(arguments[1])"
+                            show-current
                             upload-mode>
 
                         </field-file>
@@ -89,6 +90,10 @@
             baseData: {
                 type: Object as () => NodeInfoPart,
                 required: true
+            },
+            width: {
+                type: Number as () => number,
+                default: 400
             }
         },
         computed: {
@@ -138,7 +143,7 @@
             addMediaToGraph(media: MediaInfoPart) {
                 let graph = this.dataManager.currentGraph;
                 let newMediaSetting = MediaSettingPart.emptyMediaSettingFromInfo(media, graph);
-                this.$store.commit('mediaSettingPush', newMediaSetting)
+                this.dataManager.currentGraph.addItems([newMediaSetting])
             },
             reRankFile() {
                 let type = this.filterProp;
@@ -151,7 +156,11 @@
                 this.reRankedList.sort(sorter);
             }
         },
-        watch: {},
+        watch: {
+            mediaList() {
+                this.reRankFile()
+            }
+        },
         record: {
             status: 'done'
         },

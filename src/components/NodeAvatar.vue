@@ -83,6 +83,7 @@
     import MediaGrids from "@/components/MediaGrids.vue";
     import {guid} from "@/utils/utils";
     import {MediaInfoPart} from '@/utils/graphClass'
+    import {dispatchUploadFile} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "NodeAvatar",
@@ -131,10 +132,9 @@
             },
             uploadFile(file: File) {
                 let storeName = 'userFileCache/' + this.guid() + "." + file.type.split("/")[1];
-                this.$store.dispatch('fileUpload', {
-                    file: {},
+                dispatchUploadFile({
                     storeName,
-                    saveType: 'mainImage',
+                    uploadType: 'mainImage',
                     realFile: file
                 }).then(() => {
                     alert('Upload Image Success!');

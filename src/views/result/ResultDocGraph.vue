@@ -33,7 +33,7 @@
         addItems,
         getIndex,
         GraphSelfPart,
-        LinkInfoPart, LinkSettingPart,
+        LinkInfoPart, LinkSettingPart, MediaInfoPart, MediaSettingPart,
         NodeInfoPart,
         NodeSettingPart,
         VisualNodeSettingPart
@@ -128,12 +128,12 @@
             let id = getIndex();
             let graph = GraphSelfPart.emptyGraphSelfPart(id, this.dataManager.currentGraph);
             let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
-            let newBaseNode = NodeSettingPart.emptyNodeSetting(id, 'document', 'test', 'NewDocument', '', graph);
+            let newBaseNode = NodeSettingPart.emptyNodeSetting(id, 'document', 'DocGraph', 'NewDocument', '', graph);
             commitInfoAdd({item: info, strict: true});
 
             let nodeId = getIndex();
-            let node = NodeSettingPart.emptyNodeSetting(nodeId, 'node', 'test', '1', '', graph);
-            let nodeInfo = NodeInfoPart.emptyNodeInfoPart(nodeId, 'node', 'test');
+            let node = NodeSettingPart.emptyNodeSetting(nodeId, 'node', 'DocGraph', '1', '', graph);
+            let nodeInfo = NodeInfoPart.emptyNodeInfoPart(nodeId, 'node', 'DocGraph');
             commitInfoAdd({item: nodeInfo});
             addItems(graph.Graph.nodes, [node]);
             commitGraphAdd({graph, strict: true});

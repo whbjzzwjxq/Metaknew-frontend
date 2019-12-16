@@ -3,30 +3,28 @@ import {createMedia, queryDocGraph, queryMultiMedia, queryMultiSource} from '@/a
 import {FileToken, getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
+    BaseLinkCtrl,
     GraphBackend,
     GraphSelfPart,
     id,
     LinkInfoPart,
-    LinkSettingPart,
+    LinkSetting,
     MediaInfoPart,
     NodeInfoPart,
-    userConcernTemplate,
     NodeSetting,
     QueryObject,
-    NodeInfoPartBackend,
-    LinkSetting,
-    LinkInfoPartBackend,
-    BaseLinkCtrl, MediaInfoPartBackend, MediaSettingPart, NodeSettingPart, Setting
+    userConcernTemplate
 } from "@/utils/graphClass";
 import {
-    commitInfoRemove,
-    commitInfoAdd,
+    commitFileToken,
     commitGraphAdd,
+    commitGraphChangeId,
     commitGraphRemove,
-    commitGraphChangeId, commitItemChange, commitFileToken
+    commitInfoAdd,
+    commitInfoRemove,
+    commitItemChange, commitSnackbarOn
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
-import {AreaRect, RectByPoint} from "@/utils/geoMetric";
 import {isNodeBackend} from "@/utils/typeCheck";
 
 export type InfoPart = NodeInfoPart | MediaInfoPart | LinkInfoPart;
@@ -90,7 +88,7 @@ const getters = {
 const mutations = {
 
     // ------------单纯的操作------------
-    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart}) {
+    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
         let id = graph.id; // 这里payload是document
         state.currentGraph = graph;
@@ -282,18 +280,18 @@ const actions = {
         }
 
         // 开始上传
-        let request;
+        let result;
         item && item.changeStatus('uploading');
-        await filePutBlob(fileToken, realFile, storeName).then(returnObj => {
+        await filePutBlob(fileToken, realFile, storeName).then(res => {
             if (uploadType === 'normal' && item) {
-                let data = {name: storeName, item: item.Info};
-                request = createMedia(data);
-                return request
+                let data = {name: storeName, Info: item.Info};
+                result = createMedia(data);
             } else if (uploadType === 'mainImage') {
-                return new Promise(() => {
+                result = new Promise(() => {
                 })
             }
         });
+        return result
     }
 
 };

@@ -1,7 +1,7 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
 import {FileToken} from "@/api/user";
-import {snackBarStatePayload} from "@/store/modules/componentSnackBar";
+import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
 import {GraphSelfPart, id, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/utils/graphClass";
 import {InfoPart, idMap} from "@/store/modules/dataManager";
 import {AreaRect, RectByPoint} from "@/utils/geoMetric";
@@ -18,7 +18,7 @@ export const commitFileToken = (payload: FileToken) => {
     return store.commit('updateFileToken', payload)
 };
 
-export const commitSnackbarOn = (payload: snackBarStatePayload) => {
+export const commitSnackbarOn = (payload: SnackBarStatePayload) => {
     return store.commit('snackBarOn', payload)
 };
 
@@ -64,16 +64,4 @@ export const commitGraphRemove = (payload: id) => {
 
 export const commitGraphChangeId = (payload: idMap) => {
     return store.commit('graphChangeId', payload)
-};
-
-export const commitSettingPush = (payload: Array<NodeSettingPart | LinkSettingPart | MediaSettingPart>) => {
-    if (payload.length > 0) {
-        payload[0] instanceof NodeSettingPart
-            ? store.commit('nodeSettingPush', payload)
-            : payload[0] instanceof LinkSettingPart
-            ? store.commit('linkSettingPush', payload)
-            : store.commit('mediaSettingPush', payload)
-    } else {
-        //
-    }
 };

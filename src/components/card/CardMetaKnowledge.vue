@@ -29,7 +29,8 @@
                         </template>
                         <card-page-media-list
                             v-if="tab === 'medias'  && type === 'node'"
-                            :base-data="info">
+                            :base-data="info"
+                            :width="width">
 
                         </card-page-media-list>
 

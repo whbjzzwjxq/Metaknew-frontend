@@ -3,7 +3,7 @@ import Vue from "vue";
 import {allPropType, fieldDefaultValue, neededProp, PropDescription} from "@/utils/labelField";
 import {noteTemplate, settingTemplate} from "@/utils/settingTemplate";
 import {AreaRect, Point, RectByPoint} from "@/utils/geoMetric";
-import {isBooleanConcern, isLevelConcern} from "@/utils/typeCheck";
+import {isBooleanConcern, isLevelConcern, isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
 
 export let newIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
@@ -254,7 +254,7 @@ export interface Setting {
 }
 
 export interface NodeSetting extends Setting {
-    _type: 'node';
+    _type: 'node' | 'document';
     _name: string;
     _image: string;
 }
@@ -651,7 +651,7 @@ export class LinkInfoPart {
 
 export class MediaInfoPart {
     id: id;
-    file: File | Blob | Promise<any> | null;
+    file: File | Blob | null;
     status: MediaStatus;
     error: string[]; // file存在的错误
     isRemote: boolean;
@@ -1026,7 +1026,7 @@ export class GraphSelfPart {
     rootList: Array<GraphSelfPart>; // Graph的遍历链条
     root: GraphSelfPart | null;
     baseNode: NodeSettingPart;
-    deltaPoint: Point; // Graph在实际图里的delta
+    rect: {width: number, height: number};
     static list: Array<GraphSelfPart>;
     static baseList: Array<GraphBackend>; // 原始数据
     constructor(
@@ -1042,7 +1042,7 @@ export class GraphSelfPart {
         this.Conf = setting;
         this.Graph = graph;
         this.Path = path;
-        this.deltaPoint = {x: 0, y: 0};
+        this.rect = {width: 600, height: 400};
         if (GraphSelfPart.list === undefined) {
             GraphSelfPart.list = [this]
         } else {
@@ -1169,6 +1169,33 @@ export class GraphSelfPart {
             ? (result = this.Graph.medias.filter(media => media.Setting._id === _id)[0])
             : (result = this.Graph.nodes.filter(node => node.Setting._id === _id)[0]);
         return result
+    }
+
+    addItems(items: AllItemSettingPart[]) {
+        let nodes = items.filter(item => isNodeSetting(item));
+        let links = items.filter(item => isLinkSetting(item));
+        let medias = items.filter(item => isMediaSetting(item));
+        addItems(this.Graph.nodes, nodes);
+        addItems(this.Graph.links, links);
+        addItems(this.Graph.medias, medias);
+    }
+
+    getItemList(item?: AllItemSettingPart, name?: 'nodes' | 'links' | 'medias') {
+        let itemList;
+        name
+            ? (itemList = this.Graph[name])
+            : item ? (isNodeSetting(item)
+            ? (itemList = this.Graph.nodes)
+            : isMediaSetting(item)
+                ? (itemList = this.Graph.medias)
+                : (itemList = this.Graph.links))
+            : (itemList = this.Graph.nodes);
+        return itemList
+    }
+
+    checkExist(item: AllItemSettingPart) {
+        let itemList = this.getItemList(item);
+        return findItem(itemList, item.Setting._id, item.Setting._type).length > 0
     }
 }
 

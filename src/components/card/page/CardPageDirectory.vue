@@ -39,7 +39,7 @@
         MediaSettingPart,
         NodeSettingPart, getMediaIcon, GraphSelfPart
     } from "@/utils/graphClass";
-    import {snackBarStatePayload} from "@/store/modules/componentSnackBar";
+    import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
     import {getInfoPart} from "@/utils/utils";
 
     interface DirectoryItem {
@@ -141,7 +141,7 @@
                     actionObject: this.getOriginItem(item),
                     actionName: 'deleteItemFromGraph',
                     once: false
-                } as snackBarStatePayload;
+                } as SnackBarStatePayload;
                 commitSnackbarOn(payload)
             },
 
