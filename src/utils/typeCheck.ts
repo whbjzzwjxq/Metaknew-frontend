@@ -1,11 +1,11 @@
 import {
     BaseLinkInfo,
     BaseMediaInfo,
-    BaseNodeInfo,
+    BaseNodeInfo, BaseType,
     BooleanConcern,
     LevelConcern, LinkInfoPartBackend,
     LinkSettingPart,
-    MediaSettingPart, NodeInfoPartBackend, NodeSettingPart,
+    MediaSettingPart, NodeInfoPartBackend, NodeSettingPart, NoteSettingPart,
     SettingPart,
     VisualNodeSettingPart
 } from "@/utils/graphClass";
@@ -20,6 +20,14 @@ export function isNodeInfoPart(item: BaseNodeInfo | BaseMediaInfo | BaseLinkInfo
         (item as BaseNodeInfo).type === 'document'
 }
 
+export function isBaseType(str: string): str is BaseType {
+    return (str as BaseType) === 'node' ||
+        (str as BaseType) === 'link' ||
+        (str as BaseType) === 'media' ||
+        (str as BaseType) === 'document' ||
+        (str as BaseType) === 'note'
+}
+
 export function isLinkSetting(item: SettingPart): item is LinkSettingPart {
     return (item as LinkSettingPart).Setting._type === 'link'
 }
@@ -30,6 +38,10 @@ export function isMediaSetting(item: SettingPart): item is MediaSettingPart {
 
 export function isNodeSetting(item: SettingPart): item is NodeSettingPart {
     return (item as NodeSettingPart).Setting._type === 'node' || (item as NodeSettingPart).Setting._type === 'document'
+}
+
+export function isNoteSetting(item: SettingPart): item is NoteSettingPart {
+    return (item as NoteSettingPart).Setting._type === 'note'
 }
 
 export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is BooleanConcern {

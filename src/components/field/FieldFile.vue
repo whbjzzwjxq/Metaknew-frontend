@@ -169,22 +169,22 @@
                 default: () => []
             },
             showCurrent: {
-                type: Boolean as () => boolean,
+                type: Boolean,
                 default: false
             },
             uploadMode: {
-                type: Boolean as () => boolean,
+                type: Boolean,
                 default: false
             }
         },
         computed: {
             fileToken: (vm): FileToken => vm.$store.state.userInfo.fileToken,
-            status() {
+            status(): string {
                 let statusList = this.newFiles.map(file => file.status);
                 let result: string;
-                statusList.indexOf('uploading') > -1
+                statusList.includes('uploading')
                     ? result = 'uploading'
-                    : statusList.indexOf('error') > -1
+                    : statusList.includes('error')
                     ? result = 'error'
                     : result = 'default';
                 return result

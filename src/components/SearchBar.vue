@@ -1,70 +1,72 @@
 <template>
-  <div class="d-flex flex-row" style="width: 720px; height: 64px">
-    <v-row style="height: 64px">
-      <v-col cols="10" class="pa-0 pt-3">
-        <v-autocomplete
-            :dense="editMode"
-            :items="activeItems()"
-            :loading="isLoading"
-            @input="updateSelection"
-            @update:search-input="keywordChange"
-            background-color="white"
-            chips
-            color="grey"
-            flat
-            height="32px"
-            hide-selected
-            item-text="Name_auto"
-            multiple
-            no-filter
-            outlined
-            return-object
-            three-line
-            v-model="selection"
-        >
-          <template v-slot:item="{ item }">
-            <template v-if="item.isTitle">
-              <v-list-item-content v-html="getHeaderNameHtml(item.name, item.length)"></v-list-item-content>
-              <v-btn icon @click="collapse(item)">
-                <v-icon>
-                  {{ getArrow(item)}}
-                </v-icon>
-              </v-btn>
-            </template>
+    <div class="d-flex flex-row" style="width: 720px; height: 64px">
+        <v-row style="height: 64px">
+            <v-col cols="10" class="pa-0 pt-3">
+                <v-autocomplete
+                    :dense="editMode"
+                    :items="activeItems()"
+                    :loading="isLoading"
+                    @input="updateSelection"
+                    @update:search-input="keywordChange"
+                    background-color="white"
+                    chips
+                    color="grey"
+                    flat
+                    height="32px"
+                    hide-selected
+                    item-text="Name_auto"
+                    multiple
+                    no-filter
+                    outlined
+                    return-object
+                    three-line
+                    v-model="selection"
+                >
+                    <template v-slot:item="{ item }">
+                        <template v-if="item.isTitle">
+                            <v-list-item-content
+                                v-html="getHeaderNameHtml(item.name, item.length)"></v-list-item-content>
+                            <v-btn icon @click="collapse(item)">
+                                <v-icon>
+                                    {{ getArrow(item)}}
+                                </v-icon>
+                            </v-btn>
+                        </template>
 
-            <template v-else-if="item.isInfo">
-              <v-list-item-avatar>
-                <v-img :src="getSrc(item.MainPic)"></v-img>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title v-html="getItemTitle(item.Name_auto, item.PrimaryLabel)"></v-list-item-title>
-                <v-list-item-subtitle v-html="getItemSubTitle(item.Tags.Topic)"></v-list-item-subtitle>
-              </v-list-item-content>
-              <v-divider vertical light></v-divider>
-              <v-chip outlined label>
-                {{ item.UpdateTime }}
-              </v-chip>
-              <v-chip outlined label>
-                <v-icon color="yellow">mdi-star</v-icon>
-                <span class="font-weight-border">{{'\xa0\xa0\xa0' + item.Level.Star}}</span>
-              </v-chip>
-            </template>
+                        <template v-else-if="item.isInfo">
+                            <v-list-item-avatar>
+                                <v-img :src="getSrc(item.MainPic)"></v-img>
+                            </v-list-item-avatar>
+                            <v-list-item-content>
+                                <v-list-item-title
+                                    v-html="getItemTitle(item.Name_auto, item.PrimaryLabel)"></v-list-item-title>
+                                <v-list-item-subtitle v-html="getItemSubTitle(item.Tags.Topic)"></v-list-item-subtitle>
+                            </v-list-item-content>
+                            <v-divider vertical light></v-divider>
+                            <v-chip outlined label>
+                                {{ item.UpdateTime }}
+                            </v-chip>
+                            <v-chip outlined label>
+                                <v-icon color="yellow">mdi-star</v-icon>
+                                <span class="font-weight-border">{{'\xa0\xa0\xa0' + item.Level.Star}}</span>
+                            </v-chip>
+                        </template>
 
-          </template>
-        </v-autocomplete>
-      </v-col>
-      <v-col class="pa-0 pt-4 pl-1">
-        <div>
-          <v-btn :small="editMode" icon @click="addItemToGraph">
-            <v-icon>{{editMode ? 'mdi-plus' : 'mdi-magnify'}}</v-icon>
-          </v-btn>
-          <v-btn :small="editMode" icon @click="clear">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </div>
-      </v-col>
-    </v-row>
-  </div>
+                    </template>
+                </v-autocomplete>
+            </v-col>
+            <v-col class="pa-0 pt-4 pl-1">
+                <div>
+                    <v-btn :small="editMode" icon @click="addItemToGraph">
+                        <v-icon>{{editMode ? 'mdi-plus' : 'mdi-magnify'}}</v-icon>
+                    </v-btn>
+                    <v-btn :small="editMode" icon @click="clear">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </div>
+            </v-col>
+        </v-row>
+    </div>
 </template>
 
 <script lang="ts">
@@ -72,7 +74,6 @@
     import {DataManagerState} from '@/store/modules/dataManager'
     import {IndexedInfo, IndexedText, queryHomePage, HomePageSearchResponse, SearchQueryObject} from '@/api/search'
     import {GraphSelfPart, InfoToSetting, MediaSettingPart, NodeSettingPart} from '@/utils/graphClass'
-    import {commitSettingPush} from '@/store/modules/_mutations'
 
     interface ListInfoItem extends IndexedInfo {
         isTitle: boolean,
@@ -266,12 +267,12 @@
                     let {_id, _type, _label} = InfoToSetting(node);
                     return NodeSettingPart.emptyNodeSetting(_id, _type, _label, node.Name_auto, node.MainPic, this.currentGraph)
                 });
-                commitSettingPush(nodeSettingList);
+                this.currentGraph.addItems(nodeSettingList);
                 let mediaSettingList = medias.map(media => {
                     let {_id, _label} = InfoToSetting(media);
                     return MediaSettingPart.emptyMediaSetting(_id, _label, media.Name_auto, '', this.currentGraph)
                 });
-                commitSettingPush(mediaSettingList)
+                this.currentGraph.addItems(mediaSettingList)
             },
 
             getHeaderNameHtml(name: string, length: number) {

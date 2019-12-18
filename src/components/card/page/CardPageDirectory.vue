@@ -169,7 +169,8 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'empty',
+            description: '专题目录'
         }
     })
 </script>

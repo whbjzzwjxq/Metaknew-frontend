@@ -75,7 +75,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        addItems,
         AllItemSettingPart, getIndex,
         GraphSelfPart, GraphSettingPart, GraphState, LinkInfoPart,
         LinkSettingPart,
@@ -469,7 +468,7 @@
                 this.selectItem(result)
             },
 
-            selectItem(itemList: (LinkSettingPart | VisualNodeSettingPart)[]) {
+            selectItem(itemList: AllItemSettingPart[]) {
                 //选择
                 itemList.map(item => this.$set(item.State, 'isSelected', true));
                 //如果是单选就切换内容

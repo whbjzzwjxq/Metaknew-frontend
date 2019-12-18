@@ -1,18 +1,20 @@
 <template>
+    <div>
 
+    </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import {MediaInfoPart, NodeInfoPart} from '@/utils/graphClass'
-    import {iconItem} from "@/utils/interfaceInComponent";
+    import {IconItem} from "@/utils/interfaceInComponent";
 
     export default Vue.extend({
         name: "CardSubHeader",
         components: {},
         data() {
             return {
-                showHeader: false as boolean,
+                showHeader: false,
             }
         },
         props: {
@@ -43,12 +45,12 @@
                 ? 'yellow'
                 : 'white',
 
-            iconList: function (): iconItem[] {
+            iconList: function (): IconItem[] {
                 return [
-                    {icon: this.starIcon, _func: this.starItem, color: 'white', render: true},
-                    {icon: this.goodIcon, _func: this.goodItem, color: 'white', render: true},
-                    {icon: this.badIcon, _func: this.badItem, color: 'white', render: true},
-                    {icon: 'mdi-share-variant', _func: this.shareItem, color: this.shareColor, render: true}
+                    {name: this.starIcon, _func: this.starItem, color: 'white', render: true},
+                    {name: this.goodIcon, _func: this.goodItem, color: 'white', render: true},
+                    {name: this.badIcon, _func: this.badItem, color: 'white', render: true},
+                    {name: 'mdi-share-variant', _func: this.shareItem, color: this.shareColor, render: true}
                 ];
             },
         },

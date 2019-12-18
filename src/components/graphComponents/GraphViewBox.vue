@@ -166,7 +166,6 @@
     import Vue from 'vue'
     import {DataManagerState} from '@/store/modules/dataManager'
     import {
-        addItems,
         AllItemSettingPart,
         BaseType,
         getIndex,
@@ -180,7 +179,7 @@
         MediaSettingPart,
         NodeInfoPart,
         NodeSettingPart,
-        Notes,
+        NoteSettingPart,
         SettingPart,
         VisualNodeSettingPart
     } from '@/utils/graphClass'
@@ -194,7 +193,7 @@
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import {item, LabelViewDict, VisualNodeSetting} from '@/utils/interfaceInComponent'
-    import {isLinkSetting, isMediaSetting} from "@/utils/typeCheck";
+    import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
     import GraphRender from "@/components/graphComponents/GraphRender.vue";
@@ -420,7 +419,7 @@
                 return result
             },
 
-            notes(): Notes[] {
+            notes(): NoteSettingPart[] {
                 return this.document.Graph.notes
             },
 
@@ -473,7 +472,16 @@
                 return result;
             },
 
-            activeNotes(): Notes[] {
+            noteLabels(): string[] {
+                let result: string[] = [];
+                this.notes.map(item => {
+                    result.indexOf(item.Setting._label) === -1 &&
+                    result.push(item.Setting._label)
+                });
+                return result;
+            },
+
+            activeNotes(): NoteSettingPart[] {
                 return this.notes.filter(note => !note.State.isDeleted)
             },
 
@@ -823,7 +831,7 @@
                     let id = getIndex();
                     let setting = LinkSettingPart.emptyLinkSetting(id, "default", this.startNode, node, this.document);
                     let info = LinkInfoPart.emptyLinkInfo(id, "default", this.startNode, node);
-                    addItems(this.document.Graph.links, [setting]);
+                    this.document.addItems([setting]);
                     commitInfoAdd({item: info, strict: true});
                     this.isLinking = false;
                 } else {
@@ -831,7 +839,7 @@
                 }
             },
             //框选
-            selectItem(itemList: (LinkSettingPart | VisualNodeSettingPart)[]) {
+            selectItem(itemList: AllItemSettingPart[]) {
                 //选择
                 itemList.map(item => this.$set(item.State, 'isSelected', true));
                 //如果是单选就切换内容
@@ -842,7 +850,7 @@
                         ? info = this.dataManager.linkManager[item.Setting._id]
                         : isMediaSetting(item)
                         ? info = this.dataManager.mediaManager[item.Setting._id]
-                        : info = this.dataManager.nodeManager[item.Setting._id];
+                        : isNodeSetting(item) && (info = this.dataManager.nodeManager[item.Setting._id]);
                     info &&
                     commitItemChange(info);
                 }
@@ -909,6 +917,7 @@
                     node: this.nodeLabels,
                     link: this.linkLabels,
                     media: this.mediaLabels,
+                    note: this.noteLabels,
                     document: ['DocGraph', 'DocPaper']
                 };
                 Object.entries(typeDict).map(([_type, labels]) => {

@@ -102,7 +102,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {baseSettingConf} from "@/utils/settingTemplate";
+    import {BaseSettingConf} from "@/utils/settingTemplate";
     import {SettingPart} from "@/utils/graphClass";
 
     type settingType = 'Color' | 'Number' | 'Boolean' | 'String' | 'Text'
@@ -122,7 +122,7 @@
         },
         props: {
             settingItem: {
-                type: Object as () => Record<string, baseSettingConf>,
+                type: Object as () => Record<string, BaseSettingConf>,
                 required: true
             },
             propGroup: {

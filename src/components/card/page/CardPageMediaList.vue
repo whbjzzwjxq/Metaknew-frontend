@@ -97,16 +97,16 @@
             }
         },
         computed: {
-            mediaIdList(): id[] {
+            mediaIdList: function(): id[] {
                 return this.baseData.Info.IncludedMedia
             },
-            dataManager(): DataManagerState {
+            dataManager: function(): DataManagerState {
                 return this.$store.state.dataManager
             },
-            mediaList(): MediaInfoPart[] {
+            mediaList: function(): MediaInfoPart[] {
                 return this.mediaIdList.map(id => this.dataManager.mediaManager[id]).filter(media => media)
             },
-            fileToken(): FileToken {
+            fileToken: function(): FileToken {
                 return this.dataManager.fileToken
             },
             nodeIsSelf(): boolean {

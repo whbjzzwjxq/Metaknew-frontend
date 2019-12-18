@@ -1,15 +1,22 @@
 import deepClone, {getCookie} from "@/utils/utils";
 import Vue from "vue";
 import {allPropType, fieldDefaultValue, neededProp, PropDescription} from "@/utils/labelField";
-import {noteTemplate, settingTemplate} from "@/utils/settingTemplate";
-import {AreaRect, Point, RectByPoint} from "@/utils/geoMetric";
-import {isBooleanConcern, isLevelConcern, isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
+import {settingTemplate} from "@/utils/settingTemplate";
+import {
+    isBaseType,
+    isBooleanConcern,
+    isLevelConcern,
+    isLinkSetting,
+    isMediaSetting,
+    isNodeSetting, isNoteSetting
+} from "@/utils/typeCheck";
 
 export let newIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
 let crucialRegex = new RegExp("_.*");
 export type id = number | string;
-export type BaseType = "node" | "link" | "document" | "media";
+export type BaseType = "node" | "link" | "document" | "media" | "note";
+export type BaseTypeList = 'nodes' | 'medias' | 'links' | "notes";
 export type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
 export type AllSettingPart = NodeSettingPart | MediaSettingPart | LinkSettingPart | GraphSettingPart
 export type Translate = Record<string, string>
@@ -79,7 +86,7 @@ export interface GraphBackend {
         nodes: Array<NodeSetting>;
         links: Array<compressLinkSetting>;
         medias: Array<MediaSetting>;
-        notes: Array<Notes>;
+        notes: Array<NoteSetting>;
     };
     Conf: GraphSetting;
     Path: Array<Object>;
@@ -92,7 +99,7 @@ export interface Text {
 export type LevelConcern = "Imp" | "HardLevel" | "Useful";
 export type BooleanConcern = "isStar" | "isBad" | "isGood" | "isShared";
 
-interface UserConcern {
+export interface UserConcern {
     Imp: number;
     HardLevel: number;
     Useful: number;
@@ -111,16 +118,20 @@ interface BaseState {
 
 interface NodeState extends BaseState {
     // 用于node media
-    showCard: boolean; // 是否显示卡片
     isMouseOn: boolean; // 是否鼠标放置在上面
     isAdd: boolean; // 是否是新建的
 }
 
 interface LinkState extends BaseState {
     // 暂时和Node一样
-    showCard: boolean; // 是否显示卡片
     isMouseOn: boolean; // 是否鼠标放置在上面
     isAdd: boolean; // 是否是新建的
+}
+
+interface NoteState extends BaseState {
+    isMouseOn: boolean;
+    isAdd: boolean;
+    isLock: boolean;
 }
 
 export interface GraphState extends BaseState {
@@ -203,7 +214,7 @@ export interface BaseMediaInfo extends BaseInfo {
     [propName: string]: any;
 }
 
-interface BaseMediaCtrl extends BaseCtrl {
+export interface BaseMediaCtrl extends BaseCtrl {
     FileName: string; // URL
     Format: string; // 格式
     Thumb: string; // 缩略图
@@ -271,37 +282,53 @@ export interface LinkSetting extends Setting {
     _end: VisualNodeSettingPart;
 }
 
-interface compressLinkSetting extends Setting {
+export interface compressLinkSetting extends Setting {
     _start: Setting;
     _end: Setting;
 }
 
-interface GraphSetting extends Setting {
+export interface GraphSetting extends Setting {
     _type: 'document'
+}
+
+export interface NoteSetting extends Setting {
+    _type: 'note'
+    _content: Object
 }
 
 export type VisualNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从视觉上来说是Node的对象
 
-export type AllItemSettingPart = VisualNodeSettingPart | LinkSettingPart;
+export type AllItemSettingPart = VisualNodeSettingPart | LinkSettingPart | NoteSettingPart;
 
 export function nodeStateTemplate(...rest: Array<string>) {
-    return <NodeState>{
+    return {
         isSelected: false,
-        showCard: false,
         isMouseOn: false,
         isDeleted: false,
-        isAdd: rest.indexOf("isAdd") > -1
-    };
+        isAdd: rest.indexOf("isAdd") > -1,
+        isSelf: rest.indexOf("isSelf") > -1
+    } as NodeState;
 }
 
 export function linkStateTemplate(...rest: Array<string>) {
-    return <LinkState>{
+    return {
         isSelected: false,
-        showCard: false,
         isMouseOn: false,
         isDeleted: false,
-        isAdd: rest.indexOf("isAdd") > -1
-    };
+        isAdd: rest.indexOf("isAdd") > -1,
+        isSelf: rest.indexOf("isSelf") > -1
+    } as LinkState;
+}
+
+export function noteStateTemplate(...rest: Array<string>) {
+    return {
+        isSelected: false,
+        isMouseOn: false,
+        isDeleted: false,
+        isAdd: rest.indexOf("isAdd") > -1,
+        isSelf: true,
+        isLock: false
+    } as NoteState
 }
 
 export function graphStateTemplate(...rest: Array<string>) {
@@ -316,12 +343,6 @@ export function graphStateTemplate(...rest: Array<string>) {
         isSelf: rest.indexOf("isSelf") > -1,
         isAdd: rest.indexOf("isAdd") > -1,
         isLoading: rest.indexOf("isLoading") > -1,
-        viewBox: {
-            x: 0,
-            y: 0,
-            height: 300,
-            width: 400
-        }
     };
 }
 
@@ -545,7 +566,7 @@ export class NodeInfoPart {
         let nodeList = NodeSettingPart.list;
         crucialRegex.test(prop) &&
         findItem(nodeList, this.id, this.Info.type).map(node =>
-            node.updateCrucial(prop, value)
+            node.updateCrucialProp(prop, value)
         );
     }
 
@@ -553,9 +574,9 @@ export class NodeInfoPart {
         // 同步所有属性到Setting
         let nodeList = NodeSettingPart.list;
         findItem(nodeList, this.id, this.Info.type).map(node => {
-            node.updateCrucial("_label", this.Info.PrimaryLabel);
-            node.updateCrucial("_name", this.Info.Name);
-            node.updateCrucial("_image", this.Info.MainPic);
+            node.updateCrucialProp("_label", this.Info.PrimaryLabel);
+            node.updateCrucialProp("_name", this.Info.Name);
+            node.updateCrucialProp("_image", this.Info.MainPic);
         });
     }
 
@@ -636,15 +657,15 @@ export class LinkInfoPart {
         let linkList = LinkSettingPart.list;
         crucialRegex.test(prop) &&
         findItem(linkList, this.id, this.Info.type).map(link =>
-            link.updateCrucial(prop, value)
+            link.updateCrucialProp(prop, value)
         );
     }
 
     synchronizationAll() {
         let linkList = LinkSettingPart.list;
         findItem(linkList, this.id, this.Info.type).map(link => {
-            link.updateCrucial("_start", this.Ctrl.Start);
-            link.updateCrucial("_end", this.Ctrl.End);
+            link.updateCrucialProp("_start", this.Ctrl.Start);
+            link.updateCrucialProp("_end", this.Ctrl.End);
         });
     }
 }
@@ -758,15 +779,15 @@ export class MediaInfoPart {
         let mediaList = MediaSettingPart.list;
         crucialRegex.test(prop) &&
         findItem(mediaList, this.id, this.Info.type).map(node =>
-            node.updateCrucial(prop, value)
+            node.updateCrucialProp(prop, value)
         );
     }
 
     synchronizationAll() {
         let nodeList = MediaSettingPart.list;
         findItem(nodeList, this.id, this.Info.type).map(node => {
-            node.updateCrucial("_src", this.Ctrl.FileName);
-            node.updateCrucial("_name", this.Info.Name);
+            node.updateCrucialProp("_src", this.Ctrl.FileName);
+            node.updateCrucialProp("_name", this.Info.Name);
         });
     }
 
@@ -837,6 +858,16 @@ export function graphSettingTemplate(_id: id) {
     return setting;
 }
 
+export function noteSettingTemplate(_id: id, _label: string, _content: Object) {
+    let setting = <NoteSetting>{
+        _id,
+        _type: 'note',
+        _label: _label
+    };
+    Object.assign(setting, settingTemplate('note'));
+    return setting
+}
+
 export class SettingPart {
     Setting: Setting;
     State: BaseState;
@@ -860,7 +891,7 @@ export class SettingPart {
         Vue.set(this.Setting[propGroup], prop, value);
     }
 
-    updateCrucial(prop: string, value: any) {
+    updateCrucialProp(prop: string, value: any) {
         crucialRegex.test(prop) && Vue.set(this.Setting, prop, value);
     }
 }
@@ -955,6 +986,31 @@ export class LinkSettingPart extends SettingPart {
     }
 }
 
+export class NoteSettingPart extends SettingPart {
+    Setting: NoteSetting;
+    State: NoteState;
+    parent: GraphSelfPart;
+    static list: Array<NoteSettingPart> = [];
+
+    constructor(Setting: NoteSetting, State: NoteState, parent: GraphSelfPart) {
+        super(Setting, State, parent);
+        this.Setting = Setting;
+        this.State = State;
+        this.parent = parent;
+        NoteSettingPart.list.push(this)
+    }
+
+    static emptyNoteSetting(
+        _id: id,
+        _label: string,
+        _content: string,
+        parent: GraphSelfPart) {
+        let setting = noteSettingTemplate(_id, _label, _content);
+        let state = noteStateTemplate('isAdd');
+        return new NoteSettingPart(setting, state, parent)
+    }
+}
+
 export class GraphSettingPart extends SettingPart {
     Setting: GraphSetting;
     State: GraphState;
@@ -978,31 +1034,11 @@ export class GraphSettingPart extends SettingPart {
     }
 }
 
-export interface Notes {
-    Setting: {
-        _id: '',
-        _type: 'note',
-        _label: 'note',
-        Base: {
-            x: number,
-            y: number,
-            width: number,
-            height: number,
-            dark: boolean
-        }
-    },
-    State: {
-        isDeleted: boolean,
-    },
-    Content: string,
-    parent: GraphSelfPart
-}
-
-interface Graph {
+export interface Graph {
     nodes: Array<NodeSettingPart>;
     links: Array<LinkSettingPart>;
     medias: Array<MediaSettingPart>;
-    notes: Array<Notes>;
+    notes: Array<NoteSettingPart>;
 }
 
 export const findRoot = (item: SettingPart) => {
@@ -1026,7 +1062,7 @@ export class GraphSelfPart {
     rootList: Array<GraphSelfPart>; // Graph的遍历链条
     root: GraphSelfPart | null;
     baseNode: NodeSettingPart;
-    rect: {width: number, height: number};
+    rect: { width: number, height: number };
     static list: Array<GraphSelfPart>;
     static baseList: Array<GraphBackend>; // 原始数据
     constructor(
@@ -1085,7 +1121,7 @@ export class GraphSelfPart {
             nodes: [],
             links: [],
             medias: [],
-            notes: baseData.Graph.notes
+            notes: []
         };
         let result = new GraphSelfPart(
             graph,
@@ -1116,25 +1152,12 @@ export class GraphSelfPart {
             let link = Object.assign(deepClone(setting), linkNode) as LinkSetting;
             return new LinkSettingPart(link, linkStateTemplate(), result);
         });
+        result.Graph.notes = baseData.Graph.notes.map(
+            setting =>
+                new NoteSettingPart(setting, noteStateTemplate(), result)
+        );
+
         return result;
-    }
-
-    autoSave() {
-
-    }
-
-    typeToList(_type: BaseType) {
-        let list;
-        _type === "link"
-            ? (list = this.Graph.links)
-            : _type === "media"
-            ? (list = this.Graph.medias)
-            : (list = this.Graph.nodes);
-        return list;
-    }
-
-    addNote() {
-        this.Graph.notes.push(noteTemplate(this))
     }
 
     changeId(newId: id) {
@@ -1172,40 +1195,64 @@ export class GraphSelfPart {
     }
 
     addItems(items: AllItemSettingPart[]) {
-        let nodes = items.filter(item => isNodeSetting(item));
-        let links = items.filter(item => isLinkSetting(item));
-        let medias = items.filter(item => isMediaSetting(item));
-        addItems(this.Graph.nodes, nodes);
-        addItems(this.Graph.links, links);
-        addItems(this.Graph.medias, medias);
+        items.filter(item => !this.checkExistByItem(item)).map(
+            item => {
+                this.addItem(item)
+            }
+        )
     }
 
-    getItemList(item?: AllItemSettingPart, name?: 'nodes' | 'links' | 'medias') {
+    getItemListByItem(item: AllItemSettingPart) {
+        return this.getItemListByName(item.Setting._type)
+    }
+
+    getItemListByName(name: BaseTypeList | BaseType) {
         let itemList;
-        name
-            ? (itemList = this.Graph[name])
-            : item ? (isNodeSetting(item)
-            ? (itemList = this.Graph.nodes)
-            : isMediaSetting(item)
-                ? (itemList = this.Graph.medias)
-                : (itemList = this.Graph.links))
-            : (itemList = this.Graph.nodes);
+        if (isBaseType(name)) {
+            name === 'media'
+                ? itemList = this.Graph.medias
+                : name === 'link'
+                ? itemList = this.Graph.links
+                : itemList = this.Graph.nodes
+        } else {
+            itemList = this.Graph[name]
+        }
         return itemList
     }
 
-    checkExist(item: AllItemSettingPart) {
-        let itemList = this.getItemList(item);
-        return findItem(itemList, item.Setting._id, item.Setting._type).length > 0
+    checkExist(_id: id, _type: BaseType) {
+        let itemList = this.getItemListByName(_type);
+        return findItem(itemList, _id, _type).length > 0
+    }
+
+    checkExistByItem(item: AllItemSettingPart) {
+        return this.checkExist(item.Setting._id, item.Setting._type)
+    }
+
+    protected addItem(item: AllItemSettingPart) {
+        isMediaSetting(item)
+            ? this.Graph.medias.push(item)
+            : isNodeSetting(item)
+            ? this.Graph.nodes.push(item)
+            : isNoteSetting(item)
+                ? this.Graph.notes.push(item)
+                : isLinkSetting(item) && this.Graph.links.push(item)
     }
 }
 
-export const addItems = (baseList: AllItemSettingPart[], itemList: AllItemSettingPart[]) => {
-    itemList.filter(item => !checkExist(item.Setting._id, item.Setting._type, baseList)).map(item => {
-        baseList.push(item);
-        item.updateState("isAdd", true)
-    })
-};
-
-export const checkExist = (_id: id, _type: BaseType, itemList: AllItemSettingPart[]) => {
-    return findItem(itemList, _id, _type).length > 0;
+export const classifier = (itemList: AllItemSettingPart[]) => {
+    let result: Record<BaseTypeList, AllItemSettingPart[]> = {
+        nodes: [] as NodeSettingPart[],
+        medias: [] as MediaSettingPart[],
+        links: [] as LinkSettingPart[],
+        notes: [] as NoteSettingPart[]
+    };
+    itemList.map(item => {
+        isMediaSetting(item)
+            ? result.medias.push(item)
+            : isNodeSetting(item)
+            ? result.nodes.push(item)
+            : result.links.push(item)
+    });
+    return result
 };

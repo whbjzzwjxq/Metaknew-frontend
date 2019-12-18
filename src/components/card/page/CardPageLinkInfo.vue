@@ -172,7 +172,8 @@
         },
         watch: {},
         record: {
-            status: 'done-old'
+            status: 'done-old',
+            description: "关系信息卡片"
         }
     })
 </script>

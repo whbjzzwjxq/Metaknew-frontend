@@ -12,7 +12,7 @@
         <result-doc-graph-toolbar-edit
             :document="document"
             v-if="editMode"
-            @add-note="addNote"
+            @add-note="newNote"
             @add-empty-node="newNode('node', arguments[0])"
             @add-link="newLink(arguments[0], arguments[1])"
             @save-doc="saveDocument(arguments[0], false)">
@@ -26,11 +26,10 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {ComponentSize, StyleManagerState} from "@/store/modules/styleComponentSize"
+    import {StyleManagerState} from "@/store/modules/styleComponentSize"
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
-    import {AreaRect, Point, RectByPoint} from "@/utils/geoMetric";
+    import {RectByPoint} from "@/utils/geoMetric";
     import {
-        addItems,
         getIndex,
         GraphSelfPart,
         LinkInfoPart, LinkSettingPart, MediaInfoPart, MediaSettingPart,
@@ -39,11 +38,9 @@
         VisualNodeSettingPart
     } from "@/utils/graphClass";
     import {DataManagerState} from "@/store/modules/dataManager";
-    import * as CSS from 'csstype'
     import {commitGraphAdd, commitGraphChange, commitInfoAdd} from "@/store/modules/_mutations";
     import ResultDocGraphToolbarEdit from "@/views/result/ResultDocGraphToolbarEdit.vue";
     import ResultDocGraphToolbar from "@/views/result/ResultDocGraphToolbar.vue";
-    import deepClone from "@/utils/utils";
 
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -88,7 +85,7 @@
                 let info = NodeInfoPart.emptyNodeInfoPart(id, 'node', _label);
                 commitInfoAdd({item: info});
                 let setting = NodeSettingPart.emptyNodeSetting(id, 'node', _label, 'NewNode' + id, '', this.document);
-                addItems(this.document.Graph.nodes, [setting]);
+                this.document.addItems([setting]);
             },
 
             newLink(start: VisualNodeSettingPart, end: VisualNodeSettingPart) {
@@ -96,11 +93,11 @@
                 let info = LinkInfoPart.emptyLinkInfo(id, 'default', start, end);
                 commitInfoAdd({item: info});
                 let setting = LinkSettingPart.emptyLinkSetting(id, 'default', start, end, this.document);
-                addItems(this.document.Graph.links, [setting]);
+                this.document.addItems([setting]);
             },
 
-            addNote() {
-                this.document.addNote()
+            newNote() {
+
             },
             saveDocument() {
 
@@ -114,10 +111,6 @@
                 let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
                 commitGraphAdd({graph, strict: true});
                 commitInfoAdd({item: info, strict: true});
-                let viewBox = new RectByPoint({x: 0, y: 0}, {
-                    x: this.viewBox.getPositiveRect().width,
-                    y: this.viewBox.getPositiveRect().height
-                }, 2);
                 commitGraphChange({graph});
                 this.loading = false
             } else {
@@ -135,9 +128,9 @@
             let node = NodeSettingPart.emptyNodeSetting(nodeId, 'node', 'DocGraph', '1', '', graph);
             let nodeInfo = NodeInfoPart.emptyNodeInfoPart(nodeId, 'node', 'DocGraph');
             commitInfoAdd({item: nodeInfo});
-            addItems(graph.Graph.nodes, [node]);
+            graph.addItems([node]);
             commitGraphAdd({graph, strict: true});
-            addItems(this.dataManager.currentGraph.Graph.nodes, [newBaseNode]);
+            this.dataManager.currentGraph.addItems([newBaseNode]);
         },
         mounted(): void {
 

@@ -19,11 +19,11 @@ export interface ExtraPropsItem {
 
 export type ExtraProp = Record<string, ExtraPropsItem>
 
-export interface iconItem {
-    icon: string,
+export interface IconItem {
+    name: string,
     _func: Function | null,
     color?: string,
-    render: boolean
+    render?: boolean
 }
 
 export type LabelViewDict = Record<string, Record<string, boolean>>

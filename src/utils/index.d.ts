@@ -4,7 +4,8 @@ import {DefaultComputed, DefaultData, DefaultMethods, DefaultProps, PropsDefinit
 type ComponentStatus = 'edit' | 'done' | 'empty' | 'done-old'
 
 interface ComponentRecord{
-  status: ComponentStatus
+  status: ComponentStatus,
+  description?: string
 }
 
 declare module 'vue/types/options' {
@@ -16,10 +17,5 @@ declare module 'vue/types/options' {
     PropsDef = PropsDefinition<DefaultProps>,
     Props = DefaultProps> {
     record?: ComponentRecord,
-
-  }
-
-  type AccessorsVm<T> = Accessors<T> | {
-    [K in keyof T]: ((vm: any) => T[K])
   }
 }
