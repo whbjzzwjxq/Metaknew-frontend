@@ -4,14 +4,14 @@
         class="d-flex flex-column"
         flat
         tile>
-        <div v-if="file.Info.PrimaryLabel === 'image'">
+        <div v-if="media.Info.PrimaryLabel === 'image'">
             <v-img :src="realSrc" contain>
             </v-img>
             <slot name="button-group">
 
             </slot>
         </div>
-        <div v-else-if="file.Info.PrimaryLabel === 'pdf'">
+        <div v-else-if="media.Info.PrimaryLabel === 'pdf'">
             <pdf :src="realSrc" contain>
             </pdf>
             <slot name="button-group">
@@ -35,7 +35,7 @@
             }
         },
         props: {
-            file: {
+            media: {
                 type: Object,
                 required: true
             },
@@ -45,8 +45,8 @@
             }
         },
         computed: {
-            realSrc: vm => vm.file.Ctrl.FileName
-                ? 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + vm.file.Ctrl.FileName
+            realSrc: vm => vm.media.Ctrl.FileName
+                ? 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + vm.media.Ctrl.FileName
                 : '',
         },
         methods: {},

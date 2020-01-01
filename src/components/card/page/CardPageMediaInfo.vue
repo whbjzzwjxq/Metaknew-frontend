@@ -3,11 +3,12 @@
         @mouseenter.stop="showTool = true"
         @mouseleave.stop="showTool = false"
         :width="width"
+        :height="height"
         flat
         tile
         outlined
     >
-        <media-viewer :file="file" :width="width">
+        <media-viewer :media="media" :width="width">
             <template v-slot:button-group>
                 <icon-group
                     v-if="height >= 150"
@@ -23,7 +24,7 @@
 
         <title-text-field
             :edit-mode="editMode"
-            :text="file.Info.Name"
+            :text="media.Info.Name"
             @update-text="updateName"
             v-show="showText"
         ></title-text-field>
@@ -49,11 +50,11 @@
             <v-btn
                 text
                 @click="editMode = !editMode"
-                :disabled="!file.isSelf"
+                :disabled="!media.isSelf"
             >{{ editMode ? 'Edit Off' : 'Edit On' }}
             </v-btn
             >
-            <v-btn text @click="saveMedia" :disabled="!file.isSelf">Save</v-btn>
+            <v-btn text @click="saveMedia" :disabled="!media.isSelf">Save</v-btn>
         </v-card-actions>
     </v-card>
 </template>
@@ -91,14 +92,14 @@
             };
         },
         props: {
-            file: {
+            media: {
                 type: Object as () => MediaInfoPart,
                 required: true
             },
             //是在viewBox还是在卡片里
             inViewBox: {
                 type: Boolean,
-                required: false
+                default: false
             },
 
             width: {
@@ -136,19 +137,19 @@
         },
         computed: {
             info: function() {
-                return this.file.Info;
+                return this.media.Info;
             },
             ctrl: function() {
-                return this.file.Ctrl;
+                return this.media.Ctrl;
             },
             userConcern: function() {
-                return this.file.UserConcern;
+                return this.media.UserConcern;
             },
             dataManager: function() {
                 return this.$store.state.dataManager;
             },
             isSelf: function() {
-                return getIsSelf(this.file.Ctrl);
+                return getIsSelf(this.media.Ctrl);
             },
             labelGroup: function(): LabelGroup[] {
                 return this.editBase
@@ -228,18 +229,18 @@
         },
         methods: {
             updateValue(prop: string, value: any) {
-                this.file.updateValue(prop, value);
+                this.media.updateValue(prop, value);
             },
             updateName(value: string) {
-                this.file.changeName(value)
+                this.media.changeName(value)
             },
             removeItem(removedLabel: string, prop: string) {
-                this.file.updateValue("Labels", [], true);
+                this.media.updateValue("Labels", [], true);
             },
             addItem(value: string[], prop: string) {
                 prop === "Info"
-                    ? this.file.updateValue("Labels", value)
-                    : this.file.updateUserConcern("Labels", value);
+                    ? this.media.updateValue("Labels", value)
+                    : this.media.updateUserConcern("Labels", value);
             },
 
             changeDetail() {
@@ -251,16 +252,16 @@
             },
 
             addMediaToGraph() {
-                this.$emit("add-media-to-graph", this.file);
+                this.$emit("add-media-to-graph", this.media);
             },
             dialogWatch() {
             },
             editSrc() {
             },
             saveMedia() {
-                let status = this.file.status;
+                let status = this.media.status;
                 if (status === "success" || status === "remote") {
-                    updateMedia(this.file).then(res => {
+                    updateMedia(this.media).then(res => {
                         res.status === 200
                             ? alert("保存成功")
                             : alert("保存失败 请重试");

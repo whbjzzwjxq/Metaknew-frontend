@@ -39,7 +39,7 @@
                 <v-row class="pl-4 pr-4 justify-content-between">
                     <keep-alive>
                         <card-page-media-info
-                            :file="file"
+                            :media="file"
                             :nodeIsSelf="nodeIsSelf"
                             :width="width"
                             @add-media-to-graph="addMediaToGraph">

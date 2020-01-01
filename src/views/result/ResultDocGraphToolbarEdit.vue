@@ -111,7 +111,7 @@
             toolbarStyle(): CSS.Properties {
                 return {
                     position: "absolute",
-                    left: (this.styleManager.leftCard.width + 100) + 'px',
+                    left: '100px',
                     bottom: this.styleManager.bottomBar.height / 2 + 'px'
                 }
             }

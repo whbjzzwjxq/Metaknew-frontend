@@ -97,7 +97,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {fieldTypes, fieldSetting, fieldDefaultValue, resolveTypes, FieldType, ResolveType} from '@/utils/labelField'
-    import deepClone from '../../utils/utils';
+    import {deepClone} from '@/utils/utils';
 
     export default Vue.extend({
         name: 'fieldJson',

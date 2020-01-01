@@ -71,7 +71,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import deepClone from '@/utils/utils'
+    import {deepClone} from '@/utils/utils'
     import fieldTextAreaOrField from './FieldTextAreaOrField.vue'
     import {Text} from "@/utils/graphClass";
 

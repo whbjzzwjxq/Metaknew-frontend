@@ -15,6 +15,8 @@ export interface AreaRect extends Point {
     [props: string]: number
 }
 
+export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
+
 export class RectByPoint {
     protected _start: Point;
     get start(): Point {
@@ -62,11 +64,8 @@ export class RectByPoint {
     }
 
     checkInRect(point: Point) {
-        let {x, y, width, height} = this.getPositiveRect();
-        return x <= point.x &&
-            x + width >= point.x &&
-            y <= point.y &&
-            y + height >= point.y
+        let rect = this.getPositiveRect();
+        return checkInRect(rect, point);
     }
 
     getMidPoint() {
@@ -78,16 +77,13 @@ export class RectByPoint {
 
     getDivCSS(css?: CSS.Properties): CSS.Properties {
         css || (css = {});
-        let rect = this.getPositiveRect();
-        return Object.assign({
-            position: "absolute",
-            left: rect.x + 'px',
-            top: rect.y + 'px',
-            width: rect.width + 'px',
-            height: rect.height + 'px',
+        css = Object.assign({
             borderWidth: this.border + 'px',
+            borderColor: "black",
             borderStyle: "solid"
-        }, css)
+        }, css);
+        let rect = this.getPositiveRect();
+        return getDivCSS(rect, css);
     }
 
     updateFromArea(areaRect: AreaRect) {
@@ -129,4 +125,35 @@ export const decreasePoint = (pointA: Point, ...rest: Point[]) => {
         x: pointA.x - delta.x,
         y: pointA.y - delta.y
     }
+};
+
+export const getDivCSS = (rect: AreaRect, css?: CSS.Properties) => {
+    css || (css = {});
+    return Object.assign({
+        position: "absolute",
+        left: rect.x + 'px',
+        top: rect.y + 'px',
+        width: rect.width + 'px',
+        height: rect.height + 'px',
+    }, css)
+};
+
+export const checkInRect = (rect: AreaRect, point: Point) => {
+    let {x, y, width, height} = rect;
+    return x <= point.x &&
+        x + width >= point.x &&
+        y <= point.y &&
+        y + height >= point.y
+};
+
+export const transformBorderToRect = (rect: AreaRect, border: number) => {
+    let {x, y, width, height} = rect;
+    let result: Record<BorderType, AreaRect> = {
+        'left': {x: 0, y: border, width: border, height},
+        'right': {x: width + border, y: border, width: border, height},
+        'top': {x: 0, y: 0, width: width + 2 * border, height: border},
+        'bottom': {x: 0, y: height + border, width: width + border, height: border},
+        'proportion': {x: width + border, width: border, y: height + border, height: border}
+    };
+    return result
 };

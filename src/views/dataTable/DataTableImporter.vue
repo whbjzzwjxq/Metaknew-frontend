@@ -89,8 +89,8 @@
             resolveExcel(file: File) {
                 let reader = new FileReader();
                 let _this = this;
-                reader.onload = function (event) {
-                    let target = event.target;
+                reader.onload = function ($event) {
+                    let target = $event.target;
                     if (target && target.result && typeof target.result !== 'string') {
                         const data = new Uint8Array(target.result);
                         let output = XLSX.read(data, {type: "array"});

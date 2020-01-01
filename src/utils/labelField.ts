@@ -264,7 +264,7 @@ export const unActivePropLink = [
   'Labels', '$_IsCommon', '$_IsShared', '$_IsOpenSource'
 ];
 
-export const fieldSetting = {
+export const fieldSetting: Record<string, any> = {
   Name: {},
   Alias: {
     availableTags: {}

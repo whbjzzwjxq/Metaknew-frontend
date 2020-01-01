@@ -1,4 +1,4 @@
-import deepClone, {getCookie} from "@/utils/utils";
+import {getCookie, deepClone} from "@/utils/utils";
 import Vue from "vue";
 import {allPropType, fieldDefaultValue, neededProp, PropDescription} from "@/utils/labelField";
 import {settingTemplate} from "@/utils/settingTemplate";

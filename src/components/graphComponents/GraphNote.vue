@@ -189,10 +189,10 @@
                 this.isCollapsed = !this.isCollapsed
             },
 
-            dragStart(event) {
+            dragStart($event) {
                 this.isLock ||
-                this.$set(this.dragStartLoc, "x", event.x);
-                this.$set(this.dragStartLoc, "y", event.y);
+                this.$set(this.dragStartLoc, "x", $event.x);
+                this.$set(this.dragStartLoc, "y", $event.y);
                 this.isDragging = true;
             },
 

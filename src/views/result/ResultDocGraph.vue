@@ -1,8 +1,7 @@
 <template>
-    <div v-if="!loading">
+    <div v-if="!loading" :style="viewBoxStyle">
         <graph-view-box
             :document="document"
-            :base-node="baseNode"
             :container="viewBox"
             render-selector
             render-label-selector
@@ -41,6 +40,7 @@
     import {commitGraphAdd, commitGraphChange, commitInfoAdd} from "@/store/modules/_mutations";
     import ResultDocGraphToolbarEdit from "@/views/result/ResultDocGraphToolbarEdit.vue";
     import ResultDocGraphToolbar from "@/views/result/ResultDocGraphToolbar.vue";
+    import * as CSS from "csstype";
 
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -69,6 +69,11 @@
             },
             viewBox(): RectByPoint {
                 return this.allComponentsStyle.viewBox
+            },
+            viewBoxStyle: function (): CSS.Properties {
+                return this.viewBox.getDivCSS(
+                    {borderWidth: 0, overflow: "hidden"}
+                )
             },
 
             document(): GraphSelfPart {

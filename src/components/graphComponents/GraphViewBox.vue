@@ -1,5 +1,5 @@
 <template>
-    <div @wheel="onScroll" :style="containerStyle">
+    <div @wheel="onScroll" style="width: 100%; height: 100%; position: absolute">
         <!--        基础的Graph-->
         <svg
             width="100%"
@@ -89,8 +89,8 @@
         <graph-media
             v-for="(node, index) in medias"
             :key="node.Setting._id"
-            :media="node"
-            :location="mediaLocation[index]"
+            :setting="node"
+            :container="mediaLocation[index]"
             :scale="realScale"
             :index="index"
             @mouseenter.native="mouseEnter(node)"
@@ -159,6 +159,11 @@
 
             </div>
         </div>
+
+        <rect>
+
+        </rect>
+
     </div>
 </template>
 
@@ -192,11 +197,11 @@
     import GraphNote from './GraphNote.vue';
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
+    import GraphRender from "@/components/graphComponents/GraphRender.vue";
     import {item, LabelViewDict, VisualNodeSetting} from '@/utils/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
-    import GraphRender from "@/components/graphComponents/GraphRender.vue";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 
@@ -209,7 +214,7 @@
             GraphNote,
             GraphNodeButton,
             GraphLabelSelector,
-            GraphRender
+            GraphRender,
         },
         data() {
             return {
@@ -349,7 +354,9 @@
                 return this.container.getPositiveRect()
             },
             containerStyle(): CSS.Properties {
-                return this.container.getDivCSS({borderWidth: 0})
+                return this.container.getDivCSS(
+                    {borderWidth: 0, overflow: "hidden"}
+                )
             },
 
             // 不包含本身的graph
@@ -691,7 +698,6 @@
 
         },
         methods: {
-
             dragStart($event: MouseEvent) {
                 if (this.dragAble) {
                     updatePoint(this.dragStartPoint, $event);
@@ -699,12 +705,11 @@
                 }
             },
 
-            //注意坐标运算使用小数
-            drag(target: VisualNodeSettingPart, event: MouseEvent) {
+            drag(target: VisualNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
-                    let deltaX = (event.x - this.dragStartPoint.x) / this.containerRect.width / this.realScale;
-                    let deltaY = (event.y - this.dragStartPoint.y) / this.containerRect.height / this.realScale;
-                    this.dragStart(event);
+                    let deltaX = ($event.x - this.dragStartPoint.x) / this.containerRect.width / this.realScale;
+                    let deltaY = ($event.y - this.dragStartPoint.y) / this.containerRect.height / this.realScale;
+                    this.dragStart($event);
                     if (this.selectedNodes.length > 0) {
                         this.selectedNodes.map(node => {
                             this.$set(node.Setting.Base, 'x', node.Setting.Base.x + deltaX);
@@ -715,14 +720,14 @@
                         this.$set(node.Setting.Base, 'x', node.Setting.Base.x + deltaX);
                         this.$set(node.Setting.Base, 'y', node.Setting.Base.y + deltaY);
                     }
-                    this.checkOutside(event);
+                    this.checkOutside($event);
                     clearTimeout(this.showCardId);
                 }
             },
 
-            dragEnd(target: VisualNodeSettingPart, event: MouseEvent) {
+            dragEnd(target: VisualNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
-                    this.drag(target, event);
+                    this.drag(target, $event);
                     this.isDragging = false;
                     this.updateCardLoc()
                 }
@@ -826,7 +831,6 @@
 
             dbClickNode(node: VisualNodeSettingPart) {
                 this.selectItem([node]);
-                console.log(this.isLinking, node, this.startNode)
                 if (this.isLinking && node && this.startNode) {
                     let id = getIndex();
                     let setting = LinkSettingPart.emptyLinkSetting(id, "default", this.startNode, node, this.document);
@@ -963,14 +967,14 @@
                 this.scale += delta;
                 this.scale < 25 && (this.scale = 25);
                 this.scale > 300 && (this.scale = 300);
-                let event = {
+                let eventLocation = {
                     x: $event.clientX - this.container.start.x,
                     y: $event.clientY - this.container.start.y
                 }
-                let x = this.viewPoint.x + (event.x - this.lastViewPoint.x) / oldScale;
-                let y = this.viewPoint.y + (event.y - this.lastViewPoint.y) / oldScale;
+                let x = this.viewPoint.x + (eventLocation.x - this.lastViewPoint.x) / oldScale;
+                let y = this.viewPoint.y + (eventLocation.y - this.lastViewPoint.y) / oldScale;
                 updatePoint(this.viewPoint, {x, y});
-                updatePoint(this.lastViewPoint, {x: event.x, y: event.y});
+                updatePoint(this.lastViewPoint, {x: eventLocation.x, y: eventLocation.y});
             },
 
             explode(node: NodeSettingPart) {

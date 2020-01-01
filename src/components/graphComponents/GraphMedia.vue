@@ -1,34 +1,47 @@
 <template>
-    <div :style="containerStyle">
-        <card-page-media-info
-            in-view-box
-            :file="mediaInfo"
-            :index="index"
-            :width="location.width"
-            :height="location.height"
-        >
+    <rect-container
+        :container="container"
+        expand-able
+        @update-size="updateSize"
+    >
+        <template v-slot:content>
+            <card-page-media-info
+                :media="mediaInfo"
+                :width="container.width"
+                :height="container.height"
+                in-view-box
+            >
 
-        </card-page-media-info>
-    </div>
+            </card-page-media-info>
+        </template>
+    </rect-container>
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import CardPageMediaInfo from '../card/page/CardPageMediaInfo'
-    import {AreaRect} from "@/utils/geoMetric";
+    import Vue from 'vue'
+    import * as CSS from "csstype";
     import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
-    import * as CSS from 'csstype'
+    import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
+    import {AreaRect, Point, updatePoint} from "@/utils/geoMetric";
+    import RectContainer from "@/components/container/RectContainer.vue";
+
     export default Vue.extend({
-        name: 'GraphMedia',
-        components: {CardPageMediaInfo},
+        name: "GraphMedia",
+        components: {
+            CardPageMediaInfo,
+            RectContainer
+        },
+        data() {
+            return {}
+        },
         props: {
             //基础数据
-            media: {
+            setting: {
                 type: Object as () => MediaSettingPart,
                 required: true,
             },
 
-            location: {
+            container: {
                 type: Object as () => AreaRect,
                 required: true
             },
@@ -45,21 +58,29 @@
             }
         },
         computed: {
-            containerStyle(): CSS.Properties {
+            containerStyle: function (): CSS.Properties {
                 return {
-                    'width': this.location.width + 'px',
-                    'height': this.location.height + 'px',
+                    'width': this.container.width + 'px',
+                    'height': this.container.height + 'px',
                     'position': 'absolute',
-                    'left': this.location.x + 'px',
-                    'top': this.location.y + 'px',
+                    'left': this.container.x + 'px',
+                    'top': this.container.y + 'px',
                 }
             },
-            mediaInfo(): MediaInfoPart {
-                return this.$store.state.dataManager.mediaManager[this.media.Setting._id]
+            mediaInfo: function (): MediaInfoPart {
+                return this.$store.state.dataManager.mediaManager[this.setting.Setting._id]
             }
         },
+        methods: {
+            updateSize(resizeType: string, newPoint: Point) {
+                (resizeType === 'bottom' || resizeType === 'right' || resizeType === 'proportion')
+                    ? updatePoint(this.container.end, newPoint)
+                    : updatePoint(this.container.start, newPoint)
+            }
+        },
+        watch: {},
         record: {
-            status: 'done-old'
+            status: 'empty'
         }
     })
 </script>
@@ -67,3 +88,8 @@
 <style scoped>
 
 </style>
+
+/**
+* Created by whb on 2019/12/31
+* Updated by []
+*/

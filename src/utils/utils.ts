@@ -32,7 +32,7 @@ export function delCookie(name: string) {
 }
 
 // 深拷贝
-export default function deepClone<T>(item: T): T {
+export function deepClone<T>(item: T): T {
     // null, undefined values check
     if (!item) {
         return item;

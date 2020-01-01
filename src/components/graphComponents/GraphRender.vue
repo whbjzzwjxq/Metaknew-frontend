@@ -417,9 +417,9 @@
                 }
             },
 
-            dragEnd(target: VisualNodeSettingPart, event: MouseEvent) {
+            dragEnd(target: VisualNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
-                    this.drag(target, event);
+                    this.drag(target, $event);
                     this.isDragging = false;
                 }
             },

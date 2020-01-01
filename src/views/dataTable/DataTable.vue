@@ -84,7 +84,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {fieldDefaultValue, fieldSetting, FieldType, neededProp} from "@/utils/labelField"
-    import deepClone from "@/utils/utils"
+    import {deepClone} from "@/utils/utils"
     import DataTableImporter from '@/views/dataTable/DataTableImporter.vue';
     import PLabelSelector from '@/components/PLabelSelector.vue';
     import DataTableButtonGroup from '@/views/dataTable/DataTableButtonGroup.vue';
