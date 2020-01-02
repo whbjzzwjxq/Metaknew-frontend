@@ -1,6 +1,7 @@
 <template>
     <v-card
         :width="width"
+        :height="height"
         class="d-flex flex-column"
         flat
         tile>
@@ -42,6 +43,10 @@
             width: {
                 type: Number,
                 default: 360
+            },
+            height: {
+                type: Number,
+                default: 240
             }
         },
         computed: {

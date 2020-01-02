@@ -571,15 +571,15 @@
                 return this.medias.map(media => {
                     let baseX = media.Setting.Base.x * this.containerRect.width
                     let baseY = media.Setting.Base.y * this.containerRect.height
+                    let width = media.Setting.Base.size * this.realScale >= 50
+                        ? media.Setting.Base.size * this.realScale
+                        : 50
+                    let height = width * media.Setting.Base.scaleX
                     return {
-                        x: this.lastViewPoint.x - (this.viewPoint.x - baseX) * this.realScale,
-                        y: this.lastViewPoint.y - (this.viewPoint.y - baseY) * this.realScale,
-                        width: media.Setting.Base.size * this.realScale >= 50
-                            ? media.Setting.Base.size * this.realScale * media.Setting.Base.scaleX
-                            : 50 * media.Setting.Base.scaleX,
-                        height: media.Setting.Base.size * this.realScale >= 50
-                            ? media.Setting.Base.size * this.realScale * media.Setting.Base.scaleX
-                            : 50 * media.Setting.Base.scaleX
+                        x: (this.lastViewPoint.x - (this.viewPoint.x - baseX) * this.realScale) - width / 2,
+                        y: (this.lastViewPoint.y - (this.viewPoint.y - baseY) * this.realScale) - height / 2,
+                        width,
+                        height
                     } as AreaRect
                 })
             },
@@ -852,11 +852,14 @@
                     let info;
                     isLinkSetting(item)
                         ? info = this.dataManager.linkManager[item.Setting._id]
-                        : isMediaSetting(item)
-                        ? info = this.dataManager.mediaManager[item.Setting._id]
-                        : isNodeSetting(item) && (info = this.dataManager.nodeManager[item.Setting._id]);
-                    info &&
-                    commitItemChange(info);
+                        : isNodeSetting(item)
+                        ? info = this.dataManager.nodeManager[item.Setting._id]
+                        : info = undefined
+                    if (info) {
+                        commitItemChange(info);
+                    } else {
+                        // todo 这里全屏媒体资源
+                    }
                 }
             },
 

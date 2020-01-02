@@ -330,6 +330,7 @@
                 });
             },
 
+            //这里特殊处理过
             mediaSettingList(): VisualNodeSetting[] {
                 return this.medias.map((media, index) => {
                     let {x, y, width, height} = this.mediaLocation[index];

@@ -8,7 +8,7 @@
             :x-small="xSmall"
             :large="large"
             :x-large="xLarge"
-            :color="icon.color ? icon.color : 'grey'"
+            :color="icon.color ? icon.color : color"
             :disabled="icon.name === '' || icon.disabled"
             @click="icon._func"
         >
@@ -62,6 +62,10 @@
                 default: () => {
                     return {}
                 }
+            },
+            color: {
+                type: String as () => string,
+                default: 'grey'
             }
         },
         computed: {

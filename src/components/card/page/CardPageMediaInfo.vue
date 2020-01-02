@@ -3,17 +3,17 @@
         @mouseenter.stop="showTool = true"
         @mouseleave.stop="showTool = false"
         :width="width"
-        :height="height"
         flat
         tile
         outlined
     >
-        <media-viewer :media="media" :width="width">
+        <media-viewer :media="media" :width="width" :height="height">
             <template v-slot:button-group>
                 <icon-group
                     v-if="height >= 150"
                     :icon-list="iconList"
                     :container-style="buttonGroupStyle"
+                    :color="'white'"
                     small
                     vertical
                 >

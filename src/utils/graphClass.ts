@@ -866,6 +866,7 @@ export function mediaSettingTemplate(
         _src
     };
     Object.assign(setting, settingTemplate("media"));
+
     return setting;
 }
 
