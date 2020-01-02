@@ -1,4 +1,4 @@
-import {getCookie, deepClone} from "@/utils/utils";
+import {deepClone, getCookie} from "@/utils/utils";
 import Vue from "vue";
 import {allPropType, fieldDefaultValue, neededProp, PropDescription} from "@/utils/labelField";
 import {settingTemplate} from "@/utils/settingTemplate";
@@ -8,8 +8,11 @@ import {
     isLevelConcern,
     isLinkSetting,
     isMediaSetting,
-    isNodeSetting, isNoteSetting
+    isNodeSetting,
+    isNoteSetting
 } from "@/utils/typeCheck";
+import {commitSnackbarOn} from "@/store/modules/_mutations";
+import {EditProps, ValueWithType, ExtraProps} from "@/utils/interfaceInComponent";
 
 export let newIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
@@ -20,12 +23,6 @@ export type BaseTypeList = 'nodes' | 'medias' | 'links' | "notes";
 export type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
 export type AllSettingPart = NodeSettingPart | MediaSettingPart | LinkSettingPart | GraphSettingPart
 export type Translate = Record<string, string>
-
-export interface ExtraProp extends PropDescription {
-    value: any
-}
-
-export type ExtraProps = Record<string, ExtraProp>
 export var globalIndex = 0;
 
 export function getIndex() {
@@ -35,6 +32,7 @@ export function getIndex() {
 
 export const itemEqual = (itemA: Setting, itemB: Setting) =>
     itemA._id === itemB._id && itemA._type === itemB._type;
+
 export const findItem = (list: Array<SettingPart>, _id: id, _type: BaseType) =>
     list.filter(
         item => item.Setting._id === _id && item.Setting._type === _type
@@ -42,20 +40,7 @@ export const findItem = (list: Array<SettingPart>, _id: id, _type: BaseType) =>
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");
 
-const mediaIconDict = {
-    'image': 'mdi-image',
-    'text': 'mdi-message-text',
-    'audio': 'mdi-volume-high',
-    'video': 'mdi-video',
-    'pdf': 'mdi-file-pdf',
-    'markdown': 'mdi-markdown',
-} as Record<string, string>;
-
-export const getMediaIcon = (_label: string) => mediaIconDict[_label] === undefined
-    ? mediaIconDict[_label]
-    : 'mdi-help-circle-outline';
-
-export function getType(file: File) {
+export function getMediaType(file: File) {
     const mime = require("mime/lite");
     const mimeTypes = (file: File) => mime.getType(file.name.split(".")[1]);
     const mimeFile = mimeTypes(file);
@@ -182,12 +167,11 @@ export interface BaseNodeInfo extends BaseInfo {
     Topic: Array<string>;
     Labels: Array<string>;
     ExtraProps: ExtraProps;
+    CommonProps: Record<string, ValueWithType<any>>;
     Text: Text;
     Translate: Translate;
     IncludedMedia: Array<string | number>;
     MainPic: string;
-
-    [propName: string]: any;
 }
 
 export interface BaseNodeCtrl extends BaseCtrl {
@@ -360,21 +344,36 @@ export function userConcernTemplate() {
 }
 
 export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: string) {
-    let info = <BaseNodeInfo>{};
-    let dict = Object.assign({}, allPropType.BaseNode, allPropType[_label]);
-    Object.entries(dict).forEach(([key, value]) => {
-        let type = value.type;
-        info[key] = fieldDefaultValue[type];
+    let commonProps: Record<string, ValueWithType<any>> = {};
+    Object.entries(neededProp(_label)).map(([key, value]) => {
+        let {type, resolve} = value;
+        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
+    let info = <BaseNodeInfo>{
+        id: _id,
+        type: _type,
+        PrimaryLabel: _label,
+        Name: 'NewNode' + _id,
+        Alias: [],
+        Language: 'auto',
+        Labels: [],
+        Topic: [],
+        Text: {'auto': ''},
+        Translate: {},
+        ExtraProps: {},
+        CommonProps: commonProps,
+        BaseImp: 0,
+        BaseHardLevel: 0,
+        $IsOpenSource: false,
+        $IsCommon: true,
+        $IsShared: false,
+        IncludedMedia: [],
+        MainPic: ''
+    };
     // 特别定义
     _type !== "document"
-        ? (info.Name = "LoadingNode" + _id)
+        ? (info.Name = "NewNode" + _id)
         : (info.Name = "NewDocument" + _id);
-    info.Language = "auto";
-    info.PrimaryLabel = _label;
-    info.$IsOpenSource = false;
-    info.id = _id;
-    info.type = _type;
     return info;
 }
 
@@ -403,7 +402,7 @@ export function mediaInfoTemplate(_id: id, file: File) {
     return <BaseMediaInfo>{
         id: _id,
         type: "media",
-        PrimaryLabel: getType(file),
+        PrimaryLabel: getMediaType(file),
         Name: file.name.split(".")[0],
         Text: {},
         Labels: [],
@@ -419,7 +418,7 @@ export function mediaCtrlTemplate(file: File) {
     return <BaseMediaCtrl>{
         FileName: URL.createObjectURL(file),
         Format: file.name.split(".")[1],
-        PrimaryLabel: getType(file),
+        PrimaryLabel: getMediaType(file),
         Thumb: "",
         UpdateTime: time.toLocaleDateString(),
         CreateUser: getCookie("user_id"),
@@ -534,17 +533,14 @@ export class NodeInfoPart {
         if (this.isRemote) {
             console.log("如果是远端节点 那么PLabel不能修改");
         } else {
-            let info = <BaseNodeInfo>{
-                id: this.id,
-                type: this.Info.type
-            };
-            Object.entries(neededProp(newLabel)).forEach(([prop, value]) => {
-                let type = value.type;
-                this.Info.indexOf(prop) === -1
-                    ? (info[prop] = fieldDefaultValue[type])
-                    : (info[prop] = this.Info[prop]);
+            let commonProps = this.Info.CommonProps;
+            Object.entries(neededProp(newLabel)).map(([prop, value]) => {
+                let {resolve, type} = value;
+                Object.keys(commonProps).indexOf(prop) === -1
+                    ? (commonProps[prop] = {resolve, type, value: fieldDefaultValue[type]})
+                    : (commonProps[prop] = deepClone(commonProps[prop]));
             });
-            Vue.set(this, "Info", info);
+            Vue.set(this.Info, "CommonProps", commonProps);
             Vue.set(this.Ctrl, "PrimaryLabel", newLabel);
             Vue.set(this.Info, "PrimaryLabel", newLabel);
             this.synchronizationSource("_label", newLabel);

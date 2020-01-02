@@ -1,11 +1,11 @@
 <template>
     <v-card class="empty-avatar pb-1" flat tile>
         <v-img
-            :src="realSrc"
+            :sourceUrl="realSrc"
             width="120px"
             height="120px"
             contain>
-            <template v-if="!src">
+            <template v-if="!sourceUrl">
                 <div style="height: 40px"></div>
                 <p>upload main image</p>
             </template>
@@ -102,19 +102,19 @@
             }
         },
         props: {
-            src: {
-                type: String,
+            sourceUrl: {
+                type: String as () => string,
                 required: true
             },
             imageList: {
-                type: Array,
+                type: Array as () => string[],
                 required: true
             }
         },
         computed: {
             fileToken: vm => vm.$store.state.userModule.fileToken,
-            realSrc: vm => vm.src
-                ? 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + vm.src
+            realSrc: vm => vm.sourceUrl
+                ? 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + vm.sourceUrl
                 : "",
             currentImage: vm => vm.currentFile
                 ? vm.currentFile.Ctrl.FileName

@@ -7,10 +7,10 @@ import {
     NodeInfoPart, NodeInfoPartBackend,
     QueryObject
 } from "@/utils/graphClass";
-import axios from 'axios'
+import {instance} from './main'
 
 export function mediaCreate(data: { name: string, Info: BaseMediaInfo }) {
-    return axios.request<id>({
+    return instance.request<id>({
         url: '/subgraph/create/media/normal',
         method: 'post',
         headers: {
@@ -21,7 +21,7 @@ export function mediaCreate(data: { name: string, Info: BaseMediaInfo }) {
 }
 
 export function mediaUpdate(data: MediaInfoPart) {
-    return axios.request({
+    return instance.request({
         url: '/subgraph/update/media/normal',
         method: 'post',
         headers: {
@@ -35,7 +35,7 @@ export function mediaUpdate(data: MediaInfoPart) {
 }
 
 export function mediaAppendToNode(node: QueryObject, mediaList: Array<id>) {
-    return axios.request<id[]>({
+    return instance.request<id[]>({
         url: '/subgraph/update/node/media',
         method: 'post',
         data: {
@@ -46,7 +46,7 @@ export function mediaAppendToNode(node: QueryObject, mediaList: Array<id>) {
 }
 
 export function mediaQueryMulti(queryList: Array<id>) {
-    return axios.request<MediaInfoPartBackend[]>({
+    return instance.request<MediaInfoPartBackend[]>({
         url: '/subgraph/query/media/multi',
         method: 'post',
         headers: {
@@ -57,7 +57,7 @@ export function mediaQueryMulti(queryList: Array<id>) {
 }
 
 export function nodeUpdate(data: NodeInfoPart) {
-    return axios.request({
+    return instance.request({
         url: '/subgraph/update/node/normal',
         method: 'post',
         headers: {
@@ -68,7 +68,7 @@ export function nodeUpdate(data: NodeInfoPart) {
 }
 
 export function nodeCreateMulti(pLabel: string, nodes: BaseNodeInfo[]) {
-    return axios.request({
+    return instance.request({
         url: '/subgraph/create/node/bulk_create',
         method: 'post',
         headers: {
@@ -82,7 +82,7 @@ export function nodeCreateMulti(pLabel: string, nodes: BaseNodeInfo[]) {
 }
 
 export function nodeQuery(payload: QueryObject) {
-    return axios.request({
+    return instance.request({
         url: '/subgraph/query/',
         method: 'get',
         params: payload
@@ -90,7 +90,7 @@ export function nodeQuery(payload: QueryObject) {
 }
 
 export function docGraphQuery(id: id) {
-    return axios.request<GraphBackend>({
+    return instance.request<GraphBackend>({
         url: '/document/query/graph',
         method: 'get',
         params: {
@@ -100,7 +100,7 @@ export function docGraphQuery(id: id) {
 }
 
 export function docGraphSave(document: GraphSelfPart, isDraft: boolean, isAuto: boolean) {
-    return axios.request({
+    return instance.request({
         url: '/document/create/graph/normal',
         method: 'post',
         headers: {
@@ -115,7 +115,7 @@ export function docGraphSave(document: GraphSelfPart, isDraft: boolean, isAuto: 
 }
 
 export function sourceQueryMulti(list: Array<QueryObject>) {
-    return axios.request<(NodeInfoPartBackend | LinkInfoPartBackend)[]>({
+    return instance.request<(NodeInfoPartBackend | LinkInfoPartBackend)[]>({
         url: '/subgraph/query/multi',
         method: 'post',
         data: list.map(query => [query._id, query._type, query._label])
@@ -123,7 +123,7 @@ export function sourceQueryMulti(list: Array<QueryObject>) {
 }
 
 export function autoSaveQuery(start: number) {
-    return axios.request({
+    return instance.request({
         url: '/document/query/auto_save',
         method: 'get',
         params: {
@@ -133,7 +133,7 @@ export function autoSaveQuery(start: number) {
 }
 
 export function autoSaveDelete(SourceId: id, VersionId: number) {
-    return axios.request({
+    return instance.request({
         url: '/document/delete/auto_save',
         method: 'get',
         params: {

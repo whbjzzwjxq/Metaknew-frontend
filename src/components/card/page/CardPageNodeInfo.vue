@@ -4,7 +4,7 @@
             <template v-slot:content>
                 <v-col cols="4" class="pa-0 ma-0 pb-1">
                     <node-avatar
-                        :src="mainImage"
+                        :source-url="mainImage"
                         :imageList="imageList"
                         @new-main-image="mainImage = arguments[0]"
                         @clear-main-image="mainImage = ''">
@@ -16,7 +16,7 @@
                         <v-text-field
                             v-model="name"
                             class="pr-2 font-weight-bold"
-                            :style="titleSize"
+                            :style="simplifySetting.titleSize"
                             :disabled="!editMode"
                             label="Name"
                             dense>
@@ -26,7 +26,7 @@
                     <v-row>
                         <v-autocomplete
                             :disabled="!typeSelectable"
-                            :items="availableLabels"
+                            :items="nodeLabels"
                             :value="info.PrimaryLabel"
                             class="pr-2 font-weight-bold"
                             dense
@@ -47,7 +47,7 @@
                         v-for="(label, index) in info.Topic"
                         :key="label"
                         :label="label"
-                        :size="chipSize"
+                        :size="simplifySetting.chipSize"
                         :index="index"
                         @close-chip="removeTopic">
 
@@ -56,8 +56,8 @@
                     <v-edit-dialog>
                         <v-chip
                             v-if="editMode"
-                            :small="chipSize === 'small'"
-                            :x-small="chipSize === 'xSmall'">
+                            :small="simplifySetting.chipSize === 'small'"
+                            :x-small="simplifySetting.chipSize === 'xSmall'">
                             <v-icon small>mdi-pencil</v-icon>
                         </v-chip>
                         <template v-slot:input>
@@ -84,7 +84,7 @@
                     label="Alias"
                     placeholder="使用;分割多个别名"
                     style="font-size: 16px;"
-                    v-if="renderAlias"
+                    v-if="simplifySetting.renderAlias"
                     v-model="alias">
 
                 </v-text-field>
@@ -132,12 +132,12 @@
         <card-sub-row :text="nameTrans[type] + '属性'">
             <template v-slot:content>
                 <field-json
-                    :base-props="extraProps"
+                    :base-props="editProps"
                     :change-type="false"
                     :editable="editMode"
                     :prop-name="'Info'"
                     :p-label="info.PrimaryLabel"
-                    @update-value="updateValue">
+                    @update-value="editProps = arguments[1]">
 
                 </field-json>
             </template>
@@ -174,16 +174,10 @@
     import CardSubRating from "@/components/card/subComp/CardSubRating.vue";
     import NodeAvatar from "@/components/NodeAvatar.vue";
     import GlobalChip from "@/components/global/GlobalChip.vue";
-    import {
-        allPropType,
-        availableLabel,
-        labelItems,
-        linkLabels, neededProp,
-        topicItems,
-        unActivePropLink, unActivePropNode
-    } from "@/utils/labelField";
+    import {availableLabel, FieldType, labelItems, linkLabels, ResolveType, topicItems} from "@/utils/labelField";
     import {DataManagerState} from "@/store/modules/dataManager";
-    import {ExtraProp, LabelGroup} from "@/utils/interfaceInComponent"
+    import {EditProps, LabelGroup} from "@/utils/interfaceInComponent"
+    import {deepClone} from "@/utils/utils";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -226,38 +220,51 @@
             }
         },
         computed: {
-            info() {
+            info: function () {
                 return this.baseData.Info
             },
-            ctrl() {
+            ctrl: function () {
                 return this.baseData.Ctrl
             },
-            props() {
-                return Object.keys(this.info)
-            },
-            userConcern() {
+            userConcern: function () {
                 return this.baseData.UserConcern
             },
-            dataManager(): DataManagerState {
+
+            dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            type() {
+
+            type: function () {
                 return this.info.type
             },
-            typeSelectable() {
-                return this.type === 'node'
+
+            typeSelectable: function () {
+                return ['node'].includes(this.type)
             },
-            allLabels() {
-                return this.nodeLabels.concat(this.linkLabels).concat(this.docLabels)
+
+            simplifySetting: function () {
+                return this.isSimplify
+                    ? {
+                        titleSize: 'font-size: 14px',
+                        chipSize: 'xSmall',
+                        renderAlias: true
+                    }
+                    : {
+                        titleSize: 'font-size: 18px',
+                        chipSize: 'small',
+                        renderAlias: true
+                    }
             },
-            availableLabels() {
-                return this.type === 'node'
-                    ? this.nodeLabels
-                    : this.allLabels
+
+            name: {
+                get(): string {
+                    return this.info.Name
+                },
+                set(value: string) {
+                    this.baseData.changeName(value)
+                }
             },
-            neededProp() {
-                return neededProp(this.label)
-            },
+
             alias: {
                 get(): string {
                     let output = this.info.Alias.join(";");
@@ -266,21 +273,6 @@
                 set(value: string): void {
                     let alias = value.split(";");
                     this.baseData.updateValue('Alias', alias)
-                }
-            },
-            renderAlias: (vm: any) => vm.isSimplify,
-            titleSize: (vm: any) => vm.isSimplify
-                ? "font-size: 14px"
-                : "font-size: 18px",
-            chipSize: (vm: any) => vm.isSimplify
-                ? "xSmall"
-                : "small",
-            name: {
-                get(): string {
-                    return this.info.Name
-                },
-                set(value: string) {
-                    this.baseData.changeName(value)
                 }
             },
 
@@ -302,29 +294,25 @@
                 }
             },
 
-            extraProps: function () {
-                let result: ExtraProp = {};
-                Object.entries(this.info).map(([key, value]) => {
-                    if (unActivePropNode.indexOf(key) === -1) {
-                        key !== "ExtraProps"
-                            ? result[key] = {
-                                "value": value,
-                                "type": this.neededProp[key].type,
-                                "resolve": this.neededProp[key].resolve
-                            }
-                            : result[key] = {
-                                "value": this.info[key],
-                                "type": "JsonField",
-                                "resolve": "normal"
-                            }
-                    } else {
-                        //
-                    }
-                });
-                return result
+            editProps: {
+                get(): EditProps {
+                    return Object.assign({
+                        ExtraProps: {
+                            value: this.info.ExtraProps,
+                            type: "JsonField" as FieldType,
+                            resolve: "normal" as ResolveType
+                        }
+                    }, this.info.CommonProps)
+                },
+                set(value: EditProps) {
+                    this.updateValue('ExtraProps', value.ExtraProps.value);
+                    let commonProps = deepClone(value);
+                    delete commonProps.ExtraProps;
+                    this.updateValue('CommonProps', commonProps)
+                }
             },
 
-            labelGroup(): LabelGroup[] {
+            labelGroup: function (): LabelGroup[] {
                 return this.editMode
                     ? [
                         {

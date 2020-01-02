@@ -1,4 +1,4 @@
-import axios from 'axios'
+import {instance} from './main'
 
 export interface TagRecommendation {
     [propName: string]: string[],
@@ -30,26 +30,26 @@ export interface UserLoginResponse {
 }
 
 export const login = (data: loginData) =>
-    axios.request<UserLoginResponse>({
+    instance.request<UserLoginResponse>({
     method: 'post',
     url: '/user/login_normal',
     data: data,
     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
 });
 
-export const loginCookie = () => axios.request<UserLoginResponse>({
+export const loginCookie = () => instance.request<UserLoginResponse>({
     method: 'get',
     url: '/user/login_cookie',
     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
 });
 
-export const getFileToken = () => axios.request<UserLoginResponse>({
+export const getFileToken = () => instance.request<UserLoginResponse>({
     method: 'get',
     url: '/user/query_other_token',
     headers: {'Content-Type': 'application/x-www-form-urlencoded'}
 });
 
-export const register = (data: registerData) => axios.request({
+export const register = (data: registerData) => instance.request({
     method: 'post',
     url: '/user/register',
     data: {
@@ -60,7 +60,7 @@ export const register = (data: registerData) => axios.request({
     headers: {'Content-Type': 'application/json'}
 });
 
-export const sendMessage = (phone: number | string) => axios.request({
+export const sendMessage = (phone: number | string) => instance.request({
     method: 'get',
     url: '/user/send_message',
     headers: {

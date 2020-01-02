@@ -70,7 +70,7 @@
         },
         watch: {},
         record: {
-            status: 'edit'
+            status: 'editing'
         }
     })
 </script>

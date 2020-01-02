@@ -1,7 +1,7 @@
 export type IconGroup =
     'Star' | 'Good' | 'Bad' | 'Chevron' |
     'Edit' | 'DeleteAble' | 'MediaWatch' | 'GraphExplode' |
-    'Eye'
+    'Eye' | 'MediaType'
 
 export const iconMap: Record<IconGroup, Record<string, string>> = {
     Star: {
@@ -40,6 +40,15 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     Eye: {
         true: 'mdi-eye',
         false: 'mdi-eye-off'
+    },
+    MediaType: {
+        true: "mdi-help-circle-outline",
+        image: 'mdi-image',
+        text: 'mdi-message-text',
+        audio: 'mdi-volume-high',
+        video: 'mdi-video',
+        pdf: 'mdi-file-pdf',
+        markdown: 'mdi-markdown',
     }
 
 };
@@ -56,3 +65,11 @@ export const getIcon = (iconGroupName: IconGroup, status: string | boolean) => {
         ? iconGroup[index]
         : iconGroup['true']
 };
+export const mediaIconDict = {
+    'image': 'mdi-image',
+    'text': 'mdi-message-text',
+    'audio': 'mdi-volume-high',
+    'video': 'mdi-video',
+    'pdf': 'mdi-file-pdf',
+    'markdown': 'mdi-markdown',
+} as Record<string, string>;

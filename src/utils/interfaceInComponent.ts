@@ -10,13 +10,18 @@ export interface LabelGroup {
     prop?: LabelExistProp
 }
 
-export interface ExtraPropsItem {
-    value: any,
+export interface ValueWithType<T> {
+    value: T,
     type: FieldType,
     resolve: ResolveType
 }
 
-export type ExtraProp = Record<string, ExtraPropsItem>
+export type ExtraProps = Record<string, ValueWithType<any>>
+
+export type EditProps = {
+    ExtraProps: ValueWithType<ExtraProps>,
+    [prop: string]: ValueWithType<any>
+}
 
 export interface IconItem {
     name: string,

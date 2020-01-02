@@ -37,10 +37,12 @@
         BaseType,
         LinkSettingPart,
         MediaSettingPart,
-        NodeSettingPart, getMediaIcon, GraphSelfPart
+        NodeSettingPart,
+        GraphSelfPart
     } from "@/utils/graphClass";
     import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
     import {getInfoPart} from "@/utils/utils";
+    import {getIcon} from "@/utils/icon";
 
     interface DirectoryItem {
         id: id,
@@ -123,7 +125,7 @@
                 type: media.Setting._type,
                 label: media.Setting._label,
                 name: media.Setting._name,
-                icon: getMediaIcon(media.Setting._label),
+                icon: getIcon("MediaType", media.Setting._label),
                 isSelected: media.State.isSelected,
                 deletable: media.parent.Conf.State.isSelf,
                 editable: false,
