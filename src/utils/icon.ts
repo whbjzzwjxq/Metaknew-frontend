@@ -1,7 +1,8 @@
 export type IconGroup =
     'i-star' | 'i-good' | 'i-bad' | 'i-chevron' |
     'i-edit-able' | 'i-edit' | 'i-delete' | 'i-explode' |
-    'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level'
+    'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
+    'i-resize'
 
 export type IconAlias = 'i-show'
 
@@ -68,6 +69,14 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         eco: 'mdi-earth',
         document: 'mdi-google-circles-communities',
         node: 'mdi-numeric-1-circle-outline',
+    },
+    'i-resize': {
+        plus: 'mdi-magnify-plus',
+        minus: 'mdi-magnify-minus',
+        five: 'mdi-numeric-5-box',
+        three: 'mdi-numeric-3-box',
+        two: 'mdi-numeric-2-box',
+        double: 'mdi-plus-box-multiple'
     }
 
 };

@@ -3,25 +3,26 @@
         @mouseenter.stop="showTool = true"
         @mouseleave.stop="showTool = false"
         :width="width"
+        :max-height="availableHeight"
         flat
         tile
         outlined
     >
-        <media-viewer :media="media" :width="width" :height="height">
+        <media-viewer :media="media" :width="width">
             <template v-slot:button-group>
                 <icon-group
                     v-if="height >= 150"
                     :icon-list="iconList"
                     :container-style="buttonGroupStyle"
                     :color="'white'"
-                    small
+                    x-small
                     vertical
                 >
 
                 </icon-group>
             </template>
         </media-viewer>
-
+        <div style="height: 6px"></div>
         <title-text-field
             :edit-mode="editMode"
             :text="media.Info.Name"
@@ -65,8 +66,7 @@
     import FieldText from "@/components/field/FieldText.vue";
     import TitleTextField from "@/components/TitleTextField.vue";
     import CardSubLabelGroup from '@/components/card/subComp/CardSubLabelGroup.vue';
-    import {BaseMediaCtrl, BaseMediaInfo, getIsSelf, MediaInfoPart, UserConcern} from "@/utils/graphClass";
-    import {DataManagerState} from "@/store/modules/dataManager";
+    import {getIsSelf, MediaInfoPart} from "@/utils/graphClass";
     import {LabelGroup, IconItem} from "@/utils/interfaceInComponent";
     import {labelItems} from "@/utils/labelField";
     import {mediaUpdate} from '@/api/commonSource';
@@ -88,7 +88,8 @@
                 labelItems: labelItems,
                 detailOn: false,
                 editMode: this.editBase,
-                showTool: false
+                showTool: false,
+                resizeBase: 100
             };
         },
         props: {
@@ -103,12 +104,12 @@
             },
 
             width: {
-                type: [String, Number],
+                type: Number,
                 default: 300
             },
 
             height: {
-                type: [String, Number],
+                type: Number,
                 default: 400
             },
 
@@ -218,14 +219,26 @@
             iconList: function (): IconItem[] {
                 let vm = this;
                 return [
+                    {name: getIcon('i-resize', 'plus'), _func: vm.enlarge, render: vm.inViewBox},
+                    {name: getIcon('i-resize', 'minus'), _func: vm.narrow, render: vm.inViewBox},
+                    {name: getIcon('i-resize', 'five'), _func: vm.twentyPercent, render: vm.inViewBox},
+                    {name: getIcon('i-resize', 'three'), _func: vm.oneThird, render: vm.inViewBox},
+                    {name: getIcon('i-resize', 'two'), _func: vm.half, render: vm.inViewBox},
+                    {name: getIcon('i-resize', 'double'), _func: vm.double, render: vm.inViewBox},
+                    {name: "", _func: vm.doNothing},
                     {name: "mdi-magnify", _func: vm.dialogWatch},
                     {name: getIcon("i-chevron", vm.detailOn), _func: vm.changeDetail},
-                    {name: "", _func: vm.doNothing},
                     {name: "mdi-pencil", _func: vm.editSrc, render: vm.isSelf},
                     {name: "mdi-delete", _func: vm.deleteMedia, render: vm.isSelf || vm.showDeleteIcon},
                     {name: "mdi-arrow-right-bold-circle-outline", _func: vm.addMediaToGraph, render: vm.showExportIcon}
                 ];
             },
+
+            availableHeight: function () {
+                return this.detailOn || !this.inViewBox
+                    ? 2880
+                    : this.height
+            }
         },
         methods: {
             updateValue: function (prop: string, value: any) {
@@ -270,6 +283,28 @@
             },
             doNothing() {
 
+            },
+            enlarge() {
+                this.updateSizeByNumber(this.width + this.resizeBase)
+            },
+            narrow() {
+                this.updateSizeByNumber(this.width - this.resizeBase)
+            },
+            twentyPercent() {
+                this.updateSizeByNumber(this.width * 0.2)
+            },
+            oneThird() {
+                this.updateSizeByNumber(this.width / 3)
+            },
+            half() {
+                this.updateSizeByNumber(this.width * 0.5)
+            },
+            double() {
+                this.updateSizeByNumber(this.width * 2)
+            },
+
+            updateSizeByNumber(newWidth: number) {
+                this.$emit('media-resize', newWidth)
             }
         },
         watch: {},

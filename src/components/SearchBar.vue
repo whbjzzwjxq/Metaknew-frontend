@@ -75,6 +75,7 @@
     import {IndexedInfo, IndexedText, queryHomePage, HomePageSearchResponse, SearchQueryObject} from '@/api/search'
     import {GraphSelfPart, InfoToSetting, MediaSettingPart, NodeSettingPart} from '@/utils/graphClass'
     import {getIcon} from "@/utils/icon";
+    import {getSrc} from "@/utils/utils";
 
     interface ListInfoItem extends IndexedInfo {
         isTitle: boolean,
@@ -241,12 +242,8 @@
                 }
             },
 
-            getSrc(src: string) {
-                let result: string;
-                src
-                    ? result = 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + src
-                    : result = "";
-                return result
+            getSrc: function(src: string) {
+                return getSrc(src)
             },
 
             clear() {

@@ -866,7 +866,24 @@ export function mediaSettingTemplate(
         _src
     };
     Object.assign(setting, settingTemplate("media"));
-
+    if (_label === 'image') {
+        let image = new Image();
+        image.src = _src;
+        let checkLoad = function () {
+            if (image.width > 0 || image.height > 0) {
+                setting.Base.size = image.width;
+                setting.Base.scaleX = image.height / image.width;
+                cancelAnimationFrame(query)
+            }
+        };
+        let query = requestAnimationFrame(checkLoad);
+        image.onload = function () {
+            setting.Base.size = image.width;
+            setting.Base.scaleX = image.height / image.width;
+            cancelAnimationFrame(query)
+        };
+        checkLoad()
+    }
     return setting;
 }
 

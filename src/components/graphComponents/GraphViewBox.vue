@@ -93,6 +93,7 @@
             :container="mediaLocation[index]"
             :scale="realScale"
             :index="index"
+            :container-rect="containerRect"
             @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
             @mousedown.native="dragStart"
@@ -189,7 +190,7 @@
         VisualNodeSettingPart
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
-    import {addPoint, AreaRect, decreasePoint, Point, RectByPoint, updatePoint} from '@/utils/geoMetric'
+    import {pointAdd, AreaRect, pointDecrease, Point, RectByPoint, updatePoint} from '@/utils/geoMetric'
     import * as CSS from 'csstype'
     import GraphNode from './GraphNode.vue';
     import GraphLink from './GraphLink.vue';
@@ -875,7 +876,7 @@
                 } else {
                     if (this.renderSelector) {
                         this.$set(this, 'isSelecting', true);
-                        let start = decreasePoint($event, this.containerRect)
+                        let start = pointDecrease($event, this.containerRect)
                         updatePoint(this.selectRect.start, start);
                         updatePoint(this.selectRect.end, start);
                     }
@@ -883,7 +884,7 @@
             },
 
             selecting($event: MouseEvent) {
-                let end = decreasePoint($event, this.containerRect)
+                let end = pointDecrease($event, this.containerRect)
                 //选择集
                 if ($event.ctrlKey && this.isMoving) {
                     let x = this.lastViewPoint.x + $event.x - this.moveStartPoint.x;

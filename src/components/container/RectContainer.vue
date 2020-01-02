@@ -1,25 +1,27 @@
 <template>
     <div :style="containerStyle">
-        <div :style="rectStyle">
-            <slot name="content">
-
-            </slot>
-        </div>
         <div
             v-for="(border, name) in borderStyleList"
             :key="name"
             :style="border"
             @mousedown.stop="startScale(arguments[0], name)"
-            @mousemove.stop="scaling(arguments[0], name)"
-            @mouseup.stop="endScale(arguments[0], name)">
+            @mousemove.stop="scaling"
+            @mouseup.stop="endScale"
+            @mouseleave.stop="endScale"
+            class="border">
 
+        </div>
+        <div :style="rectStyle">
+            <slot name="content">
+
+            </slot>
         </div>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {AreaRect, getDivCSS, transformBorderToRect} from "@/utils/geoMetric";
+    import {AreaRect, pointDecrease, getDivCSS, Point, transformBorderToRect} from "@/utils/geoMetric";
     import * as CSS from 'csstype'
 
     export default Vue.extend({
@@ -28,7 +30,12 @@
         data() {
             return {
                 isLock: false,
-                isScaling: false
+                isScaling: false,
+                start: {
+                    x: 0,
+                    y: 0,
+                } as Point,
+                scaleName: ''
             }
         },
         props: {
@@ -53,7 +60,7 @@
             //拖动事件监听的宽度
             listenBorder: {
                 type: Number as () => number,
-                default: 4
+                default: 8
             }
         },
         computed: {
@@ -61,7 +68,6 @@
                 return getDivCSS(this.container, {
                     top: this.listenBorder + 'px',
                     left: this.listenBorder + 'px',
-                    backgroundColor: "#000000"
                 })
             },
 
@@ -82,9 +88,15 @@
             borderStyleList: function () {
                 let result: Record<string, CSS.Properties> = {};
                 Object.entries(this.borderList).map(([name, border]) => {
-                    result[name] = getDivCSS(border, {backgroundColor: '#BBBBBB'});
+                    result[name] = getDivCSS(border, {});
                     if (name === 'proportion') {
-                        result[name] = getDivCSS(border, {backgroundColor: '#AAAAAA'})
+                        result[name] = getDivCSS(border, {backgroundColor: '#CCCCCC', cursor: "nw-resize"})
+                    } else {
+                        if (['left', 'right'].includes(name)) {
+                            result[name].cursor = 'e-resize'
+                        } else {
+                            result[name].cursor = 'n-resize'
+                        }
                     }
                 });
                 return result
@@ -92,17 +104,30 @@
         },
         methods: {
             startScale: function ($event: MouseEvent, name: string) {
-                this.isScaling = true;
-            },
-
-            scaling: function ($event: MouseEvent, name: string) {
-                if (this.isScaling) {
-                    //
+                if (this.expandAble) {
+                    this.isScaling = true;
+                    let {x, y} = $event;
+                    this.start = {x, y};
+                    this.scaleName = name;
                 }
             },
 
-            endScale: function ($event: MouseEvent, name: string) {
-                this.scaling($event, name);
+            scaling: function ($event: MouseEvent) {
+                if (this.isScaling) {
+                    let delta = pointDecrease($event, this.start);
+                    if (['left', 'right'].includes(this.scaleName)) {
+                        delta.y = 0
+                    } else if (['top', 'bottom'].includes(this.scaleName)) {
+                        delta.x = 0
+                    } else {
+                        delta.y = this.container.height / this.container.width
+                    }
+                    this.$emit('update-size', delta, this.scaleName)
+                }
+            },
+
+            endScale: function ($event: MouseEvent) {
+                this.scaling($event);
                 this.isScaling = false
             },
 

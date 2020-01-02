@@ -88,6 +88,7 @@
 
 <script lang="js">
     import { commitNewLabel } from '@/store/modules/_mutations'
+    import { getSrc } from '@/utils/utils'
 
     export default {
         name: 'GraphNode',
@@ -293,9 +294,9 @@
             },
 
             //使用vuex 主要是节约请求数
-            getMainPic: vm => vm.setting._image
-                ? 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + vm.setting._image
-                : '',
+            getMainPic: function () {
+                return getSrc(this.setting._image)
+            },
             getClipId: vm => 'clipPath_' + vm.setting._id,
             rhombusPath: vm => {
                 let loc = [-vm.width + ',0', '0,' + -vm.height, vm.width + ',0', '0,' + vm.height]

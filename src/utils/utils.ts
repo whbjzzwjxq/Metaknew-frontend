@@ -177,3 +177,13 @@ export function getInfoPart(_id: id, _type: BaseType, dataManager: DataManagerSt
         : manager = dataManager.nodeManager;
     return manager[_id]
 }
+
+const blobRegex = new RegExp('blob:.*');
+
+export const getSrc = (src: string | undefined) => {
+    return src
+        ? blobRegex.test(src)
+            ? src
+            : 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + src
+        : ''
+};

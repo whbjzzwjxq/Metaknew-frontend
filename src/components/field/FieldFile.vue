@@ -230,7 +230,7 @@
                 }).then(res => {
                     let id = res.data;
                     file.changeId(id);
-                    file.changeSource(storeName);
+                    file.changeSource(URL.createObjectURL(file.file));
                     file.changeStatus('success');
                     commitInfoAdd({item: file});
                     this.currentFiles.push(id);

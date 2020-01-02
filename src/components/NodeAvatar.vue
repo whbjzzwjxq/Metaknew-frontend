@@ -81,7 +81,7 @@
     import FileResolver from "@/components/MediaResolver.vue";
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import MediaGrids from "@/components/MediaGrids.vue";
-    import {guid} from "@/utils/utils";
+    import {getSrc, guid} from "@/utils/utils";
     import {MediaInfoPart} from '@/utils/graphClass'
     import {dispatchUploadFile} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
@@ -114,9 +114,9 @@
         },
         computed: {
             fileToken: vm => vm.$store.state.userModule.fileToken,
-            realSrc: vm => vm.sourceUrl
-                ? 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + vm.sourceUrl
-                : "",
+            realSrc: function () {
+                return getSrc(this.sourceUrl)
+            },
             currentImage: vm => vm.currentFile
                 ? vm.currentFile.Ctrl.FileName
                 : vm.realSrc
@@ -140,7 +140,7 @@
                 }).then(() => {
                     alert('Upload Image Success!');
                     this.$set(file, "status", "success");
-                    this.$emit('new-main-image', storeName)
+                    this.$emit('new-main-image', URL.createObjectURL(file))
                 }).catch(() => {
                         alert('Something Success!');
                         this.$set(file, "status", "error");

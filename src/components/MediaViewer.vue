@@ -1,7 +1,6 @@
 <template>
     <v-card
         :width="width"
-        :height="height"
         class="d-flex flex-column"
         flat
         tile>
@@ -24,6 +23,7 @@
 
 <script>
     import pdf from 'vue-pdf'
+    import { getSrc } from '@/utils/utils'
 
     export default {
         name: 'mediaViewer',
@@ -43,16 +43,12 @@
             width: {
                 type: Number,
                 default: 360
-            },
-            height: {
-                type: Number,
-                default: 240
             }
         },
         computed: {
-            realSrc: vm => vm.media.Ctrl.FileName
-                ? 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + vm.media.Ctrl.FileName
-                : '',
+            realSrc: function () {
+                return getSrc(this.media.Ctrl.FileName)
+            },
         },
         methods: {},
         record: {

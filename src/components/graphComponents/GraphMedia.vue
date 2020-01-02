@@ -2,13 +2,14 @@
     <rect-container
         :container="container"
         expand-able
-        @update-size="updateSize"
+        @update-size="updateSizeByBorder"
     >
         <template v-slot:content>
             <card-page-media-info
                 :media="mediaInfo"
                 :width="container.width"
                 :height="container.height"
+                @media-resize="updateSizeByNumber"
                 in-view-box
             >
 
@@ -22,7 +23,7 @@
     import * as CSS from "csstype";
     import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {AreaRect, Point, updatePoint} from "@/utils/geoMetric";
+    import {AreaRect, Point, pointMultiple, pointNegative, updatePoint} from "@/utils/geoMetric";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({
@@ -41,6 +42,7 @@
                 required: true,
             },
 
+            //范围框
             container: {
                 type: Object as () => AreaRect,
                 required: true
@@ -54,6 +56,12 @@
 
             index: {
                 type: Number as () => number,
+                required: true
+            },
+
+            // GraphViewBox
+            containerRect: {
+                type: Object as () => AreaRect,
                 required: true
             }
         },
@@ -72,10 +80,36 @@
             }
         },
         methods: {
-            updateSize(resizeType: string, newPoint: Point) {
-                (resizeType === 'bottom' || resizeType === 'right' || resizeType === 'proportion')
-                    ? updatePoint(this.container.end, newPoint)
-                    : updatePoint(this.container.start, newPoint)
+            updateSize(startDelta: Point, sizeDelta: Point) {
+                // 更新尺寸
+                console.log(startDelta, sizeDelta);
+                let setting = this.setting.Setting;
+                let width = setting.Base.size;
+                let height = setting.Base.scaleX * width;
+                width += sizeDelta.x;
+                height += sizeDelta.y;
+                setting.Base.scaleX = height / width;
+                setting.Base.size = width;
+
+                // 更新起始点
+                setting.Base.x += startDelta.x / this.containerRect.width;
+                setting.Base.y += startDelta.y / this.containerRect.height
+            },
+
+            updateSizeByBorder(delta: Point, resizeType: string) {
+                let {x, y} = delta;
+                let realDelta = {x: x / this.scale, y: y / this.scale};
+                if (resizeType === 'bottom' || resizeType === 'right' || resizeType === 'proportion') {
+                    this.updateSize({x: 0, y: 0}, realDelta)
+                } else {
+                    this.updateSize(realDelta, realDelta)
+                }
+            },
+            updateSizeByNumber: function (newWidth: number) {
+                let {width, height} = this.container;
+                let x = newWidth - width;
+                let delta = {x, y: this.setting.Setting.Base.scaleX * newWidth - height};
+                this.updateSize(pointMultiple(delta, 0.5), delta)
             }
         },
         watch: {},
