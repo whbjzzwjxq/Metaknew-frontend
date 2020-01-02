@@ -1,5 +1,4 @@
 import {FieldType, ResolveType} from "@/utils/labelField";
-import {BaseType} from "@/utils/graphClass";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 

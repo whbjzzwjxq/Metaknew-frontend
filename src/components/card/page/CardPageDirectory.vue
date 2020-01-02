@@ -169,7 +169,7 @@
         },
         watch: {},
         record: {
-            status: 'empty',
+            status: 'editing',
             description: '专题目录'
         }
     })
@@ -181,5 +181,7 @@
 
 /**
 * Created by whb on 2019/12/6
-* Updated by []
+* Updated by [
+    whb on 2020/01/02
+]
 */

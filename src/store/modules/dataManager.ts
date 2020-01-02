@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import {createMedia, queryDocGraph, queryMultiMedia, queryMultiSource} from '@/api/commonSource';
+import {mediaCreate, docGraphQuery, mediaQueryMulti, sourceQueryMulti} from '@/api/commonSource';
 import {FileToken, getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
@@ -164,8 +164,8 @@ const actions = {
                      payload: { _id: id, parent: GraphSelfPart | null }) {
         let {_id, parent} = payload;
         // 先绘制Graph
-        await queryDocGraph(_id).then(res => {
-            let data: GraphBackend = res.data;
+        await docGraphQuery(_id).then(res => {
+            let {data} = res;
             let graphSelf = GraphSelfPart.resolveFromBackEnd(data, parent);
             let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl, userConcernTemplate());
             commitInfoAdd({item: graphInfo});
@@ -190,7 +190,7 @@ const actions = {
                 return <QueryObject>node
             });
             // 请求节点
-            queryMultiSource(nodeQuery).then(res => {
+            sourceQueryMulti(nodeQuery).then(res => {
                 const {data} = res;
                 data.map(node => {
                     if (isNodeBackend(node)) {
@@ -216,7 +216,7 @@ const actions = {
                 return <QueryObject>link
             });
             // 请求关系
-            queryMultiSource(linkQuery).then(res => {
+            sourceQueryMulti(linkQuery).then(res => {
                 const {data} = res;
                 data.map(link => {
                     if (!isNodeBackend(link)) {
@@ -249,7 +249,7 @@ const actions = {
                 }
             });
 
-            return queryMultiMedia(noCacheMedia).then(res => {
+            return mediaQueryMulti(noCacheMedia).then(res => {
                 const {data} = res;
                 data.map(media => {
                     let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, userConcernTemplate(), 'remote', []);
@@ -285,7 +285,7 @@ const actions = {
         await filePutBlob(fileToken, realFile, storeName).then(res => {
             if (uploadType === 'normal' && item) {
                 let data = {name: storeName, Info: item.Info};
-                result = createMedia(data);
+                result = mediaCreate(data);
             } else if (uploadType === 'mainImage') {
                 result = new Promise(() => {
                 })

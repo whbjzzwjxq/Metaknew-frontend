@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "test:unit": "vue-cli-service test:unit",
+    "test:unit": "jest",
     "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint"
   },
@@ -19,9 +19,11 @@
     "co": "^4.6.0",
     "core-js": "^3.3.2",
     "csstype": "^2.6.7",
+    "jest": "^24.9.0",
     "mime": "^2.4.4",
     "register-service-worker": "^1.6.2",
     "roboto-fontface": "*",
+    "ts-jest": "^24.2.0",
     "typescript": "^3.7.2",
     "update": "^0.7.4",
     "upgrade": "^1.1.0",
@@ -61,5 +63,20 @@
     "vue-cli-plugin-vuetify": "^2.0.2",
     "vue-template-compiler": "^2.6.10",
     "vuetify-loader": "^1.3.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "ts",
+      "json",
+      "vue"
+    ],
+    "transform": {
+      ".*\\.(vue)$": "vue-jest",
+      "^.+\\.tsx?$": "ts-jest",
+      "^.+\\.ts?$": "ts-jest"
+    },
+    "testURL": "http://localhost/",
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$"
   }
 }

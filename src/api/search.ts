@@ -1,4 +1,4 @@
-import {BASE, baseService} from "./main";
+import axios from 'axios'
 import {BaseType, id} from "@/utils/graphClass";
 
 export interface SearchQueryObject {
@@ -59,8 +59,9 @@ export interface HomePageSearchResponse {
     [index: string]: Array<any>
 }
 
-export const queryHomePage = (queryObject: SearchQueryObject) => baseService<HomePageSearchResponse>()({
-    url: BASE + '/es_query/query/home_page_search',
+export const queryHomePage = (queryObject: SearchQueryObject) =>
+    axios.request<HomePageSearchResponse>({
+    url: '/es_query/query/home_page_search',
     method: "post",
     data: queryObject
 });

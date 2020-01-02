@@ -57,7 +57,7 @@
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
     import FieldFile from "@/components/field/FieldFile.vue";
-    import {updateMediaToNode} from "@/api/commonSource";
+    import {mediaAppendToNode} from "@/api/commonSource";
     import {id, NodeInfoPart, MediaInfoPart, MediaSettingPart, QueryObject, getIsSelf} from "@/utils/graphClass";
     import {DataManagerState} from "@/store/modules/dataManager";
     import {FileToken, getFileToken} from '@/api/user'
@@ -127,7 +127,7 @@
                         '_type': this.baseData.Info.type,
                         '_label': this.baseData.Info.PrimaryLabel,
                     } as QueryObject;
-                    updateMediaToNode(node, this.cacheIdList).then(res => {
+                    mediaAppendToNode(node, this.cacheIdList).then(res => {
                         let num = res.data.length;
                         num === 0
                             ? alert('保存成功')

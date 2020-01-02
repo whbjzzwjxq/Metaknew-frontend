@@ -1,9 +1,4 @@
-// 获取指定名称的cookie值
-// (^| )name=([^;]*)(;|$),match[0]为与整个正则表达式匹配的字符串
-// match[i]为正则表达式捕获数组相匹配的数组；
-
 import {BaseType, id, MediaInfoPart} from "@/utils/graphClass";
-import store from "@/store";
 import {DataManagerState} from "@/store/modules/dataManager";
 
 export function getCookie(name: string) {
@@ -138,9 +133,6 @@ export const checkExist = (arr: Array<any>, item: any) => arr.indexOf('$_any') >
 
 export const minN = (arr: number[], n = 1) => [...arr].sort((a, b) => a - b).slice(0, n);
 export const maxN = (arr: number[], n = 1) => [...arr].sort((a, b) => b - a).slice(0, n);
-export const test = (list: (MediaInfoPart | undefined)[]) => {
-    return list.filter(item => item instanceof MediaInfoPart)
-};
 
 export const MB = 1000000;
 

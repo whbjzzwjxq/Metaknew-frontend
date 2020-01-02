@@ -1,4 +1,4 @@
-import {BASE, baseService} from './main';
+import axios from 'axios'
 
 export interface TagRecommendation {
     [propName: string]: string[],
@@ -29,28 +29,29 @@ export interface UserLoginResponse {
     fileToken: FileToken
 }
 
-export const login = (data: loginData) => baseService<UserLoginResponse>()({
+export const login = (data: loginData) =>
+    axios.request<UserLoginResponse>({
     method: 'post',
-    url: BASE + '/user/login_normal',
+    url: '/user/login_normal',
     data: data,
     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
 });
 
-export const loginCookie = () => baseService<UserLoginResponse>()({
+export const loginCookie = () => axios.request<UserLoginResponse>({
     method: 'get',
-    url: BASE + '/user/login_cookie',
+    url: '/user/login_cookie',
     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
 });
 
-export const getFileToken = () => baseService<UserLoginResponse>()({
+export const getFileToken = () => axios.request<UserLoginResponse>({
     method: 'get',
-    url: BASE + '/user/query_other_token',
+    url: '/user/query_other_token',
     headers: {'Content-Type': 'application/x-www-form-urlencoded'}
 });
 
-export const register = (data: registerData) => baseService()({
+export const register = (data: registerData) => axios.request({
     method: 'post',
-    url: BASE + '/user/register',
+    url: '/user/register',
     data: {
         info: data,
         concern: {},
@@ -59,9 +60,9 @@ export const register = (data: registerData) => baseService()({
     headers: {'Content-Type': 'application/json'}
 });
 
-export const sendMessage = (phone: number | string) => baseService()({
+export const sendMessage = (phone: number | string) => axios.request({
     method: 'get',
-    url: BASE + '/user/send_message',
+    url: '/user/send_message',
     headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
     },

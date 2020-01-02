@@ -69,7 +69,7 @@
     import {DataManagerState} from "@/store/modules/dataManager";
     import {LabelGroup, IconItem} from "@/utils/interfaceInComponent";
     import {labelItems} from "@/utils/labelField";
-    import {updateMedia} from '@/api/commonSource';
+    import {mediaUpdate} from '@/api/commonSource';
     import * as CSS from 'csstype';
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/iconGroup/IconGroup.vue";
@@ -136,22 +136,22 @@
             }
         },
         computed: {
-            info: function() {
+            info: function () {
                 return this.media.Info;
             },
-            ctrl: function() {
+            ctrl: function () {
                 return this.media.Ctrl;
             },
-            userConcern: function() {
+            userConcern: function () {
                 return this.media.UserConcern;
             },
-            dataManager: function() {
+            dataManager: function () {
                 return this.$store.state.dataManager;
             },
-            isSelf: function() {
+            isSelf: function () {
                 return getIsSelf(this.media.Ctrl);
             },
-            labelGroup: function(): LabelGroup[] {
+            labelGroup: function (): LabelGroup[] {
                 return this.editBase
                     ? [
                         {
@@ -187,10 +187,10 @@
                     ];
             },
 
-            title: function() {
+            title: function () {
                 return this.info.PrimaryLabel + " --> " + this.info.Name;
             },
-            buttonGroupStyle: function(): CSS.Properties {
+            buttonGroupStyle: function (): CSS.Properties {
                 return {
                     opacity: this.showTool ? '50%' : '0%',
                     position: "absolute",
@@ -198,24 +198,24 @@
                     top: 0
                 }
             },
-            showText: function() {
+            showText: function () {
                 return this.height >= 120
             },
             //能够删除 在画布中删除是从画布中删除 在节点中删除是从节点删除
 
-            showDeleteIcon: function() {
+            showDeleteIcon: function () {
                 return this.inViewBox
                     ? this.nodeIsSelf
                     : this.dataManager.currentGraph.Conf.State.isSelf;
             },
 
             //能够变成media节点:不在画布里而且画布是isSelf的
-            showExportIcon: function() {
+            showExportIcon: function () {
                 return !this.inViewBox &&
                     this.dataManager.currentGraph.Conf.State.isSelf
             },
 
-            iconList: function(): IconItem[] {
+            iconList: function (): IconItem[] {
                 let vm = this;
                 return [
                     {name: "mdi-magnify", _func: vm.dialogWatch},
@@ -228,7 +228,7 @@
             },
         },
         methods: {
-            updateValue(prop: string, value: any) {
+            updateValue: function (prop: string, value: any) {
                 this.media.updateValue(prop, value);
             },
             updateName(value: string) {
@@ -261,7 +261,7 @@
             saveMedia() {
                 let status = this.media.status;
                 if (status === "success" || status === "remote") {
-                    updateMedia(this.media).then(res => {
+                    mediaUpdate(this.media).then(res => {
                         res.status === 200
                             ? alert("保存成功")
                             : alert("保存失败 请重试");
@@ -280,4 +280,6 @@
     });
 </script>
 
-<style scoped></style>
+<style scoped>
+
+</style>
