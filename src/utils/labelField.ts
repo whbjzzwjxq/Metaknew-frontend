@@ -34,22 +34,9 @@ interface pLabelPropsDict {
     [pLabel: string]: PLabelProps
 }
 
-export const allPropType: pLabelPropsDict = {
+export const nodePropType: pLabelPropsDict = {
     DocGraph:
-        {
-            MainNodes: {
-                type: 'ArrayField',
-                resolve: 'normal'
-            },
-            Size: {
-                type: 'NumberField',
-                resolve: 'normal'
-            },
-            Complete: {
-                type: 'NumberField',
-                resolve: 'normal'
-            }
-        },
+        {},
     ArchProject:
         {
             PeriodStart: {
@@ -127,16 +114,28 @@ export const allPropType: pLabelPropsDict = {
     $Fragment: {}
 };
 
-export function neededProp(pLabel: string) {
-    return allPropType[pLabel]
-        ? Object.assign({}, allPropType[pLabel])
+export const linkPropType: pLabelPropsDict = {
+    Event: {
+        Time: {
+            type: "StringField",
+            resolve: "time",
+        },
+        Location: {
+            type: "StringField",
+            resolve: "time"
+        }
+    },
+
+};
+
+export function nodeLabelToProp(pLabel: string) {
+    return nodePropType[pLabel]
+        ? Object.assign({}, nodePropType[pLabel])
         : {};
 }
 
-export const availableLabel = Object.keys(allPropType)
+export const availableLabel = Object.keys(nodePropType)
     .filter(label => label !== 'link' && label !== 'DocGraph');
-
-export const linkLabels = ['Include'];
 
 export const topicItems = {
     recommend: ['Architecture', 'History', 'Modernism']
@@ -146,17 +145,6 @@ export const labelItems = {
     recommend: ['20century', 'important'],
     public: ['Todo', 'Done', 'Test', 'Draft', 'QuickServe']
 };
-
-// 不需要编辑的属性
-export const unActivePropNode = [
-    'PrimaryLabel', 'MainPic', 'IncludedMedia',
-    'Name', 'Alias', 'Topic', 'Language',
-    'Labels', 'Text', 'Translate',
-    'MainNodes', 'Size', 'Complete',
-    'BaseImp', 'BaseHardLevel', 'id', 'type',
-    '$IsCommon', '$IsShared', '$IsOpenSource', 'isEdit',
-    'dpiX', 'dpiY'
-];
 
 export const unActivePropLink = [
     'id', 'type', 'start',

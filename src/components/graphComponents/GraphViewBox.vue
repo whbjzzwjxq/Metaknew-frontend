@@ -572,8 +572,8 @@
                     let baseX = media.Setting.Base.x * this.containerRect.width
                     let baseY = media.Setting.Base.y * this.containerRect.height
                     return {
-                        x: this.lastViewPoint.x - (this.viewPoint.x - (baseX + media.Setting.Base.x * this.containerRect.width)) * this.realScale,
-                        y: this.lastViewPoint.y - (this.viewPoint.y - (baseY + media.Setting.Base.y * this.containerRect.height)) * this.realScale,
+                        x: this.lastViewPoint.x - (this.viewPoint.x - baseX) * this.realScale,
+                        y: this.lastViewPoint.y - (this.viewPoint.y - baseY) * this.realScale,
                         width: media.Setting.Base.size * this.realScale >= 50
                             ? media.Setting.Base.size * this.realScale * media.Setting.Base.scaleX
                             : 50 * media.Setting.Base.scaleX,
@@ -833,8 +833,8 @@
                 this.selectItem([node]);
                 if (this.isLinking && node && this.startNode) {
                     let id = getIndex();
-                    let setting = LinkSettingPart.emptyLinkSetting(id, "default", this.startNode, node, this.document);
-                    let info = LinkInfoPart.emptyLinkInfo(id, "default", this.startNode, node);
+                    let setting = LinkSettingPart.emptyLinkSetting(id, "Default", this.startNode, node, this.document);
+                    let info = LinkInfoPart.emptyLinkInfo(id, "Default", this.startNode, node);
                     this.document.addItems([setting]);
                     commitInfoAdd({item: info, strict: true});
                     this.isLinking = false;

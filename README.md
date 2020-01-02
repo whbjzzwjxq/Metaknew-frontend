@@ -88,5 +88,6 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
     
 ##### tips
 See [Prop类型推测](https://stackoverflow.com/questions/54391162/typescript-wont-recognize-prop-values-on-vue-component)
+d-flex 会使得v-show失效
     
 ##### vuex

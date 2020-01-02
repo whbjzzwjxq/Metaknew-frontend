@@ -83,7 +83,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldDefaultValue, fieldSetting, FieldType, neededProp} from "@/utils/labelField"
+    import {fieldDefaultValue, fieldSetting, FieldType, nodeLabelToProp} from "@/utils/labelField"
     import {deepClone} from "@/utils/utils"
     import DataTableImporter from '@/views/dataTable/DataTableImporter.vue';
     import PLabelSelector from '@/components/PLabelSelector.vue';
@@ -172,7 +172,7 @@
         computed: {
             // 需要的标签--属性Dict
             labelDict() {
-                return neededProp(this.pLabel)
+                return nodeLabelToProp(this.pLabel)
             },
             // 属性的keys
             propNames: vm => Object.keys(vm.labelDict),
@@ -375,7 +375,7 @@
             //更新节点
             updateNode(node: BaseNodeInfo, oldLabel: string, newLabel: string) {
                 //参数解构使用for of
-                for (let [prop, setting] of Object.entries(neededProp(newLabel))) {
+                for (let [prop, setting] of Object.entries(nodeLabelToProp(newLabel))) {
                     Object.prototype.hasOwnProperty.call(node, prop) ||
                     (this.updateProp(node, prop, fieldDefaultValue[setting.type]));
                     this.updateProp(node, 'PrimaryLabel', newLabel);

@@ -1,5 +1,5 @@
 <template>
-    <div :style="containerStyle" :class="classContent">
+    <div :style="containerStyle" :class="classContent" v-show="!hide">
         <v-btn
             v-for="(icon, index) in activeIconList"
             icon
@@ -8,8 +8,8 @@
             :x-small="xSmall"
             :large="large"
             :x-large="xLarge"
-            :color="icon.color ? icon.color : 'white'"
-            :disabled="icon.name === ''"
+            :color="icon.color ? icon.color : 'grey'"
+            :disabled="icon.name === '' || icon.disabled"
             @click="icon._func"
         >
             <v-icon>{{ icon.name }}</v-icon>
@@ -53,6 +53,10 @@
                 type: Boolean,
                 default: false
             },
+            hide: {
+                type: Boolean,
+                default: false
+            },
             containerStyle: {
                 type: Object as () => CSS.Properties,
                 default: () => {
@@ -66,8 +70,8 @@
             },
             classContent: function () {
                 return this.vertical
-                    ? "d-flex flex-column"
-                    : "d-flex flex-row"
+                    ? "flex-column"
+                    : "flex-row"
             }
         },
         methods: {},

@@ -1,6 +1,6 @@
 import {deepClone, getCookie} from "@/utils/utils";
 import Vue from "vue";
-import {allPropType, fieldDefaultValue, neededProp, PropDescription} from "@/utils/labelField";
+import {fieldDefaultValue, nodeLabelToProp} from "@/utils/labelField";
 import {settingTemplate} from "@/utils/settingTemplate";
 import {
     isBaseType,
@@ -11,8 +11,7 @@ import {
     isNodeSetting,
     isNoteSetting
 } from "@/utils/typeCheck";
-import {commitSnackbarOn} from "@/store/modules/_mutations";
-import {EditProps, ValueWithType, ExtraProps} from "@/utils/interfaceInComponent";
+import {ValueWithType, ExtraProps} from "@/utils/interfaceInComponent";
 
 export let newIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
@@ -150,6 +149,7 @@ interface BaseCtrl {
     $IsUserMade: boolean;
     CreateUser: string | number;
     UpdateTime: string;
+    Source: string
 }
 
 export interface NodeInfoPartBackend {
@@ -188,6 +188,12 @@ export interface BaseNodeCtrl extends BaseCtrl {
     TotalTime: number;
 }
 
+export interface BaseGraphCtrl extends BaseNodeCtrl {
+    Size: number;
+    MainNodes: Array<id>;
+    Complete: number
+}
+
 export interface BaseMediaInfo extends BaseInfo {
     type: "media";
     Name: string;
@@ -218,7 +224,8 @@ export interface MediaInfoPartBackend {
 export interface BaseLinkInfo extends BaseInfo {
     type: "link";
     Labels: Array<string>;
-    ExtraProps: Object;
+    CommonProps: Record<string, ValueWithType<any>>;
+    ExtraProps: ExtraProps;
     Text: Text;
     Confidence: number;
 
@@ -345,7 +352,7 @@ export function userConcernTemplate() {
 
 export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: string) {
     let commonProps: Record<string, ValueWithType<any>> = {};
-    Object.entries(neededProp(_label)).map(([key, value]) => {
+    Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
         let {type, resolve} = value;
         commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
@@ -371,18 +378,20 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         MainPic: ''
     };
     // 特别定义
-    _type !== "document"
-        ? (info.Name = "NewNode" + _id)
-        : (info.Name = "NewDocument" + _id);
+    if (_type === "document") {
+        info.Name = 'NewDocument' + _id;
+    }
+
     return info;
 }
 
-export function nodeCtrlTemplate(_label: string) {
+export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
     // Ctrl数据
     let time = new Date();
-    return <BaseNodeCtrl>{
+    let ctrl = {
         $IsUserMade: true,
         CreateUser: getCookie("user_id"),
+        Source: 'User',
         UpdateTime: time.toLocaleDateString(),
         PrimaryLabel: _label,
         Imp: 50,
@@ -396,6 +405,15 @@ export function nodeCtrlTemplate(_label: string) {
         TotalTime: 50,
         Labels: []
     };
+    if (_type === 'node') {
+        return ctrl as BaseNodeCtrl
+    } else {
+        return Object.assign({
+            Size: 1,
+            Complete: 2,
+            MainNodes: [],
+        }, ctrl) as BaseGraphCtrl
+    }
 }
 
 export function mediaInfoTemplate(_id: id, file: File) {
@@ -423,6 +441,7 @@ export function mediaCtrlTemplate(file: File) {
         UpdateTime: time.toLocaleDateString(),
         CreateUser: getCookie("user_id"),
         $IsUserMade: true,
+        Source: 'User',
         isStar: 0,
         isGood: 0,
         isBad: 0,
@@ -432,6 +451,11 @@ export function mediaCtrlTemplate(file: File) {
 }
 
 export function linkInfoTemplate(_id: id, _label: string) {
+    let commonProps: Record<string, ValueWithType<any>> = {};
+    Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
+        let {type, resolve} = value;
+        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
+    });
     return <BaseLinkInfo>{
         id: _id,
         type: "link",
@@ -442,7 +466,8 @@ export function linkInfoTemplate(_id: id, _label: string) {
         Labels: [],
         ExtraProps: {},
         Text: {},
-        Confidence: 0.5
+        Confidence: 0.5,
+        CommonProps: commonProps
     };
 }
 
@@ -485,7 +510,7 @@ export class NodeInfoPart {
     static emptyNodeInfoPart(_id: id, _type: 'node' | 'document', _label: string) {
         return new NodeInfoPart(
             nodeInfoTemplate(_id, _type, _label),
-            nodeCtrlTemplate(_label),
+            nodeCtrlTemplate(_type, _label),
             userConcernTemplate()
         );
     }
@@ -534,7 +559,7 @@ export class NodeInfoPart {
             console.log("如果是远端节点 那么PLabel不能修改");
         } else {
             let commonProps = this.Info.CommonProps;
-            Object.entries(neededProp(newLabel)).map(([prop, value]) => {
+            Object.entries(nodeLabelToProp(newLabel)).map(([prop, value]) => {
                 let {resolve, type} = value;
                 Object.keys(commonProps).indexOf(prop) === -1
                     ? (commonProps[prop] = {resolve, type, value: fieldDefaultValue[type]})

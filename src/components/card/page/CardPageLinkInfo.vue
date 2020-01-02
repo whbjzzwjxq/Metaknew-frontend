@@ -39,10 +39,10 @@
             <template v-slot:content>
                 <field-json
                     :p-label="'link'"
-                    :base-props="extraProps"
+                    :base-props="editProps"
                     :prop-name="'Info'"
                     :editable="editMode"
-                    @update-value="updateExtraProps">
+                    @update-value="editProps = arguments[1]">
 
                 </field-json>
             </template>
@@ -69,9 +69,10 @@
     import FieldJson from "@/components/field/FieldJson.vue";
     import CardSubLabelGroup from "@/components/card/subComp/CardSubLabelGroup.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
-    import {GraphSelfPart, LinkInfoPart, NodeSettingPart, VisualNodeSettingPart} from "@/utils/graphClass";
-    import {allPropType, labelItems, unActivePropLink} from "@/utils/labelField";
-    import {ExtraProp} from "@/utils/interfaceInComponent";
+    import {GraphSelfPart, LinkInfoPart, VisualNodeSettingPart} from "@/utils/graphClass";
+    import {FieldType, labelItems, ResolveType, unActivePropLink} from "@/utils/labelField";
+    import {EditProps} from "@/utils/interfaceInComponent";
+    import {deepClone} from "@/utils/utils";
 
     export default Vue.extend({
         name: "CardPageLinkInfo",
@@ -121,26 +122,22 @@
                 }
             },
             //获得ExtraProp
-            extraProps: function () {
-                let result: ExtraProp = {};
-                Object.entries(this.info).map(([key, value]) => {
-                    if (unActivePropLink.indexOf(key) === -1) {
-                        key !== "ExtraProps"
-                            ? result[key] = {
-                                "value": value,
-                                "type": allPropType["link"][key].type,
-                                "resolve": allPropType["link"][key].resolve
-                            }
-                            : result[key] = {
-                                "value": this.info[key],
-                                "type": "JsonField",
-                                "resolve": "normal"
-                            }
-                    } else {
-                        //
-                    }
-                });
-                return result
+            editProps: {
+                get(): EditProps {
+                    return Object.assign({
+                        ExtraProps: {
+                            value: this.info.ExtraProps,
+                            type: "JsonField" as FieldType,
+                            resolve: "normal" as ResolveType
+                        }
+                    }, this.info.CommonProps)
+                },
+                set(value: EditProps) {
+                    this.updateValue('ExtraProps', value.ExtraProps.value);
+                    let commonProps = deepClone(value);
+                    delete commonProps.ExtraProps;
+                    this.updateValue('CommonProps', commonProps)
+                }
             },
             labelGroup: vm => [
                 {"name": "作者的标注", "labels": vm.info.Labels, "closeable": false, "editable": true, 'prop': 'Info'}
@@ -154,12 +151,6 @@
             //更新单个值
             updateValue(prop: string, value: any) {
                 this.baseData.updateValue(prop, value)
-            },
-            //更新
-            updateExtraProps(propName: string, value: ExtraProp, status: string) {
-                Object.entries(value).map(([key, value]) => {
-                    this.baseData.updateValue(key, value)
-                })
             },
 
             removeItem(removedLabel: string, prop: string) {

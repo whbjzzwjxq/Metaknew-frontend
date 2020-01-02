@@ -26,7 +26,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     },
     DeleteAble: {
         true: 'mdi-delete',
-        false: 'mdi-delete-off'
+        false: 'mdi-delete-off',
+        rollback: 'mdi-refresh'
     },
     MediaWatch: {
         true: '',
@@ -65,11 +66,3 @@ export const getIcon = (iconGroupName: IconGroup, status: string | boolean) => {
         ? iconGroup[index]
         : iconGroup['true']
 };
-export const mediaIconDict = {
-    'image': 'mdi-image',
-    'text': 'mdi-message-text',
-    'audio': 'mdi-volume-high',
-    'video': 'mdi-video',
-    'pdf': 'mdi-file-pdf',
-    'markdown': 'mdi-markdown',
-} as Record<string, string>;

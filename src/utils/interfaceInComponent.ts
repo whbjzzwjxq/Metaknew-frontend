@@ -27,7 +27,8 @@ export interface IconItem {
     name: string,
     _func: Function | null,
     color?: string,
-    render?: boolean
+    render?: boolean,
+    disabled?: boolean
 }
 
 export type LabelViewDict = Record<string, Record<string, boolean>>

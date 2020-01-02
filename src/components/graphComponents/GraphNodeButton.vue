@@ -1,26 +1,26 @@
 <template>
-    <div class="flex-column" :style="buttonGroupStyle" v-show="node.State.isMouseOn">
-        <v-btn
-            :key="index"
-            :disabled="button.disabled"
-            @click="button._func"
-            v-for="(button, index) in buttonGroup"
-            icon
-            x-small
-        >
-            <v-icon>
-                {{button.icon}}
-            </v-icon>
-        </v-btn>
-    </div>
+    <icon-group
+        :container-style="buttonGroupStyle"
+        :icon-list="buttonGroup"
+        vertical
+        x-small
+        :hide="!node.State.isMouseOn">
+
+    </icon-group>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
+    import {getIcon} from "@/utils/icon";
+    import IconGroup from "@/components/iconGroup/IconGroup.vue";
+    import {NodeSettingPart} from "@/utils/graphClass";
+    import {IconItem} from "@/utils/interfaceInComponent";
 
     export default Vue.extend({
         name: "GraphNodeButton",
-        components: {},
+        components: {
+            IconGroup
+        },
         data() {
             return {}
         },
@@ -31,47 +31,72 @@
             },
 
             node: {
-                type: Object,
+                type: Object as () => NodeSettingPart,
                 required: true
             }
         },
         computed: {
-            buttonGroupStyle() {
+            buttonGroupStyle: function () {
                 return {
-                    width: '36px',
+                    width: '18px',
                     height: '120px',
                     left: this.x + 'px',
                     top: this.y + 'px',
                     position: 'absolute'
                 }
             },
-            x: vm => vm.nodeSetting.x + vm.nodeSetting.width + 12,
-            y: vm => vm.nodeSetting.y - vm.nodeSetting.height - 12,
-            showNode: vm => vm.nodeSetting.show,
-            arrowIcon: vm => !vm.boundGraph
-                ? 'mdi-magnify'
-                : !vm.boundGraph.Conf.State.isExplode
-                    ? 'mdi-arrow-expand-all'
-                    : 'mdi-arrow-collapse-all',
-            boundGraph: vm => vm.$store.state.dataManager.graphManager[vm.node.Setting._id],
-            buttonGroup: vm => [
-                {icon: 'mdi-close', _func: vm.deleteItem},
-                {icon: 'mdi-arrow-top-right', _func: vm.addLink},
-                {icon: 'mdi-eye', _func: vm.unShow},
-                {icon: 'mdi-content-copy', _func: vm.copyItem},
-                {icon: vm.arrowIcon, _func: vm.explode, disabled: vm.node.Setting._type !== 'document'}
-            ]
+            x: function () {
+                return this.nodeSetting.x + this.nodeSetting.width + 12
+            },
+            y: function () {
+                return this.nodeSetting.y - this.nodeSetting.height - 12
+            },
+            showNode: function () {
+                return this.nodeSetting.show
+            },
+            dataManager: function () {
+                return this.$store.state.dataManager
+            },
+            boundGraph: function () {
+                return this.dataManager.graphManager[this.node.Setting._id]
+            },
+            buttonGroup: function (): IconItem[] {
+                // 是否可以删除
+                let deleteIcon;
+                this.node.Setting._type === 'document'
+                    ? deleteIcon = false
+                    : this.node.State.isDeleted
+                    ? deleteIcon = 'rollback'
+                    : deleteIcon = true;
+                // 是否可以爆炸
+                let explodeAble = this.boundGraph.id === this.dataManager.currentGraph.id;
+
+                let explodeIcon;
+                !this.boundGraph
+                    ? explodeIcon = 'unload'
+                    : explodeIcon = !this.boundGraph.Conf.State.isExplode;
+                return [
+                    {name: getIcon("DeleteAble", deleteIcon), _func: this.deleteItem, disabled: !deleteIcon},
+                    {name: 'mdi-arrow-top-right', _func: this.addLink},
+                    {name: getIcon('Eye', this.node.Setting.Show.showAll), _func: this.unShow},
+                    {name: 'mdi-content-copy', _func: this.copyItem},
+                    {
+                        name: getIcon("GraphExplode", explodeIcon),
+                        _func: this.explode,
+                        render: this.node.Setting._type === 'document',
+                        disabled: explodeAble
+                    }
+                ]
+            }
         },
         methods: {
             deleteItem() {
                 let current = this.node.State.isDeleted;
                 this.$set(this.node.State, 'isDeleted', !current);
-                current ? this.buttonGroup[2].icon = 'mdi-delete' : this.buttonGroup[2].icon = 'mdi-refresh'
             },
             unShow() {
                 let current = this.node.Setting.Show.showAll;
                 this.$set(this.node.Setting.Show, 'showAll', !current);
-                current ? this.buttonGroup[2].icon = 'mdi-eye-off' : this.buttonGroup[2].icon = 'mdi-eye'
             },
 
             addLink() {
@@ -86,7 +111,7 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done-old'
         }
     })
 </script>

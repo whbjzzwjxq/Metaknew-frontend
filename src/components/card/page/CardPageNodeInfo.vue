@@ -47,7 +47,8 @@
                         v-for="(label, index) in info.Topic"
                         :key="label"
                         :label="label"
-                        :size="simplifySetting.chipSize"
+                        :small="simplifySetting.chipSize === 'small'"
+                        :x-small="simplifySetting.chipSize === 'xSmall'"
                         :index="index"
                         @close-chip="removeTopic">
 
