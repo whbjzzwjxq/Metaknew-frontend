@@ -174,7 +174,7 @@
     import CardSubRating from "@/components/card/subComp/CardSubRating.vue";
     import NodeAvatar from "@/components/NodeAvatar.vue";
     import GlobalChip from "@/components/global/GlobalChip.vue";
-    import {availableLabel, FieldType, labelItems, linkLabels, ResolveType, topicItems} from "@/utils/labelField";
+    import {availableLabel, FieldType, labelItems, ResolveType, topicItems} from "@/utils/labelField";
     import {DataManagerState} from "@/store/modules/dataManager";
     import {EditProps, LabelGroup} from "@/utils/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
@@ -197,9 +197,7 @@
                     "document": "专题",
                     "node": "节点"
                 },
-                nodeLabels: availableLabel,
-                linkLabels: linkLabels,
-                docLabels: ["DocGraph", "DocPaper"],
+                nodeLabels: availableLabel.concat(["DocGraph", "DocPaper"]),
                 topicItems: topicItems,
                 labelItems: labelItems,
                 loading: true,

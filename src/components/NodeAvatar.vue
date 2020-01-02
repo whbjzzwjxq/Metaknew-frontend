@@ -1,7 +1,7 @@
 <template>
-    <v-card class="empty-avatar pb-1" flat tile>
+    <v-card class="empty-avatar" flat tile>
         <v-img
-            :sourceUrl="realSrc"
+            :src="realSrc"
             width="120px"
             height="120px"
             contain>
@@ -122,15 +122,15 @@
         },
         methods: {
             save() {
-                let cropper: any = this.$refs.cropper;
-                cropper.getCropBlob((data: File) => {
+                // @ts-ignore $ref不能通过中间变量引用
+                this.$refs.cropper.getCropBlob((data: Blob) => {
                     this.uploadFile(data);
                 })
             },
             close() {
 
             },
-            uploadFile(file: File) {
+            uploadFile(file: Blob) {
                 let storeName = 'userFileCache/' + this.guid() + "." + file.type.split("/")[1];
                 dispatchUploadFile({
                     storeName,
@@ -175,8 +175,8 @@
         border-width: 2px;
         border-style: dashed;
         border-color: lightslategrey;
-        height: 120px;
-        width: 120px;
+        height: 124px;
+        width: 124px;
     }
 </style>
 

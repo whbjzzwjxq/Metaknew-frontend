@@ -282,16 +282,17 @@ const actions = {
         // 开始上传
         let result;
         item && item.changeStatus('uploading');
-        await filePutBlob(fileToken, realFile, storeName).then(res => {
-            if (uploadType === 'normal' && item) {
-                let data = {name: storeName, Info: item.Info};
-                result = mediaCreate(data);
-            } else if (uploadType === 'mainImage') {
-                result = new Promise(() => {
-                })
-            }
-        });
-        return result
+        if (uploadType === 'normal') {
+            await filePutBlob(fileToken, realFile, storeName).then(res => {
+                if (item) {
+                    let data = {name: storeName, Info: item.Info};
+                    result = mediaCreate(data);
+                } else {
+                    result = undefined;
+                }
+            });
+            return result
+        } else return filePutBlob(fileToken, realFile, storeName);
     }
 
 };
