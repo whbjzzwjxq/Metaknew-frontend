@@ -219,7 +219,7 @@
                 let vm = this;
                 return [
                     {name: "mdi-magnify", _func: vm.dialogWatch},
-                    {name: getIcon("Chevron", vm.detailOn), _func: vm.changeDetail},
+                    {name: getIcon("i-chevron", vm.detailOn), _func: vm.changeDetail},
                     {name: "", _func: vm.doNothing},
                     {name: "mdi-pencil", _func: vm.editSrc, render: vm.isSelf},
                     {name: "mdi-delete", _func: vm.deleteMedia, render: vm.isSelf || vm.showDeleteIcon},

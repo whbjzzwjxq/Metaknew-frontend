@@ -25,9 +25,9 @@
                 let userConcern = this.infoPart.UserConcern;
                 let {isStar, isGood, isBad, isShared} = userConcern;
                 return [
-                    {name: getIcon('Star', isStar), _func: this.starItem},
-                    {name: getIcon('Good', isGood), _func: this.goodItem},
-                    {name: getIcon('Bad', isBad), _func: this.badItem},
+                    {name: getIcon('i-star', isStar), _func: this.starItem},
+                    {name: getIcon('i-good', isGood), _func: this.goodItem},
+                    {name: getIcon('i-bad', isBad), _func: this.badItem},
                     {name: 'mdi-share-variant', _func: this.shareItem, color: isShared ? 'yellow' : 'white'}
                 ];
             },

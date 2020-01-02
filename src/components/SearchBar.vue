@@ -74,6 +74,7 @@
     import {DataManagerState} from '@/store/modules/dataManager'
     import {IndexedInfo, IndexedText, queryHomePage, HomePageSearchResponse, SearchQueryObject} from '@/api/search'
     import {GraphSelfPart, InfoToSetting, MediaSettingPart, NodeSettingPart} from '@/utils/graphClass'
+    import {getIcon} from "@/utils/icon";
 
     interface ListInfoItem extends IndexedInfo {
         isTitle: boolean,
@@ -292,9 +293,7 @@
                     '</span>' + ' ' + '<span class="grey--text text--secondary">' + pLabel + '</span>'
             },
 
-            getArrow: (item: ListTitle): string => item.isCollapse
-                ? 'mdi-chevron-up'
-                : 'mdi-chevron-down',
+            getArrow: (item: ListTitle): string => getIcon('i-collapse-arrow', item.isCollapse),
 
             collapse(item: ListTitle) {
                 this.$set(item, 'isCollapse', !item.isCollapse)

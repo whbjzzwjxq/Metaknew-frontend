@@ -84,6 +84,7 @@
     import {guid} from "@/utils/utils";
     import {MediaInfoPart} from '@/utils/graphClass'
     import {dispatchUploadFile} from "@/store/modules/_dispatch";
+    import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
         name: "NodeAvatar",
@@ -96,7 +97,7 @@
                 fileResolverProps: {
                     chips: false,
                     placeholder: "Click to Upload Image",
-                    prependIcon: "mdi-camera",
+                    prependIcon: getIcon('i-media-type', 'image'),
                 },
                 guid: guid
             }

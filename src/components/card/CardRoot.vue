@@ -39,6 +39,7 @@
     import {TabContent} from "@/utils/interfaceInComponent";
     import {DataManagerState} from "@/store/modules/dataManager";
     import {GraphSelfPart} from "@/utils/graphClass";
+    import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
         name: "CardRoot",
@@ -89,15 +90,15 @@
             tabItems(): Record<string, TabContent> {
                 return {
                     "eco": {
-                        icon: 'mdi-earth',
+                        icon: getIcon('i-knowledge-level', 'eco'),
                         props: {}
                     },
                     "document": {
-                        icon: 'mdi-google-circles-communities',
+                        icon: getIcon('i-knowledge-level', 'document'),
                         props: {}
                     },
                     "node": {
-                        icon: 'mdi-numeric-1-circle-outline',
+                        icon: getIcon('i-knowledge-level', 'node'),
                         props: {}
                     }
                 }

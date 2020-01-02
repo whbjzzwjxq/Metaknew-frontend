@@ -76,12 +76,12 @@
                     ? explodeIcon = 'unload'
                     : explodeIcon = !this.boundGraph.Conf.State.isExplode;
                 return [
-                    {name: getIcon("DeleteAble", deleteIcon), _func: this.deleteItem, disabled: !deleteIcon},
+                    {name: getIcon("i-delete", deleteIcon), _func: this.deleteItem, disabled: !deleteIcon},
                     {name: 'mdi-arrow-top-right', _func: this.addLink},
-                    {name: getIcon('Eye', this.node.Setting.Show.showAll), _func: this.unShow},
+                    {name: getIcon('i-eye', this.node.Setting.Show.showAll), _func: this.unShow},
                     {name: 'mdi-content-copy', _func: this.copyItem},
                     {
-                        name: getIcon("GraphExplode", explodeIcon),
+                        name: getIcon("i-explode", explodeIcon),
                         _func: this.explode,
                         render: this.node.Setting._type === 'document',
                         disabled: explodeAble

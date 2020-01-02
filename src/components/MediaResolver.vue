@@ -1,9 +1,9 @@
 <template>
   <v-file-input
-    :multiple="multiple"
-    v-bind="props"
-    :value="files"
-    @change="fileChange"
+      :multiple="multiple"
+      :value="files"
+      @change="fileChange"
+      v-bind="props"
   >
   </v-file-input>
 </template>

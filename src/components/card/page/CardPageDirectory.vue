@@ -56,12 +56,6 @@
         children?: DirectoryItem[]
     }
 
-    interface SettingPartDict {
-        nodes: NodeSettingPart[]
-        links: LinkSettingPart[]
-        medias: MediaSettingPart[]
-    }
-
     export default Vue.extend({
         name: "CardPageDirectory",
         components: {},
@@ -125,7 +119,7 @@
                 type: media.Setting._type,
                 label: media.Setting._label,
                 name: media.Setting._name,
-                icon: getIcon("MediaType", media.Setting._label),
+                icon: getIcon("i-media-type", media.Setting._label),
                 isSelected: media.State.isSelected,
                 deletable: media.parent.Conf.State.isSelf,
                 editable: false,

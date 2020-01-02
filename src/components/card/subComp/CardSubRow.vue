@@ -19,6 +19,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
+    import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
         name: "CardSubRow",
@@ -40,9 +41,7 @@
         },
         computed: {
             collapsedIcon(): string {
-                return this.isCollapsed
-                    ? 'mdi-plus'
-                    : 'mdi-minus'
+                return getIcon("i-collapse", !this.isCollapsed)
             },
 
         },

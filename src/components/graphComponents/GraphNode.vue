@@ -307,18 +307,6 @@
             },
             geometryType: vm => vm.setting.Base.type,
 
-            graphButtonX () {
-                return this.hoverWidth / 2 + 5
-            },
-
-            graphButtonY () {
-                return this.hoverHeight / 2 + 5
-            },
-            arrowIcon: vm => !vm.boundGraph
-                ? 'mdi-magnify'
-                : !vm.boundGraph.Conf.State.isExplode
-                    ? 'mdi-arrow-expand-all'
-                    : 'mdi-arrow-collapse-all',
             boundGraph: vm => vm.$store.state.dataManager.graphManager[vm.node.Setting._id],
 
         },
