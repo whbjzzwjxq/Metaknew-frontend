@@ -80,9 +80,10 @@
             }
         },
         methods: {
-            updateSize(startDelta: Point, sizeDelta: Point) {
+            updateSize(start: Point, size: Point) {
                 // 更新尺寸
-                console.log(startDelta, sizeDelta);
+                let startDelta = pointMultiple(start, 1 / this.scale);
+                let sizeDelta = pointMultiple(size, 1 / this.scale);
                 let setting = this.setting.Setting;
                 let width = setting.Base.size;
                 let height = setting.Base.scaleX * width;
@@ -90,31 +91,32 @@
                 height += sizeDelta.y;
                 setting.Base.scaleX = height / width;
                 setting.Base.size = width;
-
                 // 更新起始点
                 setting.Base.x += startDelta.x / this.containerRect.width;
-                setting.Base.y += startDelta.y / this.containerRect.height
+                setting.Base.y += startDelta.y / this.containerRect.height;
             },
 
             updateSizeByBorder(delta: Point, resizeType: string) {
-                let {x, y} = delta;
-                let realDelta = {x: x / this.scale, y: y / this.scale};
                 if (resizeType === 'bottom' || resizeType === 'right' || resizeType === 'proportion') {
-                    this.updateSize({x: 0, y: 0}, realDelta)
+                    this.updateSize({x: 0, y: 0}, delta)
                 } else {
-                    this.updateSize(realDelta, realDelta)
+                    this.updateSize(delta, pointNegative(delta))
                 }
             },
+
             updateSizeByNumber: function (newWidth: number) {
                 let {width, height} = this.container;
                 let x = newWidth - width;
                 let delta = {x, y: this.setting.Setting.Base.scaleX * newWidth - height};
-                this.updateSize(pointMultiple(delta, 0.5), delta)
+                this.updateSize(pointMultiple(delta, -0.5), delta)
             }
         },
         watch: {},
         record: {
             status: 'empty'
+        },
+        created(): void {
+
         }
     })
 </script>

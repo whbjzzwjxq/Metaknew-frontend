@@ -5,7 +5,7 @@
         flat
         tile>
         <div v-if="media.Info.PrimaryLabel === 'image'">
-            <v-img :src="realSrc" contain>
+            <v-img :src="realSrc" :width="width" :max-height="height">
             </v-img>
             <slot name="button-group">
 
@@ -43,6 +43,10 @@
             width: {
                 type: Number,
                 default: 360
+            },
+            height: {
+                type: Number,
+                default: 2880
             }
         },
         computed: {

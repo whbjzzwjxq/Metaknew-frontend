@@ -190,7 +190,7 @@
         VisualNodeSettingPart
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
-    import {pointAdd, AreaRect, pointDecrease, Point, RectByPoint, updatePoint} from '@/utils/geoMetric'
+    import {pointAdd, AreaRect, pointDecrease, Point, RectByPoint, updatePoint, pointMultiple} from '@/utils/geoMetric'
     import * as CSS from 'csstype'
     import GraphNode from './GraphNode.vue';
     import GraphLink from './GraphLink.vue';
@@ -577,8 +577,8 @@
                         : 50
                     let height = width * media.Setting.Base.scaleX
                     return {
-                        x: (this.lastViewPoint.x - (this.viewPoint.x - baseX) * this.realScale) - width / 2,
-                        y: (this.lastViewPoint.y - (this.viewPoint.y - baseY) * this.realScale) - height / 2,
+                        x: (this.lastViewPoint.x - (this.viewPoint.x - baseX) * this.realScale),
+                        y: (this.lastViewPoint.y - (this.viewPoint.y - baseY) * this.realScale),
                         width,
                         height
                     } as AreaRect
@@ -969,8 +969,8 @@
                     ? delta = 10
                     : delta = -10;
                 this.scale += delta;
-                this.scale < 25 && (this.scale = 25);
-                this.scale > 300 && (this.scale = 300);
+                this.scale < 20 && (this.scale = 20);
+                this.scale > 500 && (this.scale = 500);
                 let eventLocation = {
                     x: $event.clientX - this.container.start.x,
                     y: $event.clientY - this.container.start.y
@@ -1034,7 +1034,7 @@
         },
         created() {
             this.updateCardLoc();
-            this.getLabelViewDict()
+            this.getLabelViewDict();
         },
         record: {
             status: 'empty'

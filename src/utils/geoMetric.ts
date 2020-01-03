@@ -166,12 +166,13 @@ export const checkInRect = (rect: AreaRect, point: Point) => {
 
 export const transformBorderToRect = (rect: AreaRect, border: number) => {
     let {x, y, width, height} = rect;
+    let inner = 4;
     let result: Record<BorderType, AreaRect> = {
-        'left': {x: 0, y: border, width: border, height},
-        'right': {x: width + border, y: border, width: border, height},
-        'top': {x: 0, y: 0, width: width + 2 * border, height: border},
-        'bottom': {x: 0, y: height + border, width: width + border, height: border},
-        'proportion': {x: width + border, width: border, y: height + border, height: border}
+        'left': {x: inner, y: border, width: border, height},
+        'right': {x: width + border - inner, y: border, width: border, height},
+        'top': {x: inner, y: inner, width: width + 2 * border - 2 * inner, height: border},
+        'bottom': {x: inner, y: height + border - inner, width: width + border, height: border},
+        'proportion': {x: width + border - inner, width: border, y: height + border - inner, height: border}
     };
     return result
 };

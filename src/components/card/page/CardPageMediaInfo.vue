@@ -8,10 +8,10 @@
         tile
         outlined
     >
-        <media-viewer :media="media" :width="width">
+        <media-viewer :media="media" :width="width" :height="height">
             <template v-slot:button-group>
                 <icon-group
-                    v-if="height >= 150"
+                    v-if="height >= 100"
                     :icon-list="iconList"
                     :container-style="buttonGroupStyle"
                     :color="'white'"
@@ -200,7 +200,7 @@
                 }
             },
             showText: function () {
-                return this.height >= 120
+                return this.height >= 100
             },
             //能够删除 在画布中删除是从画布中删除 在节点中删除是从节点删除
 

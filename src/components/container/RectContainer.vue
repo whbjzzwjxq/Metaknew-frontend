@@ -1,5 +1,10 @@
 <template>
     <div :style="containerStyle">
+        <div :style="rectStyle">
+            <slot name="content">
+
+            </slot>
+        </div>
         <div
             v-for="(border, name) in borderStyleList"
             :key="name"
@@ -11,17 +16,12 @@
             class="border">
 
         </div>
-        <div :style="rectStyle">
-            <slot name="content">
-
-            </slot>
-        </div>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {AreaRect, pointDecrease, getDivCSS, Point, transformBorderToRect} from "@/utils/geoMetric";
+    import {AreaRect, pointDecrease, getDivCSS, Point, transformBorderToRect, updatePoint} from "@/utils/geoMetric";
     import * as CSS from 'csstype'
 
     export default Vue.extend({
@@ -31,7 +31,7 @@
             return {
                 isLock: false,
                 isScaling: false,
-                start: {
+                resizeStartPoint: {
                     x: 0,
                     y: 0,
                 } as Point,
@@ -90,7 +90,7 @@
                 Object.entries(this.borderList).map(([name, border]) => {
                     result[name] = getDivCSS(border, {});
                     if (name === 'proportion') {
-                        result[name] = getDivCSS(border, {backgroundColor: '#CCCCCC', cursor: "nw-resize"})
+                        result[name] = getDivCSS(border, {backgroundColor: '#cc717e', cursor: "nw-resize", opacity: '50%'})
                     } else {
                         if (['left', 'right'].includes(name)) {
                             result[name].cursor = 'e-resize'
@@ -106,15 +106,14 @@
             startScale: function ($event: MouseEvent, name: string) {
                 if (this.expandAble) {
                     this.isScaling = true;
-                    let {x, y} = $event;
-                    this.start = {x, y};
                     this.scaleName = name;
+                    updatePoint(this.resizeStartPoint, $event);
                 }
             },
 
             scaling: function ($event: MouseEvent) {
                 if (this.isScaling) {
-                    let delta = pointDecrease($event, this.start);
+                    let delta = pointDecrease($event, this.resizeStartPoint);
                     if (['left', 'right'].includes(this.scaleName)) {
                         delta.y = 0
                     } else if (['top', 'bottom'].includes(this.scaleName)) {
@@ -122,7 +121,8 @@
                     } else {
                         delta.y = this.container.height / this.container.width
                     }
-                    this.$emit('update-size', delta, this.scaleName)
+                    this.$emit('update-size', delta, this.scaleName);
+                    updatePoint(this.resizeStartPoint, $event);
                 }
             },
 

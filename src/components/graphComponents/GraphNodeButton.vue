@@ -4,7 +4,7 @@
         :icon-list="buttonGroup"
         vertical
         x-small
-        :hide="!node.State.isMouseOn">
+        :hide="!node.State.isMouseOn && node.Setting.Show.showAll">
 
     </icon-group>
 </template>
@@ -58,7 +58,7 @@
                 return this.$store.state.dataManager
             },
             boundGraph: function () {
-                return this.dataManager.graphManager[this.node.Setting._id]
+                return this.dataManager.graphManager[this.node.parent.id]
             },
             buttonGroup: function (): IconItem[] {
                 // 是否可以删除
