@@ -135,7 +135,7 @@ export function nodeLabelToProp(pLabel: string) {
 }
 
 export const availableLabel = Object.keys(nodePropType)
-    .filter(label => label !== 'link' && label !== 'DocGraph');
+    .filter(label => label !== 'DocGraph');
 
 export const topicItems = {
     recommend: ['Architecture', 'History', 'Modernism']

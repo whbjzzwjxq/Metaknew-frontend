@@ -267,7 +267,7 @@ const linkSetting: SettingConf = {
         },
         endLoc: {
             type: 'String',
-            default: 'center',
+            default: 'top',
             range: ['top', 'bottom', 'left', 'right', 'center'],
             tips: '终点节点的位置',
             required: null,
@@ -301,7 +301,7 @@ const linkSetting: SettingConf = {
         },
         showArrow: {
             type: 'Boolean',
-            default: false,
+            default: true,
             range: '',
             tips: '',
             required: null,

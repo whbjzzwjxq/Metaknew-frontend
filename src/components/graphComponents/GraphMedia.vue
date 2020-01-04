@@ -1,6 +1,7 @@
 <template>
     <rect-container
         :container="container"
+        :is-selected="setting.State.isSelected"
         expand-able
         @update-size="updateSizeByBorder"
     >

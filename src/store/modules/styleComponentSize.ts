@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import {AreaRect, RectByPoint} from "@/utils/geoMetric";
+import {commitViewBoxResize} from "@/store/modules/_mutations";
 
 export interface ComponentSize {
     width: number | string,
@@ -13,7 +14,8 @@ interface LeftCard extends ComponentSize {
 }
 
 interface BottomBar extends ComponentSize {
-    height: number
+    height: number,
+    width: string
 }
 
 export interface ToolBar extends ComponentSize {
@@ -35,12 +37,12 @@ const state: StyleManagerState = {
         height: 48
     },
     leftCard: {
-        width: 400,
+        width: 360,
         height: '100%'
     },
     bottomBar: {
         width: '100%',
-        height: 48
+        height: 90
     },
     screenX: document.documentElement.clientWidth,
     screenY: document.documentElement.clientHeight,
@@ -51,13 +53,22 @@ const mutations = {
     resetScreen: (state: StyleManagerState) => {
         state.screenX = document.documentElement.clientWidth;
         state.screenY = document.documentElement.clientHeight;
-        state.viewBox.start = {x: state.leftCard.width, y: state.toolBar.height};
-        state.viewBox.end = {x: state.screenX, y: state.screenY}
+        commitViewBoxResize();
     },
 
     resetLeftCard: (state: StyleManagerState, payload: number) => {
-        Vue.set(state.leftCard, 'width', payload)
+        Vue.set(state.leftCard, 'width', payload);
+        commitViewBoxResize();
+    },
+
+    resetBottomBar: (state: StyleManagerState, payload: number) => {
+        Vue.set(state.bottomBar, 'height', payload);
+    },
+    getViewBox: (state: StyleManagerState) => {
+        state.viewBox.start = {x: state.leftCard.width, y: state.toolBar.height};
+        state.viewBox.end = {x: state.screenX, y: state.screenY}
     }
+
 };
 const actions = {};
 const getters = {};

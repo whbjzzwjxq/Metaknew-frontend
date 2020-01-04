@@ -1,10 +1,11 @@
 <template>
   <v-autocomplete
-    label="PrimaryLabel Select"
-    :value="label"
-    @input="choosePrimaryLabel"
-    :items="availableLabel"
-    autofocus>
+      :items="availableLabel"
+      :value="label"
+      @input="choosePrimaryLabel"
+      autofocus
+      persistent-hint
+      label="PrimaryLabel Select">
 
   </v-autocomplete>
 </template>
@@ -30,7 +31,7 @@
         computed: {},
         methods: {
             choosePrimaryLabel($event: string) {
-                this.$emit("update:label", $event)
+                this.$emit("update-label", $event)
             }
         },
         watch: {},

@@ -78,9 +78,9 @@
 <script lang="ts">
     import Vue from 'vue'
     import VueCropper from '../../node_modules/vue-cropper/src/vue-cropper.vue'
-    import FileResolver from "@/components/MediaResolver.vue";
+    import FileResolver from "@/components/media/MediaResolver.vue";
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
-    import MediaGrids from "@/components/MediaGrids.vue";
+    import MediaGrids from "@/components/media/MediaGrids.vue";
     import {getSrc, guid} from "@/utils/utils";
     import {MediaInfoPart} from '@/utils/graphClass'
     import {dispatchUploadFile} from "@/store/modules/_dispatch";

@@ -1,25 +1,31 @@
 <template>
-    <div v-if="!loading" :style="viewBoxStyle">
-        <graph-view-box
-            :document="document"
-            :container="viewBox"
-            render-selector
-            render-label-selector
-            render-media>
+    <div>
+        <div v-if="!loading" :style="viewBoxStyle">
+            <graph-view-box
+                :document="document"
+                :container="viewBox"
+                render-selector
+                render-label-selector
+                render-media>
 
-        </graph-view-box>
-        <result-doc-graph-toolbar-edit
-            :document="document"
-            v-if="editMode"
-            @add-note="newNote"
-            @add-empty-node="newNode('node', arguments[0])"
-            @add-link="newLink(arguments[0], arguments[1])"
-            @save-doc="saveDocument(arguments[0], false)">
+            </graph-view-box>
+        </div>
+        <toolbar-bottom>
+            <template v-slot:subTool>
+                <div style="width: 100%; height: 100%" class="d-flex flex-row">
+                    <div style="width: 80px; height: 100%">
 
-        </result-doc-graph-toolbar-edit>
-        <result-doc-graph-toolbar v-else>
-
-        </result-doc-graph-toolbar>
+                    </div>
+                    <v-col cols="2" class="pa-0 ma-0">
+                        <sub-tool-new-item
+                            @add-empty-node="newNode('node', arguments[0])"
+                            @add-media="addMedia"
+                        >
+                        </sub-tool-new-item>
+                    </v-col>
+                </div>
+            </template>
+        </toolbar-bottom>
     </div>
 </template>
 
@@ -30,24 +36,26 @@
     import {RectByPoint} from "@/utils/geoMetric";
     import {
         getIndex,
-        GraphSelfPart,
-        LinkInfoPart, LinkSettingPart, MediaInfoPart, MediaSettingPart,
+        GraphSelfPart, id,
+        LinkInfoPart,
+        LinkSettingPart,
         NodeInfoPart,
         NodeSettingPart,
-        VisualNodeSettingPart
+        VisualNodeSettingPart,
+        MediaSettingPart
     } from "@/utils/graphClass";
     import {DataManagerState} from "@/store/modules/dataManager";
     import {commitGraphAdd, commitGraphChange, commitInfoAdd} from "@/store/modules/_mutations";
-    import ResultDocGraphToolbarEdit from "@/views/result/ResultDocGraphToolbarEdit.vue";
-    import ResultDocGraphToolbar from "@/views/result/ResultDocGraphToolbar.vue";
     import * as CSS from "csstype";
+    import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
+    import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
 
     export default Vue.extend({
         name: "ResultDocGraph",
         components: {
             GraphViewBox,
-            ResultDocGraphToolbar,
-            ResultDocGraphToolbarEdit
+            ToolbarBottom,
+            SubToolNewItem
         },
         data() {
             return {
@@ -104,6 +112,13 @@
             newNote() {
 
             },
+
+            addMedia: function (mediaIdList: id[]) {
+                let mediaSettingList = mediaIdList.map(id => this.dataManager.mediaManager[id])
+                    .map(info => MediaSettingPart.emptyMediaSettingFromInfo(info, this.document));
+                this.document.addItems(mediaSettingList)
+            },
+
             saveDocument() {
 
             }
@@ -147,7 +162,10 @@
 </script>
 
 <style scoped>
-
+    .empty {
+        height: 100%;
+        width: 12px;
+    }
 </style>
 
 /**

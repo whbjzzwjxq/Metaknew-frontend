@@ -62,7 +62,7 @@
 
 <script lang="ts">
     import Vue from "vue";
-    import MediaViewer from "../../MediaViewer.vue";
+    import MediaViewer from "../../media/MediaViewer.vue";
     import FieldText from "@/components/field/FieldText.vue";
     import TitleTextField from "@/components/TitleTextField.vue";
     import CardSubLabelGroup from '@/components/card/subComp/CardSubLabelGroup.vue';
@@ -227,7 +227,7 @@
                     {name: getIcon('i-resize', 'double'), _func: vm.double, render: vm.inViewBox},
                     {name: "", _func: vm.doNothing},
                     {name: "mdi-magnify", _func: vm.dialogWatch},
-                    {name: getIcon("i-chevron", vm.detailOn), _func: vm.changeDetail},
+                    {name: getIcon("i-collapse-arrow-double", vm.detailOn), _func: vm.changeDetail},
                     {name: "mdi-pencil", _func: vm.editSrc, render: vm.isSelf},
                     {name: "mdi-delete", _func: vm.deleteMedia, render: vm.isSelf || vm.showDeleteIcon},
                     {name: "mdi-arrow-right-bold-circle-outline", _func: vm.addMediaToGraph, render: vm.showExportIcon}

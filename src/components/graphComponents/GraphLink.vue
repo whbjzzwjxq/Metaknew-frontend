@@ -82,8 +82,8 @@
                 let x2 = target.x
                 let y2 = target.y
                 let distance = (Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)))
-                let sourceR = source.width
-                let targetR = target.width + this.arrowLength
+                let sourceR = (Math.sqrt(Math.pow(source.width, 2) + Math.pow(source.height, 2)))
+                let targetR = (Math.sqrt(Math.pow(target.width, 2) + Math.pow(target.height, 2)))
                 let xSourceDelta = sourceR / distance * Math.abs(x1 - x2)
                 let ySourceDelta = sourceR / distance * Math.abs(y1 - y2)
                 let xTargetDelta = targetR / distance * Math.abs(x1 - x2)

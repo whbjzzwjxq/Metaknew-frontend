@@ -2,7 +2,7 @@
     <div :style="totalCardStyle" class="cardItem">
         <v-tabs v-model="currentTab" fixed-tabs>
             <v-tabs-slider color="todo"></v-tabs-slider>
-            <v-tab v-for="(value, tab) in availableTabs" :key="tab">
+            <v-tab v-for="(value, tab) in availableTabs" :key="tab" class="pa-0">
                 <v-icon left> {{ value.icon }}</v-icon>
                 {{ tabTrans[tab][lang] }}
             </v-tab>

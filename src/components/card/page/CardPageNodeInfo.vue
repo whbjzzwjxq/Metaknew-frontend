@@ -351,12 +351,11 @@
                 return {}
             },
 
-            imageList() {
-                let vm = this;
-                return vm.isSimplify
+            imageList: function() {
+                return this.isSimplify
                     ? []
-                    : vm.info.IncludedMedia.map(id => {
-                        let media = vm.dataManager.mediaManager[id];
+                    : this.info.IncludedMedia.map(id => {
+                        let media = this.dataManager.mediaManager[id];
                         if (media && media.Info.PrimaryLabel === 'image') {
                             return media as MediaInfoPart
                         } else {

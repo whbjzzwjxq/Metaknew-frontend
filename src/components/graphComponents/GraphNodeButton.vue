@@ -68,6 +68,7 @@
                     : this.node.State.isDeleted
                     ? deleteIcon = 'rollback'
                     : deleteIcon = true;
+
                 // 是否可以爆炸
                 let explodeAble = this.boundGraph.id === this.dataManager.currentGraph.id;
 

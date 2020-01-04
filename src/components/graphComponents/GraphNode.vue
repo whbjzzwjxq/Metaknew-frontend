@@ -256,8 +256,8 @@
                 : vm.setting._name.length * 24,
 
             textHeight: vm => vm.setting.Text.twoLine
-                ? (vm.setting.Text.textSize + 5) * 2
-                : (vm.setting.Text.textSize + 5),
+                ? (vm.textSize + 5) * 2
+                : (vm.textSize + 5),
 
             textSize: vm => vm.setting.Text.textSize * vm.scale >= 10
                 ? vm.setting.Text.textSize * vm.scale

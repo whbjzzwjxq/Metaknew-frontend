@@ -51,16 +51,15 @@
                 default: false
             },
 
-            //是否渲染锁定Icon
-            renderIcon: {
-                type: Boolean as () => boolean,
-                default: false
-            },
-
             //拖动事件监听的宽度
             listenBorder: {
                 type: Number as () => number,
-                default: 8
+                default: 16
+            },
+
+            isSelected: {
+                type: Boolean as () => boolean,
+                default: false
             }
         },
         computed: {
@@ -88,9 +87,13 @@
             borderStyleList: function () {
                 let result: Record<string, CSS.Properties> = {};
                 Object.entries(this.borderList).map(([name, border]) => {
-                    result[name] = getDivCSS(border, {});
+                    result[name] = getDivCSS(border, {
+                        backgroundColor: 'grey',
+                        opacity: this.isSelected ? 0.3 : 0
+                    });
                     if (name === 'proportion') {
-                        result[name] = getDivCSS(border, {backgroundColor: '#cc717e', cursor: "nw-resize", opacity: '50%'})
+                        result[name] = getDivCSS(border, {
+                            backgroundColor: '#cc717e', cursor: "nw-resize", opacity: '50%'})
                     } else {
                         if (['left', 'right'].includes(name)) {
                             result[name].cursor = 'e-resize'

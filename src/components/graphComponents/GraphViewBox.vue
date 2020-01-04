@@ -634,6 +634,8 @@
             mediaSettingList(): VisualNodeSetting[] {
                 return this.medias.map((media, index) => {
                     let {x, y, width, height} = this.mediaLocation[index];
+                    let realX = x + width / 2;
+                    let realY = y + height / 2;
                     return {
                         height,
                         width,
@@ -688,8 +690,8 @@
             viewBoxToolStyle(): CSS.Properties {
                 return {
                     position: 'absolute',
-                    left: this.containerRect.width * 0.9 + 'px',
-                    top: this.containerRect.height * 0.75 + 'px',
+                    left: this.containerRect.width * 0.85 + 'px',
+                    top: this.containerRect.height * 0.65 + 'px',
                 }
             },
 
@@ -743,6 +745,7 @@
                 if (items === 'all') {
                     this.nodes.map(node => this.$set(node.State, 'isSelected', false));
                     this.links.map(link => this.$set(link.State, 'isSelected', false));
+                    this.medias.map(media => this.$set(media.State, 'isSelected', false));
                     this.$set(this.state, 'isSelected', false)
                 } else {
                     items.map(item => this.$set(item.State, 'isSelected', false));

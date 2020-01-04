@@ -1,5 +1,5 @@
 <template>
-    <div :style="toolbarStyle" class="d-flex">
+    <v-card :style="toolbarStyle" class="d-flex" tile flat outlined>
         <div class="empty"></div>
         <v-menu
             top offset-y
@@ -61,7 +61,8 @@
         <v-btn depressed outlined tile @click="saveDoc(false)">保存专题</v-btn>
         <div class="empty"></div>
         <v-btn depressed outlined tile @click="saveDoc(true)" :disabled="disableDraft">保存为草稿</v-btn>
-    </div>
+        <v-btn @click="collapse"></v-btn>
+    </v-card>
 </template>
 
 <script lang="ts">
@@ -71,6 +72,7 @@
     import {availableLabel} from "@/utils/labelField";
     import * as CSS from 'csstype'
     import {ComponentSize, StyleManagerState} from "@/store/modules/styleComponentSize";
+    import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
         name: "ResultDocGraphToolbarEdit",
@@ -111,9 +113,17 @@
             toolbarStyle(): CSS.Properties {
                 return {
                     position: "absolute",
-                    left: '100px',
-                    bottom: this.styleManager.bottomBar.height / 2 + 'px'
+                    left: this.styleManager.leftCard.width + 'px',
+                    bottom: 0,
+                    height: this.styleManager.bottomBar.height + 'px',
+                    width: this.styleManager.bottomBar.width,
+                    backgroundColor: 'white'
                 }
+            },
+            newContentItem: function () {
+                return [
+                    {name: 'node', icon: getIcon('i-item', 'node')}
+                ]
             }
         },
         methods: {
@@ -134,6 +144,9 @@
             },
             saveDoc(isDraft: boolean) {
                 this.$emit('save-doc', isDraft)
+            },
+            collapse() {
+                this.$store.commit('resetBottomBar', 0)
             }
         },
         watch: {},

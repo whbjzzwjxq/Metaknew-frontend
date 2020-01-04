@@ -34,6 +34,10 @@ export const commitScreenResize = () => {
     return store.commit('resetScreen')
 };
 
+export const commitViewBoxResize = () => {
+    return store.commit('getViewBox')
+};
+
 export const commitItemChange = (payload: InfoPart) => {
     return store.commit('currentItemChange', payload)
 };

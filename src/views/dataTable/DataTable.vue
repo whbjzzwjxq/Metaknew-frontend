@@ -13,7 +13,7 @@
                 </div>
             </v-col>
             <v-col cols="3">
-                <p-label-selector :label="pLabel" @update:label="choosePrimaryLabel"></p-label-selector>
+                <p-label-selector :label="pLabel" @update-label="choosePrimaryLabel"></p-label-selector>
             </v-col>
             <v-col class="col-xl-6 col-md-5 col-sm-5">
                 <v-text-field

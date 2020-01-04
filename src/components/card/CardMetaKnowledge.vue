@@ -1,9 +1,9 @@
 <template>
     <v-card width="width" height="100%" flat tile>
-        <v-card-text class="pa-2 pl-3 pt-0">
-            <v-tabs v-model="currentTab" fixed-tabs height="36px" color="grey">
+        <v-card-text class="pa-0">
+            <v-tabs v-model="currentTab" grow height="36px" color="grey">
                 <v-tabs-slider class="subTab"></v-tabs-slider>
-                <v-tab v-for="(value, tab) in availableTabs" :key="tab">
+                <v-tab v-for="(value, tab) in availableTabs" :key="tab" class="pa-0">
                     <v-icon left small> {{ value.icon }}</v-icon>
                     {{ tabTrans[tab][lang] }}
                 </v-tab>

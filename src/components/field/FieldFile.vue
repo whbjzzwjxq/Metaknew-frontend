@@ -43,7 +43,7 @@
                             <v-edit-dialog>
                                 <v-icon small>mdi-pencil</v-icon>
                                 <template v-slot:input>
-                                    <card-page-media-info :file="file" edit-base>
+                                    <card-page-media-info :media="file" edit-base>
 
                                     </card-page-media-info>
                                 </template>
@@ -85,7 +85,7 @@
                                 <v-icon small>mdi-pencil</v-icon>
                                 <template v-slot:input>
                                     <card-page-media-info
-                                        :file="file"
+                                        :media="file"
                                         edit-base>
 
                                     </card-page-media-info>
@@ -109,7 +109,6 @@
                 </tbody>
             </v-simple-table>
         </v-card-text>
-
     </v-card>
 </template>
 
@@ -117,7 +116,7 @@
     import Vue from 'vue'
     import {guid} from '@/utils/utils'
     import CardPageMediaInfo from '../card/page/CardPageMediaInfo.vue';
-    import MediaResolver from '../MediaResolver.vue';
+    import MediaResolver from '../media/MediaResolver.vue';
     import {FileToken} from '@/api/user'
     import {id, MediaInfoPart} from '@/utils/graphClass'
     import {commitInfoAdd} from '@/store/modules/_mutations'

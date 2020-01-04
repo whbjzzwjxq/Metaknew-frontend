@@ -1,8 +1,8 @@
 export type IconGroup =
-    'i-star' | 'i-good' | 'i-bad' | 'i-chevron' |
+    'i-star' | 'i-good' | 'i-bad' | 'i-collapse-arrow-double' |
     'i-edit-able' | 'i-edit' | 'i-delete' | 'i-explode' |
     'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
-    'i-resize'
+    'i-resize' | 'i-item' | 'i-get-media-type'
 
 export type IconAlias = 'i-show'
 
@@ -18,10 +18,6 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     'i-bad': {
         true: 'mdi-thumb-down',
         false: 'mdi-thumb-down-outline'
-    },
-    'i-chevron': {
-        true: 'mdi-chevron-double-up',
-        false: 'mdi-chevron-double-down'
     },
     'i-edit-able': {
         true: 'mdi-pencil',
@@ -65,6 +61,10 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         true: 'mdi-chevron-up',
         false: 'mdi-chevron-down'
     },
+    'i-collapse-arrow-double': {
+        true: 'mdi-chevron-double-up',
+        false: 'mdi-chevron-double-down'
+    },
     'i-knowledge-level': {
         eco: 'mdi-earth',
         document: 'mdi-google-circles-communities',
@@ -77,7 +77,21 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         three: 'mdi-numeric-3-box',
         two: 'mdi-numeric-2-box',
         double: 'mdi-plus-box-multiple'
-    }
+    },
+    'i-item': {
+        node: 'mdi-cube-outline',
+        link: 'mdi-arrow-top-right',
+        note: 'mdi-note-text',
+        media: 'mdi-image',
+        document: "mdi-google-circles-communities",
+        DocGraph: 'mdi-graph-outline',
+        path: 'mdi-map-marker-path',
+    },
+    'i-get-media-type': {
+        upload: 'mdi-upload',
+        fromCloud: 'mdi-cloud-search',
+        fromWeb: 'mdi-web'
+    },
 
 };
 
