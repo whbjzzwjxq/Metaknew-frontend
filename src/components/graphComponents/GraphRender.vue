@@ -82,7 +82,7 @@
         NodeSettingPart,
         SettingPart, VisualNodeSettingPart
     } from "@/utils/graphClass";
-    import {pointAdd, AreaRect, pointDecrease, Point, RectByPoint, updatePoint} from "@/utils/geoMetric";
+    import {pointAdd, AreaRect, pointDecrease, Point, RectByPoint, pointUpdate} from "@/utils/geoMetric";
     import {DataManagerState} from "@/store/modules/dataManager";
     import * as CSS from "csstype";
     import {LabelViewDict, VisualNodeSetting} from "@/utils/interfaceInComponent";
@@ -393,7 +393,7 @@
         methods: {
             dragStart($event: MouseEvent) {
                 if (this.dragAble) {
-                    updatePoint(this.dragStartPoint, $event);
+                    pointUpdate(this.dragStartPoint, $event);
                     this.isDragging = true;
                 }
             },
@@ -442,8 +442,8 @@
                 if (this.renderSelector) {
                     this.$set(this, 'isSelecting', true);
                     let start = pointDecrease($event, this.baseRect, this.viewBox.start);
-                    updatePoint(this.selectRect.start, start);
-                    updatePoint(this.selectRect.end, start);
+                    pointUpdate(this.selectRect.start, start);
+                    pointUpdate(this.selectRect.end, start);
                 }
             },
 
@@ -451,7 +451,7 @@
                 let end = pointDecrease($event, this.baseRect, this.viewBox.start);
                 //选择集
                 if (this.isSelecting && this.renderSelector) {
-                    updatePoint(this.selectRect.end, end)
+                    pointUpdate(this.selectRect.end, end)
                 }
             },
 

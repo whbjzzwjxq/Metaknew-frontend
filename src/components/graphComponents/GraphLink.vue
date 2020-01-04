@@ -8,7 +8,7 @@
                     :markerHeight="this.arrowLength"
                     orient="auto"
                     markerUnits="userSpaceOnUse"
-                    :viewBox="arrowViewBox">
+                    :viewBox="arrowContainer">
                 <path :d="arrowPathD"
                       :fill="this.setting.Base.color"
                       :fill-opacity="0.8"
@@ -40,105 +40,114 @@
     </g>
 </template>
 
-<script lang="js">
-    export default {
+<script lang="ts">
+    import Vue from 'vue'
+    import * as CSS from 'csstype'
+    import {LinkSettingPart} from "@/utils/graphClass";
+    import {VisualNodeSetting} from "@/utils/interfaceInComponent";
+    import {Point, pointDecrease, pointDistance, pointFunction, rectDiagonalDistance} from "@/utils/geoMetric";
+
+    export default Vue.extend({
         name: 'GraphLink',
-        data () {
-            return {
-                setting: this.link.Setting,
-            }
+        data() {
+            return {}
         },
         props: {
             link: {
-                type: Object,
+                type: Object as () => LinkSettingPart,
                 required: true
             },
             source: {
-                type: Object,
+                type: Object as () => VisualNodeSetting,
                 required: true
             },
             target: {
-                type: Object,
+                type: Object as () => VisualNodeSetting,
                 required: true
             },
 
             scale: {
-                type: Number,
+                type: Number as () => number,
                 required: true
             },
 
             midLocation: {
-                type: Object,
+                type: Object as () => Point,
                 required: true
             }
-
         },
         computed: {
-            draw () {
-                let source = this.source
-                let target = this.target
-                let x1 = source.x
-                let y1 = source.y
-                let x2 = target.x
-                let y2 = target.y
-                let distance = (Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)))
-                let sourceR = (Math.sqrt(Math.pow(source.width, 2) + Math.pow(source.height, 2)))
-                let targetR = (Math.sqrt(Math.pow(target.width, 2) + Math.pow(target.height, 2)))
-                let xSourceDelta = sourceR / distance * Math.abs(x1 - x2)
-                let ySourceDelta = sourceR / distance * Math.abs(y1 - y2)
-                let xTargetDelta = targetR / distance * Math.abs(x1 - x2)
-                let yTargetDelta = targetR / distance * Math.abs(y1 - y2)
+            setting: function () {
+                return this.link.Setting
+            },
+            draw: function () {
+                let source = this.source;
+                let target = this.target;
+                let x1 = source.x;
+                let y1 = source.y;
+                let x2 = target.x;
+                let y2 = target.y;
+                let distance = pointDistance(source, target);
+                let sourceR = rectDiagonalDistance(source);
+                let targetR = rectDiagonalDistance(target);
+
+                let xSourceDelta = sourceR / distance * Math.abs(x1 - x2);
+                let ySourceDelta = sourceR / distance * Math.abs(y1 - y2);
+                let xTargetDelta = targetR / distance * Math.abs(x1 - x2);
+                let yTargetDelta = targetR / distance * Math.abs(y1 - y2);
                 let result = {
                     'x1': 0, 'y1': 0, 'x2': 0, 'y2': 0
-                }
+                };
                 switch (this.setting.Base.startLoc) {
                     case 'top':
-                        result.x1 = source.x
-                        result.y1 = source.y - source.height
-                        break
+                        result.x1 = source.x;
+                        result.y1 = source.y - source.height;
+                        break;
                     case 'bottom':
-                        result.x1 = source.x
-                        result.y1 = source.y + source.height
-                        break
+                        result.x1 = source.x;
+                        result.y1 = source.y + source.height;
+                        break;
                     case 'left':
-                        result.x1 = source.x - source.width
-                        result.y1 = source.y
-                        break
+                        result.x1 = source.x - source.width;
+                        result.y1 = source.y;
+                        break;
                     case 'right':
-                        result.x1 = source.x + source.width
-                        result.y1 = source.y
-                        break
+                        result.x1 = source.x + source.width;
+                        result.y1 = source.y;
+                        break;
                     case 'center':
-                        result.x1 = x1 < x2 ? x1 + xSourceDelta : x1 - xSourceDelta
+                        result.x1 = x1 < x2 ? x1 + xSourceDelta : x1 - xSourceDelta;
                         result.y1 = y1 < y2 ? y1 + ySourceDelta : y1 - ySourceDelta
                 }
                 switch (this.setting.Base.endLoc) {
                     case 'top':
-                        result.x2 = target.x
-                        result.y2 = target.y - target.height
-                        break
+                        result.x2 = target.x;
+                        result.y2 = target.y - target.height;
+                        break;
                     case 'bottom':
-                        result.x2 = target.x
-                        result.y2 = target.y + target.height
-                        break
+                        result.x2 = target.x;
+                        result.y2 = target.y + target.height;
+                        break;
                     case 'left':
-                        result.x2 = target.x - target.width
-                        result.y2 = target.y
-                        break
+                        result.x2 = target.x - target.width;
+                        result.y2 = target.y;
+                        break;
                     case 'right':
-                        result.x2 = target.x + target.width
-                        result.y2 = target.y
-                        break
+                        result.x2 = target.x + target.width;
+                        result.y2 = target.y;
+                        break;
                     case 'center':
-                        result.x2 = x1 < x2 ? x2 - xTargetDelta : x2 + xTargetDelta
+                        result.x2 = x1 < x2 ? x2 - xTargetDelta : x2 + xTargetDelta;
                         result.y2 = y1 < y2 ? y2 - yTargetDelta : y2 + yTargetDelta
                 }
                 return result
             },
 
-            isSelected: vm => vm.link.isSelected,
+            isSelected: function () {
+                return this.link.State.isSelected
+            },
 
-            drawStyle () {
+            drawStyle: function(): CSS.Properties {
                 return {
                     'stroke': this.setting.Base.color,
                     'stroke-width': this.setting.Base.width,
@@ -148,7 +157,8 @@
                     'opacity': 0.3,
                 }
             },
-            hoverStyle () {
+
+            hoverStyle: function(): CSS.Properties {
                 return {
                     'stroke': this.drawStyle.stroke,
                     'stroke-width': this.setting.Base.width + 12,
@@ -180,11 +190,11 @@
 
             arrowRefY: vm => vm.setting.Arrow.arrowLength * 0.2,
 
-            arrowViewBox: vm => '0 0 ' + vm.arrowLength + ' ' + vm.arrowLength,
+            arrowContainer: vm => '0 0 ' + vm.arrowLength + ' ' + vm.arrowLength,
 
-            arrowPathD () {
-                let L1 = 'L0,' + 0.4 * this.arrowLength + ' '
-                let L2 = 'L' + 0.7 * this.arrowLength + ',' + this.arrowRefY + ' '
+            arrowPathD: function() {
+                let L1 = 'L0,' + 0.4 * this.arrowLength + ' ';
+                let L2 = 'L' + 0.7 * this.arrowLength + ',' + this.arrowRefY + ' ';
                 return 'M0,0 ' + L1 + L2 + 'z'
             },
             curvePath: vm => [
@@ -198,7 +208,7 @@
                 'L', vm.draw.x2, vm.draw.y2
             ].join(' '),
 
-            textStyle () {
+            textStyle: function(): CSS.Properties {
                 return {
                     '-moz-user-select': 'none',
                     'user-select': 'none',
@@ -215,8 +225,11 @@
             type: vm => vm.link.Setting.Base.type,
 
         },
-        methods: {}
-    }
+        methods: {},
+        record: {
+            status: 'done-old'
+        }
+    })
 </script>
 
 <style scoped>

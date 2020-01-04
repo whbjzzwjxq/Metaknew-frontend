@@ -190,7 +190,7 @@
         VisualNodeSettingPart
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
-    import {pointAdd, AreaRect, pointDecrease, Point, RectByPoint, updatePoint, pointMultiple} from '@/utils/geoMetric'
+    import {pointAdd, AreaRect, pointDecrease, Point, RectByPoint, pointUpdate, pointMultiple} from '@/utils/geoMetric'
     import * as CSS from 'csstype'
     import GraphNode from './GraphNode.vue';
     import GraphLink from './GraphLink.vue';
@@ -568,7 +568,7 @@
                 })
             },
 
-            mediaLocation(): AreaRect[] {
+            mediaLocation: function() {
                 return this.medias.map(media => {
                     let baseX = media.Setting.Base.x * this.containerRect.width
                     let baseY = media.Setting.Base.y * this.containerRect.height
@@ -695,7 +695,7 @@
                 }
             },
 
-            selector(): AreaRect {
+            selector: function() {
                 return this.selectRect.getPositiveRect()
             },
 
@@ -703,7 +703,7 @@
         methods: {
             dragStart($event: MouseEvent) {
                 if (this.dragAble) {
-                    updatePoint(this.dragStartPoint, $event);
+                    pointUpdate(this.dragStartPoint, $event);
                     this.isDragging = true;
                 }
             },
@@ -875,13 +875,13 @@
             startSelect($event: MouseEvent) {
                 if ($event.ctrlKey) {
                     this.isMoving = true;
-                    updatePoint(this.moveStartPoint, $event)
+                    pointUpdate(this.moveStartPoint, $event)
                 } else {
                     if (this.renderSelector) {
                         this.$set(this, 'isSelecting', true);
                         let start = pointDecrease($event, this.containerRect)
-                        updatePoint(this.selectRect.start, start);
-                        updatePoint(this.selectRect.end, start);
+                        pointUpdate(this.selectRect.start, start);
+                        pointUpdate(this.selectRect.end, start);
                     }
                 }
             },
@@ -892,15 +892,15 @@
                 if ($event.ctrlKey && this.isMoving) {
                     let x = this.lastViewPoint.x + $event.x - this.moveStartPoint.x;
                     let y = this.lastViewPoint.y + $event.y - this.moveStartPoint.y;
-                    updatePoint(this.lastViewPoint, {x, y});
-                    updatePoint(this.moveStartPoint, $event)
+                    pointUpdate(this.lastViewPoint, {x, y});
+                    pointUpdate(this.moveStartPoint, $event)
                 } else {
                     if (this.isSelecting && this.renderSelector) {
-                        updatePoint(this.selectRect.end, end)
+                        pointUpdate(this.selectRect.end, end)
                     }
                     //移动
                     if (this.isLinking) {
-                        updatePoint(this.newLinkEndPoint, end)
+                        pointUpdate(this.newLinkEndPoint, end)
                     }
                 }
             },
@@ -980,8 +980,8 @@
                 }
                 let x = this.viewPoint.x + (eventLocation.x - this.lastViewPoint.x) / oldScale;
                 let y = this.viewPoint.y + (eventLocation.y - this.lastViewPoint.y) / oldScale;
-                updatePoint(this.viewPoint, {x, y});
-                updatePoint(this.lastViewPoint, {x: eventLocation.x, y: eventLocation.y});
+                pointUpdate(this.viewPoint, {x, y});
+                pointUpdate(this.lastViewPoint, {x: eventLocation.x, y: eventLocation.y});
             },
 
             explode(node: NodeSettingPart) {

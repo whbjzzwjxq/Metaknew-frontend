@@ -11,8 +11,6 @@ export interface AreaRect extends Point {
     y: number,
     width: number,
     height: number,
-
-    [props: string]: number
 }
 
 export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
@@ -24,7 +22,7 @@ export class RectByPoint {
     }
 
     set start(payload) {
-        updatePoint(this._start, payload)
+        pointUpdate(this._start, payload)
     }
 
     protected _end: Point;
@@ -33,7 +31,7 @@ export class RectByPoint {
     }
 
     set end(payload) {
-        updatePoint(this._end, payload)
+        pointUpdate(this._end, payload)
     }
 
     border ?: number;
@@ -98,7 +96,7 @@ export class RectByPoint {
     }
 }
 
-export const updatePoint = (point: Point, payload: Point) => {
+export const pointUpdate = (point: Point, payload: Point) => {
     Vue.set(point, 'x', payload.x);
     Vue.set(point, 'y', payload.y)
 };
@@ -140,9 +138,21 @@ export const pointMultiple = (point: Point, ...rest: number[]) => {
         delta *= num
     });
     return {
-       x: point.x * delta,
-       y: point.y * delta
+        x: point.x * delta,
+        y: point.y * delta
     }
+};
+
+export const pointDistance = (pointA: Point, pointB: Point) => {
+    return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) + Math.pow(pointA.y - pointB.y, 2))
+};
+
+export const rectDiagonalDistance = (rect: AreaRect) => {
+    return Math.sqrt(Math.pow(rect.width, 2) + Math.pow(rect.height, 2))
+};
+
+export const pointFunction = (point: Point, _func: Function) => {
+    return {x: _func(point.y), y: _func(point.y)}
 };
 
 export const getDivCSS = (rect: AreaRect, css?: CSS.Properties) => {

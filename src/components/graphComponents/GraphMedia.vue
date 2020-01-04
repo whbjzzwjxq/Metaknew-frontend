@@ -24,7 +24,7 @@
     import * as CSS from "csstype";
     import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {AreaRect, Point, pointMultiple, pointNegative, updatePoint} from "@/utils/geoMetric";
+    import {AreaRect, Point, pointMultiple, pointNegative, pointUpdate} from "@/utils/geoMetric";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({

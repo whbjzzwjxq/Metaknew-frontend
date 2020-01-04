@@ -1,4 +1,5 @@
 import {FieldType, ResolveType} from "@/utils/labelField";
+import {AreaRect, Point} from "@/utils/geoMetric";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -41,7 +42,7 @@ export interface TabContent {
     name?: string | Record<string, string>
 }
 
-export interface VisualNodeSetting {
+export interface VisualNodeSetting extends AreaRect {
     height: number,
     width: number,
     x: number,

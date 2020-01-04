@@ -21,7 +21,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {AreaRect, pointDecrease, getDivCSS, Point, transformBorderToRect, updatePoint} from "@/utils/geoMetric";
+    import {AreaRect, pointDecrease, getDivCSS, Point, transformBorderToRect, pointUpdate} from "@/utils/geoMetric";
     import * as CSS from 'csstype'
 
     export default Vue.extend({
@@ -110,7 +110,7 @@
                 if (this.expandAble) {
                     this.isScaling = true;
                     this.scaleName = name;
-                    updatePoint(this.resizeStartPoint, $event);
+                    pointUpdate(this.resizeStartPoint, $event);
                 }
             },
 
@@ -125,7 +125,7 @@
                         delta.y = this.container.height / this.container.width
                     }
                     this.$emit('update-size', delta, this.scaleName);
-                    updatePoint(this.resizeStartPoint, $event);
+                    pointUpdate(this.resizeStartPoint, $event);
                 }
             },
 
