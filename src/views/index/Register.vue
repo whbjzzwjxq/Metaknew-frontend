@@ -14,15 +14,9 @@
         },
         props: {},
         computed: {},
-        methods: {
-            onResize() {
-                commitScreenResize()
-            }
-        },
+        methods: {},
         watch: {},
-        mounted() {
-            this.onResize()
-        },
+        mounted() {},
         record: {
             status: 'empty'
         }

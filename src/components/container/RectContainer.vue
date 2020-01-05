@@ -21,7 +21,15 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {AreaRect, pointDecrease, getDivCSS, Point, transformBorderToRect, pointUpdate} from "@/utils/geoMetric";
+    import {
+        AreaRect,
+        pointDecrease,
+        getDivCSS,
+        PointObject,
+        transformBorderToRect,
+        pointUpdate,
+        Point, getPoint
+    } from "@/utils/geoMetric";
     import * as CSS from 'csstype'
 
     export default Vue.extend({
@@ -31,10 +39,7 @@
             return {
                 isLock: false,
                 isScaling: false,
-                resizeStartPoint: {
-                    x: 0,
-                    y: 0,
-                } as Point,
+                resizeStartPoint: new Point(0, 0),
                 scaleName: ''
             }
         },
@@ -93,7 +98,8 @@
                     });
                     if (name === 'proportion') {
                         result[name] = getDivCSS(border, {
-                            backgroundColor: '#cc717e', cursor: "nw-resize", opacity: '50%'})
+                            backgroundColor: '#cc717e', cursor: "nw-resize", opacity: '50%'
+                        })
                     } else {
                         if (['left', 'right'].includes(name)) {
                             result[name].cursor = 'e-resize'
@@ -110,13 +116,13 @@
                 if (this.expandAble) {
                     this.isScaling = true;
                     this.scaleName = name;
-                    pointUpdate(this.resizeStartPoint, $event);
+                    this.resizeStartPoint.update($event)
                 }
             },
 
             scaling: function ($event: MouseEvent) {
                 if (this.isScaling) {
-                    let delta = pointDecrease($event, this.resizeStartPoint);
+                    let delta = getPoint($event).decrease(this.resizeStartPoint);
                     if (['left', 'right'].includes(this.scaleName)) {
                         delta.y = 0
                     } else if (['top', 'bottom'].includes(this.scaleName)) {
@@ -125,7 +131,7 @@
                         delta.y = this.container.height / this.container.width
                     }
                     this.$emit('update-size', delta, this.scaleName);
-                    pointUpdate(this.resizeStartPoint, $event);
+                    this.resizeStartPoint.update($event)
                 }
             },
 

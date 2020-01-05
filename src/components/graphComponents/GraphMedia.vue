@@ -24,7 +24,7 @@
     import * as CSS from "csstype";
     import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {AreaRect, Point, pointMultiple, pointNegative, pointUpdate} from "@/utils/geoMetric";
+    import {AreaRect, PointObject, pointMultiple, pointNegative, pointUpdate} from "@/utils/geoMetric";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({
@@ -81,7 +81,7 @@
             }
         },
         methods: {
-            updateSize(start: Point, size: Point) {
+            updateSize(start: PointObject, size: PointObject) {
                 // 更新尺寸
                 let startDelta = pointMultiple(start, 1 / this.scale);
                 let sizeDelta = pointMultiple(size, 1 / this.scale);
@@ -97,7 +97,7 @@
                 setting.Base.y += startDelta.y / this.containerRect.height;
             },
 
-            updateSizeByBorder(delta: Point, resizeType: string) {
+            updateSizeByBorder(delta: PointObject, resizeType: string) {
                 if (resizeType === 'bottom' || resizeType === 'right' || resizeType === 'proportion') {
                     this.updateSize({x: 0, y: 0}, delta)
                 } else {
