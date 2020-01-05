@@ -574,11 +574,13 @@
             mediaSettingList(): VisualNodeSetting[] {
                 return this.medias.map((media, index) => {
                     let {x, y, width, height} = this.mediaLocation[index].positiveRect();
+                    let realX = x + width / 2;
+                    let realY = y + height / 2;
                     return {
                         height,
                         width,
-                        x,
-                        y,
+                        x: realX,
+                        y: realY,
                         show: this.showMedia[index],
                         isSelected: media.State.isSelected,
                         isDeleted: media.State.isDeleted

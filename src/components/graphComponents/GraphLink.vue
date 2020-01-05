@@ -45,7 +45,7 @@
     import * as CSS from 'csstype'
     import {LinkSettingPart} from "@/utils/graphClass";
     import {VisualNodeSetting} from "@/utils/interfaceInComponent";
-    import {PointObject, getPointDistance, rectDiagonalDistance} from "@/utils/geoMetric";
+    import {PointObject, getPointDistance, rectDiagonalDistance, getPoint} from "@/utils/geoMetric";
 
     export default Vue.extend({
         name: 'GraphLink',
@@ -83,37 +83,37 @@
             draw: function () {
                 let source = this.source;
                 let target = this.target;
+                let distance = getPointDistance(source, target);
+                let sourceR = rectDiagonalDistance(source) / 2;
+                let targetR = rectDiagonalDistance(target) / 2;
                 let x1 = source.x;
                 let y1 = source.y;
                 let x2 = target.x;
                 let y2 = target.y;
-                let distance = getPointDistance(source, target);
-                let sourceR = rectDiagonalDistance(source);
-                let targetR = rectDiagonalDistance(target);
 
-                let xSourceDelta = sourceR / distance * Math.abs(x1 - x2);
-                let ySourceDelta = sourceR / distance * Math.abs(y1 - y2);
-                let xTargetDelta = targetR / distance * Math.abs(x1 - x2);
-                let yTargetDelta = targetR / distance * Math.abs(y1 - y2);
+                let xSourceDelta = (sourceR / distance) * Math.abs(x1 - x2);
+                let ySourceDelta = (sourceR / distance) * Math.abs(y1 - y2);
+                let xTargetDelta = (targetR / distance) * Math.abs(x1 - x2);
+                let yTargetDelta = (targetR / distance) * Math.abs(y1 - y2);
                 let result = {
                     'x1': 0, 'y1': 0, 'x2': 0, 'y2': 0
                 };
                 switch (this.setting.Base.startLoc) {
                     case 'top':
-                        result.x1 = source.x;
-                        result.y1 = source.y - source.height;
+                        result.x1 = x1;
+                        result.y1 = y1 - source.height / 2;
                         break;
                     case 'bottom':
-                        result.x1 = source.x;
-                        result.y1 = source.y + source.height;
+                        result.x1 = x1;
+                        result.y1 = y1 + source.height / 2;
                         break;
                     case 'left':
-                        result.x1 = source.x - source.width;
-                        result.y1 = source.y;
+                        result.x1 = x1 - source.width / 2;
+                        result.y1 = y1;
                         break;
                     case 'right':
-                        result.x1 = source.x + source.width;
-                        result.y1 = source.y;
+                        result.x1 = x1 + source.width / 2;
+                        result.y1 = y1;
                         break;
                     case 'center':
                         result.x1 = x1 < x2 ? x1 + xSourceDelta : x1 - xSourceDelta;
@@ -121,20 +121,20 @@
                 }
                 switch (this.setting.Base.endLoc) {
                     case 'top':
-                        result.x2 = target.x;
-                        result.y2 = target.y - target.height;
+                        result.x2 = x2;
+                        result.y2 = y2 - target.height / 2;
                         break;
                     case 'bottom':
-                        result.x2 = target.x;
-                        result.y2 = target.y + target.height;
+                        result.x2 = x2;
+                        result.y2 = y2 + target.height / 2;
                         break;
                     case 'left':
-                        result.x2 = target.x - target.width;
-                        result.y2 = target.y;
+                        result.x2 = x2 - target.width / 2;
+                        result.y2 = y2;
                         break;
                     case 'right':
-                        result.x2 = target.x + target.width;
-                        result.y2 = target.y;
+                        result.x2 = x2 + target.width / 2;
+                        result.y2 = y2;
                         break;
                     case 'center':
                         result.x2 = x1 < x2 ? x2 - xTargetDelta : x2 + xTargetDelta;

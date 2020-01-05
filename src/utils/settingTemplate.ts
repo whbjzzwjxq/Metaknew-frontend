@@ -267,7 +267,7 @@ const linkSetting: SettingConf = {
         },
         endLoc: {
             type: 'String',
-            default: 'top',
+            default: 'center',
             range: ['top', 'bottom', 'left', 'right', 'center'],
             tips: '终点节点的位置',
             required: null,
