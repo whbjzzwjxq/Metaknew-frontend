@@ -1,15 +1,16 @@
 <template>
     <rect-container
-        :container="container"
+        :container="containerRect"
         :is-selected="setting.State.isSelected"
         expand-able
         @update-size="updateSizeByBorder"
+        class="media"
     >
         <template v-slot:content>
             <card-page-media-info
                 :media="mediaInfo"
-                :width="container.width"
-                :height="container.height"
+                :width="containerRect.width"
+                :height="containerRect.height"
                 @media-resize="updateSizeByNumber"
                 in-view-box
             >
@@ -24,7 +25,15 @@
     import * as CSS from "csstype";
     import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {AreaRect, Point, pointMultiple, pointNegative, pointUpdate} from "@/utils/geoMetric";
+    import {
+        AreaRect,
+        PointObject,
+        pointMultiple,
+        pointNegative,
+        pointUpdate,
+        Point,
+        RectByPoint
+    } from "@/utils/geoMetric";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({
@@ -45,7 +54,7 @@
 
             //范围框
             container: {
-                type: Object as () => AreaRect,
+                type: Object as () => RectByPoint,
                 required: true
             },
 
@@ -61,19 +70,22 @@
             },
 
             // GraphViewBox
-            containerRect: {
+            viewBox: {
                 type: Object as () => AreaRect,
                 required: true
             }
         },
         computed: {
+            containerRect: function (): AreaRect {
+                return this.container.positiveRect()
+            },
             containerStyle: function (): CSS.Properties {
                 return {
-                    'width': this.container.width + 'px',
-                    'height': this.container.height + 'px',
+                    'width': this.containerRect.width + 'px',
+                    'height': this.containerRect.height + 'px',
                     'position': 'absolute',
-                    'left': this.container.x + 'px',
-                    'top': this.container.y + 'px',
+                    'left': this.containerRect.x + 'px',
+                    'top': this.containerRect.y + 'px',
                 }
             },
             mediaInfo: function (): MediaInfoPart {
@@ -81,35 +93,38 @@
             }
         },
         methods: {
-            updateSize(start: Point, size: Point) {
-                // 更新尺寸
-                let startDelta = pointMultiple(start, 1 / this.scale);
-                let sizeDelta = pointMultiple(size, 1 / this.scale);
+            updateSize(start: Point, end: Point) {
+                // 视觉上的更新尺寸start, end
                 let setting = this.setting.Setting;
+                let scale = this.scale;
+                // 更新起始点
+                setting.Base.x += start.x / (this.viewBox.width * scale);
+                setting.Base.y += start.y / (this.viewBox.height * scale);
+                //更新长宽
                 let width = setting.Base.size;
                 let height = setting.Base.scaleX * width;
-                width += sizeDelta.x;
-                height += sizeDelta.y;
+                let delta = end.copy().decrease(start).divide(this.scale);
+                width += delta.x;
+                height += delta.y;
                 setting.Base.scaleX = height / width;
                 setting.Base.size = width;
-                // 更新起始点
-                setting.Base.x += startDelta.x / this.containerRect.width;
-                setting.Base.y += startDelta.y / this.containerRect.height;
             },
 
             updateSizeByBorder(delta: Point, resizeType: string) {
-                if (resizeType === 'bottom' || resizeType === 'right' || resizeType === 'proportion') {
-                    this.updateSize({x: 0, y: 0}, delta)
+                if (['bottom', 'right', 'proportion'].includes(resizeType)) {
+                    this.updateSize(new Point(0, 0), delta)
                 } else {
-                    this.updateSize(delta, pointNegative(delta))
+                    this.updateSize(delta, new Point(0, 0))
                 }
             },
 
-            updateSizeByNumber: function (newWidth: number) {
-                let {width, height} = this.container;
+            updateSizeByNumber(newWidth: number): void {
+                let {width, height} = this.containerRect;
+                // 成比例更新
                 let x = newWidth - width;
-                let delta = {x, y: this.setting.Setting.Base.scaleX * newWidth - height};
-                this.updateSize(pointMultiple(delta, -0.5), delta)
+                let y = this.setting.Setting.Base.scaleX * newWidth - height;
+                let delta = new Point(x, y).multi(0.5);
+                this.updateSize(delta.copy().multi(-1), delta);
             }
         },
         watch: {},

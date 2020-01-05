@@ -45,7 +45,7 @@
     import * as CSS from 'csstype'
     import {LinkSettingPart} from "@/utils/graphClass";
     import {VisualNodeSetting} from "@/utils/interfaceInComponent";
-    import {Point, pointDecrease, pointDistance, pointFunction, rectDiagonalDistance} from "@/utils/geoMetric";
+    import {PointObject, pointDistance, rectDiagonalDistance} from "@/utils/geoMetric";
 
     export default Vue.extend({
         name: 'GraphLink',
@@ -72,7 +72,7 @@
             },
 
             midLocation: {
-                type: Object as () => Point,
+                type: Object as () => PointObject,
                 required: true
             }
         },

@@ -82,7 +82,7 @@
         NodeSettingPart,
         SettingPart, VisualNodeSettingPart
     } from "@/utils/graphClass";
-    import {pointAdd, AreaRect, pointDecrease, Point, RectByPoint, pointUpdate} from "@/utils/geoMetric";
+    import {pointAdd, AreaRect, pointDecrease, PointObject, RectByPoint, pointUpdate} from "@/utils/geoMetric";
     import {DataManagerState} from "@/store/modules/dataManager";
     import * as CSS from "csstype";
     import {LabelViewDict, VisualNodeSetting} from "@/utils/interfaceInComponent";
@@ -119,7 +119,7 @@
                 dragStartPoint: {
                     x: 0,
                     y: 0
-                } as Point,
+                } as PointObject,
 
                 // ------ link ------
                 isLinking: false,
@@ -127,7 +127,7 @@
                 newLinkEndPoint: {
                     x: 0,
                     y: 0
-                } as Point,
+                } as PointObject,
             }
         },
         props: {
@@ -277,7 +277,7 @@
             },
 
             //关系midX
-            midLocation(): Point[] {
+            midLocation(): PointObject[] {
                 return this.links.map(link => {
                     let result;
                     let x1 = this.getTargetInfo(link.Setting._start).x;
@@ -373,7 +373,7 @@
             },
 
             selector(): AreaRect {
-                return this.selectRect.getPositiveRect()
+                return this.selectRect.positiveRect()
             },
 
             //选择框的相关设置

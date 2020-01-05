@@ -1,5 +1,5 @@
 import {FieldType, ResolveType} from "@/utils/labelField";
-import {AreaRect, Point} from "@/utils/geoMetric";
+import {AreaRect, PointObject} from "@/utils/geoMetric";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 

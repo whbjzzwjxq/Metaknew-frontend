@@ -65,8 +65,8 @@ const mutations = {
         Vue.set(state.bottomBar, 'height', payload);
     },
     getViewBox: (state: StyleManagerState) => {
-        state.viewBox.start = {x: state.leftCard.width, y: state.toolBar.height};
-        state.viewBox.end = {x: state.screenX, y: state.screenY}
+        state.viewBox.start.update({x: state.leftCard.width, y: state.toolBar.height});
+        state.viewBox.end.update({x: state.screenX, y: state.screenY})
     }
 
 };

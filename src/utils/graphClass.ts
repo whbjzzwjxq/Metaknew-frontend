@@ -259,6 +259,8 @@ export interface NodeSetting extends Setting {
     _type: 'node' | 'document';
     _name: string;
     _image: string;
+    Base: Record<string, any>
+
 }
 
 export interface MediaSetting extends Setting {
