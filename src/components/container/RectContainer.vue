@@ -23,12 +23,10 @@
     import Vue from 'vue'
     import {
         AreaRect,
-        pointDecrease,
         getDivCSS,
-        PointObject,
         transformBorderToRect,
-        pointUpdate,
-        Point, getPoint
+        Point,
+        getPoint
     } from "@/utils/geoMetric";
     import * as CSS from 'csstype'
 
@@ -59,7 +57,7 @@
             //拖动事件监听的宽度
             listenBorder: {
                 type: Number as () => number,
-                default: 16
+                default: 8
             },
 
             isSelected: {

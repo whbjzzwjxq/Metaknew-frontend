@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import * as CSS from 'csstype'
 
 export interface PointObject {
@@ -49,6 +48,16 @@ export class Point {
         return this
     }
 
+    decreaseMulti(...rest: PointMixed[]) {
+        let delta = {x: 0, y: 0};
+        rest.map(point => {
+            delta.x += point.x;
+            delta.y += point.y
+        });
+        this.decrease(delta);
+        return this;
+    }
+
     equal(point: PointMixed) {
         return this.x === point.x && this.y === point.y
     }
@@ -89,11 +98,6 @@ export class Point {
 
     distance(point: PointMixed) {
         return Math.sqrt(Math.pow(this.x - point.x, 2) + Math.pow(this.y - point.y, 2))
-    }
-
-    commit() {
-        Vue.set(this, 'x', this.x);
-        Vue.set(this, 'y', this.y);
     }
 }
 
@@ -165,67 +169,16 @@ export class RectByPoint {
     }
 }
 
-export const pointUpdate = (point: PointObject, payload: PointObject) => {
-    Vue.set(point, 'x', payload.x);
-    Vue.set(point, 'y', payload.y)
-};
-
-export const pointAdd = (pointA: PointObject, ...rest: PointObject[]) => {
-    let delta = {x: 0, y: 0} as PointObject;
-    rest.map(point => {
-        delta.x += point.x;
-        delta.y += point.y
-    });
-    return {
-        x: pointA.x + delta.x,
-        y: pointA.y + delta.y
-    }
-};
-
-export const pointDecrease = (pointA: PointObject, ...rest: PointObject[]) => {
-    let delta = {x: 0, y: 0} as PointObject;
-    rest.map(point => {
-        delta.x += point.x;
-        delta.y += point.y
-    });
-    return {
-        x: pointA.x - delta.x,
-        y: pointA.y - delta.y
-    }
-};
-
-export const pointNegative = (point: PointObject) => {
-    return {
-        x: -point.x,
-        y: -point.y
-    }
-};
-
-export const pointMultiple = (point: PointObject, ...rest: number[]) => {
-    let delta = 1;
-    rest.map(num => {
-        delta *= num
-    });
-    return {
-        x: point.x * delta,
-        y: point.y * delta
-    }
-};
-
-export const pointDistance = (pointA: PointObject, pointB: PointObject) => {
-    return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) + Math.pow(pointA.y - pointB.y, 2))
-};
-
 export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
 
 export const transformBorderToRect = (rect: AreaRect, border: number) => {
     let {x, y, width, height} = rect;
-    let inner = 4;
+    let inner = 1;
     let result: Record<BorderType, AreaRect> = {
         'left': {x: inner, y: border, width: border, height},
         'right': {x: width + border - inner, y: border, width: border, height},
         'top': {x: inner, y: inner, width: width + 2 * border - 2 * inner, height: border},
-        'bottom': {x: inner, y: height + border - inner, width: width + border, height: border},
+        'bottom': {x: inner, y: height + border - inner, width: width + border - inner, height: border},
         'proportion': {x: width + border - inner, width: border, y: height + border - inner, height: border}
     };
     return result
@@ -255,6 +208,10 @@ export const getMidPoint = (pointA: PointMixed, pointB: PointMixed) => {
         x: (pointA.x + pointB.x) / 2,
         y: (pointA.y + pointB.y) / 2
     }
+};
+
+export const getPointDistance = (pointA: PointObject, pointB: PointObject) => {
+    return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) + Math.pow(pointA.y - pointB.y, 2))
 };
 
 export const rectDiagonalDistance = (rect: AreaRect) => {

@@ -71,7 +71,8 @@
                 :x="selector.x"
                 :y="selector.y"
                 :width="selector.width"
-                :height="selector.height">
+                :height="selector.height"
+                class="selectRect">
 
             </rect>
 
@@ -103,6 +104,7 @@
         >
 
         </graph-media>
+
         <graph-note
             v-show="renderNotes"
             v-for="(note, index) in activeNotes"
@@ -191,13 +193,9 @@
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
     import {
-        pointAdd,
         AreaRect,
-        pointDecrease,
         PointObject,
         RectByPoint,
-        pointUpdate,
-        pointMultiple,
         Point, getPoint
     } from '@/utils/geoMetric'
     import * as CSS from 'csstype'
@@ -576,8 +574,6 @@
             mediaSettingList(): VisualNodeSetting[] {
                 return this.medias.map((media, index) => {
                     let {x, y, width, height} = this.mediaLocation[index].positiveRect();
-                    let realX = x + width / 2;
-                    let realY = y + height / 2;
                     return {
                         height,
                         width,
@@ -620,12 +616,13 @@
             //选择框的相关设置
             selectorStyle(): CSS.Properties {
                 return {
+                    "position": "absolute",
                     "fill": "#000000",
                     "fillOpacity": this.isSelecting ? 0.3 : 0,
                     "strokeOpacity": this.isSelecting ? 0.7 : 0,
                     "stroke": "#000000",
                     "strokeWidth": "1px",
-                    "display": this.isSelecting ? "inline" : "none"
+                    "display": this.isSelecting ? "inline" : "none",
                 }
             },
 
@@ -638,7 +635,7 @@
             },
 
             selector: function () {
-                return this.selectRect.positiveRect
+                return this.selectRect.positiveRect()
             },
 
         },
@@ -816,7 +813,7 @@
                 } else {
                     if (this.renderSelector) {
                         this.$set(this, 'isSelecting', true);
-                        let start = new Point($event.x, $event.y).decrease(this.containerRect);
+                        let start = getPoint($event).decrease(this.containerRect);
                         this.selectRect.start.update(start)
                         this.selectRect.end.update(start)
                     }
@@ -835,7 +832,7 @@
                     }
                     //移动
                     if (this.isLinking) {
-                        this.newLinkEndPoint.update($event)
+                        this.newLinkEndPoint.update(end)
                     }
                 }
             },

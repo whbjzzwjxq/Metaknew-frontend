@@ -27,10 +27,6 @@
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
     import {
         AreaRect,
-        PointObject,
-        pointMultiple,
-        pointNegative,
-        pointUpdate,
         Point,
         RectByPoint
     } from "@/utils/geoMetric";

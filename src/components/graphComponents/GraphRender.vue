@@ -75,24 +75,23 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        AllItemSettingPart, getIndex,
-        GraphSelfPart, GraphSettingPart, GraphState, LinkInfoPart,
+        AllItemSettingPart,
+        GraphSelfPart, GraphSettingPart, GraphState,
         LinkSettingPart,
         MediaSettingPart, NodeInfoPart,
         NodeSettingPart,
         SettingPart, VisualNodeSettingPart
     } from "@/utils/graphClass";
-    import {pointAdd, AreaRect, pointDecrease, PointObject, RectByPoint, pointUpdate} from "@/utils/geoMetric";
+    import {AreaRect, PointObject, RectByPoint, getPoint, Point} from "@/utils/geoMetric";
     import {DataManagerState} from "@/store/modules/dataManager";
     import * as CSS from "csstype";
     import {LabelViewDict, VisualNodeSetting} from "@/utils/interfaceInComponent";
-    import {isLinkSetting, isMediaSetting} from "@/utils/typeCheck";
-    import {commitInfoAdd, commitItemChange} from "@/store/modules/_mutations";
+    import {isMediaSetting} from "@/utils/typeCheck";
+    import {commitItemChange} from "@/store/modules/_mutations";
     import {getInfoPart, maxN, minN} from "@/utils/utils";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import GraphMedia from "@/components/graphComponents/GraphMedia.vue";
-    import GraphNodeButton from "@/components/graphComponents/GraphNodeButton.vue";
     import {StyleManagerState} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
@@ -116,18 +115,12 @@
                 // ------ drag ------
                 isDragging: false,
                 dragAble: true,
-                dragStartPoint: {
-                    x: 0,
-                    y: 0
-                } as PointObject,
+                dragStartPoint: new Point(0, 0),
 
                 // ------ link ------
                 isLinking: false,
                 startNode: null as null | VisualNodeSettingPart,
-                newLinkEndPoint: {
-                    x: 0,
-                    y: 0
-                } as PointObject,
+                newLinkEndPoint: new Point(0, 0),
             }
         },
         props: {
@@ -393,7 +386,7 @@
         methods: {
             dragStart($event: MouseEvent) {
                 if (this.dragAble) {
-                    pointUpdate(this.dragStartPoint, $event);
+                    this.dragStartPoint.update($event);
                     this.isDragging = true;
                 }
             },
@@ -441,17 +434,17 @@
             startSelect($event: MouseEvent) {
                 if (this.renderSelector) {
                     this.$set(this, 'isSelecting', true);
-                    let start = pointDecrease($event, this.baseRect, this.viewBox.start);
-                    pointUpdate(this.selectRect.start, start);
-                    pointUpdate(this.selectRect.end, start);
+                    let start = getPoint($event).decreaseMulti(this.baseRect, this.viewBox.start);
+                    this.selectRect.start.update(start);
+                    this.selectRect.end.update(start);
                 }
             },
 
             selecting($event: MouseEvent) {
-                let end = pointDecrease($event, this.baseRect, this.viewBox.start);
+                let end = getPoint($event).decreaseMulti(this.baseRect, this.viewBox.start);
                 //选择集
                 if (this.isSelecting && this.renderSelector) {
-                    pointUpdate(this.selectRect.end, end)
+                    this.selectRect.end.update(end);
                 }
             },
 

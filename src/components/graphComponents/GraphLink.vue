@@ -45,7 +45,7 @@
     import * as CSS from 'csstype'
     import {LinkSettingPart} from "@/utils/graphClass";
     import {VisualNodeSetting} from "@/utils/interfaceInComponent";
-    import {PointObject, pointDistance, rectDiagonalDistance} from "@/utils/geoMetric";
+    import {PointObject, getPointDistance, rectDiagonalDistance} from "@/utils/geoMetric";
 
     export default Vue.extend({
         name: 'GraphLink',
@@ -87,7 +87,7 @@
                 let y1 = source.y;
                 let x2 = target.x;
                 let y2 = target.y;
-                let distance = pointDistance(source, target);
+                let distance = getPointDistance(source, target);
                 let sourceR = rectDiagonalDistance(source);
                 let targetR = rectDiagonalDistance(target);
 
