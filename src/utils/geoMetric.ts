@@ -216,11 +216,8 @@ export const pointDistance = (pointA: PointObject, pointB: PointObject) => {
     return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) + Math.pow(pointA.y - pointB.y, 2))
 };
 
-export const pointFunction = (point: PointObject, _func: Function) => {
-    return {x: _func(point.y), y: _func(point.y)}
-};
-
 export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
+
 export const transformBorderToRect = (rect: AreaRect, border: number) => {
     let {x, y, width, height} = rect;
     let inner = 4;

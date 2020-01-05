@@ -93,7 +93,7 @@
             :container="mediaLocation[index]"
             :scale="realScale"
             :index="index"
-            :container-rect="containerRect"
+            :view-box="containerRect"
             @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
             @mousedown.native="dragStart"
@@ -910,7 +910,6 @@
                 this.scale < 20 && (this.scale = 20);
                 this.scale > 500 && (this.scale = 500);
                 let event = getPoint($event).decrease(this.containerRect)
-                console.log(event);
                 let eventCopy = event.copy();
                 // 先后顺序很重要
                 event.decrease(this.lastViewPoint).divide(oldScale)
