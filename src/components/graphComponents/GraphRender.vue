@@ -373,7 +373,7 @@
             },
 
             selector(): AreaRect {
-                return this.selectRect.positiveRect
+                return this.selectRect.positiveRect()
             },
 
             //选择框的相关设置

@@ -13,8 +13,6 @@ export interface AreaRect extends PointObject {
     height: number,
 }
 
-const handler = {};
-
 export class Point {
     x: number;
     y: number;
@@ -116,18 +114,6 @@ export class RectByPoint {
         return this._end
     }
 
-    get originRect() {
-        return getOriginRect(this._start, this._end)
-    }
-
-    get positiveRect() {
-        return getPositiveRect(this._start, this._end)
-    }
-
-    get midPoint() {
-        return getMidPoint(this._start, this._end)
-    }
-
     border: number;
 
     constructor(_start: PointMixed, _end: PointMixed, border?: number) {
@@ -141,8 +127,20 @@ export class RectByPoint {
             : this.border = 2;
     }
 
+    originRect() {
+        return getOriginRect(this._start, this._end)
+    }
+
+    positiveRect() {
+        return getPositiveRect(this._start, this._end)
+    }
+
+    midPoint() {
+        return getMidPoint(this._start, this._end)
+    }
+
     checkInRect(point: PointObject) {
-        return checkInRect(this.positiveRect, point);
+        return checkInRect(this.positiveRect(), point);
     }
 
     getDivCSS(css?: CSS.Properties): CSS.Properties {
@@ -152,7 +150,7 @@ export class RectByPoint {
             borderColor: "black",
             borderStyle: "solid"
         }, css);
-        return getDivCSS(this.positiveRect, css);
+        return getDivCSS(this.positiveRect(), css);
     }
 
     updateFromArea(areaRect: AreaRect) {

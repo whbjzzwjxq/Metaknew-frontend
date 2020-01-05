@@ -52,7 +52,7 @@
                 :container="container"
                 :size="impScaleRadius[index]"
                 :scale="realScale"
-                :point="nodeLocation[index].positiveRect"
+                :point="nodeLocation[index].positiveRect()"
                 :index="index"
                 @kick-back-x="kickBackX"
                 @kick-back-y="kickBackY"
@@ -346,7 +346,7 @@
                 return this.document.Conf
             },
             containerRect: function (): AreaRect {
-                return this.container.positiveRect
+                return this.container.positiveRect()
             },
             containerStyle: function (): CSS.Properties {
                 return this.container.getDivCSS(
@@ -560,7 +560,7 @@
             //压缩版本的nodeSetting
             nodeSettingList(): VisualNodeSetting[] {
                 return this.nodes.map((node, index) => {
-                    let {x, y, width, height} = this.nodeLocation[index].positiveRect;
+                    let {x, y, width, height} = this.nodeLocation[index].positiveRect();
                     return {
                         height,
                         width,
@@ -575,7 +575,7 @@
 
             mediaSettingList(): VisualNodeSetting[] {
                 return this.medias.map((media, index) => {
-                    let {x, y, width, height} = this.mediaLocation[index].positiveRect;
+                    let {x, y, width, height} = this.mediaLocation[index].positiveRect();
                     let realX = x + width / 2;
                     let realY = y + height / 2;
                     return {
@@ -681,11 +681,9 @@
             },
 
             getRectByPoint(width: number, height: number, setting: NodeSetting | MediaSetting) {
-                let startPoint = getPoint(setting.Base)
-                startPoint.multiRect(this.containerRect)
-                    .add(this.lastViewPoint)
-                    .decrease(this.viewPoint)
-                    .multi(this.realScale)
+                let basePoint = getPoint(setting.Base).multiRect(this.containerRect)
+                let startPoint = this.lastViewPoint.copy()
+                    .decrease(this.viewPoint.copy().decrease(basePoint).multi(this.realScale))
                 let endPoint = startPoint.copy().addRect({width, height})
                 return new RectByPoint(startPoint, endPoint)
             },
@@ -847,13 +845,13 @@
                 this.selecting($event);
                 this.$set(this, 'isSelecting', false);
                 let nodes: (AllItemSettingPart)[] = this.nodes.filter((node, index) =>
-                    this.selectRect.checkInRect(this.nodeLocation[index].midPoint)
+                    this.selectRect.checkInRect(this.nodeLocation[index].midPoint())
                 );
                 let links = this.links.filter((link, index) =>
                     this.selectRect.checkInRect(this.midLocation[index])
                 );
                 let medias = this.medias.filter((media, index) =>
-                    this.selectRect.checkInRect(this.mediaLocation[index].midPoint)
+                    this.selectRect.checkInRect(this.mediaLocation[index].midPoint())
                 );
                 let result = nodes.concat(links).concat(medias);
                 this.clearSelected("all");
@@ -912,12 +910,12 @@
                 this.scale < 20 && (this.scale = 20);
                 this.scale > 500 && (this.scale = 500);
                 let event = getPoint($event).decrease(this.containerRect)
+                console.log(event);
                 let eventCopy = event.copy();
                 // 先后顺序很重要
                 event.decrease(this.lastViewPoint).divide(oldScale)
                 this.viewPoint.add(event);
                 this.lastViewPoint.update(eventCopy);
-                console.log(this.viewPoint, this.lastViewPoint);
             },
 
             explode(node: NodeSettingPart) {
