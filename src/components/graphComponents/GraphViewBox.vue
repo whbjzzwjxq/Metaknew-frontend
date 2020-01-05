@@ -28,6 +28,9 @@
                     :base-rect="activeGraphRectList[index]"
                     render-selector
                     @on-scroll="onScroll"
+                    @move-start="startSelect"
+                    @moving="selecting"
+                    @move-end="subMoveEnd"
                 >
 
                 </graph-render>
@@ -840,8 +843,8 @@
             },
 
             endSelect($event: MouseEvent) {
-                this.isMoving = false;
                 this.selecting($event);
+                this.isMoving = false;
                 this.$set(this, 'isSelecting', false);
                 let nodes: (AllItemSettingPart)[] = this.nodes.filter((node, index) =>
                     this.selectRect.checkInRect(this.nodeLocation[index].midPoint())
@@ -855,6 +858,11 @@
                 let result = nodes.concat(links).concat(medias);
                 this.clearSelected("all");
                 this.selectItem(result)
+            },
+
+            subMoveEnd($event: MouseEvent) {
+                this.selecting($event);
+                this.isMoving = false
             },
 
             getLabelViewDict() {

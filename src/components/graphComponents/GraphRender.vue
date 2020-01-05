@@ -54,10 +54,11 @@
         <graph-media
             v-for="(node, index) in medias"
             :key="node.Setting._id"
-            :media="node"
+            :setting="node"
             :container="container"
             :location="mediaLocation[index]"
             :scale="realScale"
+            :view-box="baseRect"
             :index="index"
             @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
@@ -121,6 +122,8 @@
                 isLinking: false,
                 startNode: null as null | VisualNodeSettingPart,
                 newLinkEndPoint: new Point(0, 0),
+
+                isMoving: false
             }
         },
         props: {
@@ -394,8 +397,8 @@
             //注意坐标运算使用小数
             drag(target: VisualNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
-                    let deltaX = ($event.x - this.dragStartPoint.x) / this.baseRect.width / this.realScale;
-                    let deltaY = ($event.y - this.dragStartPoint.y) / this.baseRect.height / this.realScale;
+                    let deltaX = ($event.x - this.dragStartPoint.x) / this.baseRect.width;
+                    let deltaY = ($event.y - this.dragStartPoint.y) / this.baseRect.height;
                     this.dragStart($event);
                     if (this.selectedNodes.length > 0) {
                         this.selectedNodes.map(node => {
@@ -432,7 +435,10 @@
                 this.isDragging = false;
             },
             startSelect($event: MouseEvent) {
-                if (this.renderSelector) {
+                if ($event.ctrlKey) {
+                    this.isMoving = true;
+                    this.$emit('move-start', $event)
+                } else if (this.renderSelector) {
                     this.$set(this, 'isSelecting', true);
                     let start = getPoint($event).decreaseMulti(this.baseRect, this.viewBox.start);
                     this.selectRect.start.update(start);
@@ -443,12 +449,16 @@
             selecting($event: MouseEvent) {
                 let end = getPoint($event).decreaseMulti(this.baseRect, this.viewBox.start);
                 //选择集
-                if (this.isSelecting && this.renderSelector) {
+                if ($event.ctrlKey && this.isMoving) {
+                    this.$emit('moving', $event)
+                } else if (this.isSelecting && this.renderSelector) {
                     this.selectRect.end.update(end);
                 }
             },
 
             endSelect($event: MouseEvent) {
+                this.isMoving = false;
+                this.$emit('move-end', $event);
                 this.selecting($event);
                 this.$set(this, 'isSelecting', false);
                 let nodes: (AllItemSettingPart)[] = this.nodes.filter((node, index) =>
@@ -537,9 +547,7 @@
 
             }
         },
-        watch: {
-
-        },
+        watch: {},
         record: {
             status: 'empty'
         }
