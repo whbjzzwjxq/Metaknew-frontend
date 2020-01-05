@@ -108,43 +108,24 @@ export type PointMixed = Point | PointObject
 export class RectByPoint {
     protected _start: Point;
     get start() {
-        if (this._start.equal(this._startCache)) {
-            return this._start
-        } else {
-            this.cacheUpdate();
-            this._startCache = {x: this._start.x, y: this._start.y};
-            return this._start
-        }
+        return this._start
     }
-
-    protected _startCache: PointObject;
 
     protected _end: Point;
     get end() {
-        if (this._end.equal(this._endCache)) {
-            return this._end
-        } else {
-            this.cacheUpdate();
-            this._endCache = {x: this._end.x, y: this._end.y};
-            return this._end
-        }
+        return this._end
     }
 
-    protected _endCache: PointObject;
-
-    protected _originRect: AreaRect;
     get originRect() {
-        return this._originRect
+        return getOriginRect(this._start, this._end)
     }
 
-    protected _positiveRect: AreaRect;
     get positiveRect() {
-        return this._positiveRect
+        return getPositiveRect(this._start, this._end)
     }
 
-    protected _midPoint: PointObject;
     get midPoint() {
-        return this._midPoint
+        return getMidPoint(this._start, this._end)
     }
 
     border: number;
@@ -152,23 +133,12 @@ export class RectByPoint {
     constructor(_start: PointMixed, _end: PointMixed, border?: number) {
         let {x, y} = _start;
         this._start = new Point(x, y);
-        this._startCache = {x, y} as PointObject;
         x = _end.x;
         y = _end.y;
         this._end = new Point(x, y);
-        this._endCache = {x, y} as PointObject;
         border
             ? this.border = border
             : this.border = 2;
-        this._originRect = getOriginRect(this._start, this._end);
-        this._positiveRect = getPositiveRect(this._originRect);
-        this._midPoint = getMidPoint(this._start, this._end);
-    }
-
-    cacheUpdate() {
-        this._originRect = getOriginRect(this._start, this._end);
-        this._positiveRect = getPositiveRect(this._originRect);
-        this._midPoint = getMidPoint(this._start, this._end);
     }
 
     checkInRect(point: PointObject) {
@@ -275,8 +245,8 @@ export const getOriginRect = (pointA: PointMixed, pointB: PointMixed) => {
     } as AreaRect
 };
 
-export const getPositiveRect = (rect: AreaRect) => {
-    let {x, y, width, height} = rect;
+export const getPositiveRect = (pointA: PointMixed, pointB: PointMixed) => {
+    let {x, y, width, height} = getOriginRect(pointA, pointB);
     return {
         x: width > 0 ? x : x + width,
         y: height > 0 ? y : y + height,

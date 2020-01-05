@@ -912,10 +912,12 @@
                 this.scale < 20 && (this.scale = 20);
                 this.scale > 500 && (this.scale = 500);
                 let event = getPoint($event).decrease(this.containerRect)
+                let eventCopy = event.copy();
                 // 先后顺序很重要
-                this.lastViewPoint.update(event);
                 event.decrease(this.lastViewPoint).divide(oldScale)
                 this.viewPoint.add(event);
+                this.lastViewPoint.update(eventCopy);
+                console.log(this.viewPoint, this.lastViewPoint);
             },
 
             explode(node: NodeSettingPart) {
