@@ -85,6 +85,7 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         media: 'mdi-image',
         document: "mdi-google-circles-communities",
         DocGraph: 'mdi-graph-outline',
+        DocPaper: 'mdi-notebook',
         path: 'mdi-map-marker-path',
     },
     'i-get-media-type': {

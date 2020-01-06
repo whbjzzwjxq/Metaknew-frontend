@@ -235,9 +235,7 @@
             },
 
             availableHeight: function () {
-                return this.detailOn || !this.inViewBox
-                    ? 2880
-                    : this.height
+                return this.height
             }
         },
         methods: {

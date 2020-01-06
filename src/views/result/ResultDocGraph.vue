@@ -23,6 +23,12 @@
                         >
                         </sub-tool-new-item>
                     </v-col>
+                    <v-col cols="2" class="pa-0 ma-0">
+                        <sub-tool-style
+
+                        >
+                        </sub-tool-style>
+                    </v-col>
                 </div>
             </template>
         </toolbar-bottom>
@@ -49,13 +55,14 @@
     import * as CSS from "csstype";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
-
+    import SubToolStyle from "@/components/toolbar/SubToolStyle.vue";
     export default Vue.extend({
         name: "ResultDocGraph",
         components: {
             GraphViewBox,
             ToolbarBottom,
-            SubToolNewItem
+            SubToolNewItem,
+            SubToolStyle
         },
         data() {
             return {
