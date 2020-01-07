@@ -96,7 +96,7 @@ export interface UserConcern {
 
 type BaseStateKey = 'isSelected' | 'isDeleted' | 'isSelf'
 
-interface BaseState {
+export interface BaseState {
     isSelected: boolean; // 是否被选中
     isDeleted: boolean; // 是否被删除;
     isSelf: boolean; // 是否是自己的内容

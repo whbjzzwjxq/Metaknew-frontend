@@ -128,7 +128,7 @@
 
             saveDocument() {
 
-            }
+            },
         },
         watch: {},
         created(): void {

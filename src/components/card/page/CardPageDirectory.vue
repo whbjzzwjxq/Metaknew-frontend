@@ -35,6 +35,7 @@
     import {DataManagerState} from "@/store/modules/dataManager";
     import {commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {
+        BaseState,
         BaseType,
         GraphSelfPart,
         id,
@@ -79,7 +80,6 @@
                 docItemDict: {} as Record<id, DirectoryItemDocument>,
                 docLayerDict: {} as Record<number, GraphSelfPart[]>,
                 lastOpenList: [] as DirectoryItem[],
-                selection: []
             }
         },
         props: {
@@ -125,11 +125,24 @@
                 return mergeList(Object.values(this.allDocToItemDict))
             },
 
-            // selection: function () {
-            //     let result = this.allItemList.filter(item => this.getOriginState(item).isSelected);
-            //     console.log('get', result);
-            //     return result;
-            // }
+            selection: {
+                get(): DirectoryItem[] {
+                    let vm = this;
+                    return this.baseItemList.filter(item => vm.getOriginState(item).isSelected)
+                },
+                set(value: DirectoryItem[]) {
+                    let vm = this;
+                    this.baseItemList.map(item => {
+                        let origin = vm.getOriginState(item);
+                        value.includes(item)
+                            ? this.$set(origin, 'isSelected', true)
+                            : this.$set(origin, 'isSelected', false)
+                    });
+                    Object.values(this.docItemDict).map(docItem => {
+
+                    })
+                }
+            }
         },
         methods: {
             buildStructure: function () {
@@ -320,12 +333,8 @@
                 } else {
                     origin = this.getOriginItem(item).State
                 }
-                return origin
+                return origin as BaseState
             },
-
-            updateSelection(value: DirectoryItem[]) {
-                console.log(value)
-            }
 
         },
         watch: {
