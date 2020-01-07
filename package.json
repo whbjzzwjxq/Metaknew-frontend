@@ -21,6 +21,7 @@
     "csstype": "^2.6.7",
     "jest": "^24.9.0",
     "mime": "^2.4.4",
+    "node": "^13.5.0",
     "register-service-worker": "^1.6.2",
     "roboto-fontface": "*",
     "ts-jest": "^24.2.0",

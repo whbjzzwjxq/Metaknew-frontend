@@ -1,5 +1,7 @@
-import {BaseType, id, MediaInfoPart} from "@/utils/graphClass";
+import {BaseType, id, MediaInfoPart, NodeSettingPart} from "@/utils/graphClass";
 import {DataManagerState} from "@/store/modules/dataManager";
+import {Vue} from "vue/types/vue";
+import store from '../store/index';
 
 export function getCookie(name: string) {
     const arr = document.cookie.match(new RegExp(`(^| )${name}=([^;]*)(;|$)`));
@@ -187,3 +189,13 @@ export const getSrc = (src: string | undefined) => {
             : 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + src
         : ''
 };
+
+export function mergeList<T>(list: Array<T[]>) {
+    let output: T[] = [];
+    list.map(value => {
+        value.map(item => {
+            output.push(item)
+        })
+    });
+    return output
+}

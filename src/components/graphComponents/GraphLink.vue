@@ -33,7 +33,7 @@
             <path :d="polylinePath" :style=drawStyle></path>
         </template>
 
-        <foreignObject :x="midLocation.x" :y="midLocation.y"
+        <foreignObject :x="midLocation.x - textWidth / 2" :y="midLocation.y"
                        :width="textWidth" :height="textHeight">
             <p :style="textStyle">{{ setting._label }}</p>
         </foreignObject>

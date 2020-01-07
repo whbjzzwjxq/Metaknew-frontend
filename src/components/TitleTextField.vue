@@ -9,7 +9,12 @@
             v-if="editMode">
 
         </v-text-field>
-        <p class="title-text" v-else> {{ text }}</p>
+        <p class="title-text" v-else
+           @copy="doNothing"
+           @drag="doNothing"
+           @dragstart="doNothing">
+            {{ text }}
+        </p>
     </div>
 </template>
 
@@ -36,6 +41,9 @@
         methods: {
             updateText($event: string) {
                 this.$emit('update-text', $event);
+            },
+            doNothing() {
+                alert('doNothing')
             }
         },
         watch: {},

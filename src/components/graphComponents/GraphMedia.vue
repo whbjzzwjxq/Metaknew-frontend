@@ -12,6 +12,7 @@
                 :width="containerRect.width"
                 :height="containerRect.height"
                 @media-resize="updateSizeByNumber"
+                @add-link="addLink"
                 in-view-box
             >
 
@@ -121,6 +122,10 @@
                 let y = this.setting.Setting.Base.scaleX * newWidth - height;
                 let delta = new Point(x, y).multi(0.5);
                 this.updateSize(delta.copy().multi(-1), delta);
+            },
+
+            addLink() {
+                this.$emit('add-link')
             }
         },
         watch: {},

@@ -42,7 +42,7 @@
         },
         props: {
             editMode: {
-                type: Boolean,
+                type: Boolean as () => boolean,
                 default: false
             },
             document: {
@@ -56,18 +56,6 @@
                     "directory": {
                         icon: 'mdi-format-list-checkbox',
                         name: '专题目录'
-                    },
-                    "documentStyle": {
-                        icon: 'mdi-palette',
-                        name: '专题样式'
-                    },
-                    "nodeStyle": {
-                        icon: 'mdi-palette',
-                        name: '节点样式'
-                    },
-                    'linkStyle': {
-                        icon: 'mdi-palette',
-                        name: '关系样式'
                     },
                     'historyBranch': {
                         icon: 'mdi-source-branch',
@@ -83,7 +71,7 @@
                 let result: Record<string, TabContent>;
                 let {directory, documentStyle, nodeStyle, linkStyle, historyBranch, comment} = this.tabItems;
                 this.editMode
-                    ? result = {directory, documentStyle, nodeStyle, linkStyle, historyBranch}
+                    ? result = {directory, historyBranch, comment}
                     : result = {directory, historyBranch, comment};
                 return result
             }

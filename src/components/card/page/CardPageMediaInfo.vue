@@ -14,7 +14,7 @@
                     v-if="height >= 100"
                     :icon-list="iconList"
                     :container-style="buttonGroupStyle"
-                    :color="'white'"
+                    :color="iconColor"
                     x-small
                     vertical
                 >
@@ -71,7 +71,7 @@
     import {labelItems} from "@/utils/labelField";
     import {mediaUpdate} from '@/api/commonSource';
     import * as CSS from 'csstype';
-    import {getIcon} from "@/utils/icon";
+    import {getIcon, iconMap} from "@/utils/icon";
     import IconGroup from "@/components/iconGroup/IconGroup.vue";
 
     export default Vue.extend({
@@ -134,6 +134,11 @@
             editBase: {
                 type: Boolean,
                 default: false
+            },
+
+            iconColor: {
+                type: String as () => string,
+                default: 'grey'
             }
         },
         computed: {
@@ -218,18 +223,21 @@
 
             iconList: function (): IconItem[] {
                 let vm = this;
+                let sizeIconGroup = iconMap["i-resize"];
+                let deleteAble = vm.isSelf || vm.showDeleteIcon;
                 return [
-                    {name: getIcon('i-resize', 'plus'), _func: vm.enlarge, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'minus'), _func: vm.narrow, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'five'), _func: vm.twentyPercent, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'three'), _func: vm.oneThird, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'two'), _func: vm.half, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'double'), _func: vm.double, render: vm.inViewBox},
+                    {name: sizeIconGroup.plus, _func: vm.enlarge, render: vm.inViewBox},
+                    {name: sizeIconGroup.minus, _func: vm.narrow, render: vm.inViewBox},
+                    {name: sizeIconGroup.five, _func: vm.twentyPercent, render: vm.inViewBox},
+                    {name: sizeIconGroup.three, _func: vm.oneThird, render: vm.inViewBox},
+                    {name: sizeIconGroup.two, _func: vm.half, render: vm.inViewBox},
+                    {name: sizeIconGroup.double, _func: vm.double, render: vm.inViewBox},
+                    {name: getIcon('i-item', 'link'), _func: vm.addLink, render: vm.inViewBox},
                     {name: "", _func: vm.doNothing},
                     {name: "mdi-magnify", _func: vm.dialogWatch},
                     {name: getIcon("i-collapse-arrow-double", vm.detailOn), _func: vm.changeDetail},
-                    {name: "mdi-pencil", _func: vm.editSrc, render: vm.isSelf},
-                    {name: "mdi-delete", _func: vm.deleteMedia, render: vm.isSelf || vm.showDeleteIcon},
+                    {name: getIcon('i-edit-able', vm.isSelf), _func: vm.editSrc, disabled: vm.isSelf},
+                    {name: getIcon('i-delete-able', deleteAble), _func: vm.deleteMedia, disabled: deleteAble},
                     {name: "mdi-arrow-right-bold-circle-outline", _func: vm.addMediaToGraph, render: vm.showExportIcon}
                 ];
             },
@@ -303,6 +311,10 @@
 
             updateSizeByNumber(newWidth: number) {
                 this.$emit('media-resize', newWidth)
+            },
+
+            addLink() {
+                this.$emit('add-link')
             }
         },
         watch: {},

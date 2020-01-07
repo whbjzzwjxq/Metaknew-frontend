@@ -32,7 +32,10 @@
                 </v-card-subtitle>
                 <card-page-style-editor
                     :comp-type="key"
-                    :setting-list="document.getItemByState(key, 'isSelected')"
+                    :setting-list="
+                    key !== 'document'
+                    ? document.getItemByState(key, 'isSelected')
+                    : [document.Conf]"
                 >
 
                 </card-page-style-editor>
@@ -71,6 +74,10 @@
                         icon: getIcon('i-item', 'link'),
                         title: 'Selection Link'
                     },
+                    'document': {
+                        icon: getIcon('i-item', 'document'),
+                        title: 'Current Graph'
+                    }
                 }
             },
             document: function (): GraphSelfPart {

@@ -13,7 +13,8 @@
                 <card-document
                     v-if="tab === 'document'"
                     v-bind="value.props"
-                    :document="document">
+                    :document="document"
+                    :edit-mode="editMode">
 
                 </card-document>
                 <card-meta-knowledge
@@ -63,7 +64,7 @@
                 },
                 currentTab: 1,
                 lang: 'zh',
-                editPageRegex: new RegExp('edit-.*')
+                editPageRegex: new RegExp('edit.*')
             }
         },
         props: {},

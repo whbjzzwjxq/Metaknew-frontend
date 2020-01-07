@@ -57,7 +57,7 @@
             //拖动事件监听的宽度
             listenBorder: {
                 type: Number as () => number,
-                default: 8
+                default: 12
             },
 
             isSelected: {
@@ -92,7 +92,7 @@
                 Object.entries(this.borderList).map(([name, border]) => {
                     result[name] = getDivCSS(border, {
                         backgroundColor: 'grey',
-                        opacity: this.isSelected ? 0.3 : 0
+                        opacity: this.isSelected ? 0.3 : 0.3
                     });
                     if (name === 'proportion') {
                         result[name] = getDivCSS(border, {

@@ -104,6 +104,7 @@
             @mousemove.native="drag(node, $event)"
             @mouseup.native="dragEnd(node, $event)"
             @dblclick.native.stop="dbClickNode(node)"
+            @add-link="addLink(node)"
         >
 
         </graph-media>
@@ -178,6 +179,7 @@
     import {DataManagerState} from '@/store/modules/dataManager'
     import {
         AllItemSettingPart,
+        AllSettingPart,
         BaseType,
         getIndex,
         GraphSelfPart,
@@ -213,6 +215,7 @@
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
+    import {dispatchNodeExplode} from "@/store/modules/_dispatch";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 
@@ -354,9 +357,12 @@
                     {borderWidth: 0, overflow: "hidden"}
                 )
             },
+            childDocumentList: function() {
+                return this.document.getChildDocument()
+            },
             // 不包含本身的graph
             activeGraphList: function (): GraphSelfPart[] {
-                return this.document.getChildGraph().filter(graph => graph &&
+                return this.childDocumentList.filter(graph => graph &&
                     !graph.Conf.State.isDeleted && graph.Conf.State.isExplode)
             },
             activeGraphIdList: function (): id[] {
@@ -643,6 +649,10 @@
                 return this.selectRect.positiveRect()
             },
 
+            isSelected: function () {
+                return this.document.Conf.State.isSelected
+            }
+
         },
         methods: {
             dragStart($event: MouseEvent) {
@@ -688,23 +698,6 @@
                     .decrease(this.viewPoint.copy().decrease(basePoint).multi(this.realScale))
                 let endPoint = startPoint.copy().addRect({width, height})
                 return new RectByPoint(startPoint, endPoint)
-            },
-
-            clickSvg() {
-                this.isLinking = false;
-                this.clearSelected('all')
-            },
-
-            clearSelected(items: 'all' | SettingPart[]) {
-                if (items === 'all') {
-                    this.nodes.map(node => this.$set(node.State, 'isSelected', false));
-                    this.links.map(link => this.$set(link.State, 'isSelected', false));
-                    this.medias.map(media => this.$set(media.State, 'isSelected', false));
-                    this.$set(this.state, 'isSelected', false)
-                } else {
-                    items.map(item => this.$set(item.State, 'isSelected', false));
-                }
-                this.isDragging = false;
             },
 
             //检查鼠标是否在svg外部
@@ -764,6 +757,7 @@
 
             //自适应位置 取得卡片数据 不需要计算属性 显示的时候重新计算位置就好
             locationCard(node: NodeSettingPart) {
+
             },
 
             updateCardLoc() {
@@ -786,7 +780,7 @@
                 }
             },
             //框选
-            selectItem(itemList: AllItemSettingPart[]) {
+            selectItem(itemList: AllSettingPart[]) {
                 //选择
                 itemList.map(item => this.$set(item.State, 'isSelected', true));
                 //如果是单选就切换内容
@@ -846,7 +840,8 @@
                 this.selecting($event);
                 this.isMoving = false;
                 this.$set(this, 'isSelecting', false);
-                let nodes: (AllItemSettingPart)[] = this.nodes.filter((node, index) =>
+                let result: AllSettingPart[] = [];
+                let nodes = this.nodes.filter((node, index) =>
                     this.selectRect.checkInRect(this.nodeLocation[index].midPoint())
                 );
                 let links = this.links.filter((link, index) =>
@@ -855,9 +850,34 @@
                 let medias = this.medias.filter((media, index) =>
                     this.selectRect.checkInRect(this.mediaLocation[index].midPoint())
                 );
-                let result = nodes.concat(links).concat(medias);
+                result = result.concat(nodes)
+                result = result.concat(links)
+                result = result.concat(medias);
+                nodes.map(node =>
+                    node.Setting._id === node.parent.id && (result.push(node.parent.Conf))
+                )
                 this.clearSelected("all");
                 this.selectItem(result)
+            },
+
+            clickSvg() {
+                this.isLinking = false;
+                this.clearSelected('all')
+            },
+
+            clearSelected(items: 'all' | SettingPart[]) {
+                if (items === 'all') {
+                    this.nodes.map(node => this.$set(node.State, 'isSelected', false));
+                    this.links.map(link => this.$set(link.State, 'isSelected', false));
+                    this.medias.map(media => this.$set(media.State, 'isSelected', false));
+                    this.childDocumentList.map(document =>
+                        this.$set(document.Conf.State, 'isSelected', false)
+                    )
+                    this.$set(this.document.Conf.State, 'isSelected', false)
+                } else {
+                    items.map(item => this.$set(item.State, 'isSelected', false));
+                }
+                this.isDragging = false;
             },
 
             subMoveEnd($event: MouseEvent) {
@@ -925,35 +945,7 @@
             },
 
             explode(node: NodeSettingPart) {
-                let _id = node.Setting._id;
-                let subGraph = this.dataManager.graphManager[_id];
-                if (subGraph === undefined) {
-                    this.$store.dispatch('graphQuery', {
-                        _id,
-                        parent: this.document.id,
-                    }).then(() => {
-                        let subGraph = this.dataManager.graphManager[_id];
-                        this.$set(subGraph.Conf.State, 'isExplode', true)
-                    });
-                } else {
-                    let value = subGraph.Conf.State.isExplode;
-                    let nodes = subGraph.Graph.nodes;
-                    // 从baseNode里恢复
-                    if (value) {
-                        nodes.splice(0, 0, subGraph.baseNode)
-                        this.$set(subGraph.Conf.State, 'isExplode', false)
-                    } else {
-                        // 删除掉subGraph里已有的节点
-                        let index = 0;
-                        nodes.map(item => {
-                            if (item.Setting._id === subGraph.id) {
-                                index = nodes.indexOf(item)
-                            }
-                        })
-                        nodes.splice(index, 1)
-                        this.$set(subGraph.Conf.State, 'isExplode', true)
-                    }
-                }
+                dispatchNodeExplode({node, document: this.document})
             },
 
         },
@@ -974,6 +966,10 @@
             nodeLength() {
                 this.updateCardLoc();
             },
+
+            isSelected() {
+                this.$set(this.document.baseNode.State, 'isSelected', this.isSelected)
+            }
         },
         created() {
             this.updateCardLoc();

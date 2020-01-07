@@ -1,8 +1,8 @@
 export type IconGroup =
     'i-star' | 'i-good' | 'i-bad' | 'i-collapse-arrow-double' |
-    'i-edit-able' | 'i-edit' | 'i-delete' | 'i-explode' |
+    'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
     'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
-    'i-resize' | 'i-item' | 'i-get-media-type'
+    'i-resize' | 'i-item' | 'i-get-media-type' | 'i-note-type'
 
 export type IconAlias = 'i-show'
 
@@ -30,7 +30,7 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         save: '',
         autoSave: ''
     },
-    'i-delete': {
+    'i-delete-able': {
         true: 'mdi-delete',
         false: 'mdi-delete-off',
         rollback: 'mdi-refresh'
@@ -52,6 +52,10 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         video: 'mdi-video',
         pdf: 'mdi-file-pdf',
         markdown: 'mdi-markdown',
+    },
+    'i-note-type': {
+        text: 'mdi-note-text',
+        canvas: 'mdi-brush'
     },
     'i-collapse': {
         true: 'mdi-minus',

@@ -20,7 +20,7 @@ export type id = number | string;
 export type BaseType = "node" | "link" | "document" | "media" | "note";
 export type BaseTypeList = 'nodes' | 'medias' | 'links' | "notes";
 export type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
-export type AllSettingPart = NodeSettingPart | MediaSettingPart | LinkSettingPart | GraphSettingPart
+export type AllSettingPart = AllItemSettingPart | GraphSettingPart
 export type Translate = Record<string, string>
 export var globalIndex = 0;
 
@@ -93,6 +93,8 @@ export interface UserConcern {
     isBad: boolean;
     Labels: Array<string>;
 }
+
+type BaseStateKey = 'isSelected' | 'isDeleted' | 'isSelf'
 
 interface BaseState {
     isSelected: boolean; // 是否被选中
@@ -284,9 +286,14 @@ export interface GraphSetting extends Setting {
     _type: 'document'
 }
 
+interface NoteContent {
+    [prop: string]: any
+}
+
 export interface NoteSetting extends Setting {
-    _type: 'note'
-    _content: Object
+    _type: 'note';
+    _title: string;
+    _content: NoteContent
 }
 
 export type VisualNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从视觉上来说是Node的对象
@@ -893,7 +900,7 @@ export function graphSettingTemplate(_id: id) {
     let setting = <GraphSetting>{
         _id,
         _type: "document",
-        _label: "Doc2Graph"
+        _label: "DocGraph"
     };
     Object.assign(setting, settingTemplate("document"));
     return setting;
@@ -1102,7 +1109,10 @@ export class GraphSelfPart {
     draftId: number;
     rootList: Array<GraphSelfPart>; // Graph的遍历链条
     root: GraphSelfPart | null;
-    baseNode: NodeSettingPart;
+    protected _baseNode: NodeSettingPart;
+    get baseNode() {
+        return this._baseNode
+    }
     rect: { width: number, height: number };
     static list: Array<GraphSelfPart>;
     static baseList: Array<GraphBackend>; // 原始数据
@@ -1125,7 +1135,7 @@ export class GraphSelfPart {
         } else {
             GraphSelfPart.list.push(this)
         }
-        this.baseNode = NodeSettingPart.emptyNodeSetting(
+        this._baseNode = NodeSettingPart.emptyNodeSetting(
             _id,
             "document",
             "DocGraph",
@@ -1133,6 +1143,10 @@ export class GraphSelfPart {
             "",
             this
         );
+    }
+
+    updateBaseNode(node: NodeSettingPart) {
+        this._baseNode = node
     }
 
     static emptyGraphSelfPart(_id: id, parent: GraphSelfPart | null) {
@@ -1173,7 +1187,7 @@ export class GraphSelfPart {
         result.Graph.nodes = baseData.Graph.nodes.map(
             setting => {
                 let node = new NodeSettingPart(setting, nodeStateTemplate(), result);
-                setting._id === result.id && (result.baseNode = node);
+                setting._id === result.id && (result.updateBaseNode(node));
                 return node
             }
         );
@@ -1214,7 +1228,7 @@ export class GraphSelfPart {
         }
     }
 
-    getChildGraph() {
+    getChildDocument() {
         let result: GraphSelfPart[] = [];
         GraphSelfPart.list.map(graph => {
             let root = graph.root;
@@ -1225,14 +1239,9 @@ export class GraphSelfPart {
         return result
     }
 
-    getOriginSetting(_id: id, _type: BaseType) {
-        let result;
-        _type === 'link'
-            ? (result = this.Graph.links.filter(link => link.Setting._id === _id)[0])
-            : _type === 'media'
-            ? (result = this.Graph.medias.filter(media => media.Setting._id === _id)[0])
-            : (result = this.Graph.nodes.filter(node => node.Setting._id === _id)[0]);
-        return result
+    getItemById(_id: id, _type: BaseType) {
+        let list = this.getItemListByName(_type);
+        return list.filter(item => item.Setting._id === _id)[0]
     }
 
     addItems(items: AllItemSettingPart[]) {
@@ -1247,7 +1256,7 @@ export class GraphSelfPart {
         return this.getItemListByName(item.Setting._type)
     }
 
-    getItemListByName(name: BaseTypeList | BaseType) {
+    getItemListByName(name: BaseTypeList | BaseType): AllItemSettingPart[] {
         let itemList;
         if (isBaseType(name)) {
             name === 'media'
@@ -1271,6 +1280,7 @@ export class GraphSelfPart {
     }
 
     protected addItem(item: AllItemSettingPart) {
+        item.parent = this;
         isMediaSetting(item)
             ? this.Graph.medias.push(item)
             : isNodeSetting(item)
@@ -1280,10 +1290,29 @@ export class GraphSelfPart {
                 : isLinkSetting(item) && this.Graph.links.push(item)
     }
 
-    getItemByState(name: BaseTypeList | BaseType, state: string) {
+    getItemByState(name: BaseTypeList | BaseType, state: BaseStateKey) {
         let list = this.getItemListByName(name);
-        // @ts-ignore
         return list.filter(item => item.State[state])
+    }
+
+    explode() {
+        let value = this.Conf.State.isExplode;
+        let nodes = this.Graph.nodes;
+        // 从baseNode里恢复
+        if (value) {
+            nodes.splice(0, 0, this.baseNode);
+            Vue.set(this.Conf.State, 'isExplode', false)
+        } else {
+            // 删除掉this里已有的节点
+            let index = 0;
+            nodes.map(item => {
+                if (item.Setting._id === this.id) {
+                    index = nodes.indexOf(item)
+                }
+            });
+            nodes.splice(index, 1);
+            Vue.set(this.Conf.State, 'isExplode', true)
+        }
     }
 }
 

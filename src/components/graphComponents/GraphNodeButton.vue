@@ -58,7 +58,7 @@
                 return this.$store.state.dataManager
             },
             boundGraph: function () {
-                return this.dataManager.graphManager[this.node.parent.id]
+                return this.dataManager.graphManager[this.node.Setting._id]
             },
             buttonGroup: function (): IconItem[] {
                 // 是否可以删除
@@ -70,14 +70,16 @@
                     : deleteIcon = true;
 
                 // 是否可以爆炸
-                let explodeAble = this.boundGraph.id === this.dataManager.currentGraph.id;
-
+                let explodeAble =
+                    this.boundGraph
+                    ? this.boundGraph.id === this.dataManager.currentGraph.id
+                    : false;
                 let explodeIcon;
                 !this.boundGraph
                     ? explodeIcon = 'unload'
                     : explodeIcon = !this.boundGraph.Conf.State.isExplode;
                 return [
-                    {name: getIcon("i-delete", deleteIcon), _func: this.deleteItem, disabled: !deleteIcon},
+                    {name: getIcon("i-delete-able", deleteIcon), _func: this.deleteItem, disabled: !deleteIcon},
                     {name: 'mdi-arrow-top-right', _func: this.addLink},
                     {name: getIcon('i-eye', this.node.Setting.Show.showAll), _func: this.unShow},
                     {name: 'mdi-content-copy', _func: this.copyItem},

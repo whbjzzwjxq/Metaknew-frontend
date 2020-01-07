@@ -173,9 +173,9 @@ export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
 
 export const transformBorderToRect = (rect: AreaRect, border: number) => {
     let {x, y, width, height} = rect;
-    let inner = 1;
+    let inner = 12;
     let result: Record<BorderType, AreaRect> = {
-        'left': {x: inner, y: border, width: border, height},
+        'left': {x: -border, y: border, width: border + inner, height},
         'right': {x: width + border - inner, y: border, width: border, height},
         'top': {x: inner, y: inner, width: width + 2 * border - 2 * inner, height: border},
         'bottom': {x: inner, y: height + border - inner, width: width + border - inner, height: border},

@@ -163,6 +163,7 @@
                 if (this.setting.Base.color !== '') {
                     return this.setting.Base.color
                 } else {
+                    this.$store.state.styleLabelColor[this.setting._type] ||
                     commitNewLabel([this.setting._type])
                     return this.$store.state.styleLabelColor[this.setting._type]
                 }
@@ -172,6 +173,7 @@
                 if (this.setting.Border.color !== '') {
                     return this.setting.Border.color
                 } else {
+                    this.$store.state.styleLabelColor[this.setting._label] ||
                     commitNewLabel([this.setting._label])
                     return this.$store.state.styleLabelColor[this.setting._label]
                 }

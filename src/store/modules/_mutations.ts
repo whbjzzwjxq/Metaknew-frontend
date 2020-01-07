@@ -2,9 +2,8 @@ import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
 import {FileToken} from "@/api/user";
 import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
-import {GraphSelfPart, id, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/utils/graphClass";
+import {GraphSelfPart, id} from "@/utils/graphClass";
 import {InfoPart, idMap} from "@/store/modules/dataManager";
-import {AreaRect, RectByPoint} from "@/utils/geoMetric";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)

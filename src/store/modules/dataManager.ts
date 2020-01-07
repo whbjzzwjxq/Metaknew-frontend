@@ -1,10 +1,9 @@
 import Vue from 'vue'
-import {mediaCreate, docGraphQuery, mediaQueryMulti, sourceQueryMulti} from '@/api/commonSource';
+import {docGraphQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti} from '@/api/commonSource';
 import {FileToken, getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
     BaseLinkCtrl,
-    GraphBackend,
     GraphSelfPart,
     id,
     LinkInfoPart,
@@ -12,6 +11,7 @@ import {
     MediaInfoPart,
     NodeInfoPart,
     NodeSetting,
+    NodeSettingPart,
     QueryObject,
     userConcernTemplate
 } from "@/utils/graphClass";
@@ -22,10 +22,12 @@ import {
     commitGraphRemove,
     commitInfoAdd,
     commitInfoRemove,
-    commitItemChange, commitSnackbarOn
+    commitItemChange
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
 import {isNodeBackend} from "@/utils/typeCheck";
+import store from "@/store";
+import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 
 export type InfoPart = NodeInfoPart | MediaInfoPart | LinkInfoPart;
 export type idMap = Record<id, id>;
@@ -77,7 +79,7 @@ const getters = {
     },
 
     currentChildGraphList: (state: DataManagerState) => {
-        return state.currentGraph.getChildGraph()
+        return state.currentGraph.getChildDocument()
     },
 
     currentGraphDict: (state: DataManagerState) => {
@@ -293,6 +295,23 @@ const actions = {
             });
             return result
         } else return filePutBlob(fileToken, realFile, storeName);
+    },
+
+    async nodeExplode(context: Context, payload: {node: NodeSettingPart, document: GraphSelfPart}) {
+        let {node, document} = payload;
+        let _id = node.Setting._id;
+        let subGraph = state.graphManager[_id];
+        if (subGraph === undefined) {
+            dispatchGraphQuery({
+                _id,
+                parent: document,
+            }).then(() => {
+                let subGraph = state.graphManager[_id];
+                subGraph.explode()
+            });
+        } else {
+            subGraph.explode()
+        }
     }
 
 };
