@@ -10,30 +10,30 @@
             @mouseup="endSelect"
             @wheel="onScroll">
 
-<!--            <foreignObject-->
-<!--                v-for="(graph, index) in activeGraphList"-->
-<!--                :key="index"-->
-<!--                :x="activeGraphRectList[index + 1].x - 12"-->
-<!--                :y="activeGraphRectList[index + 1].y - 12"-->
-<!--                :width="activeGraphRectList[index + 1].width + 12"-->
-<!--                :height="activeGraphRectList[index + 1].height + 12"-->
-<!--                @mousedown.self="startSelect"-->
-<!--            >-->
-<!--                &lt;!&ndash;        展开的Graph&ndash;&gt;-->
-<!--                <graph-render-->
-<!--                    :document="graph"-->
-<!--                    :label-view-dict="labelViewDict"-->
-<!--                    :real-scale="realScale"-->
-<!--                    :graph-meta-data="activeGraphMetaDataList[index + 1]"-->
-<!--                    render-selector-->
-<!--                    @on-scroll="onScroll"-->
-<!--                    @move-start="startSelect"-->
-<!--                    @moving="selecting"-->
-<!--                    @move-end="subMoveEnd"-->
-<!--                >-->
+            <!--            <foreignObject-->
+            <!--                v-for="(graph, index) in activeGraphList"-->
+            <!--                :key="index"-->
+            <!--                :x="activeGraphRectList[index + 1].x - 12"-->
+            <!--                :y="activeGraphRectList[index + 1].y - 12"-->
+            <!--                :width="activeGraphRectList[index + 1].width + 12"-->
+            <!--                :height="activeGraphRectList[index + 1].height + 12"-->
+            <!--                @mousedown.self="startSelect"-->
+            <!--            >-->
+            <!--                &lt;!&ndash;        展开的Graph&ndash;&gt;-->
+            <!--                <graph-render-->
+            <!--                    :document="graph"-->
+            <!--                    :label-view-dict="labelViewDict"-->
+            <!--                    :real-scale="realScale"-->
+            <!--                    :graph-meta-data="activeGraphMetaDataList[index + 1]"-->
+            <!--                    render-selector-->
+            <!--                    @on-scroll="onScroll"-->
+            <!--                    @move-start="startSelect"-->
+            <!--                    @moving="selecting"-->
+            <!--                    @move-end="subMoveEnd"-->
+            <!--                >-->
 
-<!--                </graph-render>-->
-<!--            </foreignObject>-->
+            <!--                </graph-render>-->
+            <!--            </foreignObject>-->
 
             <graph-link
                 v-for="(link, index) in links"
@@ -108,14 +108,14 @@
 
         </graph-media>
 
-        <graph-note
-            v-show="renderNotes"
-            v-for="(note, index) in activeNotes"
-            :key="index"
-            :note="note"
-            :container="container"
-        >
-        </graph-note>
+        <!--        <graph-note-->
+        <!--            v-show="renderNotes"-->
+        <!--            v-for="(note, index) in activeNotes"-->
+        <!--            :key="index"-->
+        <!--            :note="note"-->
+        <!--            :container="container"-->
+        <!--        >-->
+        <!--        </graph-note>-->
 
         <graph-node-button
             v-for="node in nodes"
@@ -211,6 +211,7 @@
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
+    import retryTimes = jest.retryTimes;
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 
@@ -220,10 +221,10 @@
             GraphNode,
             GraphLink,
             GraphMedia,
-            GraphNote,
             GraphNodeButton,
             GraphLabelSelector,
-            GraphRender,
+            // GraphNote,
+            // GraphRender,
         },
         data() {
             return {
@@ -267,7 +268,8 @@
                     "node": {},
                     "media": {},
                     "link": {},
-                    "document": {}
+                    "note": {},
+                    "document": {},
                 } as LabelViewDict,
 
                 //缩放比例
@@ -359,8 +361,8 @@
             },
             // 不包含本身的graph
             activeGraphList: function (): GraphSelfPart[] {
-                return this.childDocumentList.filter(graph => graph &&
-                    !graph.Conf.State.isDeleted && graph.Conf.State.isExplode)
+                return [this.document].concat(this.childDocumentList.filter(graph => graph &&
+                    !graph.Conf.State.isDeleted && graph.Conf.State.isExplode))
             },
 
             activeGraphIdList: function (): id[] {
@@ -417,8 +419,8 @@
             activeGraphRectList: function (): AreaRect[] {
                 return this.activeGraphMetaDataList.map(meta => meta.rect.positiveRect())
             },
-            // 包含所有的Nodes Links Medias
-            allNodes: function (): NodeSettingPart[] {
+            // 包含所有的Nodes Links
+            nodes: function (): NodeSettingPart[] {
                 let result: NodeSettingPart[] = [];
                 this.activeGraphList.map(graph => {
                     result = result.concat(graph.Graph.nodes)
@@ -426,7 +428,11 @@
                 return result
             },
 
-            allLinks: function (): LinkSettingPart[] {
+            nodeLength: function () {
+                return this.nodes.length
+            },
+
+            links: function (): LinkSettingPart[] {
                 let result: LinkSettingPart[] = [];
                 this.activeGraphList.map(graph => {
                     result.concat(graph.Graph.links)
@@ -434,28 +440,13 @@
                 return result
             },
 
-            allMedias: function (): MediaSettingPart[] {
-                let result: MediaSettingPart[] = [];
-                this.activeGraphList.map(graph => {
-                    result.concat(graph.Graph.medias)
-                });
-                return result
+            // 只有自身的medias
+            medias(): MediaSettingPart[] {
+                return this.document.Graph.medias
             },
 
             notes(): NoteSettingPart[] {
                 return this.document.Graph.notes
-            },
-
-            nodes(): NodeSettingPart[] {
-                return this.document.Graph.nodes
-            },
-
-            links: function () {
-                return this.document.Graph.links
-            },
-
-            medias(): MediaSettingPart[] {
-                return this.document.Graph.medias
             },
 
             selectedNodes(): NodeSettingPart[] {
@@ -472,47 +463,6 @@
 
             linkInfoList(): LinkInfoPart[] {
                 return this.links.map(link => this.dataManager.linkManager[link.Setting._id])
-            },
-
-            //Node包含的label
-            nodeLabels(): string[] {
-                let result: string[] = [];
-                this.nodeInfoList.map(node => {
-                    result.indexOf(node.Info.PrimaryLabel) === -1 &&
-                    result.push(node.Info.PrimaryLabel)
-                });
-                return result
-            },
-
-            mediaLabels(): string[] {
-                let result: string[] = [];
-                this.mediaInfoList.map(media => {
-                    result.indexOf(media.Info.PrimaryLabel) === -1 &&
-                    result.push(media.Info.PrimaryLabel)
-                });
-                return result;
-            },
-
-            linkLabels(): string[] {
-                let result: string[] = [];
-                this.linkInfoList.map(link => {
-                    result.indexOf(link.Info.PrimaryLabel) === -1 &&
-                    result.push(link.Info.PrimaryLabel)
-                });
-                return result;
-            },
-
-            noteLabels(): string[] {
-                let result: string[] = [];
-                this.notes.map(item => {
-                    result.indexOf(item.Setting._label) === -1 &&
-                    result.push(item.Setting._label)
-                });
-                return result;
-            },
-
-            activeNotes(): NoteSettingPart[] {
-                return this.notes.filter(note => !note.State.isDeleted)
             },
 
             impList(): number[] {
@@ -931,14 +881,22 @@
                 this.isMoving = false
             },
 
-            getLabelViewDict() {
-                let typeDict: Record<BaseType, string[]> = {
-                    node: this.nodeLabels,
-                    link: this.linkLabels,
-                    media: this.mediaLabels,
-                    note: this.noteLabels,
-                    document: ['DocGraph', 'DocPaper']
-                };
+            getLabelViewDict: function () {
+                let getLabels = (list: AllSettingPart[]) => {
+                    let result: string[] = [];
+                    list.map((item: AllSettingPart) => {
+                        result.indexOf(item.Setting._label) === -1 &&
+                        result.push(item.Setting._label)
+                    })
+                    return result
+                }
+                let typeDict = {
+                    'node': getLabels(this.nodes),
+                    'link': getLabels(this.links),
+                    'media': getLabels(this.medias),
+                    'note': getLabels(this.notes),
+                    'document': ['DocGraph', 'DocPaper']
+                }
                 Object.entries(typeDict).map(([_type, labels]) => {
                     labels.map(label => {
                         if (this.labelViewDict[_type][label] === undefined) {
@@ -997,29 +955,19 @@
         },
 
         watch: {
-            nodeLabels() {
-                this.getLabelViewDict()
+            nodeLength: function (): void {
+                // this.updateCardLoc();
             },
 
-            linkLabels() {
-                this.getLabelViewDict()
-            },
-
-            mediaLabels() {
-                this.getLabelViewDict()
-            },
-
-            nodeLength() {
-                this.updateCardLoc();
-            },
-
-            isSelected() {
+            isSelected: function (): void {
                 this.$set(this.document.baseNode.State, 'isSelected', this.isSelected)
             }
         },
-        created() {
-            this.updateCardLoc();
-            this.getLabelViewDict();
+        created: function (): void {
+            this.getLabelViewDict()
+        },
+        mounted: function (): void {
+            this.getLabelViewDict()
         },
         record: {
             status: 'empty'
