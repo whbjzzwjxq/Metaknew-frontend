@@ -10,31 +10,30 @@
             @mouseup="endSelect"
             @wheel="onScroll">
 
-            <foreignObject
-                v-for="(graph, index) in activeGraphList"
-                :key="index"
-                :x="activeGraphRectList[index].x"
-                :y="activeGraphRectList[index].y"
-                :width="activeGraphRectList[index].width"
-                :height="activeGraphRectList[index].height"
-                @mousedown.self="startSelect"
-            >
-                <!--        展开的Graph-->
-                <graph-render
-                    :document="graph"
-                    :label-view-dict="labelViewDict"
-                    :real-scale="realScale"
-                    :base-node="activeGraphNodeList[index]"
-                    :base-rect="activeGraphRectList[index]"
-                    render-selector
-                    @on-scroll="onScroll"
-                    @move-start="startSelect"
-                    @moving="selecting"
-                    @move-end="subMoveEnd"
-                >
+<!--            <foreignObject-->
+<!--                v-for="(graph, index) in activeGraphList"-->
+<!--                :key="index"-->
+<!--                :x="activeGraphRectList[index + 1].x - 12"-->
+<!--                :y="activeGraphRectList[index + 1].y - 12"-->
+<!--                :width="activeGraphRectList[index + 1].width + 12"-->
+<!--                :height="activeGraphRectList[index + 1].height + 12"-->
+<!--                @mousedown.self="startSelect"-->
+<!--            >-->
+<!--                &lt;!&ndash;        展开的Graph&ndash;&gt;-->
+<!--                <graph-render-->
+<!--                    :document="graph"-->
+<!--                    :label-view-dict="labelViewDict"-->
+<!--                    :real-scale="realScale"-->
+<!--                    :graph-meta-data="activeGraphMetaDataList[index + 1]"-->
+<!--                    render-selector-->
+<!--                    @on-scroll="onScroll"-->
+<!--                    @move-start="startSelect"-->
+<!--                    @moving="selecting"-->
+<!--                    @move-end="subMoveEnd"-->
+<!--                >-->
 
-                </graph-render>
-            </foreignObject>
+<!--                </graph-render>-->
+<!--            </foreignObject>-->
 
             <graph-link
                 v-for="(link, index) in links"
@@ -178,7 +177,6 @@
     import Vue from 'vue'
     import {DataManagerState} from '@/store/modules/dataManager'
     import {
-        AllItemSettingPart,
         AllSettingPart,
         BaseType,
         getIndex,
@@ -188,21 +186,18 @@
         id,
         LinkInfoPart,
         LinkSettingPart,
-        MediaInfoPart, MediaSetting,
+        MediaInfoPart,
+        MediaSetting,
         MediaSettingPart,
-        NodeInfoPart, NodeSetting,
+        NodeInfoPart,
+        NodeSetting,
         NodeSettingPart,
         NoteSettingPart,
         SettingPart,
         VisualNodeSettingPart
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
-    import {
-        AreaRect,
-        PointObject,
-        RectByPoint,
-        Point, getPoint
-    } from '@/utils/geoMetric'
+    import {AreaRect, getPoint, Point, PointMixed, PointObject, RectByPoint} from '@/utils/geoMetric'
     import * as CSS from 'csstype'
     import GraphNode from './GraphNode.vue';
     import GraphLink from './GraphLink.vue';
@@ -211,7 +206,7 @@
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphRender from "@/components/graphComponents/GraphRender.vue";
-    import {item, LabelViewDict, VisualNodeSetting} from '@/utils/interfaceInComponent'
+    import {GraphMetaData, LabelViewDict, VisualNodeSetting} from '@/utils/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
@@ -367,31 +362,63 @@
                 return this.childDocumentList.filter(graph => graph &&
                     !graph.Conf.State.isDeleted && graph.Conf.State.isExplode)
             },
+
             activeGraphIdList: function (): id[] {
                 return this.activeGraphList.map(graph => graph.id)
             },
-            // 在当前Graph里找到所有与activeGraph对应的Node
-            activeGraphNodeList: function (): NodeSettingPart[] {
-                return this.nodes.filter(node => this.activeGraphIdList.indexOf(node.Setting._id) >= 0)
+
+            activeGraphMetaDataList: function (): GraphMetaData[] {
+                let realScale = this.realScale;
+                let vm = this;
+                // 从父亲Graph里的节点位置推出自身的矩形位置
+                const getRectFromParent = (document: GraphSelfPart, parentNodeLocation: PointMixed) => {
+                    // 当前缩放下矩形的长宽
+                    let width = document.rect.width * realScale;
+                    let height = document.rect.height * realScale;
+                    // baseNode在矩形的位置
+                    let delta = getPoint(document.baseNode.Setting.Base).multiRect({width, height})
+                    // 起点与parentNode的位置差为delta
+                    let start = delta.copy().multi(-1).add(parentNodeLocation)
+                    let end = start.copy().addRect({width, height})
+                    return new RectByPoint(start, end, document.Conf.Setting.Base.border)
+                }
+                let root: GraphMetaData = {
+                    parent: null,
+                    self: this.document,
+                    rect: this.container,
+                };
+                let result = [root]
+                let searchGraph = function (graphMeta: GraphMetaData) {
+                    let graph = graphMeta.self.Graph
+                    let rect = graphMeta.rect
+                    graph.nodes.map(node => {
+                        let {_type, _id, Base} = node.Setting;
+                        let index = vm.activeGraphIdList.indexOf(_id);
+                        if (_type === 'document' && index > -1) {
+                            // 这个Graph被激活了
+                            let doc = vm.activeGraphList[index];
+                            let parentNode = vm.getRectByPoint(0, 0, node.Setting, rect.positiveRect())
+                            let childRect = getRectFromParent(doc, parentNode.start);
+                            let childGraphMeta: GraphMetaData = {
+                                parent: graphMeta,
+                                self: doc,
+                                rect: childRect
+                            }
+                            result.push(childGraphMeta)
+                            searchGraph(childGraphMeta)
+                        }
+                    })
+                }
+                searchGraph(root)
+                return result
             },
+
             // 求出所有的Rect
-            activeGraphRectList(): AreaRect[] {
-                return this.activeGraphList.map((graph, index) => {
-                    let width = graph.rect.width * this.realScale;
-                    let height = graph.rect.height * this.realScale;
-                    let {x, y} = graph.baseNode.Setting.Base;
-                    let baseLocation = this.getTargetInfo(this.activeGraphNodeList[index])
-                    let area = {
-                        x: baseLocation.x - width * x,
-                        y: baseLocation.y - height * y,
-                        width,
-                        height
-                    } as AreaRect;
-                    return area
-                })
+            activeGraphRectList: function (): AreaRect[] {
+                return this.activeGraphMetaDataList.map(meta => meta.rect.positiveRect())
             },
             // 包含所有的Nodes Links Medias
-            allNodes(): NodeSettingPart[] {
+            allNodes: function (): NodeSettingPart[] {
                 let result: NodeSettingPart[] = [];
                 this.activeGraphList.map(graph => {
                     result = result.concat(graph.Graph.nodes)
@@ -399,7 +426,7 @@
                 return result
             },
 
-            allLinks(): LinkSettingPart[] {
+            allLinks: function (): LinkSettingPart[] {
                 let result: LinkSettingPart[] = [];
                 this.activeGraphList.map(graph => {
                     result.concat(graph.Graph.links)
@@ -407,7 +434,7 @@
                 return result
             },
 
-            allMedias(): MediaSettingPart[] {
+            allMedias: function (): MediaSettingPart[] {
                 let result: MediaSettingPart[] = [];
                 this.activeGraphList.map(graph => {
                     result.concat(graph.Graph.medias)
@@ -694,8 +721,9 @@
                 }
             },
 
-            getRectByPoint(width: number, height: number, setting: NodeSetting | MediaSetting) {
-                let basePoint = getPoint(setting.Base).multiRect(this.containerRect)
+            getRectByPoint(width: number, height: number, setting: NodeSetting | MediaSetting, rect?: AreaRect) {
+                rect || (rect = this.containerRect);
+                let basePoint = getPoint(setting.Base).multiRect(rect)
                 let startPoint = this.lastViewPoint.copy()
                     .decrease(this.viewPoint.copy().decrease(basePoint).multi(this.realScale))
                 let endPoint = startPoint.copy().addRect({width, height})

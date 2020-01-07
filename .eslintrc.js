@@ -20,8 +20,6 @@ module.exports = {
     'quotes': 'off',
     'comma-dangle': 'off',
     'spaced-comment': 'off',
-    '@vue/no-unused-components': 'off',
-    'padded-blocks': 'off'
   },
   parserOptions: {
     parser: '@typescript-eslint/parser'

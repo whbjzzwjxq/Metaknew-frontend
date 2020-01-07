@@ -1,5 +1,6 @@
 import {FieldType, ResolveType} from "@/utils/labelField";
-import {AreaRect, PointObject} from "@/utils/geoMetric";
+import {AreaRect, RectByPoint} from "@/utils/geoMetric";
+import {GraphSelfPart} from "@/utils/graphClass";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -50,4 +51,10 @@ export interface VisualNodeSetting extends AreaRect {
     show: boolean,
     isSelected: boolean,
     isDeleted: boolean
+}
+
+export type GraphMetaData = {
+    self: GraphSelfPart,
+    rect: RectByPoint,
+    parent: GraphMetaData | null,
 }

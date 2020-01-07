@@ -12,6 +12,7 @@ import {
     isNoteSetting
 } from "@/utils/typeCheck";
 import {ValueWithType, ExtraProps} from "@/utils/interfaceInComponent";
+import {AreaRect} from "@/utils/geoMetric";
 
 export let newIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
@@ -257,12 +258,18 @@ export interface Setting {
     [propName: string]: any;
 }
 
+interface Base {
+    x: number,
+    y: number,
+    size: number,
+    scaleX: number,
+    [prop: string]: any
+}
 export interface NodeSetting extends Setting {
     _type: 'node' | 'document';
     _name: string;
     _image: string;
-    Base: Record<string, any>
-
+    Base: Base
 }
 
 export interface MediaSetting extends Setting {
@@ -1113,7 +1120,7 @@ export class GraphSelfPart {
     get baseNode() {
         return this._baseNode
     }
-    rect: { width: number, height: number };
+    rect: AreaRect;
     static list: Array<GraphSelfPart>;
     static baseList: Array<GraphBackend>; // 原始数据
     constructor(
@@ -1129,7 +1136,7 @@ export class GraphSelfPart {
         this.Conf = setting;
         this.Graph = graph;
         this.Path = path;
-        this.rect = {width: 600, height: 400};
+        this.rect = {x: 0, y: 0, width: 600, height: 400};
         if (GraphSelfPart.list === undefined) {
             GraphSelfPart.list = [this]
         } else {

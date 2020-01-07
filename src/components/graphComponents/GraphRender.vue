@@ -1,83 +1,65 @@
 <template>
-    <div :style="containerStyle" class="pa-2">
-        <svg
-            width="100%"
-            height="100%"
-            @dblclick="clickSvg"
-            @mousedown.self="startSelect"
-            @mousemove="selecting"
-            @mouseup="endSelect"
-            @wheel="onScroll"
-        >
+    <rect-container :container="emptyRect">
+        <template slot="content">
+            <svg
+                width="100%"
+                height="100%"
+                @dblclick="clickSvg"
+                @mousedown.self="startSelect"
+                @mousemove="selecting"
+                @mouseup="endSelect"
+                @wheel="onScroll"
+            >
 
-            <graph-link
-                v-for="(link, index) in links"
-                v-show="showLink[index]"
-                :key="link.Setting._id"
-                :link="link"
-                :scale="realScale"
-                :source="getTargetInfo(link.Setting._start)"
-                :target="getTargetInfo(link.Setting._end)"
-                :mid-location="midLocation[index]"
-            ></graph-link>
+                <graph-link
+                    v-for="(link, index) in links"
+                    v-show="showLink[index]"
+                    :key="link.Setting._id"
+                    :link="link"
+                    :scale="realScale"
+                    :source="getTargetInfo(link.Setting._start)"
+                    :target="getTargetInfo(link.Setting._end)"
+                    :mid-location="midLocation[index]"
+                ></graph-link>
 
-            <graph-node
-                v-for="(node, index) in nodes"
-                v-show="showNode[index]"
-                :key="node.Setting._id"
-                :node="node"
-                :container="container"
-                :size="impScaleRadius[index]"
-                :scale="realScale"
-                :point="nodeLocation[index]"
-                :index="index"
-                @mouseenter.native="mouseEnter(node)"
-                @mouseleave.native="mouseLeave(node)"
-                @mousedown.native="dragStart"
-                @mousemove.native="drag(node, $event)"
-                @mouseup.native="dragEnd(node, $event)"
-                @dblclick.native.stop="dbClickNode(node)">
+                <graph-node
+                    v-for="(node, index) in nodes"
+                    v-show="showNode[index]"
+                    :key="node.Setting._id"
+                    :node="node"
+                    :container="container"
+                    :size="impScaleRadius[index]"
+                    :scale="realScale"
+                    :point="nodeLocation[index]"
+                    :index="index"
+                    @mouseenter.native="mouseEnter(node)"
+                    @mouseleave.native="mouseLeave(node)"
+                    @mousedown.native="dragStart"
+                    @mousemove.native="drag(node, $event)"
+                    @mouseup.native="dragEnd(node, $event)"
+                    @dblclick.native.stop="dbClickNode(node)">
 
-            </graph-node>
+                </graph-node>
 
-            <rect
-                v-if="renderSelector"
-                :style="selectorStyle"
-                :x="selector.x"
-                :y="selector.y"
-                :width="selector.width"
-                :height="selector.height">
-
-            </rect>
-
-        </svg>
-        <graph-media
-            v-for="(node, index) in medias"
-            :key="node.Setting._id"
-            :setting="node"
-            :container="container"
-            :location="mediaLocation[index]"
-            :scale="realScale"
-            :view-box="baseRect"
-            :index="index"
-            @mouseenter.native="mouseEnter(node)"
-            @mouseleave.native="mouseLeave(node)"
-            @mousedown.native="dragStart"
-            @mousemove.native="drag(node, $event)"
-            @mouseup.native="dragEnd(node, $event)"
-            @dblclick.native.stop="dbClickNode(node)"
-        >
-
-        </graph-media>
-
-    </div>
+                <rect
+                    v-if="renderSelector"
+                    :style="selectorStyle"
+                    :x="selector.x"
+                    :y="selector.y"
+                    :width="selector.width"
+                    :height="selector.height">
+                </rect>
+            </svg>
+        </template>
+    </rect-container>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import {
         AllItemSettingPart,
-        GraphSelfPart, GraphSettingPart, GraphState,
+        GraphSelfPart,
+        GraphState,
         LinkSettingPart,
         MediaSettingPart, NodeInfoPart,
         NodeSettingPart,
@@ -86,13 +68,13 @@
     import {AreaRect, PointObject, RectByPoint, getPoint, Point} from "@/utils/geoMetric";
     import {DataManagerState} from "@/store/modules/dataManager";
     import * as CSS from "csstype";
-    import {LabelViewDict, VisualNodeSetting} from "@/utils/interfaceInComponent";
+    import {GraphMetaData, LabelViewDict, VisualNodeSetting} from "@/utils/interfaceInComponent";
     import {isMediaSetting} from "@/utils/typeCheck";
     import {commitItemChange} from "@/store/modules/_mutations";
     import {getInfoPart, maxN, minN} from "@/utils/utils";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
-    import GraphMedia from "@/components/graphComponents/GraphMedia.vue";
+    import RectContainer from "@/components/container/RectContainer.vue";
     import {StyleManagerState} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
@@ -100,7 +82,7 @@
         components: {
             GraphLink,
             GraphNode,
-            GraphMedia
+            RectContainer
         },
         data() {
             return {
@@ -123,7 +105,7 @@
                 startNode: null as null | VisualNodeSettingPart,
                 newLinkEndPoint: new Point(0, 0),
 
-                isMoving: false
+                isMoving: false,
             }
         },
         props: {
@@ -133,14 +115,8 @@
             },
 
             // 在根图中的节点
-            baseNode: {
-                type: Object as () => NodeSettingPart,
-                required: true
-            },
-
-            // 在根图中的矩形
-            baseRect: {
-                type: Object as () => AreaRect,
+            graphMetaData: {
+                type: Object as () => GraphMetaData,
                 required: true
             },
 
@@ -165,11 +141,8 @@
             },
         },
         computed: {
-            state(): GraphState {
+            state: function (): GraphState {
                 return this.document.Conf.State
-            },
-            setting(): GraphSettingPart {
-                return this.document.Conf
             },
             isSelf(): boolean {
                 return this.state.isSelf
@@ -200,12 +173,25 @@
                 return this.$store.state.styleComponentSize
             },
 
-            viewBox(): RectByPoint {
+            viewBox: function (): RectByPoint {
                 return this.allComponentsStyle.viewBox
             },
 
-            container(): RectByPoint {
-                return this.baseContainer.updateFromArea(this.baseRect)
+            container: function (): RectByPoint {
+                return this.graphMetaData.rect
+            },
+
+            emptyRect: function () {
+                return {
+                    x: 0,
+                    y: 0,
+                    width: this.baseRect.width,
+                    height: this.baseRect.height
+                }
+            },
+
+            baseRect: function () {
+                return this.container.positiveRect()
             },
 
             containerStyle(): CSS.Properties {
