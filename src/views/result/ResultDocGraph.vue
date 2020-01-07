@@ -18,7 +18,7 @@
                     </div>
                     <v-col cols="2" class="pa-0 ma-0">
                         <sub-tool-new-item
-                            @add-empty-node="newNode('node', arguments[0])"
+                            @add-empty-node="newNode(arguments[0])"
                             @add-media="addMedia"
                         >
                         </sub-tool-new-item>
@@ -56,6 +56,7 @@
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
     import SubToolStyle from "@/components/toolbar/SubToolStyle.vue";
+
     export default Vue.extend({
         name: "ResultDocGraph",
         components: {
@@ -99,31 +100,53 @@
             }
         },
         methods: {
-            newNode(_type: 'node' | 'document', _label: string) {
+            newNode(_label: string, document?: GraphSelfPart) {
                 //Info Ctrl部分
                 let id = getIndex();
                 let info = NodeInfoPart.emptyNodeInfoPart(id, 'node', _label);
                 commitInfoAdd({item: info});
-                let setting = NodeSettingPart.emptyNodeSetting(id, 'node', _label, 'NewNode' + id, '', this.document);
-                this.document.addItems([setting]);
+                document || (document = this.document);
+                let setting = NodeSettingPart.emptyNodeSetting(id, 'node', _label, 'NewNode' + id, '', document);
+                document.addItems([setting]);
+                return setting
             },
 
-            newLink(start: VisualNodeSettingPart, end: VisualNodeSettingPart) {
+            newLink(start: VisualNodeSettingPart, end: VisualNodeSettingPart, document?: GraphSelfPart) {
                 let id = getIndex();
                 let info = LinkInfoPart.emptyLinkInfo(id, 'default', start, end);
                 commitInfoAdd({item: info});
-                let setting = LinkSettingPart.emptyLinkSetting(id, 'default', start, end, this.document);
-                this.document.addItems([setting]);
+                document || (document = this.document);
+                let setting = LinkSettingPart.emptyLinkSetting(id, 'default', start, end, document);
+                document.addItems([setting]);
+                return setting
             },
 
             newNote() {
 
             },
 
-            addMedia: function (mediaIdList: id[]) {
+            addMedia: function (mediaIdList: id[], document?: GraphSelfPart) {
+                let defaultDoc = this.document;
+                document || (document = defaultDoc);
                 let mediaSettingList = mediaIdList.map(id => this.dataManager.mediaManager[id])
-                    .map(info => MediaSettingPart.emptyMediaSettingFromInfo(info, this.document));
-                this.document.addItems(mediaSettingList)
+                    .map(info => {
+                        document || (document = defaultDoc);
+                        return MediaSettingPart.emptyMediaSettingFromInfo(info, document)
+                    });
+                document.addItems(mediaSettingList);
+                return mediaSettingList
+            },
+
+            addDocument: function (_label: 'DocGraph' | 'DocPaper', document?: GraphSelfPart) {
+                let defaultDoc = this.document;
+                document || (document = defaultDoc);
+                let id = getIndex();
+                let graph = GraphSelfPart.emptyGraphSelfPart(id, document);
+                let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', _label);
+                document.addItems([graph.baseNode]);
+                commitGraphAdd({graph, strict: true});
+                commitInfoAdd({item: info, strict: true});
+                return graph
             },
 
             saveDocument() {
@@ -143,21 +166,10 @@
             } else {
                 this.loading = false
             }
-
-            // TEST
-            let id = getIndex();
-            let graph = GraphSelfPart.emptyGraphSelfPart(id, this.dataManager.currentGraph);
-            let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
-            let newBaseNode = NodeSettingPart.emptyNodeSetting(id, 'document', 'DocGraph', 'NewDocument', '', graph);
-            commitInfoAdd({item: info, strict: true});
-
-            let nodeId = getIndex();
-            let node = NodeSettingPart.emptyNodeSetting(nodeId, 'node', 'DocGraph', '1', '', graph);
-            let nodeInfo = NodeInfoPart.emptyNodeInfoPart(nodeId, 'node', 'DocGraph');
-            commitInfoAdd({item: nodeInfo});
-            graph.addItems([node]);
-            commitGraphAdd({graph, strict: true});
-            this.dataManager.currentGraph.addItems([newBaseNode]);
+            let newGraph = this.addDocument('DocGraph');
+            this.newNode('BaseNode');
+            this.addDocument('DocGraph', newGraph);
+            this.newNode('BaseNode', newGraph)
         },
         mounted(): void {
 

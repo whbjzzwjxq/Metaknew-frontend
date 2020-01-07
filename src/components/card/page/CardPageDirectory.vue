@@ -153,7 +153,7 @@
                 let max = 0;
                 this.documents.map(document => {
                     docItemDict[document.id] = this.documentToItem(document);
-                    let layer = document.getChildDocument().length;
+                    let layer = document.rootList.length;
                     docLayerDict[layer] || (docLayerDict[layer] = []);
                     docLayerDict[layer].push(document);
                     layer > max && (max = layer)

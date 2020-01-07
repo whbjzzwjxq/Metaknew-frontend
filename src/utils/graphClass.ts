@@ -1222,7 +1222,7 @@ export class GraphSelfPart {
     getRoot() {
         let length = this.rootList.length;
         if (length > 0) {
-            return this.rootList[length - 1]
+            return this.rootList[0]
         } else {
             return null
         }

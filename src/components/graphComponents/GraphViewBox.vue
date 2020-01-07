@@ -350,6 +350,7 @@
                 return this.document.Conf
             },
             containerRect: function (): AreaRect {
+                // containerRect形式
                 return this.container.positiveRect()
             },
             containerStyle: function (): CSS.Properties {
@@ -357,7 +358,8 @@
                     {borderWidth: 0, overflow: "hidden"}
                 )
             },
-            childDocumentList: function() {
+            // 所有的孩子Document
+            childDocumentList: function () {
                 return this.document.getChildDocument()
             },
             // 不包含本身的graph
@@ -679,8 +681,8 @@
                     } else {
                         moveFunc(target)
                     }
+                    // 检查是否越界
                     this.checkOutside($event);
-                    clearTimeout(this.showCardId);
                 }
             },
 
@@ -840,6 +842,7 @@
                 this.selecting($event);
                 this.isMoving = false;
                 this.isSelecting = false;
+                this.clearSelected("all");
                 let result: AllSettingPart[] = [];
                 // 基础的selection
                 let nodes = this.nodes.filter((node, index) =>
@@ -852,18 +855,27 @@
                 let medias = this.medias.filter((media, index) =>
                     this.selectRect.checkInRect(this.mediaLocation[index].midPoint())
                 );
+                let selectRoot = false;
                 nodes.map(node => {
-                    //如果选中了Node
-                    if (node.Setting._type === 'document' && this.activeGraphIdList) {
+                        //是否选中Root节点
+                        selectRoot = selectRoot || node.Setting._id === this.document.id
 
+                        //如果选中了Document 对应的Node
+                        let index = this.activeGraphIdList.indexOf(node.Setting._id);
+                        if (node.Setting._type === 'document' && index > -1) {
+                            this.activeGraphList[index].allStateChange(true, 'isSelected')
+                        }
                     }
-                }
                 )
-                result = result.concat(nodes)
-                result = result.concat(links)
-                result = result.concat(medias);
-                this.clearSelected("all");
-                this.selectItem(result)
+                if (selectRoot) {
+                    // 选中所有内容
+                    this.document.allStateChange(true, 'isSelected')
+                } else {
+                    result = result.concat(nodes)
+                    result = result.concat(links)
+                    result = result.concat(medias);
+                    this.selectItem(result)
+                }
             },
 
             clickSvg() {

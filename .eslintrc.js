@@ -12,7 +12,6 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    'complexity': ['warn', { max: 15 }],
     'semi': 0,
     'space-before-function-paren': "off",
     'object-curly-spacing': "off",
@@ -21,6 +20,8 @@ module.exports = {
     'quotes': 'off',
     'comma-dangle': 'off',
     'spaced-comment': 'off',
+    '@vue/no-unused-components': 'off',
+    'padded-blocks': 'off'
   },
   parserOptions: {
     parser: '@typescript-eslint/parser'
