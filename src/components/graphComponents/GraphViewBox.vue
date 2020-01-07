@@ -839,23 +839,29 @@
             endSelect($event: MouseEvent) {
                 this.selecting($event);
                 this.isMoving = false;
-                this.$set(this, 'isSelecting', false);
+                this.isSelecting = false;
                 let result: AllSettingPart[] = [];
+                // 基础的selection
                 let nodes = this.nodes.filter((node, index) =>
                     this.selectRect.checkInRect(this.nodeLocation[index].midPoint())
                 );
+
                 let links = this.links.filter((link, index) =>
                     this.selectRect.checkInRect(this.midLocation[index])
                 );
                 let medias = this.medias.filter((media, index) =>
                     this.selectRect.checkInRect(this.mediaLocation[index].midPoint())
                 );
+                nodes.map(node => {
+                    //如果选中了Node
+                    if (node.Setting._type === 'document' && this.activeGraphIdList) {
+
+                    }
+                }
+                )
                 result = result.concat(nodes)
                 result = result.concat(links)
                 result = result.concat(medias);
-                nodes.map(node =>
-                    node.Setting._id === node.parent.id && (result.push(node.parent.Conf))
-                )
                 this.clearSelected("all");
                 this.selectItem(result)
             },

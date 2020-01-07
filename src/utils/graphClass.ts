@@ -1244,6 +1244,12 @@ export class GraphSelfPart {
         return list.filter(item => item.Setting._id === _id)[0]
     }
 
+    allItems(): AllItemSettingPart[] {
+        let {nodes, links, medias, notes} = this.Graph;
+        // @ts-ignore
+        return nodes.concat(links).concat(medias).concat(notes)
+    }
+
     addItems(items: AllItemSettingPart[]) {
         items.filter(item => !this.checkExistByItem(item)).map(
             item => {
@@ -1313,6 +1319,11 @@ export class GraphSelfPart {
             nodes.splice(index, 1);
             Vue.set(this.Conf.State, 'isExplode', true)
         }
+    }
+
+    allStateChange(value: boolean, state: 'isSelected' | 'isDeleted' | 'isSelf') {
+        this.allItems().map(item => Vue.set(item.State, state, value));
+        Vue.set(this.Conf.State, state, value)
     }
 }
 
