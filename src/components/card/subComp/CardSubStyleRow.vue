@@ -201,7 +201,7 @@
         record: {
             status: 'done',
             description: '单行的样式编辑器',
-            //todo 细化
+            //todo 细化 数字小于1的时候优化
         }
     })
 </script>

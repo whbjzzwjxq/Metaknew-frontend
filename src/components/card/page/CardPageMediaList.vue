@@ -36,7 +36,7 @@
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
     import {mediaAppendToNode, SourceQueryObject} from "@/api/commonSource";
     import {NodeInfoPart, MediaInfoPart, MediaSettingPart, getIsSelf} from "@/utils/graphClass";
-    import {FileToken, getFileToken} from '@/api/user'
+    import {getFileToken} from '@/api/user'
     import {commitFileToken} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
 

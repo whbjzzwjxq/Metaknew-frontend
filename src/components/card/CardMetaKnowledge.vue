@@ -47,7 +47,6 @@
     import CardPageLinkInfo from "@/components/card/page/CardPageLinkInfo.vue";
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
     import {GraphSelfPart} from "@/utils/graphClass";
-    import {InfoPart} from "@/store/modules/dataManager";
     import {TabContent} from "@/utils/interfaceInComponent";
 
     export default Vue.extend({

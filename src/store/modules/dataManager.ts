@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, SourceQueryObject} from '@/api/commonSource';
-import {FileToken, getFileToken} from '@/api/user';
+import {getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
     GraphSelfPart,

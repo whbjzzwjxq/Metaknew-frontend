@@ -1,6 +1,5 @@
 // @ts-ignore
 import OSS from 'ali-oss'
-import {FileToken} from './user'
 
 export async function filePutBlob(fileToken: FileToken, file: File, storeName: string) {
   let client = new OSS({

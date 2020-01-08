@@ -1,19 +1,19 @@
 <template>
-  <v-card :width="width" tile flat class="pa-2">
-    <v-card-title style="font-size: 14px"> Current {{ propName }}</v-card-title>
-    <v-card-text>
-      <v-text-field
-        :value="number"
-        @input="newValue"
-        hide-details
-        single-line
-        type="number"
-        :rules="activeRules">
+    <v-card :width="width" tile flat class="pa-2">
+        <v-card-title style="font-size: 14px"> Current {{ propName }}</v-card-title>
+        <v-card-text>
+            <v-text-field
+                :value="number"
+                @input="newValue"
+                hide-details
+                single-line
+                type="number"
+                :rules="activeRules">
 
-      </v-text-field>
-    </v-card-text>
-    <slot name="tips"></slot>
-  </v-card>
+            </v-text-field>
+        </v-card-text>
+        <slot name="tips"></slot>
+    </v-card>
 </template>
 
 <script lang="ts">
@@ -62,16 +62,18 @@
             }
         },
         computed: {
-            activeRules: (vm): any[] => {
+            activeRules: function () {
                 let result = [];
-                vm.range.check && result.push(vm.rules.range);
-                vm.intCheck && result.push(vm.rules.int);
+                this.range.check && result.push(this.rules.range);
+                this.intCheck && result.push(this.rules.int);
                 return result
             },
-            number: (vm): number => vm.baseNum
-                ? vm.baseNum
-                : vm.defaultValue,
-            rules(): any {
+            number: function () {
+                return this.baseNum
+                    ? this.baseNum
+                    : this.defaultValue
+            },
+            rules: function(): Record<string, (value: number) => boolean | string> {
                 let range = this.range as Range;
                 return {
                     range: (value: number) => (range.min <= value && value <= range.max) ||
@@ -88,7 +90,8 @@
             }
         },
         record: {
-            status: 'done'
+            status: 'done',
+            description: '数字编辑器'
         }
     })
 </script>
@@ -96,3 +99,7 @@
 <style scoped>
 
 </style>
+/**
+* Created by whb on 2019/12/4
+* Updated by [whb on 2020年1月8日19:58:44]
+*/

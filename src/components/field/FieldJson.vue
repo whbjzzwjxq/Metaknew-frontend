@@ -166,13 +166,14 @@
             dict: function() {
                 return deepClone(this.baseProps)
             },
-            propNum: vm => vm.keys.length,
-            status: vm => vm.keys.filter((key: string) => (key && key.length <= 20)).length === vm.propNum
-                ? 'default'
-                : 'error',
-            // dict: vm => Object.keys(vm.baseProps).length > 0
-            //     ? deepClone(vm.baseProps)
-            //     : vm.defaultValue
+            propNum: function () {
+                return this.keys.length
+            },
+            status: function () {
+                return this.keys.filter((key: string) => (key && key.length <= 20)).length === this.propNum
+                    ? 'default'
+                    : 'error'
+            },
         },
 
         methods: {
@@ -230,7 +231,8 @@
         },
 
         record: {
-            status: 'done'
+            status: 'done',
+            description: '字典格式编辑器'
         }
     })
 </script>
@@ -238,3 +240,7 @@
 <style scoped>
 
 </style>
+/**
+* Created by whb on 2019/12/4
+* Updated by [whb on 2020年1月8日19:58:44]
+*/

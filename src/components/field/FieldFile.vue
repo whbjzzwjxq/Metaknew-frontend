@@ -117,12 +117,9 @@
     import {guid} from '@/utils/utils'
     import CardPageMediaInfo from '../card/page/CardPageMediaInfo.vue';
     import MediaResolver from '../media/MediaResolver.vue';
-    import {FileToken} from '@/api/user'
-    import {id, MediaInfoPart} from '@/utils/graphClass'
+    import {MediaInfoPart} from '@/utils/graphClass'
     import {commitInfoAdd} from '@/store/modules/_mutations'
     import {dispatchUploadFile} from "@/store/modules/_dispatch";
-
-    const mime = require('mime/lite');
 
     export default Vue.extend({
         name: 'FieldFile',
@@ -163,6 +160,7 @@
                 type: Number as () => number,
                 default: 400
             },
+            // 规则组
             rules: {
                 type: Array as () => (() => {})[],
                 default: () => []
@@ -177,8 +175,11 @@
             }
         },
         computed: {
-            fileToken: (vm): FileToken => vm.$store.state.userInfo.fileToken,
-            status(): string {
+            fileToken: function (): FileToken {
+                return this.$store.state.userInfo.fileToken
+            },
+            // 整个状态
+            status: function(): string {
                 let statusList = this.newFiles.map(file => file.status);
                 let result: string;
                 statusList.includes('uploading')
@@ -188,26 +189,27 @@
                     : result = 'default';
                 return result
             },
-            currentRealFiles() {
+            // 现有的真的MediaInfoPart
+            currentRealFiles: function() {
                 return this.baseFiles.map((id: id) => this.$store.state.dataManager.mediaManager[id])
             },
         },
         methods: {
-            saveMedia() {
+            saveMedia: function() {
                 this.$emit('update-value', this.propName, this.currentFiles, this.status);
             },
 
-            removeFile(index: number) {
+            removeFile: function(index: number) {
                 this.newFiles.splice(index, 1)
             },
 
-            removeCurrentFile(index: number) {
+            removeCurrentFile: function(index: number) {
                 this.currentFiles.splice(index, 1);
                 this.saveMedia()
             },
 
             // 如果从收藏里获取内容 那么就不需要上传了
-            addFile(files: Array<MediaInfoPart>, isExist: boolean) {
+            addFile: function(files: MediaInfoPart[], isExist: boolean) {
                 isExist
                     ? this.currentFiles = this.currentFiles.concat(files.map(file => {
                         let id = file.Info.id;
@@ -217,7 +219,7 @@
                     : this.newFiles = this.newFiles.concat(files)
             },
 
-            uploadFile(index: number) {
+            uploadFile: function(index: number) {
                 let file = this.newFiles[index];
                 let storeName = 'userFileCache/' + this.guid() + '.' + file.Ctrl.Format;
                 file.file &&
@@ -244,7 +246,9 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: "文件上传编辑器",
+            //todo 从收藏获取File
         }
     })
 </script>
@@ -256,3 +260,7 @@
     }
 
 </style>
+/**
+* Created by whb on 2019/12/4
+* Updated by [whb on 2020年1月8日19:58:44]
+*/

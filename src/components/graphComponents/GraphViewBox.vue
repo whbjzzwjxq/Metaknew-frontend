@@ -186,14 +186,11 @@
         LinkInfoPart,
         LinkSettingPart,
         MediaInfoPart,
-        MediaSetting,
         MediaSettingPart,
         NodeInfoPart,
-        NodeSetting,
         NodeSettingPart,
         NoteSettingPart,
         SettingPart,
-        VisualNodeSettingPart
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
     import {getPoint, Point, RectByPoint} from '@/utils/geoMetric'
@@ -205,7 +202,7 @@
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphRender from "@/components/graphComponents/GraphRender.vue";
-    import {LabelViewDict, VisualNodeSetting} from '@/utils/interfaceInComponent'
+    import {LabelViewDict} from '@/utils/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";

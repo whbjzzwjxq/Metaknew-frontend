@@ -15,11 +15,13 @@ export interface registerData extends loginData {
     code: number | string
 }
 
-export interface FileToken {
-    'AccessKeySecret': string,
-    'AccessKeyId': string,
-    'Expiration': number,
-    'SecurityToken': string
+declare global {
+    interface FileToken {
+        'AccessKeySecret': string,
+        'AccessKeyId': string,
+        'Expiration': number,
+        'SecurityToken': string
+    }
 }
 
 export interface UserLoginResponse {

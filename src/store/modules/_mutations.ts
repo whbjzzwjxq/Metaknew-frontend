@@ -1,6 +1,5 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {FileToken} from "@/api/user";
 import {GraphSelfPart} from "@/utils/graphClass";
 
 export const commitUserLogin = (payload: userLoginPayload) => {

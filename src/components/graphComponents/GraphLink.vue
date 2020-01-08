@@ -43,7 +43,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {LinkSettingPart} from "@/utils/graphClass";
-    import {VisualNodeSetting} from "@/utils/interfaceInComponent";
     import {getPoint, getPointDistance, rectDiagonalDistance} from "@/utils/geoMetric";
 
     export default Vue.extend({
@@ -94,6 +93,7 @@
                 // 终点是减小 所以有个负号
                 let endDelta = startDelta.copy().multi(-targetR / sourceR);
 
+                //关系实际的起点终点位置
                 const locationDelta = function (
                     pointLoc: 'top' | 'bottom' | 'left' | 'right' | 'center',
                     rect: AreaRect, delta: PointMixed) {
@@ -225,5 +225,4 @@
 /**
 * Created by whb on 2019/12/31
 * Updated by []
-完成于2020年1月8日17:43:50
 */

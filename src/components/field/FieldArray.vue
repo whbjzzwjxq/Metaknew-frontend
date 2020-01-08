@@ -124,37 +124,46 @@
                 return this.existTags.join(';');
             },
 
+            //组件状态
             status: function () {
                 return !this.duplicate
                     ? 'default'
                     : 'error'
             },
 
+            // 默认字符池
             pool: function () {
                 return this.existTags.concat(this.basePool)
             },
 
-            duplicate: (vm) =>
-                vm.existTags.length > 0 &&
-                vm.existTags.filter((tag: string) => checkDuplicate(vm.pool, tag)).length === vm.existTags.length,
+            // 是否重复
+            duplicate: function () {
+                return this.existTags.length > 0 &&
+                    this.existTags.filter((tag: string) => checkDuplicate(this.pool, tag)).length === this.existTags.length
+            },
 
-            recommendTags: (vm) => vm.editable
-                ? vm.availableTags
-                : {},
+            //推荐的标签
+            recommendTags: function () {
+                return this.editMode
+                    ? this.availableTags
+                    : {}
+            },
 
-            tipsContent: (vm) => vm.duplicate
-                ? 'duplicate tag'
-                : '',
+            // 提示的内容
+            tipsContent: function () {
+                return this.duplicate
+                    ? 'duplicate tag'
+                    : ''
+            },
 
-            existTags(): string[] {
-                let vm = this;
-                if (vm.baseArray) {
-                    return vm.baseArray.filter((item: string) => item !== '')
+            //已有的标签
+            existTags: function (): string[] {
+                if (this.baseArray) {
+                    return this.baseArray.filter((item: string) => item !== '')
                 } else {
-                    return vm.defaultValue
+                    return this.defaultValue
                 }
             }
-            //
         },
         methods: {
             removeTag(item: string) {
@@ -194,16 +203,10 @@
                 this.updateTags($event.split(';').filter(tag => tag !== ''))
             }
         },
-        created() {
-
-        },
-
-        updated() {
-
-        },
 
         record: {
-            status: 'done-old'
+            status: 'done',
+            description: '数组编辑器'
         }
     })
 </script>
@@ -211,3 +214,7 @@
 <style scoped>
 
 </style>
+/**
+* Created by whb on 2019/12/4
+* Updated by [whb on 2020年1月8日19:58:44]
+*/

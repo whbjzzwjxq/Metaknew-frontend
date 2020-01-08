@@ -1,4 +1,4 @@
-import {loginCookie, FileToken, UserLoginResponse} from '@/api/user'
+import {loginCookie, UserLoginResponse} from '@/api/user'
 import {setCookie} from '@/utils/utils'
 import {Commit, Dispatch} from "vuex";
 import {commitFileToken, commitUserLogin} from "@/store/modules/_mutations";
