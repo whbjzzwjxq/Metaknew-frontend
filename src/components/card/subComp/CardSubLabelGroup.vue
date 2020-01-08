@@ -9,7 +9,7 @@
                     :x-small="xSmall"
                     :large="large"
                     :x-large="xLarge">
-                    {{group.name + ":"}}
+                    {{group.name + ':'}}
                 </v-chip>
                 <global-chip
                     :index="index"

@@ -3,19 +3,19 @@ import {DefaultComputed, DefaultData, DefaultMethods, DefaultProps, PropsDefinit
 
 type ComponentStatus = 'editing' | 'done' | 'empty' | 'done-old'
 
-interface ComponentRecord{
-  status: ComponentStatus,
-  description?: string
+interface ComponentRecord {
+    status: ComponentStatus,
+    description?: string
 }
 
 declare module 'vue/types/options' {
 
-  interface ComponentOptions<V extends Vue,
-    Data = DefaultData<V>,
-    Methods = DefaultMethods<V>,
-    Computed = DefaultComputed,
-    PropsDef = PropsDefinition<DefaultProps>,
-    Props = DefaultProps> {
-    record?: ComponentRecord,
-  }
+    interface ComponentOptions<V extends Vue,
+        Data = DefaultData<V>,
+        Methods = DefaultMethods<V>,
+        Computed = DefaultComputed,
+        PropsDef = PropsDefinition<DefaultProps>,
+        Props = DefaultProps> {
+        record?: ComponentRecord,
+    }
 }

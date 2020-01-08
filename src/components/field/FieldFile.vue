@@ -179,7 +179,7 @@
                 return this.$store.state.userInfo.fileToken
             },
             // 整个状态
-            status: function(): string {
+            status: function (): string {
                 let statusList = this.newFiles.map(file => file.status);
                 let result: string;
                 statusList.includes('uploading')
@@ -190,26 +190,26 @@
                 return result
             },
             // 现有的真的MediaInfoPart
-            currentRealFiles: function() {
+            currentRealFiles: function () {
                 return this.baseFiles.map((id: id) => this.$store.state.dataManager.mediaManager[id])
             },
         },
         methods: {
-            saveMedia: function() {
+            saveMedia: function () {
                 this.$emit('update-value', this.propName, this.currentFiles, this.status);
             },
 
-            removeFile: function(index: number) {
+            removeFile: function (index: number) {
                 this.newFiles.splice(index, 1)
             },
 
-            removeCurrentFile: function(index: number) {
+            removeCurrentFile: function (index: number) {
                 this.currentFiles.splice(index, 1);
                 this.saveMedia()
             },
 
             // 如果从收藏里获取内容 那么就不需要上传了
-            addFile: function(files: MediaInfoPart[], isExist: boolean) {
+            addFile: function (files: MediaInfoPart[], isExist: boolean) {
                 isExist
                     ? this.currentFiles = this.currentFiles.concat(files.map(file => {
                         let id = file.Info.id;
@@ -219,7 +219,7 @@
                     : this.newFiles = this.newFiles.concat(files)
             },
 
-            uploadFile: function(index: number) {
+            uploadFile: function (index: number) {
                 let file = this.newFiles[index];
                 let storeName = 'userFileCache/' + this.guid() + '.' + file.Ctrl.Format;
                 file.file &&

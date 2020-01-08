@@ -13,6 +13,7 @@
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
     import {commitScreenResize} from "@/store/modules/_mutations";
+
     export default Vue.extend({
         name: "Result",
         components: {

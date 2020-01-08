@@ -242,7 +242,7 @@
                 }
             },
 
-            getSrc: function(src: string) {
+            getSrc: function (src: string) {
                 return getSrc(src)
             },
 

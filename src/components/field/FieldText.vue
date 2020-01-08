@@ -134,7 +134,7 @@
             languageList: function () {
                 return Object.keys(this.text)
             },
-            editModeSetting: function() {
+            editModeSetting: function () {
                 return {
                     showSetter: true,
                     multiLanguage: this.multiLanguage,
@@ -142,7 +142,7 @@
                     singleLine: this.singleLine
                 }
             },
-            normalModeSetting: function() {
+            normalModeSetting: function () {
                 return {
                     showSetter: false,
                     multiLanguage: this.languageList.length > 1,

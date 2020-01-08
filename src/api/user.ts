@@ -33,11 +33,11 @@ export interface UserLoginResponse {
 
 export const login = (data: loginData) =>
     instance.request<UserLoginResponse>({
-    method: 'post',
-    url: '/user/login_normal',
-    data: data,
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-});
+        method: 'post',
+        url: '/user/login_normal',
+        data: data,
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    });
 
 export const loginCookie = () => instance.request<UserLoginResponse>({
     method: 'get',

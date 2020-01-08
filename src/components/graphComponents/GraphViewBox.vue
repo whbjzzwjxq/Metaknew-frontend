@@ -275,7 +275,7 @@
                 scale: 100,
 
                 //新增关系
-                startNode: null as null | VisualNodeSettingPart,
+                startNode: null as null | VisNodeSettingPart,
                 newLinkEndPoint: new Point(0, 0),
                 isLinking: false,
 
@@ -416,7 +416,7 @@
                 return result
             },
 
-            subGraphStyleList: function(): CSSProp[] {
+            subGraphStyleList: function (): CSSProp[] {
                 return this.activeGraphMetaDataList.map(meta => meta.rect.getDivCSS(
                     {borderColor: 'black'}
                 ))
@@ -447,19 +447,19 @@
             },
 
             // 只有自身的medias
-            medias: function(): MediaSettingPart[] {
+            medias: function (): MediaSettingPart[] {
                 return this.document.Graph.medias
             },
 
-            notes: function(): NoteSettingPart[] {
+            notes: function (): NoteSettingPart[] {
                 return this.document.Graph.notes
             },
 
-            selectedNodes: function(): NodeSettingPart[] {
+            selectedNodes: function (): NodeSettingPart[] {
                 return this.nodes.filter(item => item.State.isSelected)
             },
 
-            nodeInfoList: function(): NodeInfoPart[] {
+            nodeInfoList: function (): NodeInfoPart[] {
                 return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id])
             },
 
@@ -640,13 +640,13 @@
                 }
             },
 
-            drag(target: VisualNodeSettingPart, $event: MouseEvent) {
+            drag(target: VisNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
                     let {x, y} = $event;
                     let delta = new Point(x, y);
                     delta.decrease(this.dragStartPoint).divideRect(this.containerRect).divide(this.realScale)
                     this.dragStart($event);
-                    let moveFunc = (node: VisualNodeSettingPart) => {
+                    let moveFunc = (node: VisNodeSettingPart) => {
                         this.$set(node.Setting.Base, 'x', node.Setting.Base.x + delta.x);
                         this.$set(node.Setting.Base, 'y', node.Setting.Base.y + delta.y);
                     }
@@ -662,7 +662,7 @@
                 }
             },
 
-            dragEnd(target: VisualNodeSettingPart, $event: MouseEvent) {
+            dragEnd(target: VisNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
                     this.drag(target, $event);
                     this.isDragging = false;
@@ -686,7 +686,7 @@
             },
 
             //x方向限定区域
-            kickBackX(node: VisualNodeSettingPart, X: number) {
+            kickBackX(node: VisNodeSettingPart, X: number) {
                 if (this.isDragging) {
                     this.$set(node.Setting.Base, 'x', X / this.containerRect.width);
                     node.State.isSelected = false;
@@ -695,7 +695,7 @@
             },
 
             //y方向限定区域
-            kickBackY(node: VisualNodeSettingPart, Y: number) {
+            kickBackY(node: VisNodeSettingPart, Y: number) {
                 if (this.isDragging) {
                     this.$set(node.Setting.Base, 'y', Y / this.containerRect.height);
                     node.State.isSelected = false;
@@ -704,7 +704,7 @@
             },
 
             //node的原生事件
-            mouseEnter(node: VisualNodeSettingPart) {
+            mouseEnter(node: VisNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", true);
                 this.$set(node.State, "showCard", true);
                 this.showCardId = setTimeout(() => {
@@ -713,7 +713,7 @@
             },
 
             //node的原生事件
-            mouseLeave(node: VisualNodeSettingPart) {
+            mouseLeave(node: VisNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", false);
                 this.isDragging = false;
                 clearTimeout(this.showCardId);
@@ -746,7 +746,7 @@
                 this.cardLocList = result
             },
 
-            dbClickNode(node: VisualNodeSettingPart) {
+            dbClickNode(node: VisNodeSettingPart) {
                 this.selectItem([node]);
                 if (this.isLinking && node && this.startNode) {
                     let id = getIndex();
@@ -907,7 +907,7 @@
             },
 
             //取得link所用数据
-            getTargetInfo(item: VisualNodeSettingPart | null) {
+            getTargetInfo(item: VisNodeSettingPart | null) {
                 //注意这里index肯定不能是-1
                 let result;
                 item

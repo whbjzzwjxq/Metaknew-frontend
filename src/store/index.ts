@@ -10,16 +10,16 @@ import styleComponentSize from "@/store/modules/styleComponentSize";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  state: {},
-  mutations: {},
-  getters: {},
-  actions: {},
-  modules: {
-    userBaseModule: userInfo,
-    componentSnackBar: componentSnackBar,
-    dataTextResolveCache: dataTextResolveCache,
-    dataManager: dataManager,
-    styleLabelColor: styleLabelColor,
-    styleComponentSize: styleComponentSize
-  }
+    state: {},
+    mutations: {},
+    getters: {},
+    actions: {},
+    modules: {
+        userBaseModule: userInfo,
+        componentSnackBar: componentSnackBar,
+        dataTextResolveCache: dataTextResolveCache,
+        dataManager: dataManager,
+        styleLabelColor: styleLabelColor,
+        styleComponentSize: styleComponentSize
+    }
 })

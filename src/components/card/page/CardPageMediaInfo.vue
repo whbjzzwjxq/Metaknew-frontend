@@ -249,27 +249,27 @@
             updateValue: function (prop: string, value: any) {
                 this.media.updateValue(prop, value);
             },
-            updateName: function(value: string) {
+            updateName: function (value: string) {
                 this.media.changeName(value)
             },
-            removeItem: function(removedLabel: string, prop: string) {
+            removeItem: function (removedLabel: string, prop: string) {
                 this.media.updateValue("Labels", [], true);
             },
-            addItem: function(value: string[], prop: string) {
+            addItem: function (value: string[], prop: string) {
                 prop === "Info"
                     ? this.media.updateValue("Labels", value)
                     : this.media.updateUserConcern("Labels", value);
             },
 
-            changeDetail: function() {
+            changeDetail: function () {
                 this.detailOn = !this.detailOn;
             },
 
-            deleteMedia: function() {
+            deleteMedia: function () {
                 this.$emit("delete-media");
             },
 
-            addMediaToGraph: function() {
+            addMediaToGraph: function () {
                 this.$emit("add-media-to-graph", this.media);
             },
             dialogWatch() {

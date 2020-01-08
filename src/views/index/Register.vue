@@ -16,7 +16,8 @@
         computed: {},
         methods: {},
         watch: {},
-        mounted() {},
+        mounted() {
+        },
         record: {
             status: 'empty'
         }

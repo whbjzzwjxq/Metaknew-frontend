@@ -79,6 +79,10 @@
                 return this.link.Setting
             },
 
+            type: function () {
+                return this.setting._type
+            },
+
             draw: function () {
                 let source = this.source;
                 let target = this.target;
@@ -214,7 +218,9 @@
         },
         methods: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '关系显示',
+            //todo 关系按钮和简要卡片
         }
     })
 </script>

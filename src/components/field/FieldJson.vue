@@ -160,10 +160,10 @@
         },
 
         computed: {
-            keys: function() {
+            keys: function () {
                 return Object.keys(this.dict)
             },
-            dict: function() {
+            dict: function () {
                 return deepClone(this.baseProps)
             },
             propNum: function () {

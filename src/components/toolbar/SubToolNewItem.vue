@@ -60,6 +60,7 @@
     import {id} from "@/utils/graphClass";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
     import GraphAdder from "@/components/GraphAdder.vue";
+
     export default Vue.extend({
         name: "SubToolNewItem",
         components: {

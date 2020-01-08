@@ -23,13 +23,9 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import * as CSS from "csstype";
     import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {
-        Point,
-        RectByPoint
-    } from "@/utils/geoMetric";
+    import {Point, RectByPoint} from "@/utils/geoMetric";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({
@@ -128,12 +124,14 @@
             }
         },
         watch: {},
-        record: {
-            status: 'empty'
-        },
         created(): void {
 
-        }
+        },
+        record: {
+            status: 'editing',
+            description: '在ViewBox中的Media'
+            //todo 尺寸调节
+        },
     })
 </script>
 

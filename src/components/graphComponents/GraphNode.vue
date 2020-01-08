@@ -87,19 +87,21 @@
 </template>
 
 <script lang="ts">
-    import { commitNewLabel } from '@/store/modules/_mutations'
-    import { getSrc } from '@/utils/utils'
+    import {commitNewLabel} from '@/store/modules/_mutations'
+    import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
+    import {NodeSettingPart} from "@/utils/graphClass";
+
     export default Vue.extend({
         name: 'GraphNode',
         components: {},
-        data () {
+        data() {
             return {}
         },
         props: {
             //基础数据
             node: {
-                type: Object,
+                type: Object as () => NodeSettingPart,
                 required: true,
             },
 
@@ -131,24 +133,38 @@
             },
         },
         computed: {
-            transform: vm => 'translate(' + vm.point.x + ' ' + vm.point.y + ')',
+            transform: function () {
+                return 'translate(' + this.point.x + ' ' + this.point.y + ')'
+            },
 
-            setting: vm => vm.node.Setting,
-            state: vm => vm.node.State,
+            setting: function () {
+                return this.node.Setting
+            },
+            state: function () {
+                return this.node.State
+            },
 
-            isSelected: vm => vm.state.isSelected,
+            isSelected: function () {
+                return this.state.isSelected
+            },
 
-            getId: vm => 'normalNode' + vm.setting._id,
+            getId: function () {
+                return 'normalNode' + this.setting._id
+            },
 
             //注意是实际二分之一的高度
-            height: vm => vm.setting.Base.size !== 0
-                ? vm.setting.Base.size * vm.scale
-                : vm.size * vm.scale,
+            height: function () {
+                return this.setting.Base.size !== 0
+                    ? this.setting.Base.size * this.scale
+                    : this.size * this.scale
+            },
 
             //注意是实际二分之一的宽度
-            width: vm => vm.height * vm.setting.Base.scaleX,
+            width: function () {
+                return this.height * this.setting.Base.scaleX
+            },
 
-            colorStyle: function() {
+            colorStyle: function (): CSSProp {
                 return {
                     'fill': this.circleColor,
                     'fill-opacity': this.setting.Base.opacity & !this.showPic,
@@ -158,8 +174,9 @@
                     'stroke-dasharray': this.borderDash,
                 }
             },
+
             //圆的颜色
-            circleColor () {
+            circleColor: function () {
                 if (this.setting.Base.color !== '') {
                     return this.setting.Base.color
                 } else {
@@ -169,7 +186,7 @@
                 }
             },
             //边框颜色
-            borderColor () {
+            borderColor: function () {
                 if (this.setting.Border.color !== '') {
                     return this.setting.Border.color
                 } else {
@@ -179,142 +196,149 @@
                 }
             },
 
-            borderWidth: vm => vm.isSelected
-                ? vm.setting.Border.width
-                : vm.setting.Border.width,
+            borderWidth: function () {
+                return this.isSelected
+                    ? this.setting.Border.width
+                    : this.setting.Border.width
+            },
 
-            borderDash: vm => vm.setting.Border.isDash
-                ? '9, 2'
-                : '',
+            borderDash: function () {
+                return this.setting.Border.isDash
+                    ? '9, 2'
+                    : ''
+            },
 
-            borderOpacity: vm => !vm.showBorder
-                ? 0
-                : vm.isSelected
-                    ? 1
-                    : vm.setting.Show.isMain
-                        ? 0.7
-                        : 0.5,
-
-            //是否显示文字
-            showText: vm => vm.setting.Show.showAll && vm.setting.Show.showName && !vm.state.isMouseOn,
-
-            //是否显示内部文字
-            showInlineText: vm => vm.setting.Show.showAll && vm.setting.Show.showInlineText,
-
-            //是否显示图片
-            showPicture: vm =>
-                vm.setting._image &&
-                vm.setting.Show.showAll &&
-                vm.setting.Show.showPic &&
-                vm.height >= 16,
-
-            //是否显示颜色图案
-            showColor: vm =>
-                vm.setting.Show.showAll &&
-                vm.setting.Show.showColor,
+            borderOpacity: function () {
+                return !this.showBorder
+                    ? 0
+                    : this.isSelected
+                        ? 1
+                        : this.setting.Show.isMain
+                            ? 0.7
+                            : 0.5
+            },
+            showText: function () {
+                return this.setting.Show.showAll && this.setting.Show.showName && !this.state.isMouseOn
+            },
+            showInlineText: function () {
+                return this.setting.Show.showAll && this.setting.Show.showInlineText
+            },
+            showPicture: function () {
+                return this.setting._image &&
+                    this.setting.Show.showAll &&
+                    this.setting.Show.showPic &&
+                    this.height >= 16
+            },
+            showColor: function () {
+                return this.setting.Show.showAll &&
+                    this.setting.Show.showColor
+            },
 
             //是否显示边
-            showBorder: vm => vm.setting.Show.showAll && vm.setting.Show.showBorder,
-
-            hoverStyle () {
-                return {
-                    'fill': this.hoverColor,
-                    'opacity': this.hoverOpacity,
-                    'stroke': 'white',
-                    'stroke-width': 10,
-                    'stroke-opacity': 0
-                }
-            },
-            hoverColor: vm => vm.setting.Show.isMain
-                ? '#FFCA28'
-                : vm.circleColor,
-            hoverOpacity: vm => vm.setting.Show.showAll
-                ? vm.isSelected
-                    ? 0.2
-                    : vm.state.isMouseOn
-                        ? 0.2
-                        : 0
-                : 0,
-            hoverHeight: vm => vm.height + vm.borderWidth + 5,
-            hoverWidth: vm => vm.width + vm.borderWidth + 5,
-
-            textStyle () {
-                return {
-                    '-moz-user-select': 'none',
-                    'user-select': 'none',
-                    'fill': 'opposite',
-                    'font-size': this.textSize + 'px',
-                    'text-align': 'center',
-                    'word-break': 'break-all',
-                    'color': this.setting.Text.textColor
-                }
-            },
-            textXOffset: vm => -vm.textWidth * 0.5,
-
-            textYOffset: vm => vm.height + vm.borderWidth + 5,
-
-            textWidth: vm => vm.setting.Text.twoLine
-                ? vm.setting._name.length * 12
-                : vm.setting._name.length * 24,
-
-            textHeight: vm => vm.setting.Text.twoLine
-                ? (vm.textSize + 5) * 2
-                : (vm.textSize + 5),
-
-            textSize: vm => vm.setting.Text.textSize * vm.scale >= 10
-                ? vm.setting.Text.textSize * vm.scale
-                : 10,
-
-            inlineTextWidth: vm => vm.setting.Text.inlineTwoline
-                ? vm.setting.Text.inlineText.length * 12
-                : vm.setting.Text.inlineText.length * 24,
-
-            inlineTextHeight: vm => vm.setting.Text.inlineTwoline
-                ? (vm.setting.Text.inlineTextSize + 5) * 2
-                : (vm.setting.Text.inlineTextSize + 5),
-
-            inlineTextXOffset: vm => -vm.inlineTextWidth * 0.5,
-            inlineTextYOffset: vm => -vm.inlineTextHeight * 0.5,
-
-            //todo 先将就着
-            inlineTextStyle () {
-                return {
-                    '-moz-user-select': 'none',
-                    'user-select': 'none',
-                    'fill': 'opposite',
-                    'font-size': this.setting.Text.inlineTextSize + 'px',
-                    'text-align': 'center',
-                    'word-break': 'break-all',
-                    'color': this.setting.Text.inlineTextColor
-                }
+            showBorder: function () {
+                return this.setting.Show.showAll && this.setting.Show.showBorder
             },
 
-            imageStyle () {
-                return {
-                    'clip-path': 'url(#' + this.getClipId + ')',
-                }
-            },
-
-            //使用vuex 主要是节约请求数
-            getMainPic: function () {
-                return getSrc(this.setting._image)
-            },
-            getClipId: vm => 'clipPath_' + vm.setting._id,
-            rhombusPath: vm => {
-                let loc = [-vm.width + ',0', '0,' + -vm.height, vm.width + ',0', '0,' + vm.height]
-                return loc.join(' ')
-            },
-            rhombusHoverPath: vm => {
-                let loc = [-vm.hoverWidth + ',0', '0,' + -vm.hoverHeight, vm.hoverWidth + ',0', '0,' + vm.hoverHeight]
-                return loc.join(' ')
-            },
-            geometryType: vm => vm.setting.Base.type,
-
-            boundGraph: vm => vm.$store.state.dataManager.graphManager[vm.node.Setting._id],
-
+            //     //
+            //     // hoverStyle() {
+            //     //     return {
+            //     //         'fill': this.hoverColor,
+            //     //         'opacity': this.hoverOpacity,
+            //     //         'stroke': 'white',
+            //     //         'stroke-width': 10,
+            //     //         'stroke-opacity': 0
+            //     //     }
+            //     // },
+            //     // hoverColor: this => this.setting.Show.isMain
+            //     //     ? '#FFCA28'
+            //     //     : this.circleColor,
+            //     // hoverOpacity: this => this.setting.Show.showAll
+            //     //     ? this.isSelected
+            //     //         ? 0.2
+            //     //         : this.state.isMouseOn
+            //     //             ? 0.2
+            //     //             : 0
+            //     //     : 0,
+            //     // hoverHeight: this => this.height + this.borderWidth + 5,
+            //     // hoverWidth: this => this.width + this.borderWidth + 5,
+            //     //
+            //     // textStyle() {
+            //     //     return {
+            //     //         '-moz-user-select': 'none',
+            //     //         'user-select': 'none',
+            //     //         'fill': 'opposite',
+            //     //         'font-size': this.textSize + 'px',
+            //     //         'text-align': 'center',
+            //     //         'word-break': 'break-all',
+            //     //         'color': this.setting.Text.textColor
+            //     //     }
+            //     // },
+            //     // textXOffset: this => -this.textWidth * 0.5,
+            //     //
+            //     // textYOffset: this => this.height + this.borderWidth + 5,
+            //     //
+            //     // textWidth: this => this.setting.Text.twoLine
+            //     //     ? this.setting._name.length * 12
+            //     //     : this.setting._name.length * 24,
+            //     //
+            //     // textHeight: this => this.setting.Text.twoLine
+            //     //     ? (this.textSize + 5) * 2
+            //     //     : (this.textSize + 5),
+            //     //
+            //     // textSize: this => this.setting.Text.textSize * this.scale >= 10
+            //     //     ? this.setting.Text.textSize * this.scale
+            //     //     : 10,
+            //     //
+            //     // inlineTextWidth: this => this.setting.Text.inlineTwoline
+            //     //     ? this.setting.Text.inlineText.length * 12
+            //     //     : this.setting.Text.inlineText.length * 24,
+            //     //
+            //     // inlineTextHeight: this => this.setting.Text.inlineTwoline
+            //     //     ? (this.setting.Text.inlineTextSize + 5) * 2
+            //     //     : (this.setting.Text.inlineTextSize + 5),
+            //     //
+            //     // inlineTextXOffset: this => -this.inlineTextWidth * 0.5,
+            //     // inlineTextYOffset: this => -this.inlineTextHeight * 0.5,
+            //     //
+            //     // //todo 先将就着
+            //     // inlineTextStyle() {
+            //     //     return {
+            //     //         '-moz-user-select': 'none',
+            //     //         'user-select': 'none',
+            //     //         'fill': 'opposite',
+            //     //         'font-size': this.setting.Text.inlineTextSize + 'px',
+            //     //         'text-align': 'center',
+            //     //         'word-break': 'break-all',
+            //     //         'color': this.setting.Text.inlineTextColor
+            //     //     }
+            //     // },
+            //     //
+            //     // imageStyle() {
+            //     //     return {
+            //     //         'clip-path': 'url(#' + this.getClipId + ')',
+            //     //     }
+            //     // },
+            //     //
+            //     // //使用vuex 主要是节约请求数
+            //     // getMainPic: function () {
+            //     //     return getSrc(this.setting._image)
+            //     // },
+            //     // getClipId: this => 'clipPath_' + this.setting._id,
+            //     // rhombusPath: this => {
+            //     //     let loc = [-this.width + ',0', '0,' + -this.height, this.width + ',0', '0,' + this.height]
+            //     //     return loc.join(' ')
+            //     // },
+            //     // rhombusHoverPath: this => {
+            //     //     let loc = [-this.hoverWidth + ',0', '0,' + -this.hoverHeight, this.hoverWidth + ',0', '0,' + this.hoverHeight]
+            //     //     return loc.join(' ')
+            //     // },
+            //     // geometryType: this => this.setting.Base.type,
+            //     //
+            //     // boundGraph: this => this.$store.state.dataManager.graphManager[this.node.Setting._id],
+            //
         },
         methods: {
-            explode () {
+            explode() {
                 this.$emit('explode')
             }
         },

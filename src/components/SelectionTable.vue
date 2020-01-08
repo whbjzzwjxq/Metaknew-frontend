@@ -28,6 +28,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {AllSettingPart} from "@/utils/graphClass";
+
     interface setting {
         index: number,
         name: string,

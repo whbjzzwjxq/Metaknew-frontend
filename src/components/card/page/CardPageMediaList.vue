@@ -80,15 +80,15 @@
             fileToken: function (): FileToken {
                 return this.dataManager.fileToken
             },
-            nodeIsSelf: function(): boolean {
+            nodeIsSelf: function (): boolean {
                 return getIsSelf(this.baseData.Ctrl)
             },
-            width: function() {
+            width: function () {
                 return this.$store.state.styleComponentSize.leftCard.width - 24
             }
         },
         methods: {
-            addMediaToNode: function(mediaIdList: id[]) {
+            addMediaToNode: function (mediaIdList: id[]) {
                 if (this.baseData.isRemote) {
                     let node = {
                         '_id': this.baseData.Info.id,
@@ -106,12 +106,12 @@
                     this.baseData.updateValue('IncludedMedia', mediaIdList);
                 }
             },
-            addMediaToGraph: function(media: MediaInfoPart) {
+            addMediaToGraph: function (media: MediaInfoPart) {
                 let graph = this.dataManager.currentGraph;
                 let newMediaSetting = MediaSettingPart.emptyMediaSettingFromInfo(media, graph);
                 this.dataManager.currentGraph.addItems([newMediaSetting])
             },
-            reRankFile: function() {
+            reRankFile: function () {
                 let type = this.filterProp;
                 let sorter = (a: MediaInfoPart, b: MediaInfoPart): number => a.Ctrl[type] > b.Ctrl[type]
                     ? 1

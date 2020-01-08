@@ -4,7 +4,8 @@
             <div style="width: 100%; position: absolute; left: 0; top: 0; z-index: 2">
                 <v-toolbar tile color="white" :height="toolBar.height + 'px'">
                     <div :style="toolbarSpaceStyle">
-                        <p class="font-weight-bold" style="text-align: justify; text-justify: auto; font-size: x-large">META-KNEW</p>
+                        <p class="font-weight-bold" style="text-align: justify; text-justify: auto; font-size: x-large">
+                            META-KNEW</p>
                     </div>
                     <v-toolbar-items>
                         <search-bar edit-mode class="mt-n2 pl-4" v-if="toolBarSearch"></search-bar>
@@ -25,13 +26,13 @@
                 </v-toolbar>
             </div>
             <div :style="spaceStyle"></div>
-                <v-container fluid
-                             class="view-container flex-nowrap ma-0 pa-0"
-                             ref="main"
-                             :style="contentStyle"
-                >
-                    <router-view></router-view>
-                </v-container>
+            <v-container fluid
+                         class="view-container flex-nowrap ma-0 pa-0"
+                         ref="main"
+                         :style="contentStyle"
+            >
+                <router-view></router-view>
+            </v-container>
         </v-content>
         <global-snack-bar></global-snack-bar>
     </v-app>
@@ -53,19 +54,19 @@
         },
         props: {},
         computed: {
-            isLogin: function(): boolean {
+            isLogin: function (): boolean {
                 return this.$store.state.userBaseModule.isLogin
             },
-            userName: function(): boolean {
+            userName: function (): boolean {
                 return this.$store.state.userBaseModule.userInfo.userName
             },
-            toolBarSearch: function(): boolean {
+            toolBarSearch: function (): boolean {
                 return this.$route.name !== 'home'
             },
-            allComponentSize: function(): StyleManagerState {
+            allComponentSize: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            toolBar: function() {
+            toolBar: function () {
                 return this.allComponentSize.toolBar
             },
             spaceStyle(): ComponentSize {

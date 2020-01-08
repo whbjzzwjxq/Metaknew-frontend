@@ -290,7 +290,7 @@ const actions = {
         } else return filePutBlob(fileToken, realFile, storeName);
     },
 
-    async nodeExplode(context: Context, payload: {node: NodeSettingPart, document: GraphSelfPart}) {
+    async nodeExplode(context: Context, payload: { node: NodeSettingPart, document: GraphSelfPart }) {
         let {node, document} = payload;
         let _id = node.Setting._id;
         let subGraph = state.graphManager[_id];

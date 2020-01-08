@@ -156,6 +156,7 @@ declare global {
         y: number,
         size: number,
         scaleX: number,
+
         [prop: string]: any
     }
 
@@ -163,28 +164,42 @@ declare global {
         _type: 'node' | 'document';
         _name: string;
         _image: string;
-        Base: BaseSize
-    }
-
-    interface MediaSetting extends Setting {
-        _type: 'media';
-        _name: string;
-        _src: string; // url字符串或者 URL.createObjectUrl返回值
+        Base: BaseSize;
+        Border: Record<string, any>;
+        Show: Record<string, any>;
+        Text: Record<string, any>;
     }
 
     interface LinkSetting extends Setting {
         _type: 'link';
         _start: VisNodeSettingPart;
         _end: VisNodeSettingPart;
+        Base: Record<string, any>;
+        Arrow: Record<string, any>;
+        Text: Record<string, any>
+    }
+
+    interface MediaSetting extends Setting {
+        _type: 'media';
+        _name: string;
+        _src: string; // url字符串或者 URL.createObjectUrl返回值
+        Base: BaseSize;
+        Border: Record<string, any>;
+        Show: Record<string, any>;
+        Text: Record<string, any>;
     }
 
     interface compressLinkSetting extends Setting {
         _start: Setting;
         _end: Setting;
+        Base: Record<string, any>;
+        Arrow: Record<string, any>;
+        Text: Record<string, any>;
     }
 
     interface GraphSetting extends Setting {
-        _type: 'document'
+        _type: 'document';
+        Base: Record<string, any>
     }
 
     interface NoteContent {
@@ -194,7 +209,8 @@ declare global {
     interface NoteSetting extends Setting {
         _type: 'note';
         _title: string;
-        _content: NoteContent
+        _content: NoteContent;
+        Base: BaseSize;
     }
 
     interface BaseState {

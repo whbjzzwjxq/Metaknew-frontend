@@ -72,7 +72,7 @@
             },
         },
         computed: {
-            labelColor: function(): string {
+            labelColor: function (): string {
                 if (this.color) {
                     return this.color
                 } else {

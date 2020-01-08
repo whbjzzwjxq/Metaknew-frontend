@@ -136,7 +136,7 @@ export const linkPropType: pLabelPropsDict = {
 };
 
 export const mediaPropType: pLabelPropsDict = {
-   // todo 媒体属性获取
+    // todo 媒体属性获取
 };
 
 export function nodeLabelToProp(pLabel: string) {

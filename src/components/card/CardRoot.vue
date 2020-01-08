@@ -67,19 +67,19 @@
         },
         props: {},
         computed: {
-            dataManager: function(): DataManagerState {
+            dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            document: function(): GraphSelfPart {
+            document: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
-            allComponentSize: function(): StyleManagerState {
+            allComponentSize: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            toolBar: function() {
+            toolBar: function () {
                 return this.allComponentSize.toolBar
             },
-            totalCardStyle: function(): CSSProp {
+            totalCardStyle: function (): CSSProp {
                 return {
                     width: this.allComponentSize.leftCard.width + 'px',
                     height: '100%',

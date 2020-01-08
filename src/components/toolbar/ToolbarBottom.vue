@@ -23,10 +23,10 @@
         },
         props: {},
         computed: {
-            styleManager: function(): StyleManagerState {
+            styleManager: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            toolbarStyle: function(): CSSProp {
+            toolbarStyle: function (): CSSProp {
                 return {
                     position: "absolute",
                     left: this.styleManager.leftCard.width + 'px',
@@ -37,13 +37,13 @@
                     overflow: "hidden"
                 }
             },
-            buttonStyle: function(): CSSProp {
-              return {
-                  left: (this.styleManager.leftCard.width + 12) + 'px',
-                  bottom: (this.styleManager.bottomBar.height - 28) + 'px',
-              }
+            buttonStyle: function (): CSSProp {
+                return {
+                    left: (this.styleManager.leftCard.width + 12) + 'px',
+                    bottom: (this.styleManager.bottomBar.height - 28) + 'px',
+                }
             },
-            arrowIcon: function() {
+            arrowIcon: function () {
                 return getIcon('i-collapse-arrow-double', !this.toolbarOn)
             }
         },

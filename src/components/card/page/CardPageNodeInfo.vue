@@ -347,14 +347,12 @@
                     ]
             },
 
-            levelGroup: function() {
+            levelGroup: function () {
                 //todo 评分机制
-                return {
-
-                }
+                return {}
             },
 
-            imageList: function() {
+            imageList: function () {
                 return this.isSimplify
                     ? []
                     : this.info.IncludedMedia.map(id => {

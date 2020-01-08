@@ -21,7 +21,7 @@
             }
         },
         computed: {
-            iconList: function(): IconItem[] {
+            iconList: function (): IconItem[] {
                 let userConcern = this.infoPart.UserConcern;
                 let {isStar, isGood, isBad, isShared} = userConcern;
                 return [

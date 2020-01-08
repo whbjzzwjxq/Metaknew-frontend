@@ -14,6 +14,6 @@ export function dispatchGraphQuery(payload: { _id: id, parent: GraphSelfPart | n
     return store.dispatch('graphQuery', payload)
 }
 
-export function dispatchNodeExplode(payload: {node: NodeSettingPart, document: GraphSelfPart}) {
+export function dispatchNodeExplode(payload: { node: NodeSettingPart, document: GraphSelfPart }) {
     return store.dispatch('nodeExplode', payload)
 }

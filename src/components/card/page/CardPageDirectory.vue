@@ -88,7 +88,7 @@
             },
         },
         computed: {
-            dataManager(): DataManagerState {
+            dataManager: function(): DataManagerState {
                 return this.$store.state.dataManager
             },
             // 不包含自身

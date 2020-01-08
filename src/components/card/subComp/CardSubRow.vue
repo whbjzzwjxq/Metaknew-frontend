@@ -40,7 +40,7 @@
             }
         },
         computed: {
-            collapsedIcon: function(): string {
+            collapsedIcon: function (): string {
                 return getIcon("i-collapse", !this.isCollapsed)
             },
 

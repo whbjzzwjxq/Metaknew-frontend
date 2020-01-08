@@ -14,7 +14,6 @@
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/iconGroup/IconGroup.vue";
     import {NodeSettingPart} from "@/utils/graphClass";
-    import {IconItem} from "@/utils/interfaceInComponent";
 
     export default Vue.extend({
         name: "GraphNodeButton",
@@ -72,8 +71,8 @@
                 // 是否可以爆炸
                 let explodeAble =
                     this.boundGraph
-                    ? this.boundGraph.id === this.dataManager.currentGraph.id
-                    : false;
+                        ? this.boundGraph.id === this.dataManager.currentGraph.id
+                        : false;
                 let explodeIcon;
                 !this.boundGraph
                     ? explodeIcon = 'unload'

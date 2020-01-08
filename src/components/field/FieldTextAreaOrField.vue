@@ -33,9 +33,10 @@
 
 <script lang="ts">
     import Vue from 'vue'
+
     export default Vue.extend({
         name: 'FieldTextAreaOrField',
-        data () {
+        data() {
             return {
                 cacheText: ''
             }
@@ -71,14 +72,14 @@
             }
         },
         computed: {
-            style: function(): CSSProp {
+            style: function (): CSSProp {
                 return {
                     'width': this.width + 'px'
                 }
             }
         },
         methods: {
-            updateValue () {
+            updateValue() {
                 this.cacheText !== '' &&
                 this.$emit('update-text', this.propName, this.cacheText)
             }

@@ -147,20 +147,20 @@
         },
         methods: {
             //更换Link start / end
-            changeNode: function(start: VisNodeSettingPart | null, end: VisNodeSettingPart | null) {
+            changeNode: function (start: VisNodeSettingPart | null, end: VisNodeSettingPart | null) {
                 this.baseData.changeNode(start, end)
             },
 
             //更新单个值
-            updateValue: function(prop: string, value: any) {
+            updateValue: function (prop: string, value: any) {
                 this.baseData.updateValue(prop, value)
             },
 
-            removeItem: function(removedLabel: string, prop: string) {
+            removeItem: function (removedLabel: string, prop: string) {
                 this.$set(this.baseData, 'isEdit', true);
             },
 
-            addItem: function(value: string[], prop: string) {
+            addItem: function (value: string[], prop: string) {
                 this.baseData.updateValue('Labels', value)
             },
         },

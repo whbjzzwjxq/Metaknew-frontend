@@ -38,7 +38,7 @@ export const commitItemChange = (payload: InfoPart) => {
     return store.commit('currentItemChange', payload)
 };
 
-export const commitGraphChange = (payload: { graph: GraphSelfPart}) => {
+export const commitGraphChange = (payload: { graph: GraphSelfPart }) => {
     return store.commit('currentGraphChange', payload)
 };
 

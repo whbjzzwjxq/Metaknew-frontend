@@ -591,7 +591,6 @@ const mediaSetting: SettingConf = {
             explain: '名字是否两行显示'
         }
     }
-
 };
 
 const noteSetting: SettingConf = {

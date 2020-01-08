@@ -73,7 +73,7 @@
                     ? this.baseNum
                     : this.defaultValue
             },
-            rules: function(): Record<string, (value: number) => boolean | string> {
+            rules: function (): Record<string, (value: number) => boolean | string> {
                 let range = this.range as Range;
                 return {
                     range: (value: number) => (range.min <= value && value <= range.max) ||
