@@ -36,7 +36,8 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: 'Node主标签选择器'
         }
     })
 </script>

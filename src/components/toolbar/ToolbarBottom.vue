@@ -9,8 +9,6 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {StyleManagerState} from "@/store/modules/styleComponentSize";
-    import * as CSS from "csstype";
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
@@ -59,7 +57,8 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: '下方用的工具栏'
         }
     })
 </script>

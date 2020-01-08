@@ -5,7 +5,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
-    import {IconItem} from "@/utils/interfaceInComponent";
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({

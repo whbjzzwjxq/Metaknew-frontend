@@ -334,7 +334,8 @@
             this.getTitle()
         },
         record: {
-            status: 'done'
+            status: 'done',
+            description: '搜索栏'
         }
     })
 </script>

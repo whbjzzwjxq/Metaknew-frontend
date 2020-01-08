@@ -5,7 +5,6 @@ module.exports = {
     },
     'extends': [
         'plugin:vue/essential',
-        'eslint:recommended',
         '@vue/standard',
         '@vue/typescript',
     ],
@@ -20,8 +19,8 @@ module.exports = {
         'quotes': 'off',
         'comma-dangle': 'off',
         'spaced-comment': 'off',
-        'no-used-vars': 'off',
-        '@typescript-eslint/no-unused-vars': 'warn'
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': 'off'
     },
     parserOptions: {
         parser: '@typescript-eslint/parser'
@@ -34,7 +33,11 @@ module.exports = {
             ],
             env: {
                 jest: true,
+            },
+            rules: {
+                'no-unused-vars': 'off',
+                '@typescript-eslint/no-unused-vars': 'off'
             }
         }
     ]
-}
+};

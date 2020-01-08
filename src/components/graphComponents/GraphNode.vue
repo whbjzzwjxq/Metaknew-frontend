@@ -356,7 +356,8 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: 'Node组件'
         }
     })
 </script>
@@ -367,5 +368,5 @@
 
 /**
 * Created by whb on 2019/12/6
-* Updated by []
+* Updated by [whb on 2020年1月9日02:14:30]
 */

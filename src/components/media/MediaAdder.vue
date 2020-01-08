@@ -52,7 +52,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import FieldFile from "@/components/field/FieldFile.vue";
-    import {id} from "@/utils/graphClass";
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
@@ -110,7 +109,8 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: 'Media的添加工具'
         }
     })
 </script>

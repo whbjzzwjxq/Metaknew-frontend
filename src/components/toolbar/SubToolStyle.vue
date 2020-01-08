@@ -47,7 +47,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import {GraphSelfPart, id} from "@/utils/graphClass";
+    import {GraphSelfPart} from "@/utils/graphClass";
     import CardPageStyleEditor from "@/components/card/page/CardPageStyleEditor.vue";
 
     export default Vue.extend({
@@ -102,7 +102,9 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: ' 编辑样式用的工具栏'
+            //todo 专题样式编辑
         }
     })
 </script>

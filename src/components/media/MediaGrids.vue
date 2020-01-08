@@ -48,7 +48,10 @@
             }
         },
         computed: {
-            length: vm => vm.fileList.length > 9 ? 9 : vm.fileList.length
+            // 第一页
+            length: function() {
+                return this.fileList.length > 9 ? 9 : this.fileList.length
+            }
         },
         methods: {
             click(n: number) {
@@ -67,7 +70,8 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '图片九宫格'
         }
     })
 </script>
@@ -90,5 +94,5 @@
 
 /**
 * Created by whb on 2019/11/25
-* Updated by []
+* Updated by [whb on 2020年1月9日02:20:45]
 */

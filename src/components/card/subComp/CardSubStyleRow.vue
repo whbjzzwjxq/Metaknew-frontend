@@ -165,35 +165,32 @@
             },
 
             updateValue(prop: string, value: string | number) {
-                let vm = this;
-                vm.selection.map(item => {
+                this.selection.map(item => {
                     item.updateSetting(this.propGroup, prop, value)
                 })
             },
 
             updateCache(prop: string, value: any) {
-                let vm = this;
-                vm.$set(vm.cache, prop, value)
+                this.$set(this.cache, prop, value)
             },
 
             saveValue(prop: string, type: settingType) {
-                let vm = this;
-                let cache = vm.cache[type];
+                let cache = this.cache[type];
                 switch (type) {
                     case "Number":
-                        cache !== null && vm.updateValue(prop, cache);
+                        cache !== null && this.updateValue(prop, cache);
                         break;
                     case "String":
-                        cache !== "" && vm.updateValue(prop, cache);
+                        cache !== "" && this.updateValue(prop, cache);
                         break;
                     case "Color":
-                        cache !== "" && vm.updateValue(prop, cache);
+                        cache !== "" && this.updateValue(prop, cache);
                         break;
                     case "Boolean":
-                        cache !== null && vm.updateValue(prop, cache);
+                        cache !== null && this.updateValue(prop, cache);
                         break;
                     default:
-                        vm.updateValue(prop, cache)
+                        this.updateValue(prop, cache)
                 }
             }
         },

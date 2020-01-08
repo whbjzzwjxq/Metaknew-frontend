@@ -3,7 +3,7 @@
         <div v-if="!loading" :style="viewBoxStyle">
             <graph-view-box
                 :document="document"
-                :container="viewBox"
+                :view-box="viewBox"
                 render-selector
                 render-label-selector
                 render-media>
@@ -37,22 +37,18 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {StyleManagerState} from "@/store/modules/styleComponentSize"
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
     import {RectByPoint} from "@/utils/geoMetric";
     import {
         getIndex,
-        GraphSelfPart, id,
+        GraphSelfPart,
         LinkInfoPart,
         LinkSettingPart,
         NodeInfoPart,
         NodeSettingPart,
-        VisualNodeSettingPart,
         MediaSettingPart
     } from "@/utils/graphClass";
-    import {DataManagerState} from "@/store/modules/dataManager";
     import {commitGraphAdd, commitGraphChange, commitInfoAdd} from "@/store/modules/_mutations";
-    import * as CSS from "csstype";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
     import SubToolStyle from "@/components/toolbar/SubToolStyle.vue";
@@ -77,13 +73,13 @@
         },
         props: {},
         computed: {
-            dataManager(): DataManagerState {
+            dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            allComponentsStyle(): StyleManagerState {
+            allComponentsStyle: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            viewBox(): RectByPoint {
+            viewBox: function (): RectByPoint {
                 return this.allComponentsStyle.viewBox
             },
             viewBoxStyle: function (): CSSProp {
@@ -92,10 +88,10 @@
                 )
             },
 
-            document(): GraphSelfPart {
+            document: function(): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
-            editMode(): boolean {
+            editMode: function(): boolean {
                 return this.editPageRegex.test(String(this.$route.name))
             }
         },
@@ -111,7 +107,7 @@
                 return setting
             },
 
-            newLink(start: VisualNodeSettingPart, end: VisualNodeSettingPart, document?: GraphSelfPart) {
+            newLink(start: VisNodeSettingPart, end: VisNodeSettingPart, document?: GraphSelfPart) {
                 let id = getIndex();
                 let info = LinkInfoPart.emptyLinkInfo(id, 'default', start, end);
                 commitInfoAdd({item: info});
@@ -175,7 +171,8 @@
 
         },
         record: {
-            status: 'empty'
+            status: 'editing',
+            description: ''
         }
     })
 </script>

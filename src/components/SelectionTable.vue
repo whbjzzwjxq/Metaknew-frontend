@@ -49,7 +49,7 @@
             },
         },
         computed: {
-            settingItem(): setting[] {
+            settingItem: function(): setting[] {
                 return this.settingList.map((setting, index) => {
                     let name: string;
                     let type = setting.Setting._type;
@@ -73,7 +73,8 @@
         methods: {},
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: '选择集的表格形式'
         }
     })
 </script>

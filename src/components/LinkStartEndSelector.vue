@@ -107,7 +107,11 @@
                     "value": node.Setting._id
                 }))
             },
-            addLinkDisable: (vm: any): boolean => vm.editable && vm.addLinkStartModel && vm.addLinkEndModel,
+
+            //是否能够添加Link
+            addLinkDisable: function () {
+                return this.editable && this.addLinkStartModel && this.addLinkEndModel
+            },
 
             addLinkStartModel: {
                 get(): NodeAsSelectorItem {
@@ -171,7 +175,8 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '关系的节点选择器'
         }
     })
 </script>

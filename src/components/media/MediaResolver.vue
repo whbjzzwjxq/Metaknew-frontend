@@ -49,7 +49,8 @@
         },
         watch: {},
         record: {
-            status: "done"
+            status: "done",
+            description: 'Media解析的工具栏'
         }
     })
 </script>

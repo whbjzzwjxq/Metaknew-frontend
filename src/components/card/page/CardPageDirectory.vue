@@ -134,7 +134,7 @@
                             : this.$set(origin, 'isSelected', false)
                     });
                     Object.values(this.docItemDict).map(docItem => {
-
+                        //todo
                     })
                 }
             }
@@ -250,7 +250,7 @@
                 this.allItemList.push(documentItem);
                 let currentDocument = documentItem.children.filter(item => isDocument(item));
                 let currentDocumentId = currentDocument.map(item => item.id);
-                let currentChildrenId = documentItem.children.map(item => item.id);
+                // let currentChildrenId = documentItem.children.map(item => item.id);
                 let newItemList = this.allDocToItemDict[documentItem.id];
                 let newChildren = currentDocument;
                 newItemList.map(item => {

@@ -48,7 +48,8 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '可编辑的Title'
         }
     })
 </script>

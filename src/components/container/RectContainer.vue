@@ -27,7 +27,6 @@
         Point,
         getPoint
     } from "@/utils/geoMetric";
-    import * as CSS from 'csstype'
 
     export default Vue.extend({
         name: "RectContainer",

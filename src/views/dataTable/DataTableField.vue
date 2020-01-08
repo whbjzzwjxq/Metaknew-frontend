@@ -192,7 +192,8 @@
 
         },
         record: {
-            status: 'done-old'
+            status: 'done',
+            description: '针对不同类型的数据的编辑器'
         }
     })
 </script>

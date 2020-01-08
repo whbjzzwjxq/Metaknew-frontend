@@ -21,7 +21,7 @@
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
-        name: "GraphAdder",
+        name: "DocumentAdder",
         components: {},
         data() {
             return {}
@@ -70,7 +70,8 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'editing',
+            description: '添加专题用的工具'
         }
     })
 </script>

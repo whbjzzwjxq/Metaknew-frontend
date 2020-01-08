@@ -73,7 +73,7 @@
         },
         computed: {
             //搜索框的占位符
-            fileUploadPlaceHolder(): string {
+            fileUploadPlaceHolder: function(): string {
                 return this.disabled
                     ? "请先选择主标签"
                     : "点击解析" + this.fileUploadSetting.label + "文件(切换解析方式将清空已解析文件，但是不会清空数据)";
@@ -151,7 +151,9 @@
             }
         },
         record: {
-            status: 'done'
+            status: 'done',
+            description: 'DataTable的输入栏',
+            //todo 从别的数据类型解析
         }
     })
 </script>

@@ -57,25 +57,20 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        AllItemSettingPart,
         GraphSelfPart,
-        GraphState,
         LinkSettingPart,
         MediaSettingPart, NodeInfoPart,
         NodeSettingPart,
-        SettingPart, VisualNodeSettingPart
+        SettingPart,
     } from "@/utils/graphClass";
-    import {AreaRect, PointObject, RectByPoint, getPoint, Point} from "@/utils/geoMetric";
-    import {DataManagerState} from "@/store/modules/dataManager";
-    import * as CSS from "csstype";
-    import {GraphMetaData, LabelViewDict, VisualNodeSetting} from "@/utils/interfaceInComponent";
+    import {RectByPoint, getPoint, Point} from "@/utils/geoMetric";
+    import {LabelViewDict, GraphMetaData} from "@/utils/interfaceInComponent";
     import {isMediaSetting} from "@/utils/typeCheck";
     import {commitItemChange} from "@/store/modules/_mutations";
     import {getInfoPart, maxN, minN} from "@/utils/utils";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import RectContainer from "@/components/container/RectContainer.vue";
-    import {StyleManagerState} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
         name: "GraphRender",
@@ -102,7 +97,7 @@
 
                 // ------ link ------
                 isLinking: false,
-                startNode: null as null | VisualNodeSettingPart,
+                startNode: null as null | VisNodeSettingPart,
                 newLinkEndPoint: new Point(0, 0),
 
                 isMoving: false,
@@ -381,7 +376,7 @@
             },
 
             //注意坐标运算使用小数
-            drag(target: VisualNodeSettingPart, $event: MouseEvent) {
+            drag(target: VisNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
                     let deltaX = ($event.x - this.dragStartPoint.x) / this.baseRect.width;
                     let deltaY = ($event.y - this.dragStartPoint.y) / this.baseRect.height;
@@ -400,7 +395,7 @@
                 }
             },
 
-            dragEnd(target: VisualNodeSettingPart, $event: MouseEvent) {
+            dragEnd(target: VisNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
                     this.drag(target, $event);
                     this.isDragging = false;
@@ -474,7 +469,7 @@
             },
 
             //取得link所用数据
-            getTargetInfo(item: VisualNodeSettingPart | null) {
+            getTargetInfo(item: VisNodeSettingPart | null) {
                 //注意这里index肯定不能是-1
                 let result;
                 item
@@ -486,16 +481,16 @@
             },
 
             //node的原生事件
-            mouseEnter(node: VisualNodeSettingPart) {
+            mouseEnter(node: VisNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", true);
             },
 
             //node的原生事件
-            mouseLeave(node: VisualNodeSettingPart) {
+            mouseLeave(node: VisNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", false);
                 this.isDragging = false;
             },
-            dbClickNode(node: VisualNodeSettingPart) {
+            dbClickNode(node: VisNodeSettingPart) {
                 this.selectItem([node]);
             },
 
@@ -535,7 +530,7 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'editing'
         }
     })
 </script>
