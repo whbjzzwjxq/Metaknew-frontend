@@ -1,7 +1,23 @@
 import {deepClone, getCookie} from "@/utils/utils";
 import Vue from "vue";
-import {fieldDefaultValue, nodeLabelToProp} from "@/utils/labelField";
-import {settingTemplate} from "@/utils/settingTemplate";
+import {
+    graphSettingTemplate,
+    graphStateTemplate,
+    linkCtrlTemplate,
+    linkInfoTemplate,
+    linkSettingTemplate,
+    linkStateTemplate,
+    mediaCtrlTemplate,
+    mediaInfoTemplate,
+    mediaSettingTemplate,
+    nodeCtrlTemplate,
+    nodeInfoTemplate,
+    nodeSettingTemplate,
+    nodeStateTemplate,
+    noteSettingTemplate,
+    noteStateTemplate,
+    userConcernTemplate
+} from "@/utils/template";
 import {
     isBaseType,
     isBooleanConcern,
@@ -11,494 +27,214 @@ import {
     isNodeSetting,
     isNoteSetting
 } from "@/utils/typeCheck";
-import {ValueWithType, ExtraProps} from "@/utils/interfaceInComponent";
-import {AreaRect} from "@/utils/geoMetric";
+import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
+import {BackendGraph} from "@/api/commonSource";
+import {BooleanConcern, LevelConcern, UserConcern} from "@/utils/userConcern";
 
-export let newIdRegex = new RegExp("\\$_[0-9]*");
-let ctrlPropRegex = new RegExp("\\$.*");
-let crucialRegex = new RegExp("_.*");
-export type id = number | string;
-export type BaseType = "node" | "link" | "document" | "media" | "note";
-export type BaseTypeList = 'nodes' | 'medias' | 'links' | "notes";
-export type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
-export type AllSettingPart = AllItemSettingPart | GraphSettingPart
-export type Translate = Record<string, string>
-export var globalIndex = 0;
+declare global {
+    type id = number | string;
+    type ItemType = "node" | "link" | "document" | "media"
+    type BaseType = ItemType | "note";
+    type BaseTypeList = 'nodes' | 'medias' | 'links' | "notes";
+    type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
+    type idMap = Record<id, id>; // 新旧id的Map
+    type InfoPart = NodeInfoPart | MediaInfoPart | LinkInfoPart;
+    type VisNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从视觉上来说是Node的对象
+    type AllItemSettingPart = VisNodeSettingPart | LinkSettingPart | NoteSettingPart; // 所有Item对象
+    type AllSettingPart = AllItemSettingPart | GraphSettingPart // 所有Setting对象
 
-export function getIndex() {
-    globalIndex += 1;
-    return '$_' + globalIndex
-}
+    //带有翻译的格式
+    type Translate = Record<string, string>
 
-export const itemEqual = (itemA: Setting, itemB: Setting) =>
-    itemA._id === itemB._id && itemA._type === itemB._type;
-
-export const findItem = (list: Array<SettingPart>, _id: id, _type: BaseType) =>
-    list.filter(
-        item => item.Setting._id === _id && item.Setting._type === _type
-    );
-export const getIsSelf = (ctrl: BaseCtrl) =>
-    ctrl.CreateUser.toString() === getCookie("user_id");
-
-export function getMediaType(file: File) {
-    const mime = require("mime/lite");
-    const mimeTypes = (file: File) => mime.getType(file.name.split(".")[1]);
-    const mimeFile = mimeTypes(file);
-    let result;
-    if (mimeFile) {
-        const mimeType = mimeFile.split("/");
-        mimeType[0] === "application"
-            ? (result = mimeType[1])
-            : (result = mimeType[0]);
-    } else {
-        result = file.name.split(".")[1];
-    }
-    return result;
-}
-
-export interface QueryObject {
-    _id: id;
-    _type: string;
-    _label: string;
-}
-
-export interface GraphBackend {
-    Base: {
-        Info: BaseNodeInfo;
-        Ctrl: BaseNodeCtrl;
-    };
-    Graph: {
-        nodes: Array<NodeSetting>;
-        links: Array<compressLinkSetting>;
-        medias: Array<MediaSetting>;
-        notes: Array<NoteSetting>;
-    };
-    Conf: GraphSetting;
-    Path: Array<Object>;
-}
-
-export interface Text {
-    [propName: string]: string;
-}
-
-export type LevelConcern = "Imp" | "HardLevel" | "Useful";
-export type BooleanConcern = "isStar" | "isBad" | "isGood" | "isShared";
-
-export interface UserConcern {
-    Imp: number;
-    HardLevel: number;
-    Useful: number;
-    isStar: boolean;
-    isShared: boolean;
-    isGood: boolean;
-    isBad: boolean;
-    Labels: Array<string>;
-}
-
-type BaseStateKey = 'isSelected' | 'isDeleted' | 'isSelf'
-
-export interface BaseState {
-    isSelected: boolean; // 是否被选中
-    isDeleted: boolean; // 是否被删除;
-    isSelf: boolean; // 是否是自己的内容
-}
-
-interface NodeState extends BaseState {
-    // 用于node media
-    isMouseOn: boolean; // 是否鼠标放置在上面
-    isAdd: boolean; // 是否是新建的
-}
-
-interface LinkState extends BaseState {
-    // 暂时和Node一样
-    isMouseOn: boolean; // 是否鼠标放置在上面
-    isAdd: boolean; // 是否是新建的
-}
-
-interface NoteState extends BaseState {
-    isMouseOn: boolean;
-    isAdd: boolean;
-    isLock: boolean;
-}
-
-export interface GraphState extends BaseState {
-    isLoading: boolean;
-    isChanged: boolean;
-    SavedIn5Min: boolean; // 5分钟内是否保存
-    isExplode: boolean;
-}
-
-export const InfoToSetting = (payload: {
-    id: id;
-    type: BaseType;
-    PrimaryLabel: string;
-}) =>
-    ({
-        _id: payload.id,
-        _type: payload.type,
-        _label: payload.PrimaryLabel
-    } as Setting);
-
-interface BaseInfo {
-    id: id;
-    type: BaseType;
-    PrimaryLabel: string;
-    $IsCommon: boolean;
-    $IsShared: boolean;
-    $IsOpenSource: boolean;
-}
-
-interface BaseCtrl {
-    $IsUserMade: boolean;
-    CreateUser: string | number;
-    UpdateTime: string;
-    Source: string
-}
-
-export interface NodeInfoPartBackend {
-    Info: BaseNodeInfo;
-    Ctrl: BaseNodeCtrl;
-}
-
-export interface BaseNodeInfo extends BaseInfo {
-    type: "node" | "document";
-    Name: string;
-    Alias: Array<string>;
-    BaseImp: number;
-    BaseHardLevel: number;
-    Language: string;
-    Topic: Array<string>;
-    Labels: Array<string>;
-    ExtraProps: ExtraProps;
-    CommonProps: Record<string, ValueWithType<any>>;
-    Text: Text;
-    Translate: Translate;
-    IncludedMedia: Array<string | number>;
-    MainPic: string;
-}
-
-export interface BaseNodeCtrl extends BaseCtrl {
-    PrimaryLabel: string;
-    Imp: number;
-    HardLevel: number;
-    Useful: number;
-    isStar: number;
-    isShared: number;
-    isGood: number;
-    isBad: number;
-    Labels: Array<string>;
-    Contributor: Object;
-    TotalTime: number;
-}
-
-export interface BaseGraphCtrl extends BaseNodeCtrl {
-    Size: number;
-    MainNodes: Array<id>;
-    Complete: number
-}
-
-export interface BaseMediaInfo extends BaseInfo {
-    type: "media";
-    Name: string;
-    Labels: Array<string>;
-    Text: Text;
-    ExtraProps: ExtraProps;
-
-    [propName: string]: any;
-}
-
-export interface BaseMediaCtrl extends BaseCtrl {
-    FileName: string; // URL
-    Format: string; // 格式
-    Thumb: string; // 缩略图
-    PrimaryLabel: string;
-    isStar: number;
-    isShared: number;
-    isGood: number;
-    isBad: number;
-    Labels: Array<string>;
-}
-
-export interface MediaInfoPartBackend {
-    Info: BaseMediaInfo;
-    Ctrl: BaseMediaCtrl;
-}
-
-export interface BaseLinkInfo extends BaseInfo {
-    type: "link";
-    Labels: Array<string>;
-    CommonProps: Record<string, ValueWithType<any>>;
-    ExtraProps: ExtraProps;
-    Text: Text;
-    Confidence: number;
-
-    [propName: string]: any;
-}
-
-export interface BaseLinkCtrl extends BaseCtrl {
-    Start: NodeSettingPart;
-    End: NodeSettingPart;
-}
-
-interface LinkCtrlBackend extends BaseCtrl {
-    Start: QueryObject;
-    End: QueryObject;
-}
-
-export interface LinkInfoPartBackend {
-    Info: BaseLinkInfo;
-    Ctrl: LinkCtrlBackend;
-}
-
-export interface Setting {
-    _id: id;
-    _type: BaseType;
-    _label: string;
-
-    [propName: string]: any;
-}
-
-interface Base {
-    x: number,
-    y: number,
-    size: number,
-    scaleX: number,
-    [prop: string]: any
-}
-export interface NodeSetting extends Setting {
-    _type: 'node' | 'document';
-    _name: string;
-    _image: string;
-    Base: Base
-}
-
-export interface MediaSetting extends Setting {
-    _type: 'media';
-    _name: string;
-    _src: string; // url字符串或者 URL.createObjectUrl返回值
-}
-
-export interface LinkSetting extends Setting {
-    _type: 'link';
-    _start: VisualNodeSettingPart;
-    _end: VisualNodeSettingPart;
-}
-
-export interface compressLinkSetting extends Setting {
-    _start: Setting;
-    _end: Setting;
-}
-
-export interface GraphSetting extends Setting {
-    _type: 'document'
-}
-
-interface NoteContent {
-    [prop: string]: any
-}
-
-export interface NoteSetting extends Setting {
-    _type: 'note';
-    _title: string;
-    _content: NoteContent
-}
-
-export type VisualNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从视觉上来说是Node的对象
-
-export type AllItemSettingPart = VisualNodeSettingPart | LinkSettingPart | NoteSettingPart;
-
-export function nodeStateTemplate(...rest: Array<string>) {
-    return {
-        isSelected: false,
-        isMouseOn: false,
-        isDeleted: false,
-        isAdd: rest.indexOf("isAdd") > -1,
-        isSelf: rest.indexOf("isSelf") > -1
-    } as NodeState;
-}
-
-export function linkStateTemplate(...rest: Array<string>) {
-    return {
-        isSelected: false,
-        isMouseOn: false,
-        isDeleted: false,
-        isAdd: rest.indexOf("isAdd") > -1,
-        isSelf: rest.indexOf("isSelf") > -1
-    } as LinkState;
-}
-
-export function noteStateTemplate(...rest: Array<string>) {
-    return {
-        isSelected: false,
-        isMouseOn: false,
-        isDeleted: false,
-        isAdd: rest.indexOf("isAdd") > -1,
-        isSelf: true,
-        isLock: false
-    } as NoteState
-}
-
-export function graphStateTemplate(...rest: Array<string>) {
-    return <GraphState>{
-        isSelected: false,
-        showCard: false,
-        isMouseOn: false,
-        isDeleted: false,
-        isChanged: false,
-        SavedIn5Min: false,
-        isExplode: false,
-        isSelf: rest.indexOf("isSelf") > -1,
-        isAdd: rest.indexOf("isAdd") > -1,
-        isLoading: rest.indexOf("isLoading") > -1,
-    };
-}
-
-export function userConcernTemplate() {
-    return <UserConcern>{
-        Imp: -1,
-        HardLevel: -1,
-        Useful: -1,
-        isStar: false,
-        isGood: false,
-        isBad: false,
-        isShared: false,
-        Labels: []
-    };
-}
-
-export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: string) {
-    let commonProps: Record<string, ValueWithType<any>> = {};
-    Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
-        let {type, resolve} = value;
-        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
-    });
-    let info = <BaseNodeInfo>{
-        id: _id,
-        type: _type,
-        PrimaryLabel: _label,
-        Name: 'NewNode' + _id,
-        Alias: [],
-        Language: 'auto',
-        Labels: [],
-        Topic: [],
-        Text: {'auto': ''},
-        Translate: {},
-        ExtraProps: {},
-        CommonProps: commonProps,
-        BaseImp: 0,
-        BaseHardLevel: 0,
-        $IsOpenSource: false,
-        $IsCommon: true,
-        $IsShared: false,
-        IncludedMedia: [],
-        MainPic: ''
-    };
-    // 特别定义
-    if (_type === "document") {
-        info.Name = 'NewDocument' + _id;
+    //InfoPart相关
+    interface BaseInfo {
+        id: id;
+        type: BaseType;
+        PrimaryLabel: string;
+        $IsCommon: boolean;
+        $IsShared: boolean;
+        $IsOpenSource: boolean;
     }
 
-    return info;
-}
-
-export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
-    // Ctrl数据
-    let time = new Date();
-    let ctrl = {
-        $IsUserMade: true,
-        CreateUser: getCookie("user_id"),
-        Source: 'User',
-        UpdateTime: time.toLocaleDateString(),
-        PrimaryLabel: _label,
-        Imp: 50,
-        HardLevel: 50,
-        Useful: 50,
-        isStar: 0,
-        isShared: 0,
-        isGood: 0,
-        isBad: 0,
-        Contributor: {create: getCookie("user_name"), update: []},
-        TotalTime: 50,
-        Labels: []
-    };
-    if (_type === 'node') {
-        return ctrl as BaseNodeCtrl
-    } else {
-        return Object.assign({
-            Size: 1,
-            Complete: 2,
-            MainNodes: [],
-        }, ctrl) as BaseGraphCtrl
+    interface BaseCtrl {
+        $IsUserMade: boolean;
+        CreateUser: string | number;
+        UpdateTime: string;
+        Source: string
     }
-}
 
-export function mediaInfoTemplate(_id: id, file: File) {
-    return <BaseMediaInfo>{
-        id: _id,
-        type: "media",
-        PrimaryLabel: getMediaType(file),
-        Name: file.name.split(".")[0],
-        Text: {},
-        Labels: [],
-        $IsCommon: true,
-        $IsOpenSource: false,
-        $IsShared: false,
-        ExtraProps: {}
-    };
-}
+    interface BaseNodeInfo extends BaseInfo {
+        type: "node" | "document";
+        Name: string;
+        Alias: Array<string>;
+        BaseImp: number;
+        BaseHardLevel: number;
+        Language: string;
+        Topic: Array<string>;
+        Labels: Array<string>;
+        ExtraProps: ExtraProps;
+        CommonProps: Record<string, ValueWithType<any>>;
+        Text: Translate;
+        Translate: Translate;
+        IncludedMedia: Array<string | number>;
+        MainPic: string;
+    }
 
-export function mediaCtrlTemplate(file: File) {
-    const time = new Date();
-    return <BaseMediaCtrl>{
-        FileName: URL.createObjectURL(file),
-        Format: file.name.split(".")[1],
-        PrimaryLabel: getMediaType(file),
-        Thumb: "",
-        UpdateTime: time.toLocaleDateString(),
-        CreateUser: getCookie("user_id"),
-        $IsUserMade: true,
-        Source: 'User',
-        isStar: 0,
-        isGood: 0,
-        isBad: 0,
-        isShared: 0,
-        Labels: []
-    };
-}
+    interface BaseNodeCtrl extends BaseCtrl {
+        PrimaryLabel: string;
+        Imp: number;
+        HardLevel: number;
+        Useful: number;
+        isStar: number;
+        isShared: number;
+        isGood: number;
+        isBad: number;
+        Labels: Array<string>;
+        Contributor: Object;
+        TotalTime: number;
+    }
 
-export function linkInfoTemplate(_id: id, _label: string) {
-    let commonProps: Record<string, ValueWithType<any>> = {};
-    Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
-        let {type, resolve} = value;
-        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
-    });
-    return <BaseLinkInfo>{
-        id: _id,
-        type: "link",
-        PrimaryLabel: _label,
-        $IsCommon: true,
-        $IsShared: false,
-        $IsOpenSource: false,
-        Labels: [],
-        ExtraProps: {},
-        Text: {},
-        Confidence: 0.5,
-        CommonProps: commonProps
-    };
-}
+    //GraphInfo 和 NodeInfo一样
+    interface BaseGraphCtrl extends BaseNodeCtrl {
+        Size: number;
+        MainNodes: Array<id>;
+        Complete: number
+    }
 
-export function linkCtrlTemplate(
-    _start: VisualNodeSettingPart,
-    _end: VisualNodeSettingPart
-) {
-    let time = new Date();
-    return <BaseLinkCtrl>{
-        UpdateTime: time.toLocaleDateString(),
-        CreateUser: getCookie("user_id"),
-        $IsUserMade: true,
-        Start: _start,
-        End: _end
-    };
+    interface BaseMediaInfo extends BaseInfo {
+        type: "media";
+        Name: string;
+        Labels: Array<string>;
+        Text: Translate;
+        ExtraProps: ExtraProps;
+
+        [propName: string]: any;
+    }
+
+    interface BaseMediaCtrl extends BaseCtrl {
+        FileName: string; // URL
+        Format: string; // 格式
+        Thumb: string; // 缩略图
+        PrimaryLabel: string;
+        isStar: number;
+        isShared: number;
+        isGood: number;
+        isBad: number;
+        Labels: Array<string>;
+    }
+
+    interface BaseLinkInfo extends BaseInfo {
+        type: "link";
+        Labels: Array<string>;
+        CommonProps: Record<string, ValueWithType<any>>;
+        ExtraProps: ExtraProps;
+        Text: Translate;
+        Confidence: number;
+
+        [propName: string]: any;
+    }
+
+    interface BaseLinkCtrl extends BaseCtrl {
+        Start: NodeSettingPart;
+        End: NodeSettingPart;
+    }
+
+    //SettingPart相关
+
+    interface Setting {
+        _id: id;
+        _type: BaseType;
+        _label: string;
+
+        [propName: string]: any;
+    }
+
+    type BaseStateKey = 'isSelected' | 'isDeleted' | 'isSelf'
+
+    interface BaseSize {
+        x: number,
+        y: number,
+        size: number,
+        scaleX: number,
+        [prop: string]: any
+    }
+
+    interface NodeSetting extends Setting {
+        _type: 'node' | 'document';
+        _name: string;
+        _image: string;
+        Base: BaseSize
+    }
+
+    interface MediaSetting extends Setting {
+        _type: 'media';
+        _name: string;
+        _src: string; // url字符串或者 URL.createObjectUrl返回值
+    }
+
+    interface LinkSetting extends Setting {
+        _type: 'link';
+        _start: VisNodeSettingPart;
+        _end: VisNodeSettingPart;
+    }
+
+    interface compressLinkSetting extends Setting {
+        _start: Setting;
+        _end: Setting;
+    }
+
+    interface GraphSetting extends Setting {
+        _type: 'document'
+    }
+
+    interface NoteContent {
+        [prop: string]: any
+    }
+
+    interface NoteSetting extends Setting {
+        _type: 'note';
+        _title: string;
+        _content: NoteContent
+    }
+
+    interface BaseState {
+        isSelected: boolean; // 是否被选中
+        isDeleted: boolean; // 是否被删除;
+        isSelf: boolean; // 是否是自己的内容
+    }
+
+    interface NodeState extends BaseState {
+        // 用于node media
+        isMouseOn: boolean; // 是否鼠标放置在上面
+        isAdd: boolean; // 是否是新建的
+    }
+
+    interface LinkState extends BaseState {
+        // 暂时和Node一样
+        isMouseOn: boolean; // 是否鼠标放置在上面
+        isAdd: boolean; // 是否是新建的
+    }
+
+    interface NoteState extends BaseState {
+        isMouseOn: boolean;
+        isAdd: boolean;
+        isLock: boolean;
+    }
+
+    interface GraphState extends BaseState {
+        isLoading: boolean;
+        isChanged: boolean;
+        SavedIn5Min: boolean; // 5分钟内是否保存
+        isExplode: boolean;
+    }
+
+    //Graph
+    interface Graph {
+        nodes: Array<NodeSettingPart>;
+        links: Array<LinkSettingPart>;
+        medias: Array<MediaSettingPart>;
+        notes: Array<NoteSettingPart>;
+    }
 }
 
 export class NodeInfoPart {
@@ -640,8 +376,8 @@ export class LinkInfoPart {
     static emptyLinkInfo(
         _id: id,
         _label: string,
-        _start: VisualNodeSettingPart,
-        _end: VisualNodeSettingPart
+        _start: VisNodeSettingPart,
+        _end: VisNodeSettingPart
     ) {
         return new LinkInfoPart(
             linkInfoTemplate(_id, _label),
@@ -663,8 +399,8 @@ export class LinkInfoPart {
     }
 
     changeNode(
-        start: VisualNodeSettingPart | null,
-        end: VisualNodeSettingPart | null
+        start: VisNodeSettingPart | null,
+        end: VisNodeSettingPart | null
     ) {
         if (!this.isRemote) {
             if (start && !itemEqual(this.Ctrl.Start.Setting, start.Setting)) {
@@ -833,96 +569,6 @@ export class MediaInfoPart {
     }
 }
 
-export function nodeSettingTemplate(
-    _id: id,
-    _type: string,
-    _label: string,
-    _name: string,
-    _image: string
-) {
-    let setting = <NodeSetting>{
-        _id,
-        _type,
-        _label,
-        _name,
-        _image
-    };
-    Object.assign(setting, settingTemplate("node"));
-    return setting;
-}
-
-export function linkSettingTemplate(
-    _id: id,
-    _label: string,
-    _start: VisualNodeSettingPart,
-    _end: VisualNodeSettingPart
-) {
-    let setting = <LinkSetting>{
-        _id,
-        _type: "link",
-        _label,
-        _start,
-        _end
-    };
-    Object.assign(setting, settingTemplate("link"));
-    return setting;
-}
-
-export function mediaSettingTemplate(
-    _id: id,
-    _label: string,
-    _name: string,
-    _src: string
-) {
-    let setting = <MediaSetting>{
-        _id,
-        _type: "media",
-        _label,
-        _name,
-        _src
-    };
-    Object.assign(setting, settingTemplate("media"));
-    if (_label === 'image') {
-        let image = new Image();
-        image.src = _src;
-        let checkLoad = function () {
-            if (image.width > 0 || image.height > 0) {
-                setting.Base.size = image.width;
-                setting.Base.scaleX = image.height / image.width;
-                cancelAnimationFrame(query)
-            }
-        };
-        let query = requestAnimationFrame(checkLoad);
-        image.onload = function () {
-            setting.Base.size = image.width;
-            setting.Base.scaleX = image.height / image.width;
-            cancelAnimationFrame(query)
-        };
-        checkLoad()
-    }
-    return setting;
-}
-
-export function graphSettingTemplate(_id: id) {
-    let setting = <GraphSetting>{
-        _id,
-        _type: "document",
-        _label: "DocGraph"
-    };
-    Object.assign(setting, settingTemplate("document"));
-    return setting;
-}
-
-export function noteSettingTemplate(_id: id, _label: string, _content: Object) {
-    let setting = <NoteSetting>{
-        _id,
-        _type: 'note',
-        _label: _label
-    };
-    Object.assign(setting, settingTemplate('note'));
-    return setting
-}
-
 export class SettingPart {
     Setting: Setting;
     State: BaseState;
@@ -1031,8 +677,8 @@ export class LinkSettingPart extends SettingPart {
     static emptyLinkSetting(
         _id: id,
         _label: string,
-        _start: VisualNodeSettingPart,
-        _end: VisualNodeSettingPart,
+        _start: VisNodeSettingPart,
+        _end: VisNodeSettingPart,
         parent: GraphSelfPart
     ) {
         let setting = linkSettingTemplate(_id, _label, _start, _end);
@@ -1089,25 +735,6 @@ export class GraphSettingPart extends SettingPart {
     }
 }
 
-export interface Graph {
-    nodes: Array<NodeSettingPart>;
-    links: Array<LinkSettingPart>;
-    medias: Array<MediaSettingPart>;
-    notes: Array<NoteSettingPart>;
-}
-
-export const findRoot = (item: SettingPart) => {
-    if (!item.parent) {
-        return [];
-    } else {
-        let result: Array<GraphSelfPart>;
-        item.parent
-            ? (result = item.parent.rootList.concat(item.parent))
-            : (result = [item.parent]);
-        return result;
-    }
-};
-
 export class GraphSelfPart {
     Graph: Graph;
     Conf: GraphSettingPart;
@@ -1120,9 +747,10 @@ export class GraphSelfPart {
     get baseNode() {
         return this._baseNode
     }
+
     rect: AreaRect;
     static list: Array<GraphSelfPart>;
-    static baseList: Array<GraphBackend>; // 原始数据
+    static baseList: Array<BackendGraph>; // 原始数据
     constructor(
         graph: Graph,
         setting: GraphSettingPart,
@@ -1171,7 +799,7 @@ export class GraphSelfPart {
     }
 
     static resolveFromBackEnd(
-        baseData: GraphBackend,
+        baseData: BackendGraph,
         parent: GraphSelfPart | null
     ) {
         GraphSelfPart.baseList.push(baseData);
@@ -1334,7 +962,30 @@ export class GraphSelfPart {
     }
 }
 
-export const classifier = (itemList: AllItemSettingPart[]) => {
+let globalIndex = 0;
+export let newIdRegex = new RegExp("\\$_[0-9]*");
+let ctrlPropRegex = new RegExp("\\$.*");
+let crucialRegex = new RegExp("_.*");
+
+export const getIndex = () => {
+    globalIndex += 1;
+    return '$_' + globalIndex
+}; // 获取新内容索引
+
+export const itemEqual = (itemA: Setting, itemB: Setting) =>
+    itemA._id === itemB._id && itemA._type === itemB._type; // 两个Item是否一样
+
+export const findItem = (list: Array<SettingPart>, _id: id, _type: BaseType) =>
+    list.filter(
+        item => item.Setting._id === _id && item.Setting._type === _type // 在一个List里找Item
+    );
+export const getIsSelf = (ctrl: BaseCtrl) =>
+    ctrl.CreateUser.toString() === getCookie("user_id");
+
+export const InfoToSetting = (payload: { id: id; type: BaseType; PrimaryLabel: string; }) =>
+    ({_id: payload.id, _type: payload.type, _label: payload.PrimaryLabel} as Setting);
+
+export const settingPartClassifier = (itemList: AllItemSettingPart[]) => {
     let result: Record<BaseTypeList, AllItemSettingPart[]> = {
         nodes: [] as NodeSettingPart[],
         medias: [] as MediaSettingPart[],
@@ -1349,4 +1000,16 @@ export const classifier = (itemList: AllItemSettingPart[]) => {
             : result.links.push(item)
     });
     return result
+};
+
+export const findRoot = (item: SettingPart) => {
+    if (!item.parent) {
+        return [];
+    } else {
+        let result: Array<GraphSelfPart>;
+        item.parent
+            ? (result = item.parent.rootList.concat(item.parent))
+            : (result = [item.parent]);
+        return result;
+    }
 };

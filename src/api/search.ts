@@ -1,5 +1,4 @@
 import {instance} from './main'
-import {BaseType, id} from "@/utils/graphClass";
 
 export interface SearchQueryObject {
     labels: Array<string>,
@@ -45,7 +44,7 @@ export interface IndexedText {
     Name: string,
     'Name_auto': string,
     MainPic: string,
-    Text: Text,
+    Text: Translate,
     Tags: Array<string>,
     Star: number,
     Hot: number,

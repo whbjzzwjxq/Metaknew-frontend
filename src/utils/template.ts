@@ -1,5 +1,6 @@
-import {randomNumberInRange} from '@/utils/utils';
-import {BaseType} from '@/utils/graphClass';
+import {getCookie, randomNumberInRange} from '@/utils/utils';
+import {fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
+import {UserConcern} from "@/utils/userConcern";
 
 type SettingConf = Record<string, Record<string, BaseSettingConf>>
 
@@ -664,4 +665,287 @@ export function settingTemplate(_type: BaseType) {
         result[key] = settingInstance
     });
     return result
+}
+
+export function nodeSettingTemplate(_id: id, _type: string, _label: string, _name: string, _image: string) {
+    let setting = <NodeSetting>{
+        _id,
+        _type,
+        _label,
+        _name,
+        _image
+    };
+    Object.assign(setting, settingTemplate("node"));
+    return setting;
+}
+
+export function linkSettingTemplate(_id: id, _label: string, _start: VisNodeSettingPart, _end: VisNodeSettingPart) {
+    let setting = <LinkSetting>{
+        _id,
+        _type: "link",
+        _label,
+        _start,
+        _end
+    };
+    Object.assign(setting, settingTemplate("link"));
+    return setting;
+}
+
+export function mediaSettingTemplate(_id: id, _label: string, _name: string, _src: string) {
+    let setting = <MediaSetting>{
+        _id,
+        _type: "media",
+        _label,
+        _name,
+        _src
+    };
+    Object.assign(setting, settingTemplate("media"));
+    if (_label === 'image') {
+        let image = new Image();
+        image.src = _src;
+        let checkLoad = function () {
+            if (image.width > 0 || image.height > 0) {
+                setting.Base.size = image.width;
+                setting.Base.scaleX = image.height / image.width;
+                cancelAnimationFrame(query)
+            }
+        };
+        let query = requestAnimationFrame(checkLoad);
+        image.onload = function () {
+            setting.Base.size = image.width;
+            setting.Base.scaleX = image.height / image.width;
+            cancelAnimationFrame(query)
+        };
+        checkLoad()
+    }
+    return setting;
+}
+
+export function graphSettingTemplate(_id: id) {
+    let setting = <GraphSetting>{
+        _id,
+        _type: "document",
+        _label: "DocGraph"
+    };
+    Object.assign(setting, settingTemplate("document"));
+    return setting;
+}
+
+export function noteSettingTemplate(_id: id, _label: string, _content: Object) {
+    let setting = <NoteSetting>{
+        _id,
+        _type: 'note',
+        _label,
+        _content
+    };
+    Object.assign(setting, settingTemplate('note'));
+    return setting
+}
+
+export function nodeStateTemplate(...rest: Array<string>) {
+    return {
+        isSelected: false,
+        isMouseOn: false,
+        isDeleted: false,
+        isAdd: rest.indexOf("isAdd") > -1,
+        isSelf: rest.indexOf("isSelf") > -1
+    } as NodeState;
+}
+
+export function linkStateTemplate(...rest: Array<string>) {
+    return {
+        isSelected: false,
+        isMouseOn: false,
+        isDeleted: false,
+        isAdd: rest.indexOf("isAdd") > -1,
+        isSelf: rest.indexOf("isSelf") > -1
+    } as LinkState;
+}
+
+export function noteStateTemplate(...rest: Array<string>) {
+    return {
+        isSelected: false,
+        isMouseOn: false,
+        isDeleted: false,
+        isAdd: rest.indexOf("isAdd") > -1,
+        isSelf: true,
+        isLock: false
+    } as NoteState
+}
+
+export function graphStateTemplate(...rest: Array<string>) {
+    return <GraphState>{
+        isSelected: false,
+        showCard: false,
+        isMouseOn: false,
+        isDeleted: false,
+        isChanged: false,
+        SavedIn5Min: false,
+        isExplode: false,
+        isSelf: rest.indexOf("isSelf") > -1,
+        isAdd: rest.indexOf("isAdd") > -1,
+        isLoading: rest.indexOf("isLoading") > -1,
+    };
+}
+
+export function userConcernTemplate() {
+    return <UserConcern>{
+        Imp: -1,
+        HardLevel: -1,
+        Useful: -1,
+        isStar: false,
+        isGood: false,
+        isBad: false,
+        isShared: false,
+        Labels: []
+    };
+}
+
+export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: string) {
+    let commonProps: Record<string, ValueWithType<any>> = {};
+    Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
+        let {type, resolve} = value;
+        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
+    });
+    let info = <BaseNodeInfo>{
+        id: _id,
+        type: _type,
+        PrimaryLabel: _label,
+        Name: 'NewNode' + _id,
+        Alias: [],
+        Language: 'auto',
+        Labels: [],
+        Topic: [],
+        Text: {'auto': ''},
+        Translate: {},
+        ExtraProps: {},
+        CommonProps: commonProps,
+        BaseImp: 0,
+        BaseHardLevel: 0,
+        $IsOpenSource: false,
+        $IsCommon: true,
+        $IsShared: false,
+        IncludedMedia: [],
+        MainPic: ''
+    };
+    // 特别定义
+    if (_type === "document") {
+        info.Name = 'NewDocument' + _id;
+    }
+
+    return info;
+}
+
+export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
+    // Ctrl数据
+    let time = new Date();
+    let ctrl = {
+        $IsUserMade: true,
+        CreateUser: getCookie("user_id"),
+        Source: 'User',
+        UpdateTime: time.toLocaleDateString(),
+        PrimaryLabel: _label,
+        Imp: 50,
+        HardLevel: 50,
+        Useful: 50,
+        isStar: 0,
+        isShared: 0,
+        isGood: 0,
+        isBad: 0,
+        Contributor: {create: getCookie("user_name"), update: []},
+        TotalTime: 50,
+        Labels: []
+    };
+    if (_type === 'node') {
+        return ctrl as BaseNodeCtrl
+    } else {
+        return Object.assign({
+            Size: 1,
+            Complete: 2,
+            MainNodes: [],
+        }, ctrl) as BaseGraphCtrl
+    }
+}
+
+export function mediaInfoTemplate(_id: id, file: File) {
+    return <BaseMediaInfo>{
+        id: _id,
+        type: "media",
+        PrimaryLabel: getMediaType(file),
+        Name: file.name.split(".")[0],
+        Text: {},
+        Labels: [],
+        $IsCommon: true,
+        $IsOpenSource: false,
+        $IsShared: false,
+        ExtraProps: {}
+    };
+}
+
+export function mediaCtrlTemplate(file: File) {
+    const time = new Date();
+    return <BaseMediaCtrl>{
+        FileName: URL.createObjectURL(file),
+        Format: file.name.split(".")[1],
+        PrimaryLabel: getMediaType(file),
+        Thumb: "",
+        UpdateTime: time.toLocaleDateString(),
+        CreateUser: getCookie("user_id"),
+        $IsUserMade: true,
+        Source: 'User',
+        isStar: 0,
+        isGood: 0,
+        isBad: 0,
+        isShared: 0,
+        Labels: []
+    };
+}
+
+export function linkInfoTemplate(_id: id, _label: string) {
+    let commonProps: Record<string, ValueWithType<any>> = {};
+    Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
+        let {type, resolve} = value;
+        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
+    });
+    return <BaseLinkInfo>{
+        id: _id,
+        type: "link",
+        PrimaryLabel: _label,
+        $IsCommon: true,
+        $IsShared: false,
+        $IsOpenSource: false,
+        Labels: [],
+        ExtraProps: {},
+        Text: {},
+        Confidence: 0.5,
+        CommonProps: commonProps
+    };
+}
+
+export function linkCtrlTemplate(_start: VisNodeSettingPart, _end: VisNodeSettingPart) {
+    let time = new Date();
+    return <BaseLinkCtrl>{
+        UpdateTime: time.toLocaleDateString(),
+        CreateUser: getCookie("user_id"),
+        $IsUserMade: true,
+        Start: _start,
+        End: _end
+    };
+}
+
+export function getMediaType(file: File) {
+    const mime = require("mime/lite");
+    const mimeTypes = (file: File) => mime.getType(file.name.split(".")[1]);
+    const mimeFile = mimeTypes(file);
+    let result;
+    if (mimeFile) {
+        const mimeType = mimeFile.split("/");
+        mimeType[0] === "application"
+            ? (result = mimeType[1])
+            : (result = mimeType[0]);
+    } else {
+        result = file.name.split(".")[1];
+    }
+    return result;
+    //todo 更加详细的mediaType
 }

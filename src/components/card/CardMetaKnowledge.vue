@@ -43,12 +43,12 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {TabContent} from "@/utils/interfaceInComponent";
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
     import CardPageLinkInfo from "@/components/card/page/CardPageLinkInfo.vue";
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
-    import {BaseType, GraphSelfPart, NodeInfoPart} from "@/utils/graphClass";
+    import {GraphSelfPart} from "@/utils/graphClass";
     import {InfoPart} from "@/store/modules/dataManager";
+    import {TabContent} from "@/utils/interfaceInComponent";
 
     export default Vue.extend({
         name: "CardMetaKnowledge",
@@ -124,7 +124,8 @@
         methods: {},
         watch: {},
         record: {
-            status: 'empty'
+            status: 'empty',
+            description: '知识元相关'
         }
     })
 </script>

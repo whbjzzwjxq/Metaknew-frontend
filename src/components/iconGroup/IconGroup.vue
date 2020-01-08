@@ -19,8 +19,6 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {IconItem} from "@/utils/interfaceInComponent";
-    import * as CSS from 'csstype';
 
     export default Vue.extend({
         name: "IconGroup",
@@ -58,7 +56,7 @@
                 default: false
             },
             containerStyle: {
-                type: Object as () => CSS.Properties,
+                type: Object as () => CSSProp,
                 default: () => {
                     return {}
                 }

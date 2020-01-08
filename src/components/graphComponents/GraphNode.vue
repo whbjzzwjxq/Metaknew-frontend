@@ -86,11 +86,11 @@
     </g>
 </template>
 
-<script lang="js">
+<script lang="ts">
     import { commitNewLabel } from '@/store/modules/_mutations'
     import { getSrc } from '@/utils/utils'
-
-    export default {
+    import Vue from 'vue'
+    export default Vue.extend({
         name: 'GraphNode',
         components: {},
         data () {
@@ -148,7 +148,7 @@
             //注意是实际二分之一的宽度
             width: vm => vm.height * vm.setting.Base.scaleX,
 
-            colorStyle () {
+            colorStyle: function() {
                 return {
                     'fill': this.circleColor,
                     'fill-opacity': this.setting.Base.opacity & !this.showPic,
@@ -322,7 +322,7 @@
         record: {
             status: 'empty'
         }
-    }
+    })
 </script>
 
 <style scoped>

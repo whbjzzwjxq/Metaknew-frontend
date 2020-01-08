@@ -102,7 +102,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {BaseSettingConf} from "@/utils/settingTemplate";
+    import {BaseSettingConf} from "@/utils/template";
     import {SettingPart} from "@/utils/graphClass";
 
     type settingType = 'Color' | 'Number' | 'Boolean' | 'String' | 'Text'
@@ -137,8 +137,9 @@
         computed: {
             selectionValue: function () {
                 let result: Record<string, any[]> = {};
-                for (let prop in this.settingItem) {
+                for (let prop in Object.keys(this.settingItem)) {
                     result[prop] = [];
+                    // 把选中内容的值都提取出来
                     this.selection.map(item => {
                         let value = item.Setting[this.propGroup][prop];
                         result[prop].indexOf(value) === -1 &&
@@ -198,7 +199,9 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '单行的样式编辑器',
+            //todo 细化
         }
     })
 </script>
@@ -209,5 +212,5 @@
 
 /**
 * Created by whb on 2019/11/25
-* Updated by []
+* Updated by [whb on 2020年1月8日19:46:42]
 */

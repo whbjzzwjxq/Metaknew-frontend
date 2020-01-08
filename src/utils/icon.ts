@@ -1,10 +1,19 @@
-export type IconGroup =
-    'i-star' | 'i-good' | 'i-bad' | 'i-collapse-arrow-double' |
-    'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
-    'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
-    'i-resize' | 'i-item' | 'i-get-media-type' | 'i-note-type'
+declare global {
+    type IconGroup = 'i-star' | 'i-good' | 'i-bad' | 'i-collapse-arrow-double' |
+        'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
+        'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
+        'i-resize' | 'i-item' | 'i-get-media-type' | 'i-note-type'
 
-export type IconAlias = 'i-show'
+    type IconAlias = 'i-show'
+
+    interface IconItem {
+        name: string,
+        _func: Function | null,
+        color?: string,
+        render?: boolean,
+        disabled?: boolean
+    }
+}
 
 export const iconMap: Record<IconGroup, Record<string, string>> = {
     'i-star': {

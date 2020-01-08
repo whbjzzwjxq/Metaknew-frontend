@@ -1,5 +1,5 @@
 import store from '../index';
-import {GraphSelfPart, id, MediaInfoPart, NodeSettingPart} from "@/utils/graphClass";
+import {GraphSelfPart, MediaInfoPart, NodeSettingPart} from "@/utils/graphClass";
 
 export function dispatchUploadFile(payload: {
     item?: MediaInfoPart,

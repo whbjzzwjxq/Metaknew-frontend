@@ -142,6 +142,10 @@
 
         <!--        </card-doc-node-simplify>-->
 
+        <div :style="subGraphStyleList">
+
+        </div>
+
         <div :style="viewBoxToolStyle" class="d-flex flex-row">
             <graph-label-selector
                 v-if="renderLabelSelector"
@@ -175,15 +179,10 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {DataManagerState} from '@/store/modules/dataManager'
     import {
-        AllSettingPart,
-        BaseType,
         getIndex,
         GraphSelfPart,
         GraphSettingPart,
-        GraphState,
-        id,
         LinkInfoPart,
         LinkSettingPart,
         MediaInfoPart,
@@ -197,7 +196,7 @@
         VisualNodeSettingPart
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
-    import {AreaRect, getPoint, Point, PointMixed, PointObject, RectByPoint} from '@/utils/geoMetric'
+    import {getPoint, Point, RectByPoint} from '@/utils/geoMetric'
     import * as CSS from 'csstype'
     import GraphNode from './GraphNode.vue';
     import GraphLink from './GraphLink.vue';
@@ -206,13 +205,16 @@
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphRender from "@/components/graphComponents/GraphRender.vue";
-    import {GraphMetaData, LabelViewDict, VisualNodeSetting} from '@/utils/interfaceInComponent'
+    import {LabelViewDict, VisualNodeSetting} from '@/utils/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
-    import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
-    import retryTimes = jest.retryTimes;
 
+    type GraphMetaData = {
+        self: GraphSelfPart,
+        rect: RectByPoint,
+        parent: GraphMetaData | null,
+    }
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 
     export default Vue.extend({
@@ -350,7 +352,7 @@
                 // containerRect形式
                 return this.container.positiveRect()
             },
-            containerStyle: function (): CSS.Properties {
+            containerStyle: function (): CSSProp {
                 return this.container.getDivCSS(
                     {borderWidth: 0, overflow: "hidden"}
                 )
@@ -372,6 +374,7 @@
             activeGraphMetaDataList: function (): GraphMetaData[] {
                 let realScale = this.realScale;
                 let vm = this;
+                let baseContainer = this.container;
                 // 从父亲Graph里的节点位置推出自身的矩形位置
                 const getRectFromParent = (document: GraphSelfPart, parentNodeLocation: PointMixed) => {
                     // 当前缩放下矩形的长宽
@@ -380,14 +383,15 @@
                     // baseNode在矩形的位置
                     let delta = getPoint(document.baseNode.Setting.Base).multiRect({width, height})
                     // 起点与parentNode的位置差为delta
-                    let start = delta.copy().multi(-1).add(parentNodeLocation)
+                    // 额外加上整个ViewBox的位置差
+                    let start = delta.copy().multi(-1).add(parentNodeLocation).add(baseContainer.start)
                     let end = start.copy().addRect({width, height})
                     return new RectByPoint(start, end, document.Conf.Setting.Base.border)
                 }
                 let root: GraphMetaData = {
                     parent: null,
                     self: this.document,
-                    rect: this.container,
+                    rect: baseContainer,
                 };
                 let result = [root]
                 let searchGraph = function (graphMeta: GraphMetaData) {
@@ -396,7 +400,7 @@
                     graph.nodes.map(node => {
                         let {_type, _id, Base} = node.Setting;
                         let index = vm.activeGraphIdList.indexOf(_id);
-                        if (_type === 'document' && index > -1) {
+                        if (_type === 'document' && index > -1 && _id !== graphMeta.self.id) {
                             // 这个Graph被激活了
                             let doc = vm.activeGraphList[index];
                             let parentNode = vm.getRectByPoint(0, 0, node.Setting, rect.positiveRect())
@@ -415,6 +419,11 @@
                 return result
             },
 
+            subGraphStyleList: function(): CSSProp[] {
+                return this.activeGraphMetaDataList.map(meta => meta.rect.getDivCSS(
+                    {borderColor: 'black'}
+                ))
+            },
             // 求出所有的Rect
             activeGraphRectList: function (): AreaRect[] {
                 return this.activeGraphMetaDataList.map(meta => meta.rect.positiveRect())
@@ -441,28 +450,20 @@
             },
 
             // 只有自身的medias
-            medias(): MediaSettingPart[] {
+            medias: function(): MediaSettingPart[] {
                 return this.document.Graph.medias
             },
 
-            notes(): NoteSettingPart[] {
+            notes: function(): NoteSettingPart[] {
                 return this.document.Graph.notes
             },
 
-            selectedNodes(): NodeSettingPart[] {
+            selectedNodes: function(): NodeSettingPart[] {
                 return this.nodes.filter(item => item.State.isSelected)
             },
 
-            nodeInfoList(): NodeInfoPart[] {
+            nodeInfoList: function(): NodeInfoPart[] {
                 return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id])
-            },
-
-            mediaInfoList(): MediaInfoPart[] {
-                return this.medias.map(media => this.dataManager.mediaManager[media.Setting._id])
-            },
-
-            linkInfoList(): LinkInfoPart[] {
-                return this.links.map(link => this.dataManager.linkManager[link.Setting._id])
             },
 
             impList(): number[] {
@@ -499,7 +500,8 @@
                         ? node.Setting.Base.size * this.realScale
                         : this.impScaleRadius[index] * this.realScale;
                     let height = width * node.Setting.Base.scaleX;
-                    return this.getRectByPoint(width, height, node.Setting)
+                    let rect = this.getGraphMetaData(node.parent.id).rect.positiveRect();
+                    return this.getRectByPoint(width, height, node.Setting, rect)
                 })
             },
 
@@ -604,7 +606,7 @@
             },
 
             //选择框的相关设置
-            selectorStyle(): CSS.Properties {
+            selectorStyle(): CSSProp {
                 return {
                     "position": "absolute",
                     "fill": "#000000",
@@ -616,7 +618,7 @@
                 }
             },
 
-            viewBoxToolStyle(): CSS.Properties {
+            viewBoxToolStyle(): CSSProp {
                 return {
                     position: 'absolute',
                     left: this.containerRect.width * 0.85 + 'px',
@@ -674,6 +676,7 @@
             getRectByPoint(width: number, height: number, setting: NodeSetting | MediaSetting, rect?: AreaRect) {
                 rect || (rect = this.containerRect);
                 let basePoint = getPoint(setting.Base).multiRect(rect)
+                console.log(rect);
                 let startPoint = this.lastViewPoint.copy()
                     .decrease(this.viewPoint.copy().decrease(basePoint).multi(this.realScale))
                 let endPoint = startPoint.copy().addRect({width, height})
@@ -952,6 +955,9 @@
                 dispatchNodeExplode({node, document: this.document})
             },
 
+            getGraphMetaData: function (_id: id) {
+                return this.activeGraphMetaDataList.filter(meta => meta.self.id === _id)[0]
+            }
         },
 
         watch: {

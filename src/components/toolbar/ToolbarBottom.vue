@@ -26,7 +26,7 @@
             styleManager: function(): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            toolbarStyle: function(): CSS.Properties {
+            toolbarStyle: function(): CSSProp {
                 return {
                     position: "absolute",
                     left: this.styleManager.leftCard.width + 'px',
@@ -37,7 +37,7 @@
                     overflow: "hidden"
                 }
             },
-            buttonStyle: function(): CSS.Properties {
+            buttonStyle: function(): CSSProp {
               return {
                   left: (this.styleManager.leftCard.width + 12) + 'px',
                   bottom: (this.styleManager.bottomBar.height - 28) + 'px',

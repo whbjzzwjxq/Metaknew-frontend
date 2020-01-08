@@ -1,14 +1,9 @@
 import {mainNationRegionEn} from '@/utils/nation';
 
 export type FieldType = 'TextField' | 'ArrayField' | 'NumberField' | 'StringField' |
-    'JsonField' | 'FileField' | 'ImageField' | 'BooleanField'
+    'JsonField' | 'FileField' | 'ImageField' | 'BooleanField' // 不同种类的属性
 
-export const fieldTypes: FieldType[] = ['TextField', 'ArrayField', 'NumberField', 'StringField',
-    'JsonField', 'FileField', 'ImageField', 'BooleanField'];
-
-export type ResolveType = 'name' | 'time' | 'location' | 'normal'
-
-export const resolveTypes: ResolveType[] = ['name', 'time', 'location', 'normal'];
+export type ResolveType = 'name' | 'time' | 'location' | 'normal' // 属性不同的resolve方式
 
 export let fieldDefaultValue: Record<FieldType, string | number | Object | boolean> = {
     'TextField': {},
@@ -19,21 +14,33 @@ export let fieldDefaultValue: Record<FieldType, string | number | Object | boole
     'FileField': [],
     'ImageField': '',
     'BooleanField': true
-};
+}; // 默认值
 
 export interface PropDescription {
     type: FieldType,
     resolve: ResolveType,
-}
+} // 描述属性的方式
+
+export interface ValueWithType<T> extends PropDescription {
+    value: T,
+} // 将已有value转化为描述形式
 
 interface PLabelProps {
     [propName: string]: PropDescription
-}
+} //描述已有属性
 
 interface pLabelPropsDict {
     [pLabel: string]: PLabelProps
-}
+} //描述一个标签对应的一组属性
 
+export type ExtraProps = Record<string, ValueWithType<any>> // 额外的属性
+
+export type EditProps = {
+    ExtraProps: ValueWithType<ExtraProps>,
+    [prop: string]: ValueWithType<any>
+} // 一个Source的属性由两部分组成：一部分是标准属性 系统定义 一部分是额外属性 用户定义
+
+// node的属性
 export const nodePropType: pLabelPropsDict = {
     DocGraph:
         {},
@@ -114,6 +121,7 @@ export const nodePropType: pLabelPropsDict = {
     $Fragment: {}
 };
 
+// link的属性
 export const linkPropType: pLabelPropsDict = {
     Event: {
         Time: {
@@ -125,7 +133,10 @@ export const linkPropType: pLabelPropsDict = {
             resolve: "time"
         }
     },
+};
 
+export const mediaPropType: pLabelPropsDict = {
+   // todo 媒体属性获取
 };
 
 export function nodeLabelToProp(pLabel: string) {
@@ -137,6 +148,7 @@ export function nodeLabelToProp(pLabel: string) {
 export const availableLabel = Object.keys(nodePropType)
     .filter(label => label !== 'DocGraph');
 
+// 以下是预设 测试用
 export const topicItems = {
     recommend: ['Architecture', 'History', 'Modernism']
 };
@@ -145,12 +157,6 @@ export const labelItems = {
     recommend: ['20century', 'important'],
     public: ['Todo', 'Done', 'Test', 'Draft', 'QuickServe']
 };
-
-export const unActivePropLink = [
-    'id', 'type', 'start',
-    'end', 'Confidence', 'Text', 'PrimaryLabel',
-    'Labels', '$_IsCommon', '$_IsShared', '$_IsOpenSource'
-];
 
 export const fieldSetting: Record<string, any> = {
     Name: {},

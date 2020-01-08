@@ -27,7 +27,6 @@
     import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
     import {
-        AreaRect,
         Point,
         RectByPoint
     } from "@/utils/geoMetric";
@@ -76,7 +75,7 @@
             containerRect: function (): AreaRect {
                 return this.container.positiveRect()
             },
-            containerStyle: function (): CSS.Properties {
+            containerStyle: function (): CSSProp {
                 return {
                     'width': this.containerRect.width + 'px',
                     'height': this.containerRect.height + 'px',

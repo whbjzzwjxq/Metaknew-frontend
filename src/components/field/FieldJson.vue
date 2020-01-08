@@ -96,7 +96,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldTypes, fieldSetting, fieldDefaultValue, resolveTypes, FieldType, ResolveType} from '@/utils/labelField'
+    import {fieldSetting, fieldDefaultValue, FieldType, ResolveType} from '@/utils/labelField'
     import {deepClone} from '@/utils/utils';
 
     export default Vue.extend({
@@ -109,8 +109,9 @@
                     tooLong: (key: string) => key.length >= 20 && 'Key is too long!!'
                 },
                 fieldSetting: fieldSetting,
-                types: fieldTypes,
-                resolves: resolveTypes,
+                types: ['TextField', 'ArrayField', 'NumberField', 'StringField',
+                    'JsonField', 'FileField', 'ImageField', 'BooleanField'] as FieldType[],
+                resolves: ['name', 'time', 'location', 'normal'] as ResolveType[],
                 reg: new RegExp('[\\\\:*?"<>|]')
             }
         },

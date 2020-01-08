@@ -34,14 +34,13 @@
     import Vue from 'vue'
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {mediaAppendToNode} from "@/api/commonSource";
-    import {id, NodeInfoPart, MediaInfoPart, MediaSettingPart, QueryObject, getIsSelf} from "@/utils/graphClass";
-    import {DataManagerState} from "@/store/modules/dataManager";
+    import {mediaAppendToNode, SourceQueryObject} from "@/api/commonSource";
+    import {NodeInfoPart, MediaInfoPart, MediaSettingPart, getIsSelf} from "@/utils/graphClass";
     import {FileToken, getFileToken} from '@/api/user'
     import {commitFileToken} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
 
-    type SortProp = 'UpdateTime' | 'isStar' | 'PrimaryLabel'
+    type SortProp = 'UpdateTime' | 'isStar' | 'PrimaryLabel' // 排序方式
     export default Vue.extend({
         name: "CardPageMediaList",
         components: {
@@ -81,7 +80,7 @@
             fileToken: function (): FileToken {
                 return this.dataManager.fileToken
             },
-            nodeIsSelf(): boolean {
+            nodeIsSelf: function(): boolean {
                 return getIsSelf(this.baseData.Ctrl)
             },
             width: function() {
@@ -89,13 +88,13 @@
             }
         },
         methods: {
-            addMediaToNode(mediaIdList: id[]) {
+            addMediaToNode: function(mediaIdList: id[]) {
                 if (this.baseData.isRemote) {
                     let node = {
                         '_id': this.baseData.Info.id,
                         '_type': this.baseData.Info.type,
                         '_label': this.baseData.Info.PrimaryLabel,
-                    } as QueryObject;
+                    } as SourceQueryObject;
                     mediaAppendToNode(node, mediaIdList).then(res => {
                         let num = res.data.length;
                         num === 0
@@ -107,12 +106,12 @@
                     this.baseData.updateValue('IncludedMedia', mediaIdList);
                 }
             },
-            addMediaToGraph(media: MediaInfoPart) {
+            addMediaToGraph: function(media: MediaInfoPart) {
                 let graph = this.dataManager.currentGraph;
                 let newMediaSetting = MediaSettingPart.emptyMediaSettingFromInfo(media, graph);
                 this.dataManager.currentGraph.addItems([newMediaSetting])
             },
-            reRankFile() {
+            reRankFile: function() {
                 let type = this.filterProp;
                 let sorter = (a: MediaInfoPart, b: MediaInfoPart): number => a.Ctrl[type] > b.Ctrl[type]
                     ? 1
@@ -127,9 +126,6 @@
             mediaList() {
                 this.reRankFile()
             }
-        },
-        record: {
-            status: 'done'
         },
         created(): void {
             let fileToken = this.fileToken;
@@ -146,7 +142,12 @@
                     .catch()
             }
             this.reRankedList = this.mediaList;
-        }
+        },
+        record: {
+            status: 'done',
+            description: '媒体列表'
+            //todo 还没有做排序按钮
+        },
     })
 </script>
 
@@ -156,5 +157,5 @@
 
 /**
 * Created by whb on 2019/11/30
-* Updated by []
+* Updated by [whb on 2020年1月8日19:33:40]
 */

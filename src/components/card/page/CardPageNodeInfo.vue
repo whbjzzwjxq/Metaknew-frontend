@@ -166,7 +166,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {LevelConcern, MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
+    import {MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
     import FieldArray from "@/components/field/FieldArray.vue";
     import FieldJson from "@/components/field/FieldJson.vue";
     import FieldText from "@/components/field/FieldText.vue";
@@ -175,10 +175,10 @@
     import CardSubRating from "@/components/card/subComp/CardSubRating.vue";
     import NodeAvatar from "@/components/NodeAvatar.vue";
     import GlobalChip from "@/components/global/GlobalChip.vue";
-    import {availableLabel, FieldType, labelItems, ResolveType, topicItems} from "@/utils/labelField";
-    import {DataManagerState} from "@/store/modules/dataManager";
-    import {EditProps, LabelGroup} from "@/utils/interfaceInComponent"
+    import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/labelField";
+    import {LabelGroup} from "@/utils/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
+    import {LevelConcern} from "@/utils/userConcern";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -347,8 +347,11 @@
                     ]
             },
 
-            levelGroup() {
-                return {}
+            levelGroup: function() {
+                //todo 评分机制
+                return {
+
+                }
             },
 
             imageList: function() {
@@ -402,7 +405,9 @@
             })
         },
         record: {
-            status: 'done-old'
+            status: 'done',
+            description: 'NodeInfo'
+            //todo 收藏 分享 单个点赞
         }
     })
 </script>

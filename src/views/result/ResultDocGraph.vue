@@ -86,7 +86,7 @@
             viewBox(): RectByPoint {
                 return this.allComponentsStyle.viewBox
             },
-            viewBoxStyle: function (): CSS.Properties {
+            viewBoxStyle: function (): CSSProp {
                 return this.viewBox.getDivCSS(
                     {borderWidth: 0, overflow: "hidden"}
                 )

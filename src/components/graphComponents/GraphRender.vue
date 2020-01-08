@@ -194,7 +194,7 @@
                 return this.container.positiveRect()
             },
 
-            containerStyle(): CSS.Properties {
+            containerStyle(): CSSProp {
                 return this.container.getDivCSS({left: 0, top: 0, borderColor: '#105060'})
             },
 
@@ -359,7 +359,7 @@
             },
 
             //选择框的相关设置
-            selectorStyle(): CSS.Properties {
+            selectorStyle(): CSSProp {
                 return {
                     "position": "absolute",
                     "fill": "#000000",

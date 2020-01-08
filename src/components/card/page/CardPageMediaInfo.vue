@@ -67,10 +67,9 @@
     import TitleTextField from "@/components/TitleTextField.vue";
     import CardSubLabelGroup from '@/components/card/subComp/CardSubLabelGroup.vue';
     import {getIsSelf, MediaInfoPart} from "@/utils/graphClass";
-    import {LabelGroup, IconItem} from "@/utils/interfaceInComponent";
+    import {LabelGroup} from "@/utils/interfaceInComponent";
     import {labelItems} from "@/utils/labelField";
     import {mediaUpdate} from '@/api/commonSource';
-    import * as CSS from 'csstype';
     import {getIcon, iconMap} from "@/utils/icon";
     import IconGroup from "@/components/iconGroup/IconGroup.vue";
 
@@ -196,7 +195,7 @@
             title: function () {
                 return this.info.PrimaryLabel + " --> " + this.info.Name;
             },
-            buttonGroupStyle: function (): CSS.Properties {
+            buttonGroupStyle: function (): CSSProp {
                 return {
                     opacity: this.showTool ? '50%' : '0%',
                     position: "absolute",
@@ -250,32 +249,34 @@
             updateValue: function (prop: string, value: any) {
                 this.media.updateValue(prop, value);
             },
-            updateName(value: string) {
+            updateName: function(value: string) {
                 this.media.changeName(value)
             },
-            removeItem(removedLabel: string, prop: string) {
+            removeItem: function(removedLabel: string, prop: string) {
                 this.media.updateValue("Labels", [], true);
             },
-            addItem(value: string[], prop: string) {
+            addItem: function(value: string[], prop: string) {
                 prop === "Info"
                     ? this.media.updateValue("Labels", value)
                     : this.media.updateUserConcern("Labels", value);
             },
 
-            changeDetail() {
+            changeDetail: function() {
                 this.detailOn = !this.detailOn;
             },
 
-            deleteMedia() {
+            deleteMedia: function() {
                 this.$emit("delete-media");
             },
 
-            addMediaToGraph() {
+            addMediaToGraph: function() {
                 this.$emit("add-media-to-graph", this.media);
             },
             dialogWatch() {
+
             },
             editSrc() {
+                //todo 编辑和比例
             },
             saveMedia() {
                 let status = this.media.status;
@@ -319,8 +320,9 @@
         },
         watch: {},
         record: {
-            status: "done-old",
-            description: "媒体信息卡片"
+            status: "editing",
+            description: "媒体信息卡片",
+            //todo 编辑 比例 收藏 分享
         }
     });
 </script>
@@ -328,3 +330,7 @@
 <style scoped>
 
 </style>
+/**
+* Created by whb on 2019/11/29
+* Updated by [whb on 2020年1月8日19:16:09 第一次定稿]
+*/

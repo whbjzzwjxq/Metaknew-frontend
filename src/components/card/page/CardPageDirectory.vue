@@ -32,21 +32,16 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {DataManagerState} from "@/store/modules/dataManager";
     import {commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {
-        BaseState,
-        BaseType,
         GraphSelfPart,
-        id,
         LinkSettingPart,
         MediaSettingPart,
         NodeSettingPart,
         NoteSettingPart
     } from "@/utils/graphClass";
-    import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
-    import {deepClone, getInfoPart, mergeList} from "@/utils/utils";
-    import {getIcon, IconGroup} from "@/utils/icon";
+    import {getInfoPart, mergeList} from "@/utils/utils";
+    import {getIcon} from "@/utils/icon";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
 
     interface DirectoryItem {
@@ -363,7 +358,5 @@
 
 /**
 * Created by whb on 2019/12/6
-* Updated by [
-whb on 2020/01/02
-]
+* Updated by [whb on 2020/01/02]
 */

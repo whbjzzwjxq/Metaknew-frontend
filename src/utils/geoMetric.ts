@@ -1,16 +1,35 @@
 import * as CSS from 'csstype'
 
-export interface PointObject {
-    x: number,
-    y: number,
+declare global {
+
+    type CSSProp = CSS.Properties
+
+    interface PointObject {
+        x: number,
+        y: number,
+    }
+
+    interface AreaRect extends PointObject {
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+    }
+
+    interface VisualNodeSetting extends AreaRect {
+        height: number,
+        width: number,
+        x: number,
+        y: number,
+        show: boolean,
+        isSelected: boolean,
+        isDeleted: boolean
+    } // 视觉相关设置
+
+    type PointMixed = Point | PointObject
 }
 
-export interface AreaRect extends PointObject {
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-}
+export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
 
 export class Point {
     x: number;
@@ -105,8 +124,6 @@ export const getPoint = (point: PointMixed) => {
     return new Point(point.x, point.y)
 };
 
-export type PointMixed = Point | PointObject
-
 export class RectByPoint {
     protected _start: Point;
     get start() {
@@ -147,7 +164,7 @@ export class RectByPoint {
         return checkInRect(this.positiveRect(), point);
     }
 
-    getDivCSS(css?: CSS.Properties): CSS.Properties {
+    getDivCSS(css?: CSSProp): CSSProp {
         css || (css = {});
         css = Object.assign({
             borderWidth: this.border + 'px',
@@ -169,10 +186,8 @@ export class RectByPoint {
     }
 }
 
-export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
-
 export const transformBorderToRect = (rect: AreaRect, border: number) => {
-    let {x, y, width, height} = rect;
+    let {width, height} = rect;
     let inner = 12;
     let result: Record<BorderType, AreaRect> = {
         'left': {x: -border, y: border, width: border + inner, height},
@@ -226,7 +241,7 @@ export const checkInRect = (rect: AreaRect, point: PointObject) => {
         y + height >= point.y
 };
 
-export const getDivCSS = (rect: AreaRect, css?: CSS.Properties) => {
+export const getDivCSS = (rect: AreaRect, css?: CSSProp) => {
     css || (css = {});
     return Object.assign({
         position: "absolute",

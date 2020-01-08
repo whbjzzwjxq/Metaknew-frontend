@@ -22,7 +22,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        AreaRect,
         getDivCSS,
         transformBorderToRect,
         Point,
@@ -66,14 +65,14 @@
             }
         },
         computed: {
-            rectStyle: function (): CSS.Properties {
+            rectStyle: function (): CSSProp {
                 return getDivCSS(this.container, {
                     top: this.listenBorder + 'px',
                     left: this.listenBorder + 'px',
                 })
             },
 
-            containerStyle: function (): CSS.Properties {
+            containerStyle: function (): CSSProp {
                 return {
                     width: (this.container.width + this.listenBorder * 2) + 'px',
                     height: (this.container.height + this.listenBorder * 2) + 'px',
@@ -88,7 +87,7 @@
             },
 
             borderStyleList: function () {
-                let result: Record<string, CSS.Properties> = {};
+                let result: Record<string, CSSProp> = {};
                 Object.entries(this.borderList).map(([name, border]) => {
                     result[name] = getDivCSS(border, {
                         backgroundColor: 'grey',
@@ -141,7 +140,9 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'editing',
+            description: '矩形窗口',
+            //todo 尺寸限定在rect里 不要越界
         }
     })
 </script>

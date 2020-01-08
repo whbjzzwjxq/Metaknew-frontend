@@ -1,34 +1,38 @@
 import Vue from 'vue'
-import {AreaRect, RectByPoint} from "@/utils/geoMetric";
+import {RectByPoint} from "@/utils/geoMetric";
 import {commitViewBoxResize} from "@/store/modules/_mutations";
 
-export interface ComponentSize {
-    width: number | string,
-    height: number | string,
+declare global {
+    interface StyleManagerState {
+        screenX: number,
+        screenY: number,
+        viewBox: RectByPoint,
+        toolBar: ToolBar,
+        leftCard: LeftCard,
+        bottomBar: BottomBar
+    }
 
-    [propName: string]: number | string
+    interface ComponentSize {
+        width: number | string,
+        height: number | string,
+
+        [propName: string]: number | string
+    }
 }
 
 interface LeftCard extends ComponentSize {
     width: number
+    height: string
 }
 
 interface BottomBar extends ComponentSize {
-    height: number,
     width: string
+    height: number,
 }
 
-export interface ToolBar extends ComponentSize {
-    height: number
-}
-
-export interface StyleManagerState {
-    screenX: number,
-    screenY: number,
-    viewBox: RectByPoint,
-    toolBar: ToolBar,
-    leftCard: LeftCard,
-    bottomBar: BottomBar
+interface ToolBar extends ComponentSize {
+    width: string
+    height: number,
 }
 
 const state: StyleManagerState = {

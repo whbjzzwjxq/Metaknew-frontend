@@ -1,5 +1,3 @@
-import {id} from "@/utils/graphClass";
-
 export type ResolveType = 'name' | 'position' | 'time' | 'normal'
 
 export interface ResolveItem {

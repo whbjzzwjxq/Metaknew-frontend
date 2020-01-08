@@ -40,7 +40,7 @@
             }
         },
         computed: {
-            collapsedIcon(): string {
+            collapsedIcon: function(): string {
                 return getIcon("i-collapse", !this.isCollapsed)
             },
 
@@ -52,7 +52,8 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '卡片用的缩放栏'
         }
     });
 </script>
@@ -75,5 +76,5 @@
 
 /**
 * Created by whb on 2019/11/25
-* Updated by []
+* Updated by [whb on 2020年1月8日19:44:26]
 */

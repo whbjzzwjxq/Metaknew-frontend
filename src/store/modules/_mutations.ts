@@ -1,9 +1,7 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
 import {FileToken} from "@/api/user";
-import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
-import {GraphSelfPart, id} from "@/utils/graphClass";
-import {InfoPart, idMap} from "@/store/modules/dataManager";
+import {GraphSelfPart} from "@/utils/graphClass";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)

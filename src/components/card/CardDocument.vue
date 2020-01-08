@@ -69,7 +69,7 @@
             },
             availableTabs(): Record<string, TabContent> {
                 let result: Record<string, TabContent>;
-                let {directory, documentStyle, nodeStyle, linkStyle, historyBranch, comment} = this.tabItems;
+                let {directory, historyBranch, comment} = this.tabItems;
                 this.editMode
                     ? result = {directory, historyBranch, comment}
                     : result = {directory, historyBranch, comment};
@@ -79,7 +79,9 @@
         methods: {},
         watch: {},
         record: {
-            status: 'empty'
+            status: 'editing',
+            description: '左边卡片的Document部分',
+            //todo 版本控制 相关
         }
     })
 </script>

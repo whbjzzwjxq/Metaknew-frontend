@@ -1,17 +1,15 @@
 import {
-    BaseLinkInfo,
-    BaseMediaInfo,
-    BaseNodeInfo, BaseType,
-    BooleanConcern,
-    LevelConcern, LinkInfoPartBackend,
     LinkSettingPart,
-    MediaSettingPart, NodeInfoPartBackend, NodeSettingPart, NoteSettingPart,
+    MediaSettingPart,
+    NodeSettingPart,
+    NoteSettingPart,
     SettingPart,
-    VisualNodeSettingPart
 } from "@/utils/graphClass";
+import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
+import {BooleanConcern, LevelConcern} from "@/utils/userConcern";
 
-export function isNodeBackend(item: NodeInfoPartBackend | LinkInfoPartBackend): item is NodeInfoPartBackend {
-    let type = (item as NodeInfoPartBackend).Info.type;
+export function isNodeBackend(item: BackendNodeInfoPart | BackendLinkInfoPart): item is BackendNodeInfoPart {
+    let type = (item as BackendNodeInfoPart).Info.type;
     return type === 'node' || type === 'document'
 }
 

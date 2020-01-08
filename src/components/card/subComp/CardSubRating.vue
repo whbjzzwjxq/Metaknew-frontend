@@ -16,7 +16,9 @@
         methods: {},
         watch: {},
         record: {
-            status: 'empty'
+            status: 'empty',
+            description: '星标评分机制',
+            //todo 评分机制
         }
     })
 </script>
