@@ -134,27 +134,26 @@
             }
         },
         computed: {
-            dataManager(): DataManagerState {
+            dataManager: function(): DataManagerState {
                 return this.$store.state.dataManager
             },
-            currentGraph(): GraphSelfPart {
+            currentGraph: function(): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
-            buildQueryObject(): SearchQueryObject {
-                let vm = this;
-                let index = vm.keyword.search(vm.regexSymbol);
+            buildQueryObject: function(): SearchQueryObject {
+                let index = this.keyword.search(this.regexSymbol);
                 let append;
                 let words: Array<string>;
                 if (index === -1) {
-                    index = vm.keyword.length;
+                    index = this.keyword.length;
                     append = "";
                     words = [];
                 } else {
-                    append = vm.keyword.substring(index + 1, vm.keyword.length);
+                    append = this.keyword.substring(index + 1, this.keyword.length);
                     words = append.split(" ");
                 }
                 let labels: Array<string> = words.map(word =>
-                    vm.regexLabel.test(word)
+                    this.regexLabel.test(word)
                         ? word.substring(1, word.length)
                         : ''
                 ).filter(word => word !== '');
@@ -162,11 +161,11 @@
                     language: "auto",
                     labels: labels.filter(label => label),
                     props: {},
-                    keyword: vm.keyword.substring(0, index)
+                    keyword: this.keyword.substring(0, index)
                 };
             },
 
-            recentList(): ListInfoItem[] {
+            recentList: function(): ListInfoItem[] {
                 return this.searchResult.recent.map(item => {
                         let info = Object.assign({} as ListInfoItem, item);
                         info.isTitle = false;
@@ -177,7 +176,7 @@
                 )
             },
 
-            textList(): ListTextItem[] {
+            textList: function(): ListTextItem[] {
                 return this.searchResult.text.map(item => {
                         let info = Object.assign({MainPic: ''} as ListTextItem, item);
                         info.isTitle = false;
@@ -189,7 +188,7 @@
                 )
             },
 
-            infoList(): ListInfoItem[] {
+            infoList: function(): ListInfoItem[] {
                 return this.searchResult.info.map(item => {
                         let info = Object.assign({} as ListInfoItem, item);
                         info.isTitle = false;

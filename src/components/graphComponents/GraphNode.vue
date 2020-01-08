@@ -67,19 +67,19 @@
 
         <foreignObject
             v-show="showText"
-            :x="textXOffset"
-            :y="textYOffset"
-            :width="textWidth"
-            :height="textHeight">
+            :x="textSetting.offsetX"
+            :y="textSetting.offsetY"
+            :width="textSetting.width"
+            :height="textSetting.height">
             <p :style="textStyle">{{ setting._name }}</p>
         </foreignObject>
 
         <foreignObject
             v-show="showInlineText"
-            :x="inlineTextXOffset"
-            :y="inlineTextYOffset"
-            :width="inlineTextWidth"
-            :height="inlineTextHeight">
+            :x="inlineTextSetting.offsetX"
+            :y="inlineTextSetting.offsetY"
+            :width="inlineTextSetting.width"
+            :height="inlineTextSetting.height">
             <p :style="inlineTextStyle">{{ setting.Text.inlineText }}</p>
         </foreignObject>
 
@@ -105,30 +105,24 @@
                 required: true,
             },
 
-            //容器的尺寸信息
-            container: {
-                type: Object,
-                required: true
-            },
-
             //半径
             size: {
-                type: Number,
+                type: Number as () => number,
                 required: true
             },
             //缩放情况
             scale: {
-                type: Number,
+                type: Number as () => number,
                 required: true
             },
 
             point: {
-                type: Object,
+                type: Object as () => PointMixed,
                 required: true
             },
 
             mode: {
-                type: String,
+                type: String as () => string,
                 default: 'normal'
             },
         },
@@ -166,57 +160,54 @@
 
             colorStyle: function (): CSSProp {
                 return {
-                    'fill': this.circleColor,
+                    'fill': this.fillColor,
                     'fill-opacity': this.setting.Base.opacity & !this.showPic,
-                    'stroke': this.borderColor,
-                    'stroke-width': this.borderWidth,
-                    'stroke-opacity': this.borderOpacity,
-                    'stroke-dasharray': this.borderDash,
+                    'stroke': this.borderSetting.Color,
+                    'stroke-width': this.borderSetting.width,
+                    'stroke-opacity': this.borderSetting.opacity,
+                    'stroke-dasharray': this.borderSetting.dash,
                 }
             },
 
-            //圆的颜色
-            circleColor: function () {
+            //填充的颜色
+            fillColor: function () {
                 if (this.setting.Base.color !== '') {
                     return this.setting.Base.color
                 } else {
                     this.$store.state.styleLabelColor[this.setting._type] ||
-                    commitNewLabel([this.setting._type])
+                    commitNewLabel([this.setting._type]);
                     return this.$store.state.styleLabelColor[this.setting._type]
                 }
             },
-            //边框颜色
-            borderColor: function () {
+
+            //border的形式
+            borderSetting: function () {
+                let color;
                 if (this.setting.Border.color !== '') {
-                    return this.setting.Border.color
+                    color = this.setting.Border.color
                 } else {
                     this.$store.state.styleLabelColor[this.setting._label] ||
-                    commitNewLabel([this.setting._label])
-                    return this.$store.state.styleLabelColor[this.setting._label]
+                    commitNewLabel([this.setting._label]);
+                    color = this.$store.state.styleLabelColor[this.setting._label]
+                }
+                return {
+                    color,
+                    width: this.isSelected
+                        ? this.setting.Border.width
+                        : this.setting.Border.width,
+                    dash: this.setting.Border.isDash
+                        ? '9, 2'
+                        : '',
+                    opacity: !this.showBorder
+                        ? 0
+                        : this.isSelected
+                            ? 1
+                            : this.setting.Show.isMain
+                                ? 0.7
+                                : 0.5
                 }
             },
 
-            borderWidth: function () {
-                return this.isSelected
-                    ? this.setting.Border.width
-                    : this.setting.Border.width
-            },
-
-            borderDash: function () {
-                return this.setting.Border.isDash
-                    ? '9, 2'
-                    : ''
-            },
-
-            borderOpacity: function () {
-                return !this.showBorder
-                    ? 0
-                    : this.isSelected
-                        ? 1
-                        : this.setting.Show.isMain
-                            ? 0.7
-                            : 0.5
-            },
             showText: function () {
                 return this.setting.Show.showAll && this.setting.Show.showName && !this.state.isMouseOn
             },
@@ -239,103 +230,124 @@
                 return this.setting.Show.showAll && this.setting.Show.showBorder
             },
 
-            //     //
-            //     // hoverStyle() {
-            //     //     return {
-            //     //         'fill': this.hoverColor,
-            //     //         'opacity': this.hoverOpacity,
-            //     //         'stroke': 'white',
-            //     //         'stroke-width': 10,
-            //     //         'stroke-opacity': 0
-            //     //     }
-            //     // },
-            //     // hoverColor: this => this.setting.Show.isMain
-            //     //     ? '#FFCA28'
-            //     //     : this.circleColor,
-            //     // hoverOpacity: this => this.setting.Show.showAll
-            //     //     ? this.isSelected
-            //     //         ? 0.2
-            //     //         : this.state.isMouseOn
-            //     //             ? 0.2
-            //     //             : 0
-            //     //     : 0,
-            //     // hoverHeight: this => this.height + this.borderWidth + 5,
-            //     // hoverWidth: this => this.width + this.borderWidth + 5,
-            //     //
-            //     // textStyle() {
-            //     //     return {
-            //     //         '-moz-user-select': 'none',
-            //     //         'user-select': 'none',
-            //     //         'fill': 'opposite',
-            //     //         'font-size': this.textSize + 'px',
-            //     //         'text-align': 'center',
-            //     //         'word-break': 'break-all',
-            //     //         'color': this.setting.Text.textColor
-            //     //     }
-            //     // },
-            //     // textXOffset: this => -this.textWidth * 0.5,
-            //     //
-            //     // textYOffset: this => this.height + this.borderWidth + 5,
-            //     //
-            //     // textWidth: this => this.setting.Text.twoLine
-            //     //     ? this.setting._name.length * 12
-            //     //     : this.setting._name.length * 24,
-            //     //
-            //     // textHeight: this => this.setting.Text.twoLine
-            //     //     ? (this.textSize + 5) * 2
-            //     //     : (this.textSize + 5),
-            //     //
-            //     // textSize: this => this.setting.Text.textSize * this.scale >= 10
-            //     //     ? this.setting.Text.textSize * this.scale
-            //     //     : 10,
-            //     //
-            //     // inlineTextWidth: this => this.setting.Text.inlineTwoline
-            //     //     ? this.setting.Text.inlineText.length * 12
-            //     //     : this.setting.Text.inlineText.length * 24,
-            //     //
-            //     // inlineTextHeight: this => this.setting.Text.inlineTwoline
-            //     //     ? (this.setting.Text.inlineTextSize + 5) * 2
-            //     //     : (this.setting.Text.inlineTextSize + 5),
-            //     //
-            //     // inlineTextXOffset: this => -this.inlineTextWidth * 0.5,
-            //     // inlineTextYOffset: this => -this.inlineTextHeight * 0.5,
-            //     //
-            //     // //todo 先将就着
-            //     // inlineTextStyle() {
-            //     //     return {
-            //     //         '-moz-user-select': 'none',
-            //     //         'user-select': 'none',
-            //     //         'fill': 'opposite',
-            //     //         'font-size': this.setting.Text.inlineTextSize + 'px',
-            //     //         'text-align': 'center',
-            //     //         'word-break': 'break-all',
-            //     //         'color': this.setting.Text.inlineTextColor
-            //     //     }
-            //     // },
-            //     //
-            //     // imageStyle() {
-            //     //     return {
-            //     //         'clip-path': 'url(#' + this.getClipId + ')',
-            //     //     }
-            //     // },
-            //     //
-            //     // //使用vuex 主要是节约请求数
-            //     // getMainPic: function () {
-            //     //     return getSrc(this.setting._image)
-            //     // },
-            //     // getClipId: this => 'clipPath_' + this.setting._id,
-            //     // rhombusPath: this => {
-            //     //     let loc = [-this.width + ',0', '0,' + -this.height, this.width + ',0', '0,' + this.height]
-            //     //     return loc.join(' ')
-            //     // },
-            //     // rhombusHoverPath: this => {
-            //     //     let loc = [-this.hoverWidth + ',0', '0,' + -this.hoverHeight, this.hoverWidth + ',0', '0,' + this.hoverHeight]
-            //     //     return loc.join(' ')
-            //     // },
-            //     // geometryType: this => this.setting.Base.type,
-            //     //
-            //     // boundGraph: this => this.$store.state.dataManager.graphManager[this.node.Setting._id],
-            //
+            hoverStyle: function () {
+                return {
+                    'fill': this.hoverColor,
+                    'opacity': this.hoverOpacity,
+                    'stroke': 'white',
+                    'stroke-width': 10,
+                    'stroke-opacity': 0
+                }
+            },
+            hoverColor: function () {
+                return this.setting.Show.isMain
+                    ? '#FFCA28'
+                    : this.fillColor
+            },
+            hoverOpacity: function () {
+                return this.setting.Show.showAll
+                    ? this.isSelected
+                        ? 0.2
+                        : this.state.isMouseOn
+                            ? 0.2
+                            : 0
+                    : 0
+            },
+
+            hoverHeight: function () {
+                return this.height + this.borderSetting.width + 5
+            },
+
+            hoverWidth: function () {
+                return this.width + this.borderSetting.width + 5
+            },
+
+            textStyle: function (): CSSProp {
+                return {
+                    '-moz-user-select': 'none',
+                    'user-select': 'none',
+                    'fill': 'opposite',
+                    'font-size': this.textSize + 'px',
+                    'text-align': 'center',
+                    'word-break': 'break-all',
+                    'color': this.setting.Text.textColor
+                }
+            },
+            textSetting: function () {
+                let size = this.setting.Text.textSize * this.scale >= 10
+                    ? this.setting.Text.textSize * this.scale
+                    : 10;
+                let width = this.setting.Text.twoLine
+                    ? this.setting._name.length * 12
+                    : this.setting._name.length * 24;
+                let height = this.setting.Text.twoLine
+                    ? (size + 5) * 2
+                    : (size + 5);
+                return {
+                    offsetX: -this.width * 0.5,
+                    offsetY: height + this.borderSetting.width + 5,
+                    width,
+                    height,
+                    size
+                }
+            },
+
+            //todo 先将就着
+            inlineTextStyle: function (): CSSProp {
+                return {
+                    '-moz-user-select': 'none',
+                    'user-select': 'none',
+                    'fill': 'opposite',
+                    'font-size': this.setting.Text.inlineTextSize + 'px',
+                    'text-align': 'center',
+                    'word-break': 'break-all',
+                    'color': this.setting.Text.inlineTextColor
+                }
+            },
+
+            inlineTextSetting: function () {
+                let width = this.setting.Text.inlineTwoline
+                    ? this.setting.Text.inlineText.length * 12
+                    : this.setting.Text.inlineText.length * 24;
+                let height = this.setting.Text.inlineTwoline
+                    ? (this.setting.Text.inlineTextSize + 5) * 2
+                    : (this.setting.Text.inlineTextSize + 5);
+                return {
+                    width,
+                    height,
+                    offsetX: -width * 0.5,
+                    offsetY: -height * 0.5
+                }
+            },
+
+            imageStyle: function () {
+                return {
+                    'clip-path': 'url(#' + this.getClipId + ')',
+                }
+            },
+
+            getMainPic: function () {
+                return getSrc(this.setting._image)
+            },
+            getClipId: function () {
+                return 'clipPath_' + this.setting._id
+            },
+            rhombusPath: function () {
+                let loc = [-this.width + ',0', '0,' + -this.height, this.width + ',0', '0,' + this.height];
+                return loc.join(' ')
+            },
+            rhombusHoverPath: function () {
+                let loc = [-this.hoverWidth + ',0', '0,' + -this.hoverHeight, this.hoverWidth + ',0', '0,' + this.hoverHeight];
+                return loc.join(' ')
+            },
+            geometryType: function () {
+                return this.setting.Base.type
+            },
+
+            boundGraph: function () {
+                return this.$store.state.dataManager.graphManager[this.node.Setting._id]
+            },
+
         },
         methods: {
             explode() {

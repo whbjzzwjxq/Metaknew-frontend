@@ -25,7 +25,7 @@
         },
         props: {
             nodeSetting: {
-                type: Object,
+                type: Object as () => VisualNodeSetting,
                 required: true
             },
 
@@ -35,7 +35,7 @@
             }
         },
         computed: {
-            buttonGroupStyle: function () {
+            buttonGroupStyle: function (): CSSProp {
                 return {
                     width: '18px',
                     height: '120px',
@@ -44,16 +44,16 @@
                     position: 'absolute'
                 }
             },
-            x: function () {
+            x: function (): number {
                 return this.nodeSetting.x + this.nodeSetting.width + 12
             },
-            y: function () {
+            y: function (): number {
                 return this.nodeSetting.y - this.nodeSetting.height - 12
             },
-            showNode: function () {
+            showNode: function (): boolean {
                 return this.nodeSetting.show
             },
-            dataManager: function () {
+            dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
             boundGraph: function () {
