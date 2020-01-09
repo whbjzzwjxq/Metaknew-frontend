@@ -29,7 +29,7 @@ declare global {
     type PointMixed = Point | PointObject
 }
 
-export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
+export type BorderType = 'nw'| 'n'| 'ne'| 'w'| 'e'| 'sw'| 's'| 'se' // 方向的英文缩写
 
 export class Point {
     x: number;
@@ -186,17 +186,35 @@ export class RectByPoint {
     }
 }
 
-export const transformBorderToRect = (rect: AreaRect, border: number) => {
-    let {width, height} = rect;
-    let inner = 12;
-    let result: Record<BorderType, AreaRect> = {
-        'left': {x: -border, y: border, width: border + inner, height},
-        'right': {x: width + border - inner, y: border, width: border, height},
-        'top': {x: inner, y: inner, width: width + 2 * border - 2 * inner, height: border},
-        'bottom': {x: inner, y: height + border - inner, width: width + border - inner, height: border},
-        'proportion': {x: width + border - inner, width: border, y: height + border - inner, height: border}
-    };
-    return result
+export const transformBorderToRect = (rect: RectByPoint, border: number, inner: number) => {
+    let borderList = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'] as BorderType[];
+    let {start, end} = rect;
+    let result: Record<string, RectByPoint> = {};
+    borderList.map(borderType => {
+        let x1, x2, y1, y2;
+        if (borderType.search('w') > -1) {
+            x1 = start.x - border;
+            x2 = start.x + inner;
+        } else if (borderType.search('e') > -1) {
+            x1 = end.x - inner;
+            x2 = end.x + border;
+        } else {
+            x1 = start.x + inner;
+            x2 = end.x - inner;
+        }
+        if (borderType.search('n') > -1) {
+            y1 = start.y - border;
+            y2 = start.y + inner;
+        } else if (borderType.search('s') > -1) {
+            y1 = end.y - inner;
+            y2 = end.y + border;
+        } else {
+            y1 = start.y + inner;
+            y2 = end.y - inner;
+        }
+        result[borderType] = new RectByPoint({x: x1, y: y1}, {x: x2, y: y2}, 0)
+    });
+    return result as Record<BorderType, RectByPoint>
 };
 
 export const getOriginRect = (pointA: PointMixed, pointB: PointMixed) => {

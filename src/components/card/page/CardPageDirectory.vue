@@ -141,7 +141,7 @@
         },
         methods: {
             buildStructure: function () {
-                console.log('build');
+                // console.log('build');
                 let docItemDict: Record<id, DirectoryItemDocument> = {};
                 let docLayerDict: Record<number, GraphSelfPart[]> = {};
                 let tree: DirectoryItemDocument[] = [];
@@ -174,7 +174,7 @@
             },
 
             directory: function () {
-                console.log('directory')
+                // console.log('directory')
                 let vm = this;
                 this.allItemList = [];
                 let update = function (docItem: DirectoryItemDocument) {

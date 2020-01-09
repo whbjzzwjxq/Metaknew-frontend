@@ -1,12 +1,12 @@
 <template>
-    <div :style="containerStyle">
-        <div :style="rectStyle">
+    <div :style="startPointStyle">
+        <div :style="contentStyle" v-if="!renderAsBorder">
             <slot name="content">
 
             </slot>
         </div>
         <div
-            v-for="(border, name) in borderStyleList"
+            v-for="(border, name) in borderStyleDict"
             :key="name"
             :style="border"
             @mousedown.stop="startScale(arguments[0], name)"
@@ -21,12 +21,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {
-        getDivCSS,
-        transformBorderToRect,
-        Point,
-        getPoint
-    } from "@/utils/geoMetric";
+    import {transformBorderToRect, Point, getPoint, RectByPoint, BorderType} from "@/utils/geoMetric";
 
     export default Vue.extend({
         name: "RectContainer",
@@ -36,13 +31,13 @@
                 isLock: false,
                 isScaling: false,
                 resizeStartPoint: new Point(0, 0),
-                scaleName: ''
+                borderType: 'n' as string
             }
         },
         props: {
             // 容器
             container: {
-                type: Object as () => AreaRect,
+                type: Object as () => RectByPoint,
                 required: true
             },
 
@@ -52,66 +47,69 @@
                 default: false
             },
 
-            //拖动事件监听的宽度
+            //拖动事件监听的外延
             listenBorder: {
                 type: Number as () => number,
                 default: 12
             },
 
+            //拖动事件监听的内展
+            listenInner: {
+                type: Number as () => number,
+                default: 12
+            },
+
+            //是否被选中
             isSelected: {
                 type: Boolean as () => boolean,
+                default: false
+            },
+
+            //是否只渲染Border
+            renderAsBorder: {
+                type: Boolean,
                 default: false
             }
         },
         computed: {
-            rectStyle: function (): CSSProp {
-                return getDivCSS(this.container, {
-                    top: this.listenBorder + 'px',
-                    left: this.listenBorder + 'px',
-                })
+            containerRect: function () {
+                return this.container.positiveRect()
+            },
+            startPointStyle: function (): CSSProp {
+                // 注意没有长宽 只有起始点坐标
+                return this.container.getDivCSS({width: 0, height: 0})
+            },
+            contentStyle: function (): CSSProp {
+                // 注意是相对于父亲来说的
+                return this.container.getDivCSS({left: 0, top: 0})
             },
 
-            containerStyle: function (): CSSProp {
-                return {
-                    width: (this.container.width + this.listenBorder * 2) + 'px',
-                    height: (this.container.height + this.listenBorder * 2) + 'px',
-                    left: (this.container.x - this.listenBorder) + 'px',
-                    top: (this.container.y - this.listenBorder) + 'px',
-                    position: "absolute",
-                }
-            },
-
+            // Border矩形的构成
             borderList: function () {
-                return transformBorderToRect(this.container, this.listenBorder)
+                // 这里要把开始点置为0,0
+                let reGroupRect = new RectByPoint({x: 0, y: 0},
+                    this.container.end.copy().decrease(this.container.start), 0);
+                return transformBorderToRect(reGroupRect, this.listenBorder, this.listenInner)
             },
 
-            borderStyleList: function () {
+            borderStyleDict: function () {
                 let result: Record<string, CSSProp> = {};
                 Object.entries(this.borderList).map(([name, border]) => {
-                    result[name] = getDivCSS(border, {
+                    result[name] = border.getDivCSS({
                         backgroundColor: 'grey',
-                        opacity: this.isSelected ? 0.3 : 0.3
-                    });
-                    if (name === 'proportion') {
-                        result[name] = getDivCSS(border, {
-                            backgroundColor: '#cc717e', cursor: "nw-resize", opacity: '50%'
-                        })
-                    } else {
-                        if (['left', 'right'].includes(name)) {
-                            result[name].cursor = 'e-resize'
-                        } else {
-                            result[name].cursor = 'n-resize'
-                        }
-                    }
+                        borderWidth: 0,
+                        opacity: this.isSelected ? 0.3 : 0.3,
+                        cursor: name + '-resize'
+                    })
                 });
-                return result
+                return result as Record<BorderType, CSSProp>
             }
         },
         methods: {
             startScale: function ($event: MouseEvent, name: string) {
                 if (this.expandAble) {
                     this.isScaling = true;
-                    this.scaleName = name;
+                    this.borderType = name;
                     this.resizeStartPoint.update($event)
                 }
             },
@@ -119,15 +117,14 @@
             scaling: function ($event: MouseEvent) {
                 if (this.isScaling) {
                     let delta = getPoint($event).decrease(this.resizeStartPoint);
-                    if (['left', 'right'].includes(this.scaleName)) {
-                        delta.y = 0
-                    } else if (['top', 'bottom'].includes(this.scaleName)) {
+                    this.resizeStartPoint.update($event);
+                    if (['n', 's'].includes(this.borderType)) {
                         delta.x = 0
-                    } else {
-                        delta.y = this.container.height / this.container.width
                     }
-                    this.$emit('update-size', delta, this.scaleName);
-                    this.resizeStartPoint.update($event)
+                    if (['w', 'e'].includes(this.borderType)) {
+                        delta.y = 0
+                    }
+                    this.$emit('update-size', delta, this.borderType);
                 }
             },
 
@@ -141,7 +138,7 @@
         record: {
             status: 'editing',
             description: '矩形窗口',
-            //todo 尺寸限定在rect里 不要越界
+            // todo 尺寸限定在rect里 不要越界
         }
     })
 </script>

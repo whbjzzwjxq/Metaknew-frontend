@@ -30,6 +30,7 @@ import {
 import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
 import {BackendGraph} from "@/api/commonSource";
 import {BooleanConcern, LevelConcern, UserConcern} from "@/utils/userConcern";
+import set = Reflect.set;
 
 declare global {
     type id = number | string;
@@ -638,6 +639,12 @@ export class NodeSettingPart extends SettingPart {
         let setting = nodeSettingTemplate(_id, _type, _label, _name, _image);
         let state = nodeStateTemplate("isAdd");
         return new NodeSettingPart(setting, state, parent);
+    }
+
+    deepCloneSelf() {
+        let setting = deepClone(this.Setting);
+        let state = deepClone(this.State);
+        return new NodeSettingPart(setting, state, this.parent)
     }
 }
 

@@ -139,7 +139,7 @@
                 let id = getIndex();
                 let graph = GraphSelfPart.emptyGraphSelfPart(id, document);
                 let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', _label);
-                document.addItems([graph.baseNode]);
+                document.addItems([graph.baseNode.deepCloneSelf()]);
                 commitGraphAdd({graph, strict: true});
                 commitInfoAdd({item: info, strict: true});
                 return graph

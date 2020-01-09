@@ -71,7 +71,6 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {DataManagerState} from '@/store/modules/dataManager'
     import {IndexedInfo, IndexedText, queryHomePage, HomePageSearchResponse, SearchQueryObject} from '@/api/search'
     import {GraphSelfPart, InfoToSetting, MediaSettingPart, NodeSettingPart} from '@/utils/graphClass'
     import {getIcon} from "@/utils/icon";
@@ -224,8 +223,8 @@
                         .then(res => {
                             this.searchResult = res.data
                         })
-                        .catch(err => {
-                            console.log(err);
+                        .catch(() => {
+                            //
                         })
                         .finally(() => {
                             this.isLoading = false;

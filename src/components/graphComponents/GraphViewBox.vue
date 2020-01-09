@@ -1,5 +1,14 @@
 <template>
     <div @wheel="onScroll" style="width: 100%; height: 100%; position: absolute">
+
+        <rect-container
+            v-for="(container, index) in activeGraphRectList"
+            :key="index"
+            :container="container"
+            render-as-border>
+
+        </rect-container>
+
         <!--        基础的Graph-->
         <svg
             width="100%"
@@ -26,11 +35,9 @@
                 v-show="showNode[index]"
                 :key="node.Setting._id"
                 :node="node"
-                :container="viewBox"
                 :size="impScaleRadius[index]"
                 :scale="realScale"
                 :point="nodeLocation[index].positiveRect()"
-                :index="index"
                 @kick-back-x="kickBackX"
                 @kick-back-y="kickBackY"
                 @mouseenter.native="mouseEnter(node)"
@@ -95,10 +102,6 @@
 
         </graph-node-button>
 
-        <div :style="subGraphStyleList" class="graph-render">
-
-        </div>
-
         <div :style="viewBoxToolStyle" class="d-flex flex-row">
             <graph-label-selector
                 v-if="renderLabelSelector"
@@ -122,10 +125,6 @@
 
             </div>
         </div>
-
-        <rect>
-
-        </rect>
 
     </div>
 </template>
@@ -155,6 +154,7 @@
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
+    import RectContainer from "@/components/container/RectContainer.vue";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 
@@ -166,6 +166,7 @@
             GraphMedia,
             GraphNodeButton,
             GraphLabelSelector,
+            RectContainer
             // GraphNote,
             // GraphRender,
         },
@@ -315,7 +316,14 @@
             activeGraphMetaDataList: function (): GraphMetaData[] {
                 let realScale = this.realScale;
                 let vm = this;
-                let baseContainer = this.viewBox;
+                let baseContainer = new RectByPoint({x: 0, y: 0}, this.viewBox.end.copy(), 0);
+
+                const getParentNodeLocation = (node: NodeSettingPart, rect: AreaRect) => {
+                    // 获取父亲节点的绝对位置
+                    let basePoint = getPoint(node.Setting.Base).multiRect(rect).add(rect);
+                    return vm.lastViewPoint.copy()
+                        .decrease(vm.viewPoint.copy().decrease(basePoint).multi(realScale));
+                }
                 // 从父亲Graph里的节点位置推出自身的矩形位置
                 const getRectFromParent = (document: GraphSelfPart, parentNodeLocation: PointMixed) => {
                     // 当前缩放下矩形的长宽
@@ -325,7 +333,7 @@
                     let delta = getPoint(document.baseNode.Setting.Base).multiRect({width, height});
                     // 起点与parentNode的位置差为delta
                     // 额外加上整个ViewBox的位置差
-                    let start = delta.copy().multi(-1).add(parentNodeLocation).add(baseContainer.start);
+                    let start = delta.copy().multi(-1).add(parentNodeLocation);
                     let end = start.copy().addRect({width, height});
                     return new RectByPoint(start, end, document.Conf.Setting.Base.border)
                 };
@@ -344,8 +352,8 @@
                         if (_type === 'document' && index > -1 && _id !== graphMeta.self.id) {
                             // 这个Graph被激活了
                             let doc = vm.activeGraphList[index];
-                            let parentNode = vm.getRectByPoint(0, 0, node.Setting, rect.positiveRect());
-                            let childRect = getRectFromParent(doc, parentNode.start);
+                            let parentNode = getParentNodeLocation(node, rect.positiveRect());
+                            let childRect = getRectFromParent(doc, parentNode);
                             let childGraphMeta: GraphMetaData = {
                                 parent: graphMeta,
                                 self: doc,
@@ -360,14 +368,21 @@
                 return result
             },
 
-            subGraphStyleList: function (): CSSProp[] {
-                return this.activeGraphMetaDataList.map(meta => meta.rect.getDivCSS(
-                    {borderColor: 'black'}
-                ))
+            subGraphStyleList: function () {
+                return this.activeGraphMetaDataList.filter(meta => meta.self.id !== this.document.id).map(meta => {
+                        let rect = meta.rect.positiveRect()
+                        return Object.assign({
+                            fillOpacity: 0,
+                            stroke: 'black',
+                            strokeWidth: meta.rect.border
+                        } as CSSProp, rect)
+                    }
+                )
             },
             // 求出所有的Rect
-            activeGraphRectList: function (): AreaRect[] {
-                return this.activeGraphMetaDataList.map(meta => meta.rect.positiveRect())
+            activeGraphRectList: function (): RectByPoint[] {
+                return this.activeGraphMetaDataList.filter(meta => meta.self.id !== this.document.id)
+                    .map(meta => meta.rect)
             },
             // 包含所有的Nodes Links
             nodes: function (): NodeSettingPart[] {
@@ -441,8 +456,7 @@
                         ? node.Setting.Base.size * this.realScale
                         : this.impScaleRadius[index] * this.realScale;
                     let height = width * node.Setting.Base.scaleX;
-                    let rect = this.getGraphMetaData(node.parent.id).rect.positiveRect();
-                    return this.getRectByPoint(width, height, node.Setting, rect)
+                    return this.getRectByPoint(width, height, node)
                 })
             },
 
@@ -452,7 +466,7 @@
                         ? media.Setting.Base.size * this.realScale
                         : 50;
                     let height = width * media.Setting.Base.scaleX;
-                    return this.getRectByPoint(width, height, media.Setting)
+                    return this.getRectByPoint(width, height, media)
                 })
             },
 
@@ -614,13 +628,16 @@
                 }
             },
 
-            getRectByPoint(width: number, height: number, setting: NodeSetting | MediaSetting, rect?: AreaRect) {
-                rect || (rect = this.containerRect);
-                let basePoint = getPoint(setting.Base).multiRect(rect);
-                console.log(rect);
+            getRectByPoint(width: number, height: number, setting: VisNodeSettingPart, rect?: AreaRect) {
+                rect || (rect = this.getGraphMetaData(setting.parent.id).rect.positiveRect());
+                let basePoint = getPoint(setting.Setting.Base).multiRect(rect).add(rect);
                 let startPoint = this.lastViewPoint.copy()
                     .decrease(this.viewPoint.copy().decrease(basePoint).multi(this.realScale));
                 let endPoint = startPoint.copy().addRect({width, height});
+                if (setting.parent.id !== '$_1' && setting.Setting._id === '$_4') {
+                    console.log('secendLayer', basePoint, rect)
+                    console.log('lastViewPoint', this.lastViewPoint, this.viewPoint)
+                }
                 return new RectByPoint(startPoint, endPoint)
             },
 

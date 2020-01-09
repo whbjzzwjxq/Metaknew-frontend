@@ -238,7 +238,6 @@
                     this.newFiles.splice(index, 1);
                     this.saveMedia()
                 }).catch((res) => {
-                    console.log(res);
                     file.changeStatus('error')
                 })
             }

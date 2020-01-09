@@ -2,6 +2,7 @@
     <g
         :id="getId"
         :transform=transform
+        style="z-index: 4"
     >
         <template v-if="geometryType === 'ellipse'">
             <defs>
@@ -95,7 +96,7 @@
     export default Vue.extend({
         name: 'GraphNode',
         components: {},
-        data() {
+        data: function() {
             return {}
         },
         props: {
@@ -161,11 +162,11 @@
             colorStyle: function (): CSSProp {
                 return {
                     'fill': this.fillColor,
-                    'fill-opacity': this.setting.Base.opacity & !this.showPic,
-                    'stroke': this.borderSetting.Color,
-                    'stroke-width': this.borderSetting.width,
-                    'stroke-opacity': this.borderSetting.opacity,
-                    'stroke-dasharray': this.borderSetting.dash,
+                    'fillOpacity': !this.showPicture ? this.setting.Base.opacity : 0,
+                    'stroke': this.borderSetting.color,
+                    'strokeWidth': this.borderSetting.width,
+                    'strokeOpacity': this.borderSetting.opacity,
+                    'strokeDasharray': this.borderSetting.dash,
                 }
             },
 
@@ -267,7 +268,7 @@
                     '-moz-user-select': 'none',
                     'user-select': 'none',
                     'fill': 'opposite',
-                    'font-size': this.textSize + 'px',
+                    'font-size': this.textSetting.size + 'px',
                     'text-align': 'center',
                     'word-break': 'break-all',
                     'color': this.setting.Text.textColor
@@ -284,7 +285,7 @@
                     ? (size + 5) * 2
                     : (size + 5);
                 return {
-                    offsetX: -this.width * 0.5,
+                    offsetX: -width * 0.5,
                     offsetY: height + this.borderSetting.width + 5,
                     width,
                     height,
@@ -301,7 +302,7 @@
                     'font-size': this.setting.Text.inlineTextSize + 'px',
                     'text-align': 'center',
                     'word-break': 'break-all',
-                    'color': this.setting.Text.inlineTextColor
+                    'color': this.setting.Text.inlineTextColor,
                 }
             },
 
