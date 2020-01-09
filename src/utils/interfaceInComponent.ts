@@ -1,5 +1,5 @@
 import {GraphSelfPart} from "@/utils/graphClass";
-import {RectByPoint} from "@/utils/geoMetric";
+import {Point, RectByPoint} from "@/utils/geoMetric";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -22,9 +22,10 @@ export interface TabContent {
     name?: string | Record<string, string>
 }
 
-// grpah-viewbox graph-render相关组件使用
+// graph-viewBox graph-render相关组件使用
 export type GraphMetaData = {
-    self: GraphSelfPart,
-    rect: RectByPoint,
-    parent: GraphMetaData | null,
+    absolute: Point, // 在视图中的绝对位置
+    self: GraphSelfPart, // 对应的Graph
+    rect: RectByPoint, // 对应的矩形
+    parent: GraphMetaData | null, //对应的上级MetaData
 }

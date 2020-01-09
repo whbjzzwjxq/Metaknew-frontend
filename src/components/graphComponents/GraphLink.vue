@@ -79,8 +79,9 @@
                 return this.link.Setting
             },
 
+            // 说的是线型 不是'link'
             type: function () {
-                return this.setting._type
+                return this.setting.Base.type
             },
 
             draw: function () {

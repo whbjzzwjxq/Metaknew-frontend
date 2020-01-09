@@ -1,6 +1,7 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
 import {GraphSelfPart} from "@/utils/graphClass";
+import styleComponentSize from "@/store/modules/styleComponentSize";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)

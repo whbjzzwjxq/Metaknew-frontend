@@ -1,14 +1,6 @@
 <template>
     <div @wheel="onScroll" style="width: 100%; height: 100%; position: absolute">
 
-        <rect-container
-            v-for="(container, index) in activeGraphRectList"
-            :key="index"
-            :container="container"
-            render-as-border>
-
-        </rect-container>
-
         <!--        基础的Graph-->
         <svg
             width="100%"
@@ -70,6 +62,14 @@
 
             </line>
         </svg>
+
+        <rect-container
+            v-for="(container, index) in activeGraphRectList"
+            :key="index"
+            :container="container"
+            render-as-border>
+
+        </rect-container>
 
         <graph-media
             v-for="(node, index) in medias"
@@ -316,16 +316,29 @@
             activeGraphMetaDataList: function (): GraphMetaData[] {
                 let realScale = this.realScale;
                 let vm = this;
-                let baseContainer = new RectByPoint({x: 0, y: 0}, this.viewBox.end.copy(), 0);
+                let baseContainer = new RectByPoint({x: 0, y: 0}, {
+                    x: this.containerRect.width,
+                    y: this.containerRect.height
+                }, 0);
+                let basePoint = getPoint(this.document.baseNode.Setting.Base).multiRect(this.containerRect);
+                let realPoint = this.lastViewPoint.copy().decrease(this.viewPoint.copy().decrease(basePoint).multi(realScale));
+                let root: GraphMetaData = {
+                    parent: null,
+                    self: this.document,
+                    rect: baseContainer,
+                    absolute: realPoint
+                };
 
-                const getParentNodeLocation = (node: NodeSettingPart, rect: AreaRect) => {
-                    // 获取父亲节点的绝对位置
-                    let basePoint = getPoint(node.Setting.Base).multiRect(rect).add(rect);
-                    return vm.lastViewPoint.copy()
-                        .decrease(vm.viewPoint.copy().decrease(basePoint).multi(realScale));
+                const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
+                    let delta = getPoint(node.Setting.Base)
+                        .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
+                        .multiRect(parentMetaData.rect.positiveRect()) // 乘以矩形 e.g. -0.2 * 1000 = -200
+                        .multi(realScale) // 乘以缩放比 e.g. -200 * 0.5 = -100
+                        .add(parentMetaData.absolute) // 加上绝对坐标 e.g. -100 + 320 = 220
+                    return delta
                 }
                 // 从父亲Graph里的节点位置推出自身的矩形位置
-                const getRectFromParent = (document: GraphSelfPart, parentNodeLocation: PointMixed) => {
+                const getRectFromAbsPoint = (document: GraphSelfPart, absPoint: Point) => {
                     // 当前缩放下矩形的长宽
                     let width = document.rect.width * realScale;
                     let height = document.rect.height * realScale;
@@ -333,31 +346,27 @@
                     let delta = getPoint(document.baseNode.Setting.Base).multiRect({width, height});
                     // 起点与parentNode的位置差为delta
                     // 额外加上整个ViewBox的位置差
-                    let start = delta.copy().multi(-1).add(parentNodeLocation);
-                    let end = start.copy().addRect({width, height});
-                    return new RectByPoint(start, end, document.Conf.Setting.Base.border)
+                    let start = delta.multi(-1).add(absPoint);
+                    let end = start.copy().addRect({width, height})
+                    return new RectByPoint(start, end)
                 };
-                let root: GraphMetaData = {
-                    parent: null,
-                    self: this.document,
-                    rect: baseContainer,
-                };
+
                 let result = [root];
                 let searchGraph = function (graphMeta: GraphMetaData) {
                     let graph = graphMeta.self.Graph;
-                    let rect = graphMeta.rect;
                     graph.nodes.map(node => {
                         let {_type, _id, Base} = node.Setting;
                         let index = vm.activeGraphIdList.indexOf(_id);
                         if (_type === 'document' && index > -1 && _id !== graphMeta.self.id) {
                             // 这个Graph被激活了
                             let doc = vm.activeGraphList[index];
-                            let parentNode = getParentNodeLocation(node, rect.positiveRect());
-                            let childRect = getRectFromParent(doc, parentNode);
+                            let absPoint = getAbsPointFromParent(node, graphMeta);
+                            let childRect = getRectFromAbsPoint(doc, absPoint);
                             let childGraphMeta: GraphMetaData = {
                                 parent: graphMeta,
                                 self: doc,
-                                rect: childRect
+                                rect: childRect,
+                                absolute: absPoint
                             };
                             result.push(childGraphMeta);
                             searchGraph(childGraphMeta)
@@ -368,17 +377,6 @@
                 return result
             },
 
-            subGraphStyleList: function () {
-                return this.activeGraphMetaDataList.filter(meta => meta.self.id !== this.document.id).map(meta => {
-                        let rect = meta.rect.positiveRect()
-                        return Object.assign({
-                            fillOpacity: 0,
-                            stroke: 'black',
-                            strokeWidth: meta.rect.border
-                        } as CSSProp, rect)
-                    }
-                )
-            },
             // 求出所有的Rect
             activeGraphRectList: function (): RectByPoint[] {
                 return this.activeGraphMetaDataList.filter(meta => meta.self.id !== this.document.id)
@@ -400,7 +398,7 @@
             links: function (): LinkSettingPart[] {
                 let result: LinkSettingPart[] = [];
                 this.activeGraphList.map(graph => {
-                    result.concat(graph.Graph.links)
+                    result = result.concat(graph.Graph.links)
                 });
                 return result
             },
@@ -412,6 +410,25 @@
 
             notes: function (): NoteSettingPart[] {
                 return this.document.Graph.notes
+            },
+
+            labelDict: function () {
+                let getLabels = (list: AllSettingPart[]) => {
+                    let result: string[] = [];
+                    list.map((item: AllSettingPart) => {
+                        result.indexOf(item.Setting._label) === -1 &&
+                        result.push(item.Setting._label)
+                    });
+                    return result
+                };
+                let labelDict = {
+                    'node': getLabels(this.nodes),
+                    'link': getLabels(this.links),
+                    'media': getLabels(this.medias),
+                    'note': getLabels(this.notes),
+                    'document': ['DocGraph', 'DocPaper']
+                } as Record<BaseType, string[]>;
+                return labelDict
             },
 
             selectedNodes: function (): NodeSettingPart[] {
@@ -601,8 +618,12 @@
             drag(target: VisNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
                     let {x, y} = $event;
-                    let delta = new Point(x, y);
-                    delta.decrease(this.dragStartPoint).divideRect(this.containerRect).divide(this.realScale);
+                    let delta = getPoint($event);
+                    let rect;
+                    target.parent.id === this.document.id
+                        ? (rect = this.containerRect) // 如果是根节点就用containerRect 因为this.document.rect !== containerRect
+                        : (rect = target.parent.rect) // 否则用父亲Rect
+                    delta.decrease(this.dragStartPoint).divideRect(rect).divide(this.realScale);
                     this.dragStart($event);
                     let moveFunc = (node: VisNodeSettingPart) => {
                         this.$set(node.Setting.Base, 'x', node.Setting.Base.x + delta.x);
@@ -628,16 +649,18 @@
                 }
             },
 
-            getRectByPoint(width: number, height: number, setting: VisNodeSettingPart, rect?: AreaRect) {
-                rect || (rect = this.getGraphMetaData(setting.parent.id).rect.positiveRect());
-                let basePoint = getPoint(setting.Setting.Base).multiRect(rect).add(rect);
-                let startPoint = this.lastViewPoint.copy()
-                    .decrease(this.viewPoint.copy().decrease(basePoint).multi(this.realScale));
-                let endPoint = startPoint.copy().addRect({width, height});
-                if (setting.parent.id !== '$_1' && setting.Setting._id === '$_4') {
-                    console.log('secendLayer', basePoint, rect)
-                    console.log('lastViewPoint', this.lastViewPoint, this.viewPoint)
+            getRectByPoint(width: number, height: number, setting: VisNodeSettingPart) {
+                let graphMeta = this.getGraphMetaData(setting.parent.id);
+                const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
+                    let delta = getPoint(node.Setting.Base)
+                        .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
+                        .multiRect(parentMetaData.rect.positiveRect()) // 乘以矩形 e.g. -0.2 * 1000 = -200
+                        .multi(this.realScale) // 乘以缩放比 e.g. -200 * 0.5 = -100
+                        .add(parentMetaData.absolute) // 加上绝对坐标 e.g. -100 + 320 = 220
+                    return delta
                 }
+                let startPoint = getAbsPointFromParent(setting, graphMeta);
+                let endPoint = startPoint.copy().addRect({width, height});
                 return new RectByPoint(startPoint, endPoint)
             },
 
@@ -710,12 +733,25 @@
             dbClickNode(node: VisNodeSettingPart) {
                 this.selectItem([node]);
                 if (this.isLinking && node && this.startNode) {
-                    let id = getIndex();
-                    let setting = LinkSettingPart.emptyLinkSetting(id, "Default", this.startNode, node, this.document);
-                    let info = LinkInfoPart.emptyLinkInfo(id, "Default", this.startNode, node);
-                    this.document.addItems([setting]);
-                    commitInfoAdd({item: info, strict: true});
-                    this.isLinking = false;
+                    if (node.parent.id === this.startNode.parent.id) {
+                        // 如果是同一张图里的
+                        let document = node.parent;
+                        let id = getIndex();
+                        let setting = LinkSettingPart.emptyLinkSetting(id, "Default", this.startNode, node, document);
+                        let info = LinkInfoPart.emptyLinkInfo(id, "Default", this.startNode, node);
+                        document.addItems([setting]);
+                        commitInfoAdd({item: info, strict: true});
+                        this.isLinking = false;
+                    } else {
+                        let payload = {
+                            "timeout": 2000,
+                            "content": "对不起, 暂时不支持跨专题建立关系",
+                            "color": "warn",
+                            "actionName": "addLinkViaTwoDocument",
+                            "once": false,
+                        } as SnackBarStatePayload;
+                        commitSnackbarOn(payload);
+                    }
                 } else {
                     //
                 }
@@ -843,22 +879,7 @@
             },
 
             getLabelViewDict: function () {
-                let getLabels = (list: AllSettingPart[]) => {
-                    let result: string[] = [];
-                    list.map((item: AllSettingPart) => {
-                        result.indexOf(item.Setting._label) === -1 &&
-                        result.push(item.Setting._label)
-                    });
-                    return result
-                };
-                let typeDict = {
-                    'node': getLabels(this.nodes),
-                    'link': getLabels(this.links),
-                    'media': getLabels(this.medias),
-                    'note': getLabels(this.notes),
-                    'document': ['DocGraph', 'DocPaper']
-                } as Record<BaseType, string[]>;
-                Object.entries(typeDict).map(([_type, labels]) => {
+                Object.entries(this.labelDict).map(([_type, labels]) => {
                     labels.map(label => {
                         if (this.labelViewDict[_type][label] === undefined) {
                             this.labelViewDict[_type][label] = true
@@ -919,12 +940,13 @@
         },
 
         watch: {
-            nodeLength: function (): void {
-                // this.updateCardLoc();
-            },
 
             isSelected: function (): void {
                 this.$set(this.document.baseNode.State, 'isSelected', this.isSelected)
+            },
+
+            labelDict: function (): void {
+                this.getLabelViewDict()
             }
         },
         created: function (): void {

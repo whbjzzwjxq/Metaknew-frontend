@@ -2,7 +2,6 @@
     <g
         :id="getId"
         :transform=transform
-        style="z-index: 4"
     >
         <template v-if="geometryType === 'ellipse'">
             <defs>
