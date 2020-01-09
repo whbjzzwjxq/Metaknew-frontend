@@ -137,7 +137,7 @@
         computed: {
             selectionValue: function () {
                 let result: Record<string, any[]> = {};
-                for (let prop in Object.keys(this.settingItem)) {
+                for (let prop of Object.keys(this.settingItem)) {
                     result[prop] = [];
                     // 把选中内容的值都提取出来
                     this.selection.map(item => {
