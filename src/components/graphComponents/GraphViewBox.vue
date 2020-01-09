@@ -318,7 +318,7 @@
                 let vm = this;
                 let baseContainer = new RectByPoint({x: 0, y: 0}, {
                     x: this.containerRect.width,
-                    y: this.containerRect.height
+                    y: this.containerRect.height // 不乘是因为container恒定是ViewBox
                 }, 0);
                 let basePoint = getPoint(this.document.baseNode.Setting.Base).multiRect(this.containerRect);
                 let realPoint = this.lastViewPoint.copy().decrease(this.viewPoint.copy().decrease(basePoint).multi(realScale));
@@ -655,8 +655,9 @@
                     let delta = getPoint(node.Setting.Base)
                         .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
                         .multiRect(parentMetaData.rect.positiveRect()) // 乘以矩形 e.g. -0.2 * 1000 = -200
-                        .multi(this.realScale) // 乘以缩放比 e.g. -200 * 0.5 = -100
-                        .add(parentMetaData.absolute) // 加上绝对坐标 e.g. -100 + 320 = 220
+                        setting.parent.id === this.document.id && delta.multi(this.realScale)
+                        // 如果是根节点 则乘以缩放比 e.g. -200 * 0.5 = -100 否则缩放比在GraphMeta求的时候已经乘了
+                        delta.add(parentMetaData.absolute) // 加上绝对坐标 e.g. -100 + 320 = 220
                     return delta
                 }
                 let startPoint = getAbsPointFromParent(setting, graphMeta);

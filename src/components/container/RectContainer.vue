@@ -50,13 +50,13 @@
             //拖动事件监听的外延
             listenBorder: {
                 type: Number as () => number,
-                default: 12
+                default: 1
             },
 
             //拖动事件监听的内展
             listenInner: {
                 type: Number as () => number,
-                default: 12
+                default: 1
             },
 
             //是否被选中
