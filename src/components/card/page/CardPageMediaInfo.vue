@@ -3,25 +3,66 @@
         @mouseenter.stop="showTool = true"
         @mouseleave.stop="showTool = false"
         :width="width"
-        :max-height="availableHeight"
+        :max-height="height"
         flat
         tile
         outlined
+        class="unselected"
     >
-        <media-viewer :media="media" :width="width" :height="height">
-            <template v-slot:button-group>
-                <icon-group
-                    v-if="height >= 100"
-                    :icon-list="iconList"
-                    :container-style="buttonGroupStyle"
-                    :color="'white'"
-                    x-small
-                    vertical
-                >
+        <v-card :height="height">
+            <v-card :width="width" :height="getHeight" flat>
+                <media-viewer :media="media" :width="width" :height="height">
+                    <template v-slot:button-group>
+                        <icon-group
+                            v-if="height >= 100"
+                            :icon-list="iconList"
+                            :container-style="buttonGroupStyle"
+                            x-small
+                            vertical
+                        >
+                        </icon-group>
+                    </template>
+                    </media-viewer>
+            </v-card>
 
-                </icon-group>
-            </template>
-        </media-viewer>
+            <v-card v-show="detailOn" class="cardItem" :height='getHeight' :width="width" >
+                <v-card-text :width="width" >
+                    <card-sub-label-group
+                        @remove-item="removeItem"
+                        @add-item="addItem"
+                        :label-group="labelGroup"
+                        :label-items="labelItems"
+                        small
+                    ></card-sub-label-group>
+                    <field-text
+                        prop-name="Text"
+                        :base-text="info.Text"
+                        :editable="editMode"
+                        @update-value="updateValue"
+                    ></field-text>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn text>Learn More+</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        text
+                        @click="editMode = !editMode"
+                        :disabled="!media.isSelf"
+                    >{{ editMode ? 'Edit Off' : 'Edit On' }}
+                    </v-btn>
+                    <v-btn text @click="saveMedia" :disabled="!media.isSelf">Save</v-btn>
+                </v-card-actions>
+                <media-detail
+                    :dialog-detail="dialogDetailVisible"
+                    :dialog-mode="dialogEdit"
+                    @close="closeDialogDetail"
+                    :media="media"
+                >
+                </media-detail>
+
+            </v-card>
+        </v-card>
+
         <div style="height: 6px"></div>
         <title-text-field
             :edit-mode="editMode"
@@ -30,33 +71,6 @@
             v-show="showText"
         ></title-text-field>
 
-        <v-card-text :width="width" v-show="detailOn" class="mt-n8">
-            <card-sub-label-group
-                @remove-item="removeItem"
-                @add-item="addItem"
-                :label-group="labelGroup"
-                :label-items="labelItems"
-                small
-            ></card-sub-label-group>
-            <field-text
-                prop-name="Text"
-                :base-text="info.Text"
-                :editable="editMode"
-                @update-value="updateValue"
-            ></field-text>
-        </v-card-text>
-        <v-card-actions v-show="detailOn">
-            <v-btn text>Learn More+</v-btn>
-            <v-spacer></v-spacer>
-            <v-btn
-                text
-                @click="editMode = !editMode"
-                :disabled="!media.isSelf"
-            >{{ editMode ? 'Edit Off' : 'Edit On' }}
-            </v-btn
-            >
-            <v-btn text @click="saveMedia" :disabled="!media.isSelf">Save</v-btn>
-        </v-card-actions>
     </v-card>
 </template>
 
@@ -73,7 +87,8 @@
     import * as CSS from 'csstype';
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/iconGroup/IconGroup.vue";
-
+    import MediaDetail from "../../media/MediaDetail.vue"
+    import {getSrc} from '@/utils/utils'
     export default Vue.extend({
         name: "CardPageMediaInfo",
         components: {
@@ -81,7 +96,8 @@
             MediaViewer,
             FieldText,
             CardSubLabelGroup,
-            IconGroup
+            IconGroup,
+            MediaDetail
         },
         data() {
             return {
@@ -89,7 +105,9 @@
                 detailOn: false,
                 editMode: this.editBase,
                 showTool: false,
-                resizeBase: 100
+                resizeBase: 100,
+                dialogDetailVisible: false,
+                dialogEdit: false,
             };
         },
         props: {
@@ -137,6 +155,9 @@
             }
         },
         computed: {
+            realSrc: function () {
+                return getSrc(this.media.Ctrl.FileName)
+            },
             info: function () {
                 return this.media.Info;
             },
@@ -226,17 +247,17 @@
                     {name: getIcon('i-resize', 'two'), _func: vm.half, render: vm.inViewBox},
                     {name: getIcon('i-resize', 'double'), _func: vm.double, render: vm.inViewBox},
                     {name: "", _func: vm.doNothing},
-                    {name: "mdi-magnify", _func: vm.dialogWatch},
-                    {name: getIcon("i-collapse-arrow-double", vm.detailOn), _func: vm.changeDetail},
-                    {name: "mdi-pencil", _func: vm.editSrc, render: vm.isSelf},
+                    {name: "mdi-magnify", _func: vm.dialogDetail},
+                    {name: getIcon("i-collapse-arrow-double", vm.detailOn), _func: vm.changeDrawer},
+                    {name: "mdi-pencil", _func: vm.dialogDetailEdit, render: vm.isSelf},
                     {name: "mdi-delete", _func: vm.deleteMedia, render: vm.isSelf || vm.showDeleteIcon},
                     {name: "mdi-arrow-right-bold-circle-outline", _func: vm.addMediaToGraph, render: vm.showExportIcon}
                 ];
             },
 
-            availableHeight: function () {
-                return this.height
-            }
+            getHeight: function () {
+                return this.height / 2
+            },
         },
         methods: {
             updateValue: function (prop: string, value: any) {
@@ -253,9 +274,8 @@
                     ? this.media.updateValue("Labels", value)
                     : this.media.updateUserConcern("Labels", value);
             },
-
-            changeDetail() {
-                this.detailOn = !this.detailOn;
+            changeDrawer() {
+                this.detailOn = !this.detailOn
             },
 
             deleteMedia() {
@@ -265,9 +285,16 @@
             addMediaToGraph() {
                 this.$emit("add-media-to-graph", this.media);
             },
-            dialogWatch() {
+            dialogDetail() {
+                this.dialogDetailVisible = true;
+                this.dialogEdit = false
             },
-            editSrc() {
+            closeDialogDetail() {
+                this.dialogDetailVisible = false
+            },
+            dialogDetailEdit() {
+                this.dialogDetailVisible = true;
+                this.dialogEdit = true
             },
             saveMedia() {
                 let status = this.media.status;
@@ -303,7 +330,8 @@
 
             updateSizeByNumber(newWidth: number) {
                 this.$emit('media-resize', newWidth)
-            }
+            },
+
         },
         watch: {},
         record: {
@@ -314,5 +342,7 @@
 </script>
 
 <style scoped>
+    @import '../../../style/css/unselected.css';
+    @import '../../../style/css/card.css';
 
 </style>

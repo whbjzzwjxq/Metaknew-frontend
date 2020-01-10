@@ -1,4 +1,4 @@
-import {deepClone, getCookie} from "@/utils/utils";
+import {darkColorScaleSet, deepClone, getCookie} from "@/utils/utils";
 import Vue from "vue";
 import {fieldDefaultValue, nodeLabelToProp} from "@/utils/labelField";
 import {settingTemplate} from "@/utils/settingTemplate";
@@ -12,7 +12,8 @@ import {
     isNoteSetting
 } from "@/utils/typeCheck";
 import {ValueWithType, ExtraProps} from "@/utils/interfaceInComponent";
-
+import PDFJS from 'pdfjs-dist'
+PDFJS.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/build/pdf.worker.js'
 export let newIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
 let crucialRegex = new RegExp("_.*");
@@ -885,6 +886,15 @@ export function mediaSettingTemplate(
             cancelAnimationFrame(query)
         };
         checkLoad()
+    }
+    if (_label === 'pdf') {
+        PDFJS.getDocument(_src).promise.then((pdf) => {
+            pdf.getPage(1).then((page) => {
+                let viewport = page.getViewport({scale: 1});
+                setting.Base.size = viewport.width;
+                setting.Base.scaleX = viewport.height / viewport.width
+            })
+        })
     }
     return setting;
 }

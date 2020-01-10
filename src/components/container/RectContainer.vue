@@ -60,6 +60,11 @@
                 default: 8
             },
 
+            listenInner: {
+                type: Number as () => number,
+                default: 4
+            },
+
             isSelected: {
                 type: Boolean as () => boolean,
                 default: false
@@ -84,7 +89,7 @@
             },
 
             borderList: function () {
-                return transformBorderToRect(this.container, this.listenBorder)
+                return transformBorderToRect(this.container, this.listenBorder, this.listenInner)
             },
 
             borderStyleList: function () {

@@ -1,5 +1,5 @@
 <template>
-    <div class="title unselected">
+    <div class="title" onselect="return false">
         <v-text-field
             :value="text"
             @input="updateText"
@@ -51,6 +51,10 @@
     .title {
         height: 48px;
         color: grey;
+        -moz-user-select:none;
+        -webkit-user-select:none;
+        user-select:none;
+        -ms-user-select:none;
     }
 
     .title-text {
