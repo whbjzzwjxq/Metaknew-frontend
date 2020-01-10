@@ -215,24 +215,26 @@ declare global {
     }
 
     interface BaseState {
-        isSelected: boolean; // 是否被选中
         isDeleted: boolean; // 是否被删除;
         isSelf: boolean; // 是否是自己的内容
     }
 
     interface NodeState extends BaseState {
         // 用于node media
+        isSelected: boolean; // 是否被选中
         isMouseOn: boolean; // 是否鼠标放置在上面
         isAdd: boolean; // 是否是新建的
     }
 
     interface LinkState extends BaseState {
         // 暂时和Node一样
+        isSelected: boolean; // 是否被选中
         isMouseOn: boolean; // 是否鼠标放置在上面
         isAdd: boolean; // 是否是新建的
     }
 
     interface NoteState extends BaseState {
+        isSelected: boolean; // 是否被选中
         isMouseOn: boolean;
         isAdd: boolean;
         isLock: boolean;
@@ -963,27 +965,10 @@ export class GraphSelfPart {
 
     explode() {
         Vue.set(this.Conf.State, 'isExplode', !this.Conf.State.isExplode)
-        // let value = this.Conf.State.isExplode;
-        // let nodes = this.Graph.nodes;
-        // // 从baseNode里恢复
-        // if (value) {
-        //     Vue.set(this.Conf.State, 'isExplode', false)
-        // } else {
-        //     // 删除掉graph里已有的节点 因为合并的时候会把合并进去
-        //     let index = -1;
-        //     nodes.map(item => {
-        //         if (item.Setting._id === this.id) {
-        //             index = nodes.indexOf(item)
-        //         }
-        //     });
-        //     index > -1 && nodes.splice(index, 1);
-        //     Vue.set(this.Conf.State, 'isExplode', true)
-        // }
     }
 
-    allStateChange(value: boolean, state: 'isSelected' | 'isDeleted' | 'isSelf') {
+    selectAll(state: 'isSelected', value: boolean) {
         this.allItems().map(item => Vue.set(item.State, state, value));
-        Vue.set(this.Conf.State, state, value)
     }
 }
 

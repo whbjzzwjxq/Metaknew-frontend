@@ -9,7 +9,7 @@
         hoverable
         return-object
         open-on-click
-        :selection-type="'leaf'"
+        selection-type="leaf"
         v-model="selection"
     >
         <template v-slot:prepend="{ item }">
@@ -126,31 +126,35 @@
                 return mergeList(Object.values(this.allDocToItemDict))
             },
 
-            baseItemIdList: function () {
-                return this.baseItemList.map(item => item.id)
+            baseItemLength: function () {
+                // 用length监听Directory变化有些粗糙 后续开发注意Length不变的情况
+                return this.baseItemList.length
             },
 
             selection: {
                 get(): DirectoryItem[] {
-                    return this.baseItemList.filter(item => this.getOriginItem(item).State.isSelected)
+                    // 逃生舱式写法 获取根节点级别的选择集
+                    let root = this.tree.filter(root => {
+                        let node = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
+                        return node.State.isSelected
+                    }) as DirectoryItem[];
+                    return root.concat(this.baseItemList.filter(item => this.getOriginItem(item).State.isSelected))
                 },
                 set(value: DirectoryItem[]) {
-                    console.log(value);
-                    // this.baseItemList.map(item => {
-                    //     if (item.type !== 'document') {
-                    //         // 单选的时候
-                    //         let origin = this.getOriginItem(item).State;
-                    //         this.$set(origin, 'isSelected', value.includes(item))
-                    //     } else {
-                    //
-                    //     }
-                    // });
+                    let idList = value.map(item => item.id);
+                    this.baseItemList.map(item => {
+                        let origin = this.getOriginItem(item).State;
+                        this.$set(origin, 'isSelected', idList.includes(item.id))
+                    });
+                    this.tree.map(root => {
+                        let origin = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
+                        this.$set(origin, 'isSelected', idList.includes(root.id))
+                    })
                 }
             }
         },
         methods: {
             buildStructure: function () {
-                console.log('build')
                 let docItemDict: Record<id, DirectoryItemDocument> = {};
                 let docLayerDict: Record<number, GraphSelfPart[]> = {};
                 let tree: DirectoryItemDocument[] = [];
@@ -184,7 +188,6 @@
             },
 
             buildDirectory: function () {
-                console.log('directory');
                 let vm = this;
                 let update = function (docItem: DirectoryItemDocument) {
                     docItem.childDoc.map(item => update(item));
@@ -300,10 +303,12 @@
             async getDocument(nodeItem: DirectoryItem) {
                 let node = this.getOriginItem(nodeItem) as NodeSettingPart;
                 let document = nodeItem.parent;
+                console.log('get');
                 await dispatchNodeExplode({node, document});
             },
 
             open(itemList: DirectoryItem[]) {
+                console.log('open');
                 let closeItems = this.lastOpenList.filter(item => !itemList.includes(item));
                 let openItems = itemList.filter(item => !this.lastOpenList.includes(item));
                 closeItems.map(item => {
@@ -341,18 +346,18 @@
 
         },
         watch: {
-            activeDocumentIdList() {
+            activeDocumentIdList: function () {
                 console.log(this.activeDocumentIdList);
                 this.buildStructure()
             },
             // id发生变化的时候监听
-            baseItemIdList() {
-                console.log(this.baseItemIdList);
+            baseItemLength: function () {
+                console.log(this.baseItemLength);
                 this.buildDirectory()
             }
 
         },
-        mounted(): void {
+        mounted: function (): void {
             console.log('mounted');
             this.buildStructure();
             this.buildDirectory()

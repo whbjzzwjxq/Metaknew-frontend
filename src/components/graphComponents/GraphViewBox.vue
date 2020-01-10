@@ -608,10 +608,6 @@
                 return this.selectRect.positiveRect()
             },
 
-            isSelected: function () {
-                return this.document.Conf.State.isSelected
-            }
-
         },
         methods: {
             dragStart($event: MouseEvent) {
@@ -822,13 +818,13 @@
                             //如果选中了Document 对应的Node
                             let index = this.activeGraphIdList.indexOf(node.Setting._id);
                             if (node.Setting._type === 'document' && index > -1) {
-                                this.activeGraphList[index].allStateChange(true, 'isSelected')
+                                this.activeGraphList[index].selectAll('isSelected', true)
                             }
                         }
                     );
                     if (selectRoot) {
                         // 选中所有内容
-                        this.document.allStateChange(true, 'isSelected')
+                        this.document.selectAll('isSelected', true)
                     } else {
                         result = result.concat(nodes);
                         result = result.concat(links);
@@ -845,13 +841,8 @@
 
             clearSelected(items: 'all' | SettingPart[]) {
                 if (items === 'all') {
-                    this.nodes.map(node => this.$set(node.State, 'isSelected', false));
-                    this.links.map(link => this.$set(link.State, 'isSelected', false));
-                    this.medias.map(media => this.$set(media.State, 'isSelected', false));
-                    this.childDocumentList.map(document =>
-                        this.$set(document.Conf.State, 'isSelected', false)
-                    );
-                    this.$set(this.document.Conf.State, 'isSelected', false)
+                    this.document.selectAll('isSelected', false);
+                    this.childDocumentList.map(document => document.selectAll('isSelected', false));
                 } else {
                     items.map(item => this.$set(item.State, 'isSelected', false));
                 }
@@ -925,10 +916,6 @@
         },
 
         watch: {
-
-            isSelected: function (): void {
-                this.$set(this.document.baseNode.State, 'isSelected', this.isSelected)
-            },
 
             labelDict: function (): void {
                 this.getLabelViewDict()
