@@ -218,15 +218,15 @@ export const pointDistance = (pointA: PointObject, pointB: PointObject) => {
 
 export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
 
-export const transformBorderToRect = (rect: AreaRect, border: number) => {
+export const transformBorderToRect = (rect: AreaRect, border: number, inner: number) => {
     let {x, y, width, height} = rect;
-    let inner = 4;
     let result: Record<BorderType, AreaRect> = {
-        'left': {x: inner, y: border, width: border, height},
-        'right': {x: width + border - inner, y: border, width: border, height},
-        'top': {x: inner, y: inner, width: width + 2 * border - 2 * inner, height: border},
-        'bottom': {x: inner, y: height + border - inner, width: width + border, height: border},
-        'proportion': {x: width + border - inner, width: border, y: height + border - inner, height: border}
+        'left': {x: 0, y: 0, width: border + inner, height: height + 2 * border},
+        'right': {x: width + border - inner, y: 0, width: border + inner, height: height + 2 * border},
+        'top': {x: 0, y: 0, width: width + 2 * border, height: border + inner},
+        'bottom': {x: 0, y: height + border - inner, width: width + 2 * border, height: border + inner},
+        'proportion': {x: width + border - inner, y: height + border - inner, width: border + inner, height: border + inner
+        }
     };
     return result
 };
