@@ -1,4 +1,4 @@
-import {deepClone, getCookie} from "@/utils/utils";
+import {darkColorScaleSet, deepClone, getCookie} from "@/utils/utils";
 import Vue from "vue";
 import {
     graphSettingTemplate,

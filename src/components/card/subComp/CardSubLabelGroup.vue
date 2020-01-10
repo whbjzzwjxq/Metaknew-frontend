@@ -1,7 +1,7 @@
 <template>
     <div>
         <template v-for="(group,index) in labelGroup">
-            <v-chip-group column :key="index">
+            <v-chip-group column :key="index" class="">
                 <v-chip
                     ripple
                     outlined

@@ -122,6 +122,8 @@
 </script>
 
 <style scoped>
+    @import '../../style/css/card.css';
+
     .cardTitle {
         -moz-user-select: none;
         -webkit-user-select: none;
@@ -129,28 +131,6 @@
         font-weight: bolder;
     }
 
-    .cardItem {
-        overflow-y: scroll;
-        overflow-x: hidden;
-        background: white;
-    }
-
-    .cardItem::-webkit-scrollbar {
-        width: 6px;
-        height: 1px;
-    }
-
-    .cardItem::-webkit-scrollbar-thumb {
-        border-radius: 4px;
-        background: grey;
-        height: 0;
-    }
-
-    .cardItem::-webkit-scrollbar-track {
-        -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-        border-radius: 10px;
-        background: #EDEDED;
-    }
 </style>
 
 /**
