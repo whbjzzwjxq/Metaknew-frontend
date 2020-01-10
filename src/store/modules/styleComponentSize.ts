@@ -41,7 +41,7 @@ const state: StyleManagerState = {
         height: 48
     },
     leftCard: {
-        width: 360,
+        width: 400,
         height: '100%'
     },
     bottomBar: {

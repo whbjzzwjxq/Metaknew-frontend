@@ -18,12 +18,22 @@
 
         <template v-if="editMode" v-slot:append="{ item }">
             <template>
-                <v-btn icon @click="deleteItem(item)" :disabled="!item.deletable">
-                    <v-icon small>{{getIcon('i-delete-able', item.deletable)}}</v-icon>
+                <v-btn
+                    v-if="item.id === dataManager.currentGraph.id"
+                    style="font-weight: bolder;"
+                    color="#42b983"
+                    x-small
+                    depressed
+                    text
+                    >
+                    Current
+                </v-btn>
+                <v-btn icon @click="deleteItem(item)" :disabled="!item.deletable" x-small>
+                    <v-icon>{{getIcon('i-delete-able', item.deletable)}}</v-icon>
                 </v-btn>
 
-                <v-btn icon @click="editItem(item)" :disabled="!item.editable">
-                    <v-icon small>{{getIcon('i-edit-able', item.editable)}}</v-icon>
+                <v-btn icon @click="editItem(item)" :disabled="!item.editable" x-small>
+                    <v-icon>{{getIcon('i-edit-able', item.editable)}}</v-icon>
                 </v-btn>
             </template>
         </template>
@@ -141,6 +151,7 @@
                 },
                 set(value: DirectoryItem[]) {
                     let idList = value.map(item => item.id);
+                    console.log(value)
                     // 用id 因为item可能变化了
                     this.baseItemList.map(item => {
                         let origin = this.getOriginItem(item);
