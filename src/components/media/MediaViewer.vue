@@ -41,6 +41,7 @@
     import axios from 'axios'
     import {mavonEditor} from "mavon-editor";
     import "mavon-editor/dist/css/index.css";
+    import { MediaInfoPart } from '@/utils/graphClass'
 
     export default {
         name: 'mediaViewer',
@@ -56,7 +57,7 @@
 
         props: {
             media: {
-                type: Object,
+                type: Object, // MediaInfoPart,
                 required: true
             },
             width: {
@@ -80,9 +81,11 @@
         methods: {
             init() {
                 let realSrc = getSrc(this.media.Ctrl.FileName);
-                axios.get(realSrc).then(response => {
-                    this.mdText = response.data
-                })
+                if (this.media.Ctrl.PrimaryLabel === 'markdown') {
+                    axios.get(realSrc).then(response => {
+                        this.mdText = response.data
+                    })
+                }
             },
         },
         watch: {

@@ -932,6 +932,10 @@ export function linkCtrlTemplate(_start: VisNodeSettingPart, _end: VisNodeSettin
     };
 }
 
+const specialMedia: Record<string, string> = {
+    'text/markdown': 'markdown'
+};
+
 export function getMediaType(file: File) {
     const mime = require("mime/lite");
     const mimeTypes = (file: File) => mime.getType(file.name.split(".")[1]);
@@ -942,6 +946,10 @@ export function getMediaType(file: File) {
         mimeType[0] === "application"
             ? (result = mimeType[1])
             : (result = mimeType[0]);
+        // 特殊化的解析
+        if (mimeFile in Object.keys(specialMedia)) {
+            result = specialMedia[mimeFile]
+        }
     } else {
         result = file.name.split(".")[1];
     }
