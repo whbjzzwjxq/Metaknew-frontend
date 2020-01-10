@@ -1289,6 +1289,12 @@ export class GraphSelfPart {
                 ? this.Graph.notes.push(item)
                 : isLinkSetting(item) && this.Graph.links.push(item)
     }
+
+    getItemByState(name: BaseTypeList | BaseType, state: string) {
+        let list = this.getItemListByName(name);
+        // @ts-ignore
+        return list.filter(item => item.State[state])
+    }
 }
 
 export const classifier = (itemList: AllItemSettingPart[]) => {

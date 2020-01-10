@@ -58,7 +58,19 @@
 </script>
 
 <style scoped>
-
+    .cardHr {
+        display: block;
+        unicode-bidi: isolate;
+        margin-block-start: 8px;
+        margin-block-end: 8px;
+        margin-inline-start: 10px;
+        margin-inline-end: 10px;
+        overflow: hidden;
+        border-style: inset;
+        border-width: 1px;
+        color: grey;
+        opacity: 0.3;
+    }
 </style>
 
 /**

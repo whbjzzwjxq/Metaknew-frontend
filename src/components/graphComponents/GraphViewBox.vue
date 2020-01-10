@@ -28,6 +28,9 @@
                     :base-rect="activeGraphRectList[index]"
                     render-selector
                     @on-scroll="onScroll"
+                    @move-start="startSelect"
+                    @moving="selecting"
+                    @move-end="subMoveEnd"
                 >
 
                 </graph-render>
@@ -71,7 +74,8 @@
                 :x="selector.x"
                 :y="selector.y"
                 :width="selector.width"
-                :height="selector.height">
+                :height="selector.height"
+                class="selectRect">
 
             </rect>
 
@@ -103,6 +107,7 @@
         >
 
         </graph-media>
+
         <graph-note
             v-show="renderNotes"
             v-for="(note, index) in activeNotes"
@@ -191,13 +196,9 @@
     } from '@/utils/graphClass'
     import {maxN, minN} from "@/utils/utils"
     import {
-        pointAdd,
         AreaRect,
-        pointDecrease,
         PointObject,
         RectByPoint,
-        pointUpdate,
-        pointMultiple,
         Point, getPoint
     } from '@/utils/geoMetric'
     import * as CSS from 'csstype'
@@ -581,8 +582,8 @@
                     return {
                         height,
                         width,
-                        x,
-                        y,
+                        x: realX,
+                        y: realY,
                         show: this.showMedia[index],
                         isSelected: media.State.isSelected,
                         isDeleted: media.State.isDeleted
@@ -620,12 +621,13 @@
             //选择框的相关设置
             selectorStyle(): CSS.Properties {
                 return {
+                    "position": "absolute",
                     "fill": "#000000",
                     "fillOpacity": this.isSelecting ? 0.3 : 0,
                     "strokeOpacity": this.isSelecting ? 0.7 : 0,
                     "stroke": "#000000",
                     "strokeWidth": "1px",
-                    "display": this.isSelecting ? "inline" : "none"
+                    "display": this.isSelecting ? "inline" : "none",
                 }
             },
 
@@ -638,7 +640,7 @@
             },
 
             selector: function () {
-                return this.selectRect.positiveRect
+                return this.selectRect.positiveRect()
             },
 
         },
@@ -816,7 +818,7 @@
                 } else {
                     if (this.renderSelector) {
                         this.$set(this, 'isSelecting', true);
-                        let start = new Point($event.x, $event.y).decrease(this.containerRect);
+                        let start = getPoint($event).decrease(this.containerRect);
                         this.selectRect.start.update(start)
                         this.selectRect.end.update(start)
                     }
@@ -835,14 +837,14 @@
                     }
                     //移动
                     if (this.isLinking) {
-                        this.newLinkEndPoint.update($event)
+                        this.newLinkEndPoint.update(end)
                     }
                 }
             },
 
             endSelect($event: MouseEvent) {
-                this.isMoving = false;
                 this.selecting($event);
+                this.isMoving = false;
                 this.$set(this, 'isSelecting', false);
                 let nodes: (AllItemSettingPart)[] = this.nodes.filter((node, index) =>
                     this.selectRect.checkInRect(this.nodeLocation[index].midPoint())
@@ -856,6 +858,11 @@
                 let result = nodes.concat(links).concat(medias);
                 this.clearSelected("all");
                 this.selectItem(result)
+            },
+
+            subMoveEnd($event: MouseEvent) {
+                this.selecting($event);
+                this.isMoving = false
             },
 
             getLabelViewDict() {

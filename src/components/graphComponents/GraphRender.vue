@@ -54,10 +54,11 @@
         <graph-media
             v-for="(node, index) in medias"
             :key="node.Setting._id"
-            :media="node"
+            :setting="node"
             :container="container"
             :location="mediaLocation[index]"
             :scale="realScale"
+            :view-box="baseRect"
             :index="index"
             @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
@@ -75,24 +76,23 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        AllItemSettingPart, getIndex,
-        GraphSelfPart, GraphSettingPart, GraphState, LinkInfoPart,
+        AllItemSettingPart,
+        GraphSelfPart, GraphSettingPart, GraphState,
         LinkSettingPart,
         MediaSettingPart, NodeInfoPart,
         NodeSettingPart,
         SettingPart, VisualNodeSettingPart
     } from "@/utils/graphClass";
-    import {pointAdd, AreaRect, pointDecrease, PointObject, RectByPoint, pointUpdate} from "@/utils/geoMetric";
+    import {AreaRect, PointObject, RectByPoint, getPoint, Point} from "@/utils/geoMetric";
     import {DataManagerState} from "@/store/modules/dataManager";
     import * as CSS from "csstype";
     import {LabelViewDict, VisualNodeSetting} from "@/utils/interfaceInComponent";
-    import {isLinkSetting, isMediaSetting} from "@/utils/typeCheck";
-    import {commitInfoAdd, commitItemChange} from "@/store/modules/_mutations";
+    import {isMediaSetting} from "@/utils/typeCheck";
+    import {commitItemChange} from "@/store/modules/_mutations";
     import {getInfoPart, maxN, minN} from "@/utils/utils";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import GraphMedia from "@/components/graphComponents/GraphMedia.vue";
-    import GraphNodeButton from "@/components/graphComponents/GraphNodeButton.vue";
     import {StyleManagerState} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
@@ -116,18 +116,14 @@
                 // ------ drag ------
                 isDragging: false,
                 dragAble: true,
-                dragStartPoint: {
-                    x: 0,
-                    y: 0
-                } as PointObject,
+                dragStartPoint: new Point(0, 0),
 
                 // ------ link ------
                 isLinking: false,
                 startNode: null as null | VisualNodeSettingPart,
-                newLinkEndPoint: {
-                    x: 0,
-                    y: 0
-                } as PointObject,
+                newLinkEndPoint: new Point(0, 0),
+
+                isMoving: false
             }
         },
         props: {
@@ -393,7 +389,7 @@
         methods: {
             dragStart($event: MouseEvent) {
                 if (this.dragAble) {
-                    pointUpdate(this.dragStartPoint, $event);
+                    this.dragStartPoint.update($event);
                     this.isDragging = true;
                 }
             },
@@ -401,8 +397,8 @@
             //注意坐标运算使用小数
             drag(target: VisualNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
-                    let deltaX = ($event.x - this.dragStartPoint.x) / this.baseRect.width / this.realScale;
-                    let deltaY = ($event.y - this.dragStartPoint.y) / this.baseRect.height / this.realScale;
+                    let deltaX = ($event.x - this.dragStartPoint.x) / this.baseRect.width;
+                    let deltaY = ($event.y - this.dragStartPoint.y) / this.baseRect.height;
                     this.dragStart($event);
                     if (this.selectedNodes.length > 0) {
                         this.selectedNodes.map(node => {
@@ -439,23 +435,30 @@
                 this.isDragging = false;
             },
             startSelect($event: MouseEvent) {
-                if (this.renderSelector) {
+                if ($event.ctrlKey) {
+                    this.isMoving = true;
+                    this.$emit('move-start', $event)
+                } else if (this.renderSelector) {
                     this.$set(this, 'isSelecting', true);
-                    let start = pointDecrease($event, this.baseRect, this.viewBox.start);
-                    pointUpdate(this.selectRect.start, start);
-                    pointUpdate(this.selectRect.end, start);
+                    let start = getPoint($event).decreaseMulti(this.baseRect, this.viewBox.start);
+                    this.selectRect.start.update(start);
+                    this.selectRect.end.update(start);
                 }
             },
 
             selecting($event: MouseEvent) {
-                let end = pointDecrease($event, this.baseRect, this.viewBox.start);
+                let end = getPoint($event).decreaseMulti(this.baseRect, this.viewBox.start);
                 //选择集
-                if (this.isSelecting && this.renderSelector) {
-                    pointUpdate(this.selectRect.end, end)
+                if ($event.ctrlKey && this.isMoving) {
+                    this.$emit('moving', $event)
+                } else if (this.isSelecting && this.renderSelector) {
+                    this.selectRect.end.update(end);
                 }
             },
 
             endSelect($event: MouseEvent) {
+                this.isMoving = false;
+                this.$emit('move-end', $event);
                 this.selecting($event);
                 this.$set(this, 'isSelecting', false);
                 let nodes: (AllItemSettingPart)[] = this.nodes.filter((node, index) =>
@@ -544,9 +547,7 @@
 
             }
         },
-        watch: {
-
-        },
+        watch: {},
         record: {
             status: 'empty'
         }

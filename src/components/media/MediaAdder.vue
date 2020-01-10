@@ -11,6 +11,7 @@
                     icon
                     tile
                     block
+                    depressed
                     v-for="(item, key) in itemsDict"
                     :key="key">
                     <v-icon left> {{ item.icon }}</v-icon>

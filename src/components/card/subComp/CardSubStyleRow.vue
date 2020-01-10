@@ -1,5 +1,5 @@
 <template>
-    <v-simple-table dense>
+    <v-simple-table dense style="width: 100%">
         <template v-slot:default>
             <thead class="pl-4">
             <th class="text-left">Name</th>
@@ -48,7 +48,7 @@
                                             <template v-slot:append>
                                                 <v-text-field
                                                     :value="selectionValue[prop][0]"
-                                                    @input="updateCache(item.type, parseFloat($event))"
+                                                    @input="updateCache(item.type, parseInt($event))"
                                                     :rules="[value => (item.range[0]<= value <= item.range[1]) || 'out of range']"
                                                     class="mt-0 pt-0"
                                                     single-line
