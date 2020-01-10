@@ -3,8 +3,9 @@ import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, SourceQue
 import {getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
+    getIndex,
     GraphSelfPart,
-    LinkInfoPart,
+    LinkInfoPart, LinkSettingPart,
     MediaInfoPart,
     NodeInfoPart,
     NodeSettingPart
@@ -40,6 +41,7 @@ declare global {
         userConcernManager: Object, // todo
         fileToken: FileToken,
         newIdRegex: RegExp,
+        rootGraph: GraphSelfPart
     }
 
     interface Context {
@@ -52,6 +54,7 @@ declare global {
 const state: DataManagerState = {
     currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null),
     currentItem: NodeInfoPart.emptyNodeInfoPart('$_-1', 'node', 'BaseNode'),
+    rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null),
     graphManager: {},
     nodeManager: {},
     linkManager: {},
@@ -86,9 +89,14 @@ const mutations = {
     currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
         let id = graph.id; // 这里payload是document
+        Vue.set(graph.Conf.State, 'isExplode', true);
         state.currentGraph = graph;
-        graph.Conf.State.isExplode = true;
         commitItemChange(state.nodeManager[id]);
+    },
+
+    rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
+        let {graph} = payload;
+        state.rootGraph = graph
     },
 
     currentItemChange(state: DataManagerState, payload: InfoPart) {

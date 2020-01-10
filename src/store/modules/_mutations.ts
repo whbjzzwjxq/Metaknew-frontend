@@ -43,6 +43,10 @@ export const commitGraphChange = (payload: { graph: GraphSelfPart }) => {
     return store.commit('currentGraphChange', payload)
 };
 
+export const commitRootGraph = (payload: { graph: GraphSelfPart }) => {
+    return store.commit('rootGraphChange', payload)
+};
+
 export const commitInfoAdd = (payload: { item: InfoPart, strict?: boolean }) => {
     return store.commit('infoAdd', payload)
 };

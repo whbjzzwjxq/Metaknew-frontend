@@ -30,7 +30,7 @@ import {
 import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
 import {BackendGraph} from "@/api/commonSource";
 import {BooleanConcern, LevelConcern, UserConcern} from "@/utils/userConcern";
-import set = Reflect.set;
+import {commitInfoAdd} from "@/store/modules/_mutations";
 
 declare global {
     type id = number | string;
@@ -891,8 +891,8 @@ export class GraphSelfPart {
     getChildDocument() {
         let result: GraphSelfPart[] = [];
         GraphSelfPart.list.map(graph => {
-            let root = graph.root;
-            if (root && root.id === this.id) {
+            let root = graph.rootList;
+            if (root && root.map(doc => doc.id).includes(this.id)) {
                 result.push(graph)
             }
         });
@@ -913,7 +913,7 @@ export class GraphSelfPart {
     addItems(items: AllItemSettingPart[]) {
         items.filter(item => !this.checkExistByItem(item)).map(
             item => {
-                this.addItem(item)
+                this.pushItem(item)
             }
         )
     }
@@ -947,7 +947,7 @@ export class GraphSelfPart {
         return this.checkExist(item.Setting._id, item.Setting._type)
     }
 
-    protected addItem(item: AllItemSettingPart) {
+    protected pushItem(item: AllItemSettingPart) {
         item.parent = this;
         isMediaSetting(item)
             ? this.Graph.medias.push(item)
@@ -969,6 +969,26 @@ export class GraphSelfPart {
 
     selectAll(state: 'isSelected', value: boolean) {
         this.allItems().map(item => Vue.set(item.State, state, value));
+    }
+
+    addEmptyNode(_label: string) {
+        let id = getIndex();
+        let info = NodeInfoPart.emptyNodeInfoPart(id, 'node', _label);
+        commitInfoAdd({item: info});
+        let setting = NodeSettingPart.emptyNodeSetting(id, 'node', _label, 'NewNode' + id, '', this);
+        setting.State.isSelf = true;
+        this.addItems([setting]);
+        return setting
+    }
+
+    addEmptyLink(_start: VisNodeSettingPart, _end: VisNodeSettingPart) {
+        let id = getIndex();
+        let info = LinkInfoPart.emptyLinkInfo(id, "Default", _start, _end);
+        commitInfoAdd({item: info, strict: true});
+        let setting = LinkSettingPart.emptyLinkSetting(id, "Default", _start, _end, this);
+        setting.State.isSelf = true;
+        this.addItems([setting]);
+        return setting;
     }
 }
 

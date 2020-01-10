@@ -714,11 +714,7 @@
                     if (node.parent.id === this.startNode.parent.id) {
                         // 如果是同一张图里的
                         let document = node.parent;
-                        let id = getIndex();
-                        let setting = LinkSettingPart.emptyLinkSetting(id, "Default", this.startNode, node, document);
-                        let info = LinkInfoPart.emptyLinkInfo(id, "Default", this.startNode, node);
-                        document.addItems([setting]);
-                        commitInfoAdd({item: info, strict: true});
+                        document.addEmptyLink(this.startNode, node)
                         this.isLinking = false;
                     } else {
                         let payload = {
@@ -887,6 +883,7 @@
                 commitSnackbarOn(payload);
                 this.isLinking = true;
                 this.startNode = node;
+                // 真正的addLink在dbclick
             },
 
             onScroll($event: WheelEvent) {

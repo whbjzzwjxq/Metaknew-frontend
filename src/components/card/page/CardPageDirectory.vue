@@ -33,7 +33,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {commitGraphChange, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {
         GraphSelfPart,
         LinkSettingPart,
@@ -79,10 +79,6 @@
             }
         },
         props: {
-            document: {
-                type: Object as () => GraphSelfPart,
-                required: true
-            },
             editMode: {
                 type: Boolean as () => boolean,
                 default: false
@@ -91,6 +87,9 @@
         computed: {
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
+            },
+            document: function () {
+               return this.dataManager.rootGraph
             },
             // 不包含自身
             childDocumentList: function (): GraphSelfPart[] {
@@ -142,13 +141,14 @@
                 },
                 set(value: DirectoryItem[]) {
                     let idList = value.map(item => item.id);
+                    // 用id 因为item可能变化了
                     this.baseItemList.map(item => {
-                        let origin = this.getOriginItem(item).State;
-                        this.$set(origin, 'isSelected', idList.includes(item.id))
+                        let origin = this.getOriginItem(item);
+                        this.$set(origin.State, 'isSelected', idList.includes(item.id))
                     });
                     this.tree.map(root => {
                         let origin = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
-                        this.$set(origin, 'isSelected', idList.includes(root.id))
+                        this.$set(origin.State, 'isSelected', idList.includes(root.id))
                     })
                 }
             }
@@ -255,6 +255,7 @@
                     childDoc: []
                 } as DirectoryItemDocument;
             },
+
             updateItemsToParent: function (documentItem: DirectoryItemDocument) {
                 let currentDocument = documentItem.children.filter(item => isDocument(item));
                 let currentDocumentId = currentDocument.map(item => item.id);
@@ -292,8 +293,17 @@
             },
 
             editItem(item: DirectoryItem) {
-                let info = getInfoPart(item.id, item.type, this.dataManager);
-                commitItemChange(info)
+                if (item.type === 'node' || item.type === 'link') {
+                    let info = getInfoPart(item.id, item.type, this.dataManager);
+                    commitItemChange(info)
+                } else if (item.type === 'media') {
+                    // media编辑
+                } else if (item.type === 'note') {
+                    // note编辑
+                } else if (item.type === 'document') {
+                    let graph = this.dataManager.graphManager[item.id];
+                    graph && commitGraphChange({graph: graph})
+                };
             },
 
             getOriginItem(item: DirectoryItem) {
@@ -303,33 +313,31 @@
             async getDocument(nodeItem: DirectoryItem) {
                 let node = this.getOriginItem(nodeItem) as NodeSettingPart;
                 let document = nodeItem.parent;
-                console.log('get');
                 await dispatchNodeExplode({node, document});
             },
 
             open(itemList: DirectoryItem[]) {
-                console.log('open');
-                let closeItems = this.lastOpenList.filter(item => !itemList.includes(item));
-                let openItems = itemList.filter(item => !this.lastOpenList.includes(item));
-                closeItems.map(item => {
-                    let targetDocument = this.documents.filter(doc => doc.id === item.id)[0];
-                    if (targetDocument && targetDocument.Conf.State.isExplode) {
-                        // 如果是打开的就关闭
-                        targetDocument.explode()
-                    } else {
-                        // todo open合理化
-                    }
-                });
-                openItems.map(item => {
-                    let targetDocument = this.documents.filter(doc => doc.id === item.id)[0];
-                    if (targetDocument && !targetDocument.Conf.State.isExplode) {
-                        // 如果是关闭的就打开
-                        targetDocument.explode()
-                    } else {
-                        //
-                    }
-                });
-                this.lastOpenList = itemList;
+                // let closeItems = this.lastOpenList.filter(item => !itemList.includes(item));
+                // let openItems = itemList.filter(item => !this.lastOpenList.includes(item));
+                // closeItems.map(item => {
+                //     let targetDocument = this.documents.filter(doc => doc.id === item.id)[0];
+                //     if (targetDocument && targetDocument.Conf.State.isExplode) {
+                //         // 如果是打开的就关闭
+                //         targetDocument.explode()
+                //     } else {
+                //         // todo open合理化
+                //     }
+                // });
+                // openItems.map(item => {
+                //     let targetDocument = this.documents.filter(doc => doc.id === item.id)[0];
+                //     if (targetDocument && !targetDocument.Conf.State.isExplode) {
+                //         // 如果是关闭的就打开
+                //         targetDocument.explode()
+                //     } else {
+                //         //
+                //     }
+                // });
+                // this.lastOpenList = itemList;
             },
 
             getDocumentChildList(document: GraphSelfPart): DirectoryItem[] {
@@ -347,18 +355,15 @@
         },
         watch: {
             activeDocumentIdList: function () {
-                console.log(this.activeDocumentIdList);
                 this.buildStructure()
             },
             // id发生变化的时候监听
             baseItemLength: function () {
-                console.log(this.baseItemLength);
                 this.buildDirectory()
             }
 
         },
         mounted: function (): void {
-            console.log('mounted');
             this.buildStructure();
             this.buildDirectory()
         },

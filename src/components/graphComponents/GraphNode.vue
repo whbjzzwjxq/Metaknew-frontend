@@ -278,8 +278,8 @@
                     ? this.setting.Text.textSize * this.scale
                     : 10;
                 let width = this.setting.Text.twoLine
-                    ? this.setting._name.length * 6 / this.scale
-                    : this.setting._name.length * 12 / this.scale;
+                    ? this.setting._name.length * 6 * this.scale
+                    : this.setting._name.length * 12 * this.scale;
                 let height = this.setting.Text.twoLine
                     ? (size + 5) * 2
                     : (size + 5);

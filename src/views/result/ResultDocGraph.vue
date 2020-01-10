@@ -48,7 +48,7 @@
         NodeSettingPart,
         MediaSettingPart
     } from "@/utils/graphClass";
-    import {commitGraphAdd, commitGraphChange, commitInfoAdd} from "@/store/modules/_mutations";
+    import {commitGraphAdd, commitGraphChange, commitInfoAdd, commitRootGraph} from "@/store/modules/_mutations";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
     import SubToolStyle from "@/components/toolbar/SubToolStyle.vue";
@@ -97,24 +97,15 @@
         },
         methods: {
             newNode(_label: string, document?: GraphSelfPart) {
-                //Info Ctrl部分
-                let id = getIndex();
-                let info = NodeInfoPart.emptyNodeInfoPart(id, 'node', _label);
-                commitInfoAdd({item: info});
                 document || (document = this.document);
-                let setting = NodeSettingPart.emptyNodeSetting(id, 'node', _label, 'NewNode' + id, '', document);
-                document.addItems([setting]);
-                return setting
+                //Info Ctrl部分
+                return document.addEmptyNode(_label);
             },
 
             newLink(start: VisNodeSettingPart, end: VisNodeSettingPart, document?: GraphSelfPart) {
-                let id = getIndex();
-                let info = LinkInfoPart.emptyLinkInfo(id, 'default', start, end);
-                commitInfoAdd({item: info});
                 document || (document = this.document);
-                let setting = LinkSettingPart.emptyLinkSetting(id, 'default', start, end, document);
-                document.addItems([setting]);
-                return setting
+                //Info Ctrl部分
+                return document.addEmptyLink(start, end);
             },
 
             newNote() {
@@ -158,6 +149,7 @@
                 commitGraphAdd({graph, strict: true});
                 commitInfoAdd({item: info, strict: true});
                 commitGraphChange({graph});
+                commitRootGraph({graph});
                 this.loading = false
             } else {
                 this.loading = false
