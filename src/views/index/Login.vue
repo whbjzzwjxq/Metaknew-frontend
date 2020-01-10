@@ -31,7 +31,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {login, loginData} from '@/api/user'
-    import {getCookie, setCookie, delCookie} from '@/utils/utils'
+    import {setCookie} from '@/utils/utils'
     import {commitFileToken, commitUserLogin} from '@/store/modules/_mutations'
 
     export default Vue.extend({
@@ -60,7 +60,7 @@
         props: {},
         computed: {},
         methods: {
-            login(): any {
+            login() {
                 login(this.loginData).then(res => {
                     if (res.status !== 400) {
                         let data = res.data;

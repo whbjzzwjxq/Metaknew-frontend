@@ -13,7 +13,8 @@
                 <card-document
                     v-if="tab === 'document'"
                     v-bind="value.props"
-                    :document="document">
+                    :document="document"
+                    :edit-mode="editMode">
 
                 </card-document>
                 <card-meta-knowledge
@@ -32,14 +33,12 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {StyleManagerState, ToolBar} from "@/store/modules/styleComponentSize"
     import CardEcoSystem from '@/components/card/CardEcoSystem.vue';
     import CardDocument from '@/components/card/CardDocument.vue';
     import CardMetaKnowledge from '@/components/card/CardMetaKnowledge.vue';
-    import {TabContent} from "@/utils/interfaceInComponent";
-    import {DataManagerState} from "@/store/modules/dataManager";
     import {GraphSelfPart} from "@/utils/graphClass";
     import {getIcon} from "@/utils/icon";
+    import {TabContent} from "@/utils/interfaceInComponent";
 
     export default Vue.extend({
         name: "CardRoot",
@@ -63,28 +62,28 @@
                 },
                 currentTab: 1,
                 lang: 'zh',
-                editPageRegex: new RegExp('edit-.*')
+                editPageRegex: new RegExp('edit.*')
             }
         },
         props: {},
         computed: {
-            dataManager(): DataManagerState {
+            dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            document(): GraphSelfPart {
+            document: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
-            allComponentSize(): StyleManagerState {
+            allComponentSize: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            toolBar(): ToolBar {
+            toolBar: function () {
                 return this.allComponentSize.toolBar
             },
-            totalCardStyle(): object {
+            totalCardStyle: function (): CSSProp {
                 return {
                     width: this.allComponentSize.leftCard.width + 'px',
                     height: '100%',
-                    'z-index': 1
+                    zIndex: 1
                 }
             },
             tabItems(): Record<string, TabContent> {
@@ -115,7 +114,9 @@
         methods: {},
         watch: {},
         record: {
-            status: 'empty'
+            status: 'editing',
+            description: '左边卡片的根组件'
+            //todo 用vuex来控制组件
         }
     })
 </script>

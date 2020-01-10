@@ -89,7 +89,7 @@
     import PLabelSelector from '@/components/PLabelSelector.vue';
     import DataTableButtonGroup from '@/views/dataTable/DataTableButtonGroup.vue';
     import DataTableField from '@/views/dataTable/DataTableField.vue';
-    import {BaseNodeInfo, ExtraProps, getIndex} from '@/utils/graphClass'
+    import {getIndex} from '@/utils/graphClass'
     import {nodeCreateMulti} from "@/api/commonSource"
 
     export default Vue.extend({

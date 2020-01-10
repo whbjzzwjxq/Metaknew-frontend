@@ -13,6 +13,7 @@
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
     import {commitScreenResize} from "@/store/modules/_mutations";
+
     export default Vue.extend({
         name: "Result",
         components: {
@@ -33,7 +34,8 @@
             this.onResize()
         },
         record: {
-            status: 'empty'
+            status: 'done',
+            description: '结果页整体框架'
         }
     })
 </script>
@@ -44,5 +46,5 @@
 
 /**
 * Created by whb on 2019/12/4
-* Updated by []
+* Updated by [whb on 2020年1月9日03:12:11]
 */

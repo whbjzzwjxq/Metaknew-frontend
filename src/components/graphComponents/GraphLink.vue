@@ -1,16 +1,16 @@
 <template>
     <g>
         <defs>
-            <marker :id="getArrowId"
+            <marker :id="arrowSetting.id"
                     refX="0"
-                    :refY="arrowRefY"
-                    :markerWidth="this.arrowLength"
-                    :markerHeight="this.arrowLength"
+                    :refY="arrowSetting.refY"
+                    :markerWidth="arrowSetting.length"
+                    :markerHeight="arrowSetting.length"
                     orient="auto"
                     markerUnits="userSpaceOnUse"
-                    :viewBox="arrowContainer">
-                <path :d="arrowPathD"
-                      :fill="this.setting.Base.color"
+                    :viewBox="arrowSetting.container">
+                <path :d="arrowSetting.pathD"
+                      :fill="setting.Base.color"
                       :fill-opacity="0.8"
                 ></path>
             </marker>
@@ -33,8 +33,8 @@
             <path :d="polylinePath" :style=drawStyle></path>
         </template>
 
-        <foreignObject :x="midLocation.x" :y="midLocation.y"
-                       :width="textWidth" :height="textHeight">
+        <foreignObject :x="midLocation.x - textSetting.width / 2" :y="midLocation.y"
+                       :width="textSetting.width" :height="textSetting.height">
             <p :style="textStyle">{{ setting._label }}</p>
         </foreignObject>
     </g>
@@ -42,10 +42,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import * as CSS from 'csstype'
     import {LinkSettingPart} from "@/utils/graphClass";
-    import {VisualNodeSetting} from "@/utils/interfaceInComponent";
-    import {PointObject, getPointDistance, rectDiagonalDistance, getPoint} from "@/utils/geoMetric";
+    import {getPoint, getPointDistance, rectDiagonalDistance} from "@/utils/geoMetric";
 
     export default Vue.extend({
         name: 'GraphLink',
@@ -80,154 +78,150 @@
             setting: function () {
                 return this.link.Setting
             },
+
+            // 说的是线型 不是'link'
+            type: function () {
+                return this.setting.Base.type
+            },
+
             draw: function () {
                 let source = this.source;
                 let target = this.target;
                 let distance = getPointDistance(source, target);
+                // 算出起点位置和终点位置的半径
                 let sourceR = rectDiagonalDistance(source) / 2;
                 let targetR = rectDiagonalDistance(target) / 2;
-                let x1 = source.x;
-                let y1 = source.y;
-                let x2 = target.x;
-                let y2 = target.y;
 
-                let xSourceDelta = (sourceR / distance) * Math.abs(x1 - x2);
-                let ySourceDelta = (sourceR / distance) * Math.abs(y1 - y2);
-                let xTargetDelta = (targetR / distance) * Math.abs(x1 - x2);
-                let yTargetDelta = (targetR / distance) * Math.abs(y1 - y2);
-                let result = {
-                    'x1': 0, 'y1': 0, 'x2': 0, 'y2': 0
+                // 算出起点位置和终点位置的变化量
+                let startDelta = getPoint(source).decrease(target)
+                    .multi(sourceR).divide(distance);
+                // 终点是减小 所以有个负号
+                let endDelta = startDelta.copy().multi(-targetR / sourceR);
+
+                //关系实际的起点终点位置
+                const locationDelta = function (
+                    pointLoc: 'top' | 'bottom' | 'left' | 'right' | 'center',
+                    rect: AreaRect, delta: PointMixed) {
+                    let result = getPoint(rect);
+                    switch (pointLoc) {
+                        case 'top':
+                            result.decrease({x: 0, y: rect.height / 2});
+                            break;
+                        case 'bottom':
+                            result.add({x: 0, y: rect.height / 2});
+                            break;
+                        case 'left':
+                            result.decrease({x: rect.width / 2, y: 0});
+                            break;
+                        case 'right':
+                            result.add({x: rect.width / 2, y: 0});
+                            break;
+                        case 'center':
+                            result.decrease(delta);
+                    }
+                    return result
                 };
-                switch (this.setting.Base.startLoc) {
-                    case 'top':
-                        result.x1 = x1;
-                        result.y1 = y1 - source.height / 2;
-                        break;
-                    case 'bottom':
-                        result.x1 = x1;
-                        result.y1 = y1 + source.height / 2;
-                        break;
-                    case 'left':
-                        result.x1 = x1 - source.width / 2;
-                        result.y1 = y1;
-                        break;
-                    case 'right':
-                        result.x1 = x1 + source.width / 2;
-                        result.y1 = y1;
-                        break;
-                    case 'center':
-                        result.x1 = x1 < x2 ? x1 + xSourceDelta : x1 - xSourceDelta;
-                        result.y1 = y1 < y2 ? y1 + ySourceDelta : y1 - ySourceDelta
+
+                let start = locationDelta(this.setting.Base.startLoc, source, startDelta);
+                let end = locationDelta(this.setting.Base.endLoc, target, endDelta);
+
+                return {
+                    'x1': start.x, 'y1': start.y, 'x2': end.x, 'y2': end.y
                 }
-                switch (this.setting.Base.endLoc) {
-                    case 'top':
-                        result.x2 = x2;
-                        result.y2 = y2 - target.height / 2;
-                        break;
-                    case 'bottom':
-                        result.x2 = x2;
-                        result.y2 = y2 + target.height / 2;
-                        break;
-                    case 'left':
-                        result.x2 = x2 - target.width / 2;
-                        result.y2 = y2;
-                        break;
-                    case 'right':
-                        result.x2 = x2 + target.width / 2;
-                        result.y2 = y2;
-                        break;
-                    case 'center':
-                        result.x2 = x1 < x2 ? x2 - xTargetDelta : x2 + xTargetDelta;
-                        result.y2 = y1 < y2 ? y2 - yTargetDelta : y2 + yTargetDelta
-                }
-                return result
             },
 
-            isSelected: function () {
+            isSelected: function (): boolean {
                 return this.link.State.isSelected
             },
 
-            drawStyle: function(): CSS.Properties {
+            drawStyle: function (): CSSProp {
                 return {
                     'stroke': this.setting.Base.color,
-                    'stroke-width': this.setting.Base.width,
-                    'stroke-dasharray': this.strokeDash,
-                    'marker-end': this.showArrow,
+                    'strokeWidth': this.setting.Base.width,
+                    'strokeDasharray': this.strokeDash,
+                    'markerEnd': this.arrowSetting.show,
                     'fill': 'none',
                     'opacity': 0.3,
                 }
             },
 
-            hoverStyle: function(): CSS.Properties {
+            hoverStyle: function (): CSSProp {
                 return {
                     'stroke': this.drawStyle.stroke,
-                    'stroke-width': this.setting.Base.width + 12,
+                    'strokeWidth': this.setting.Base.width + 12,
                     'fill': 'none',
-                    'stroke-opacity': 0.05 * (1 & this.isSelected)
+                    'strokeOpacity': this.isSelected ? 0.05 : 0
                 }
             },
 
-            strokeDash: vm => vm.setting.Base.isDash
-                ? '9, 2'
-                : '',
-
-            controlX: vm => vm.setting.Base.direct === 'top'
-                ? vm.draw.x1
-                : vm.draw.x2,
-
-            controlY: vm => vm.setting.Base.direct === 'top'
-                ? vm.draw.y2
-                : vm.draw.y1,
-
-            //是否显示箭头
-            showArrow: vm => vm.setting.Arrow.showArrow
-                ? 'url(#' + vm.getArrowId + ')'
-                : '',
-
-            getArrowId: vm => 'arrow_' + vm.setting._id,
-
-            arrowLength: vm => vm.setting.Arrow.arrowLength * vm.scale,
-
-            arrowRefY: vm => vm.setting.Arrow.arrowLength * 0.2,
-
-            arrowContainer: vm => '0 0 ' + vm.arrowLength + ' ' + vm.arrowLength,
-
-            arrowPathD: function() {
-                let L1 = 'L0,' + 0.4 * this.arrowLength + ' ';
-                let L2 = 'L' + 0.7 * this.arrowLength + ',' + this.arrowRefY + ' ';
-                return 'M0,0 ' + L1 + L2 + 'z'
-            },
-            curvePath: vm => [
-                'M', vm.draw.x1, vm.draw.y1,
-                'Q', vm.controlX, vm.controlY, vm.draw.x2, vm.draw.y2
-            ].join(' '),
-
-            polylinePath: vm => [
-                'M', vm.draw.x1, vm.draw.y1,
-                'L', vm.controlX, vm.controlY,
-                'L', vm.draw.x2, vm.draw.y2
-            ].join(' '),
-
-            textStyle: function(): CSS.Properties {
+            textStyle: function (): CSSProp {
                 return {
-                    '-moz-user-select': 'none',
-                    'user-select': 'none',
+                    'msUserSelect': 'none',
+                    'userSelect': 'none',
                     'fill': 'opposite',
-                    'font-size': '12px',
-                    'text-align': 'center',
+                    'fontSize': '12px',
+                    'textAlign': 'center',
                     'color': this.setting.Text.textColor
                 }
             },
 
-            textWidth: vm => vm.setting._label.length * 12,
-            textHeight: () => 20,
+            strokeDash: function () {
+                return this.setting.Base.isDash
+                    ? '9, 2'
+                    : ''
+            },
 
-            type: vm => vm.link.Setting.Base.type,
+            controlPoint: function () {
+                return this.setting.Base.direct === 'top'
+                    ? {x: this.draw.x1, y: this.draw.y2}
+                    : {x: this.draw.x2, y: this.draw.y1}
+            },
+
+            curvePath: function () {
+                return [
+                    'M', this.draw.x1, this.draw.y1,
+                    'Q', this.controlPoint.x, this.controlPoint.y, this.draw.x2, this.draw.y2
+                ].join(' ')
+            },
+
+            polylinePath: function () {
+                return [
+                    'M', this.draw.x1, this.draw.y1,
+                    'L', this.controlPoint.x, this.controlPoint.y,
+                    'L', this.draw.x2, this.draw.y2
+                ].join(' ')
+            },
+
+            arrowSetting: function () {
+                let setting = this.setting.Arrow;
+                let length = setting.arrowLength;
+                let refY = length * 0.2; // y方向上的变化量
+                let L1 = 'L0,' + 0.4 * length + ' ';
+                let L2 = 'L' + 0.7 * length + ',' + refY + ' ';
+                let id = 'arrow_' + this.setting._id;
+                return {
+                    id,
+                    length: length * this.scale,
+                    container: '0 0 ' + length + ' ' + length,
+                    pathD: 'M0,0 ' + L1 + L2 + 'z',
+                    show: setting.showArrow ? 'url(#' + id + ')' : '',
+                    refY
+                }
+            },
+
+            textSetting: function () {
+                return {
+                    width: this.setting._label.length * 12,
+                    height: 20
+                }
+            },
 
         },
         methods: {},
         record: {
-            status: 'done-old'
+            status: 'done',
+            description: '关系显示',
+            //todo 关系按钮和简要卡片
         }
     })
 </script>
@@ -235,3 +229,7 @@
 <style scoped>
 
 </style>
+/**
+* Created by whb on 2019/12/31
+* Updated by []
+*/

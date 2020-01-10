@@ -1,45 +1,45 @@
 <template>
-  <v-card :width="width" tile flat class="pa-2">
-    <v-card-text>
-      <span class="subheading">Current {{propName}}</span>
-      <v-autocomplete
-        v-if="select"
-        :value="text"
-        :items="selection"
-        @change="update"
-        single-line>
+    <v-card :width="width" tile flat class="pa-2">
+        <v-card-text>
+            <span class="subheading">Current {{propName}}</span>
+            <v-autocomplete
+                v-if="select"
+                :value="text"
+                :items="selection"
+                @change="update"
+                single-line>
 
-      </v-autocomplete>
+            </v-autocomplete>
 
-      <v-text-field
-        v-else
-        :value="text"
-        :rules="[rules.empty, rules.errorChar, rules.duplicate]"
-        @blur="saveText"
-        @input="inputText"
-        label="EditText"
-        single-line
-        counter>
+            <v-text-field
+                v-else
+                :value="text"
+                :rules="[rules.empty, rules.errorChar, rules.duplicate]"
+                @blur="saveText"
+                @input="inputText"
+                label="EditText"
+                single-line
+                counter>
 
-      </v-text-field>
-    </v-card-text>
+            </v-text-field>
+        </v-card-text>
 
-    <v-card-text v-if="renderHistory">
-      <span class="subheading">History {{propName}}</span>
-      <v-chip-group column active-class="primary--text">
-        <v-chip
-          v-for="(item, index) in editHistory"
-          :key="index"
-          color="secondary"
-          label
-          outlined
-          tile>
-          {{ item }}
-          <v-icon @click="restoreText(index)" right>restore</v-icon>
-        </v-chip>
-      </v-chip-group>
-    </v-card-text>
-  </v-card>
+        <v-card-text v-if="renderHistory">
+            <span class="subheading">History {{propName}}</span>
+            <v-chip-group column active-class="primary--text">
+                <v-chip
+                    v-for="(item, index) in editHistory"
+                    :key="index"
+                    color="secondary"
+                    label
+                    outlined
+                    tile>
+                    {{ item }}
+                    <v-icon @click="restoreText(index)" right>restore</v-icon>
+                </v-chip>
+            </v-chip-group>
+        </v-card-text>
+    </v-card>
 </template>
 
 <script lang="ts">
@@ -64,14 +64,6 @@
                         : false
                 }
             }
-        },
-        computed: {
-
-            renderHistory: vm => !vm.select && vm.editable,
-
-            text: (vm): string => vm.baseText
-                ? vm.baseText.toString()
-                : vm.defaultValue.toString()
         },
         props: {
             // 基础值
@@ -131,13 +123,24 @@
             }
 
         },
+        computed: {
+
+            renderHistory: function () {
+                return !this.select && this.editable
+            },
+            text: function () {
+                return this.baseText
+                    ? this.baseText.toString()
+                    : this.defaultValue.toString()
+            }
+        },
         methods: {
             inputText($event: string) {
                 this.cacheText = $event
             },
 
             saveText() {
-                let text = this.text as string;
+                let text = this.text;
                 if (this.cacheText !== '') {
                     this.editHistory.push(text);
                     this.update(this.cacheText);
@@ -157,11 +160,10 @@
             },
 
             status(text: string) {
-                let vm = this;
                 let result;
-                vm.rules.empty(text) ||
-                vm.rules.errorChar(text) ||
-                (vm.checkDuplicate && checkDuplicate(vm.textPool, text))
+                this.rules.empty(text) || // 是否为空
+                this.rules.errorChar(text) || // 是否异常字符串
+                (this.checkDuplicate && checkDuplicate(this.textPool, text)) // 是否重复
                     ? result = 'error'
                     : result = 'default';
                 return result
@@ -170,7 +172,9 @@
         watch: {},
 
         record: {
-            status: 'done'
+            status: 'done',
+            description: '字符编辑器'
+            //todo 字符解析
         }
 
     })
@@ -179,3 +183,7 @@
 <style scoped>
 
 </style>
+/**
+* Created by whb on 2019/12/4
+* Updated by [whb on 2020年1月8日19:58:44]
+*/

@@ -1,6 +1,6 @@
 <template>
     <rect-container
-        :container="containerRect"
+        :container="container"
         :is-selected="setting.State.isSelected"
         expand-able
         @update-size="updateSizeByBorder"
@@ -12,6 +12,7 @@
                 :width="containerRect.width"
                 :height="containerRect.height"
                 @media-resize="updateSizeByNumber"
+                @add-link="addLink"
                 in-view-box
             >
 
@@ -22,14 +23,9 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import * as CSS from "csstype";
     import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {
-        AreaRect,
-        Point,
-        RectByPoint
-    } from "@/utils/geoMetric";
+    import {Point, RectByPoint} from "@/utils/geoMetric";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({
@@ -75,7 +71,7 @@
             containerRect: function (): AreaRect {
                 return this.container.positiveRect()
             },
-            containerStyle: function (): CSS.Properties {
+            containerStyle: function (): CSSProp {
                 return {
                     'width': this.containerRect.width + 'px',
                     'height': this.containerRect.height + 'px',
@@ -121,15 +117,21 @@
                 let y = this.setting.Setting.Base.scaleX * newWidth - height;
                 let delta = new Point(x, y).multi(0.5);
                 this.updateSize(delta.copy().multi(-1), delta);
+            },
+
+            addLink() {
+                this.$emit('add-link')
             }
         },
         watch: {},
-        record: {
-            status: 'empty'
-        },
         created(): void {
 
-        }
+        },
+        record: {
+            status: 'editing',
+            description: '在ViewBox中的Media'
+            //todo 尺寸调节
+        },
     })
 </script>
 

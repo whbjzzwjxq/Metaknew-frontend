@@ -100,7 +100,8 @@
         </template>
     </v-edit-dialog>
 
-    <v-checkbox v-else-if="fieldType === 'BooleanField'" :value="baseValue" @change="update(propName, !baseValue, 'default')">
+    <v-checkbox v-else-if="fieldType === 'BooleanField'" :value="baseValue"
+                @change="update(propName, !baseValue, 'default')">
 
     </v-checkbox>
 
@@ -116,6 +117,7 @@
     import FieldJson from '@/components/field/FieldJson.vue';
     import FieldNumber from '@/components/field/FieldNumber.vue';
     import {indexToColor} from "@/utils/utils"
+
     export default Vue.extend({
         name: "dataTableField",
         components: {
@@ -190,7 +192,8 @@
 
         },
         record: {
-            status: 'done-old'
+            status: 'done',
+            description: '针对不同类型的数据的编辑器'
         }
     })
 </script>

@@ -43,9 +43,9 @@
                         edit-mode>
 
                     </link-start-end-selector>
-                    <graph-adder v-else-if="key === 'document'">
+                    <document-adder v-else-if="key === 'document'">
 
-                    </graph-adder>
+                    </document-adder>
                 </v-card-text>
             </v-card>
         </v-menu>
@@ -57,16 +57,16 @@
     import {getIcon} from "@/utils/icon";
     import PLabelSelector from "@/components/PLabelSelector.vue";
     import MediaAdder from "@/components/media/MediaAdder.vue";
-    import {id} from "@/utils/graphClass";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
-    import GraphAdder from "@/components/GraphAdder.vue";
+    import DocumentAdder from "@/components/DocumentAdder.vue";
+
     export default Vue.extend({
         name: "SubToolNewItem",
         components: {
             PLabelSelector,
             MediaAdder,
             LinkStartEndSelector,
-            GraphAdder
+            DocumentAdder
         },
         data() {
             return {}
@@ -119,7 +119,8 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'editing',
+            description: '添加新内容的工具栏'
         }
     })
 </script>

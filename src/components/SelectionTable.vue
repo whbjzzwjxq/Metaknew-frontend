@@ -1,10 +1,10 @@
 <template>
-    <v-simple-table fixed-header style="width: 100%" :dense="length >= 10" class="mt-n4">
+    <v-simple-table fixed-header style="width: 360px" :dense="length >= 10" class="mt-n4">
         <template v-slot:default>
             <thead style="width: 100%">
             <tr>
                 <th class="text-left px-1 py-0" style="width: 15%">Index</th>
-                <th class="text-left px-1 py-0" style="width: 45%">Name</th>
+                <th class="text-left px-1 py-0" style="max-width: 100px">Name</th>
                 <th class="text-left px-1 py-0" style="width: 25%">Label</th>
                 <th class="text-left px-1 py-0" style="width: 15%">isMain</th>
             </tr>
@@ -28,6 +28,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {AllSettingPart} from "@/utils/graphClass";
+
     interface setting {
         index: number,
         name: string,
@@ -48,7 +49,7 @@
             },
         },
         computed: {
-            settingItem(): setting[] {
+            settingItem: function(): setting[] {
                 return this.settingList.map((setting, index) => {
                     let name: string;
                     let type = setting.Setting._type;
@@ -72,7 +73,8 @@
         methods: {},
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: '选择集的表格形式'
         }
     })
 </script>

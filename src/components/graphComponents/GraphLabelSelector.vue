@@ -29,7 +29,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {LabelViewDict, item} from "@/utils/interfaceInComponent"
+    import {LabelViewDict} from "@/utils/interfaceInComponent"
     import GlobalChip from '@/components/global/GlobalChip.vue';
 
     export default Vue.extend({
@@ -58,26 +58,28 @@
         },
         computed: {},
         methods: {
-            closeLabel(_type: item, _label: string) {
+            closeLabel(_type: BaseType, _label: string) {
                 this.$set(this.labelViewDict[_type], _label, false)
             },
 
             resetLabel() {
-                const typeList: item[] = ['node', 'link', 'media'];
-                typeList.map((_type: item) => {
+                const typeList: BaseType[] = ['node', 'link', 'media'];
+                typeList.map((_type) => {
                     Object.entries(this.labelViewDict[_type]).map(([key, value]) => {
                         this.$set(this.labelViewDict[_type], key, true)
                     });
                 })
             },
 
-            selectLabel(_type: item, _label: string) {
+            selectLabel(_type: BaseType, _label: string) {
                 this.$emit('select-label', _type, _label)
             }
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: '标签选择器'
+            //todo 优化标签选择的范围
         }
     })
 </script>
@@ -88,5 +90,5 @@
 
 /**
 * Created by whb on 2019/12/6
-* Updated by []
+* Updated by [whb on 2020年1月8日20:47:04]
 */

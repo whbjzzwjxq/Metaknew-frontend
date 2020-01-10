@@ -1,19 +1,14 @@
 import Vue from 'vue'
-import {mediaCreate, docGraphQuery, mediaQueryMulti, sourceQueryMulti} from '@/api/commonSource';
-import {FileToken, getFileToken} from '@/api/user';
+import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, SourceQueryObject} from '@/api/commonSource';
+import {getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
-    BaseLinkCtrl,
-    GraphBackend,
+    getIndex,
     GraphSelfPart,
-    id,
-    LinkInfoPart,
-    LinkSetting,
+    LinkInfoPart, LinkSettingPart,
     MediaInfoPart,
     NodeInfoPart,
-    NodeSetting,
-    QueryObject,
-    userConcernTemplate
+    NodeSettingPart
 } from "@/utils/graphClass";
 import {
     commitFileToken,
@@ -22,41 +17,44 @@ import {
     commitGraphRemove,
     commitInfoAdd,
     commitInfoRemove,
-    commitItemChange, commitSnackbarOn
+    commitItemChange
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
 import {isNodeBackend} from "@/utils/typeCheck";
+import {dispatchGraphQuery} from "@/store/modules/_dispatch";
+import {userConcernTemplate} from "@/utils/template";
 
-export type InfoPart = NodeInfoPart | MediaInfoPart | LinkInfoPart;
-export type idMap = Record<id, id>;
 const getManager = (_type: string) =>
     _type === 'link'
         ? state.linkManager
         : _type === 'media'
         ? state.mediaManager
         : state.nodeManager;
+declare global {
+    interface DataManagerState {
+        currentGraph: GraphSelfPart,
+        currentItem: InfoPart,
+        graphManager: Record<id, GraphSelfPart>,
+        nodeManager: Record<id, NodeInfoPart>,
+        linkManager: Record<id, LinkInfoPart>,
+        mediaManager: Record<id, MediaInfoPart>,
+        userConcernManager: Object, // todo
+        fileToken: FileToken,
+        newIdRegex: RegExp,
+        rootGraph: GraphSelfPart
+    }
 
-export interface DataManagerState {
-    currentGraph: GraphSelfPart,
-    currentItem: InfoPart,
-    graphManager: Record<id, GraphSelfPart>,
-    nodeManager: Record<id, NodeInfoPart>,
-    linkManager: Record<id, LinkInfoPart>,
-    mediaManager: Record<id, MediaInfoPart>,
-    userConcernManager: Object, // todo
-    fileToken: FileToken,
-    newIdRegex: RegExp,
-}
-
-interface Context {
-    state: DataManagerState,
-    commit: Commit,
-    dispatch: Dispatch,
+    interface Context {
+        state: DataManagerState,
+        commit: Commit,
+        dispatch: Dispatch,
+    }
 }
 
 const state: DataManagerState = {
     currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null),
     currentItem: NodeInfoPart.emptyNodeInfoPart('$_-1', 'node', 'BaseNode'),
+    rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null),
     graphManager: {},
     nodeManager: {},
     linkManager: {},
@@ -77,7 +75,7 @@ const getters = {
     },
 
     currentChildGraphList: (state: DataManagerState) => {
-        return state.currentGraph.getChildGraph()
+        return state.currentGraph.getChildDocument()
     },
 
     currentGraphDict: (state: DataManagerState) => {
@@ -91,8 +89,14 @@ const mutations = {
     currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
         let id = graph.id; // 这里payload是document
+        Vue.set(graph.Conf.State, 'isExplode', true);
         state.currentGraph = graph;
         commitItemChange(state.nodeManager[id]);
+    },
+
+    rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
+        let {graph} = payload;
+        state.rootGraph = graph
     },
 
     currentItemChange(state: DataManagerState, payload: InfoPart) {
@@ -164,7 +168,7 @@ const actions = {
                      payload: { _id: id, parent: GraphSelfPart | null }) {
         let {_id, parent} = payload;
         // 先绘制Graph
-        await docGraphQuery(_id).then(res => {
+        await documentQuery(_id).then(res => {
             let {data} = res;
             let graphSelf = GraphSelfPart.resolveFromBackEnd(data, parent);
             let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl, userConcernTemplate());
@@ -187,7 +191,7 @@ const actions = {
             let nodeQuery = noCacheNode.map(node => {
                 // 先使用假数据 然后再请求
                 commitInfoAdd({item: NodeInfoPart.emptyNodeInfoPart(node._id, node._type, node._label), strict: false});
-                return <QueryObject>node
+                return <SourceQueryObject>node
             });
             // 请求节点
             sourceQueryMulti(nodeQuery).then(res => {
@@ -213,7 +217,7 @@ const actions = {
                     item: LinkInfoPart.emptyLinkInfo(link._id, link._label, link._start, link._end),
                     strict: false
                 });
-                return <QueryObject>link
+                return <SourceQueryObject>link
             });
             // 请求关系
             sourceQueryMulti(linkQuery).then(res => {
@@ -242,7 +246,7 @@ const actions = {
             let defaultImage = require('@/assets/defaultImage.jpg');
             noCacheMedia.map(id => {
                 commitInfoAdd({item: MediaInfoPart.emptyMediaInfo(id, defaultImage)});
-                return <QueryObject>{
+                return <SourceQueryObject>{
                     _id: id,
                     _type: 'media',
                     _label: 'unknown'
@@ -293,6 +297,23 @@ const actions = {
             });
             return result
         } else return filePutBlob(fileToken, realFile, storeName);
+    },
+
+    async nodeExplode(context: Context, payload: { node: NodeSettingPart, document: GraphSelfPart }) {
+        let {node, document} = payload;
+        let _id = node.Setting._id;
+        let subGraph = state.graphManager[_id];
+        if (subGraph === undefined) {
+            dispatchGraphQuery({
+                _id,
+                parent: document,
+            }).then(() => {
+                let subGraph = state.graphManager[_id];
+                subGraph.explode()
+            });
+        } else {
+            subGraph.explode()
+        }
     }
 
 };

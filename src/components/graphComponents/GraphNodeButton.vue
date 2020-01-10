@@ -4,7 +4,7 @@
         :icon-list="buttonGroup"
         vertical
         x-small
-        :hide="!node.State.isMouseOn && node.Setting.Show.showAll">
+        :hide="hide">
 
     </icon-group>
 </template>
@@ -14,7 +14,6 @@
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/iconGroup/IconGroup.vue";
     import {NodeSettingPart} from "@/utils/graphClass";
-    import {IconItem} from "@/utils/interfaceInComponent";
 
     export default Vue.extend({
         name: "GraphNodeButton",
@@ -26,17 +25,22 @@
         },
         props: {
             nodeSetting: {
-                type: Object,
+                type: Object as () => VisualNodeSetting,
                 required: true
             },
 
             node: {
                 type: Object as () => NodeSettingPart,
                 required: true
+            },
+
+            hide: {
+                type: Boolean as () => boolean,
+                default: false
             }
         },
         computed: {
-            buttonGroupStyle: function () {
+            buttonGroupStyle: function (): CSSProp {
                 return {
                     width: '18px',
                     height: '120px',
@@ -45,20 +49,20 @@
                     position: 'absolute'
                 }
             },
-            x: function () {
+            x: function (): number {
                 return this.nodeSetting.x + this.nodeSetting.width + 12
             },
-            y: function () {
+            y: function (): number {
                 return this.nodeSetting.y - this.nodeSetting.height - 12
             },
-            showNode: function () {
+            showNode: function (): boolean {
                 return this.nodeSetting.show
             },
-            dataManager: function () {
+            dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
             boundGraph: function () {
-                return this.dataManager.graphManager[this.node.parent.id]
+                return this.dataManager.graphManager[this.node.Setting._id]
             },
             buttonGroup: function (): IconItem[] {
                 // 是否可以删除
@@ -70,14 +74,16 @@
                     : deleteIcon = true;
 
                 // 是否可以爆炸
-                let explodeAble = this.boundGraph.id === this.dataManager.currentGraph.id;
-
+                let explodeAble =
+                    this.boundGraph
+                        ? this.boundGraph.id === this.dataManager.currentGraph.id
+                        : false;
                 let explodeIcon;
                 !this.boundGraph
                     ? explodeIcon = 'unload'
                     : explodeIcon = !this.boundGraph.Conf.State.isExplode;
                 return [
-                    {name: getIcon("i-delete", deleteIcon), _func: this.deleteItem, disabled: !deleteIcon},
+                    {name: getIcon("i-delete-able", deleteIcon), _func: this.deleteItem, disabled: !deleteIcon},
                     {name: 'mdi-arrow-top-right', _func: this.addLink},
                     {name: getIcon('i-eye', this.node.Setting.Show.showAll), _func: this.unShow},
                     {name: 'mdi-content-copy', _func: this.copyItem},
@@ -112,7 +118,8 @@
         },
         watch: {},
         record: {
-            status: 'done-old'
+            status: 'done',
+            description: "Node旁边的按钮"
         }
     })
 </script>
@@ -123,5 +130,5 @@
 
 /**
 * Created by whb on 2019/12/6
-* Updated by []
+* Updated by [whb on 2020年1月9日02:14:22]
 */

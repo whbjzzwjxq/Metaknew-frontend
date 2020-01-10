@@ -1,13 +1,13 @@
 <template>
-  <v-autocomplete
-      :items="availableLabel"
-      :value="label"
-      @input="choosePrimaryLabel"
-      autofocus
-      persistent-hint
-      label="PrimaryLabel Select">
+    <v-autocomplete
+        :items="availableLabel"
+        :value="label"
+        @input="choosePrimaryLabel"
+        autofocus
+        persistent-hint
+        label="PrimaryLabel Select">
 
-  </v-autocomplete>
+    </v-autocomplete>
 </template>
 
 <script lang="ts">
@@ -36,7 +36,8 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: 'Node主标签选择器'
         }
     })
 </script>

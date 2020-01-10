@@ -102,7 +102,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {BaseSettingConf} from "@/utils/settingTemplate";
+    import {BaseSettingConf} from "@/utils/template";
     import {SettingPart} from "@/utils/graphClass";
 
     type settingType = 'Color' | 'Number' | 'Boolean' | 'String' | 'Text'
@@ -137,8 +137,9 @@
         computed: {
             selectionValue: function () {
                 let result: Record<string, any[]> = {};
-                for (let prop in this.settingItem) {
+                for (let prop of Object.keys(this.settingItem)) {
                     result[prop] = [];
+                    // 把选中内容的值都提取出来
                     this.selection.map(item => {
                         let value = item.Setting[this.propGroup][prop];
                         result[prop].indexOf(value) === -1 &&
@@ -164,41 +165,40 @@
             },
 
             updateValue(prop: string, value: string | number) {
-                let vm = this;
-                vm.selection.map(item => {
+                this.selection.map(item => {
                     item.updateSetting(this.propGroup, prop, value)
                 })
             },
 
             updateCache(prop: string, value: any) {
-                let vm = this;
-                vm.$set(vm.cache, prop, value)
+                this.$set(this.cache, prop, value)
             },
 
             saveValue(prop: string, type: settingType) {
-                let vm = this;
-                let cache = vm.cache[type];
+                let cache = this.cache[type];
                 switch (type) {
                     case "Number":
-                        cache !== null && vm.updateValue(prop, cache);
+                        cache !== null && this.updateValue(prop, cache);
                         break;
                     case "String":
-                        cache !== "" && vm.updateValue(prop, cache);
+                        cache !== "" && this.updateValue(prop, cache);
                         break;
                     case "Color":
-                        cache !== "" && vm.updateValue(prop, cache);
+                        cache !== "" && this.updateValue(prop, cache);
                         break;
                     case "Boolean":
-                        cache !== null && vm.updateValue(prop, cache);
+                        cache !== null && this.updateValue(prop, cache);
                         break;
                     default:
-                        vm.updateValue(prop, cache)
+                        this.updateValue(prop, cache)
                 }
             }
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '单行的样式编辑器',
+            //todo 细化 数字小于1的时候优化
         }
     })
 </script>
@@ -209,5 +209,5 @@
 
 /**
 * Created by whb on 2019/11/25
-* Updated by []
+* Updated by [whb on 2020年1月8日19:46:42]
 */

@@ -1,106 +1,83 @@
 <template>
-    <div :style="containerStyle" class="pa-2">
-        <svg
-            width="100%"
-            height="100%"
-            @dblclick="clickSvg"
-            @mousedown.self="startSelect"
-            @mousemove="selecting"
-            @mouseup="endSelect"
-            @wheel="onScroll"
-        >
+    <rect-container :container="emptyRect">
+        <template slot="content">
+            <svg
+                width="100%"
+                height="100%"
+                @dblclick="clickSvg"
+                @mousedown.self="startSelect"
+                @mousemove="selecting"
+                @mouseup="endSelect"
+                @wheel="onScroll"
+            >
 
-            <graph-link
-                v-for="(link, index) in links"
-                v-show="showLink[index]"
-                :key="link.Setting._id"
-                :link="link"
-                :scale="realScale"
-                :source="getTargetInfo(link.Setting._start)"
-                :target="getTargetInfo(link.Setting._end)"
-                :mid-location="midLocation[index]"
-            ></graph-link>
+                <graph-link
+                    v-for="(link, index) in links"
+                    v-show="showLink[index]"
+                    :key="link.Setting._id"
+                    :link="link"
+                    :scale="realScale"
+                    :source="getTargetInfo(link.Setting._start)"
+                    :target="getTargetInfo(link.Setting._end)"
+                    :mid-location="midLocation[index]"
+                ></graph-link>
 
-            <graph-node
-                v-for="(node, index) in nodes"
-                v-show="showNode[index]"
-                :key="node.Setting._id"
-                :node="node"
-                :container="container"
-                :size="impScaleRadius[index]"
-                :scale="realScale"
-                :point="nodeLocation[index]"
-                :index="index"
-                @mouseenter.native="mouseEnter(node)"
-                @mouseleave.native="mouseLeave(node)"
-                @mousedown.native="dragStart"
-                @mousemove.native="drag(node, $event)"
-                @mouseup.native="dragEnd(node, $event)"
-                @dblclick.native.stop="dbClickNode(node)">
+                <graph-node
+                    v-for="(node, index) in nodes"
+                    v-show="showNode[index]"
+                    :key="node.Setting._id"
+                    :node="node"
+                    :container="container"
+                    :size="impScaleRadius[index]"
+                    :scale="realScale"
+                    :point="nodeLocation[index]"
+                    :index="index"
+                    @mouseenter.native="mouseEnter(node)"
+                    @mouseleave.native="mouseLeave(node)"
+                    @mousedown.native="dragStart"
+                    @mousemove.native="drag(node, $event)"
+                    @mouseup.native="dragEnd(node, $event)"
+                    @dblclick.native.stop="dbClickNode(node)">
 
-            </graph-node>
+                </graph-node>
 
-            <rect
-                v-if="renderSelector"
-                :style="selectorStyle"
-                :x="selector.x"
-                :y="selector.y"
-                :width="selector.width"
-                :height="selector.height">
-
-            </rect>
-
-        </svg>
-        <graph-media
-            v-for="(node, index) in medias"
-            :key="node.Setting._id"
-            :setting="node"
-            :container="container"
-            :location="mediaLocation[index]"
-            :scale="realScale"
-            :view-box="baseRect"
-            :index="index"
-            @mouseenter.native="mouseEnter(node)"
-            @mouseleave.native="mouseLeave(node)"
-            @mousedown.native="dragStart"
-            @mousemove.native="drag(node, $event)"
-            @mouseup.native="dragEnd(node, $event)"
-            @dblclick.native.stop="dbClickNode(node)"
-        >
-
-        </graph-media>
-
-    </div>
+                <rect
+                    v-if="renderSelector"
+                    :style="selectorStyle"
+                    :x="selector.x"
+                    :y="selector.y"
+                    :width="selector.width"
+                    :height="selector.height">
+                </rect>
+            </svg>
+        </template>
+    </rect-container>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import {
-        AllItemSettingPart,
-        GraphSelfPart, GraphSettingPart, GraphState,
+        GraphSelfPart,
         LinkSettingPart,
         MediaSettingPart, NodeInfoPart,
         NodeSettingPart,
-        SettingPart, VisualNodeSettingPart
+        SettingPart,
     } from "@/utils/graphClass";
-    import {AreaRect, PointObject, RectByPoint, getPoint, Point} from "@/utils/geoMetric";
-    import {DataManagerState} from "@/store/modules/dataManager";
-    import * as CSS from "csstype";
-    import {LabelViewDict, VisualNodeSetting} from "@/utils/interfaceInComponent";
+    import {RectByPoint, getPoint, Point} from "@/utils/geoMetric";
+    import {LabelViewDict, GraphMetaData} from "@/utils/interfaceInComponent";
     import {isMediaSetting} from "@/utils/typeCheck";
     import {commitItemChange} from "@/store/modules/_mutations";
     import {getInfoPart, maxN, minN} from "@/utils/utils";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
-    import GraphMedia from "@/components/graphComponents/GraphMedia.vue";
-    import {StyleManagerState} from "@/store/modules/styleComponentSize";
+    import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({
         name: "GraphRender",
         components: {
             GraphLink,
             GraphNode,
-            GraphMedia
+            RectContainer
         },
         data() {
             return {
@@ -120,10 +97,10 @@
 
                 // ------ link ------
                 isLinking: false,
-                startNode: null as null | VisualNodeSettingPart,
+                startNode: null as null | VisNodeSettingPart,
                 newLinkEndPoint: new Point(0, 0),
 
-                isMoving: false
+                isMoving: false,
             }
         },
         props: {
@@ -133,14 +110,8 @@
             },
 
             // 在根图中的节点
-            baseNode: {
-                type: Object as () => NodeSettingPart,
-                required: true
-            },
-
-            // 在根图中的矩形
-            baseRect: {
-                type: Object as () => AreaRect,
+            graphMetaData: {
+                type: Object as () => GraphMetaData,
                 required: true
             },
 
@@ -165,11 +136,8 @@
             },
         },
         computed: {
-            state(): GraphState {
+            state: function (): GraphState {
                 return this.document.Conf.State
-            },
-            setting(): GraphSettingPart {
-                return this.document.Conf
             },
             isSelf(): boolean {
                 return this.state.isSelf
@@ -200,15 +168,28 @@
                 return this.$store.state.styleComponentSize
             },
 
-            viewBox(): RectByPoint {
+            viewBox: function (): RectByPoint {
                 return this.allComponentsStyle.viewBox
             },
 
-            container(): RectByPoint {
-                return this.baseContainer.updateFromArea(this.baseRect)
+            container: function (): RectByPoint {
+                return this.graphMetaData.rect
             },
 
-            containerStyle(): CSS.Properties {
+            emptyRect: function () {
+                return {
+                    x: 0,
+                    y: 0,
+                    width: this.baseRect.width,
+                    height: this.baseRect.height
+                }
+            },
+
+            baseRect: function () {
+                return this.container.positiveRect()
+            },
+
+            containerStyle(): CSSProp {
                 return this.container.getDivCSS({left: 0, top: 0, borderColor: '#105060'})
             },
 
@@ -373,7 +354,7 @@
             },
 
             //选择框的相关设置
-            selectorStyle(): CSS.Properties {
+            selectorStyle(): CSSProp {
                 return {
                     "position": "absolute",
                     "fill": "#000000",
@@ -395,7 +376,7 @@
             },
 
             //注意坐标运算使用小数
-            drag(target: VisualNodeSettingPart, $event: MouseEvent) {
+            drag(target: VisNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
                     let deltaX = ($event.x - this.dragStartPoint.x) / this.baseRect.width;
                     let deltaY = ($event.y - this.dragStartPoint.y) / this.baseRect.height;
@@ -414,7 +395,7 @@
                 }
             },
 
-            dragEnd(target: VisualNodeSettingPart, $event: MouseEvent) {
+            dragEnd(target: VisNodeSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
                     this.drag(target, $event);
                     this.isDragging = false;
@@ -488,7 +469,7 @@
             },
 
             //取得link所用数据
-            getTargetInfo(item: VisualNodeSettingPart | null) {
+            getTargetInfo(item: VisNodeSettingPart | null) {
                 //注意这里index肯定不能是-1
                 let result;
                 item
@@ -500,16 +481,16 @@
             },
 
             //node的原生事件
-            mouseEnter(node: VisualNodeSettingPart) {
+            mouseEnter(node: VisNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", true);
             },
 
             //node的原生事件
-            mouseLeave(node: VisualNodeSettingPart) {
+            mouseLeave(node: VisNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", false);
                 this.isDragging = false;
             },
-            dbClickNode(node: VisualNodeSettingPart) {
+            dbClickNode(node: VisNodeSettingPart) {
                 this.selectItem([node]);
             },
 
@@ -549,7 +530,7 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'editing'
         }
     })
 </script>

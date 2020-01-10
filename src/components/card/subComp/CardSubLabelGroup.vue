@@ -9,7 +9,7 @@
                     :x-small="xSmall"
                     :large="large"
                     :x-large="xLarge">
-                    {{group.name + ":"}}
+                    {{group.name + ':'}}
                 </v-chip>
                 <global-chip
                     :index="index"
@@ -106,7 +106,9 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '一组标签，带有增删功能',
+            // todo 标签跳转
         }
     })
 </script>
@@ -117,5 +119,5 @@
 
 /**
 * Created by whb on 2019/11/29
-* Updated by []
+* Updated by [whb on 2020年1月8日19:42:24]
 */

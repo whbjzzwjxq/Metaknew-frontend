@@ -1,10 +1,7 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {FileToken} from "@/api/user";
-import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
-import {GraphSelfPart, id, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/utils/graphClass";
-import {InfoPart, idMap} from "@/store/modules/dataManager";
-import {AreaRect, RectByPoint} from "@/utils/geoMetric";
+import {GraphSelfPart} from "@/utils/graphClass";
+import styleComponentSize from "@/store/modules/styleComponentSize";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)
@@ -42,8 +39,12 @@ export const commitItemChange = (payload: InfoPart) => {
     return store.commit('currentItemChange', payload)
 };
 
-export const commitGraphChange = (payload: { graph: GraphSelfPart}) => {
+export const commitGraphChange = (payload: { graph: GraphSelfPart }) => {
     return store.commit('currentGraphChange', payload)
+};
+
+export const commitRootGraph = (payload: { graph: GraphSelfPart }) => {
+    return store.commit('rootGraphChange', payload)
 };
 
 export const commitInfoAdd = (payload: { item: InfoPart, strict?: boolean }) => {

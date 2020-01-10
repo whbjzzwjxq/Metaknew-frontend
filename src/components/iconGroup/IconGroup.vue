@@ -1,5 +1,5 @@
 <template>
-    <div :style="containerStyle" :class="classContent" v-show="!hide">
+    <div :style="StyleWithOpacity" :class="classContent">
         <v-btn
             v-for="(icon, index) in activeIconList"
             icon
@@ -19,8 +19,6 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {IconItem} from "@/utils/interfaceInComponent";
-    import * as CSS from 'csstype';
 
     export default Vue.extend({
         name: "IconGroup",
@@ -58,7 +56,7 @@
                 default: false
             },
             containerStyle: {
-                type: Object as () => CSS.Properties,
+                type: Object as () => CSSProp,
                 default: () => {
                     return {}
                 }
@@ -74,14 +72,19 @@
             },
             classContent: function () {
                 return this.vertical
-                    ? "flex-column"
-                    : "flex-row"
+                    ? "d-flex flex-column"
+                    : "d-flex flex-row"
+            },
+            StyleWithOpacity: function (): CSSProp {
+                return Object.assign({opacity: this.hide ? 0 : 1}, this.containerStyle)
             }
         },
         methods: {},
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: 'Icon的排列'
+
         }
     })
 </script>

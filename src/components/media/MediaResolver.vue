@@ -1,11 +1,11 @@
 <template>
-  <v-file-input
-      :multiple="multiple"
-      :value="files"
-      @change="fileChange"
-      v-bind="props"
-  >
-  </v-file-input>
+    <v-file-input
+        :multiple="multiple"
+        :value="files"
+        @change="fileChange"
+        v-bind="props"
+    >
+    </v-file-input>
 </template>
 
 <script lang="ts">
@@ -49,7 +49,8 @@
         },
         watch: {},
         record: {
-            status: "done"
+            status: "done",
+            description: 'Media解析的工具栏'
         }
     })
 </script>

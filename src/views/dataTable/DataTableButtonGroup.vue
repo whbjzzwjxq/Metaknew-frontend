@@ -51,11 +51,13 @@
             }
         },
         computed: {
-            newNodeNumList: vm => [
-                {text: "新建一个节点", num: 1},
-                {text: "新建五个节点", num: 5},
-                {text: "新建一页", num: vm.rowNum}
-            ]
+            newNodeNumList: function (): {text: string, num: number}[] {
+                return [
+                    {text: "新建一个节点", num: 1},
+                    {text: "新建五个节点", num: 5},
+                    {text: "新建一页", num: this.rowNum}
+                ]
+            }
 
         },
         methods: {
@@ -75,7 +77,8 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: 'DataTable的按钮组'
         }
     })
 </script>

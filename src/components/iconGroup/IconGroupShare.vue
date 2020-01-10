@@ -5,7 +5,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
-    import {IconItem} from "@/utils/interfaceInComponent";
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
@@ -21,7 +20,7 @@
             }
         },
         computed: {
-            iconList: function(): IconItem[] {
+            iconList: function (): IconItem[] {
                 let userConcern = this.infoPart.UserConcern;
                 let {isStar, isGood, isBad, isShared} = userConcern;
                 return [

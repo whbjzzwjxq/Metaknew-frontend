@@ -1,24 +1,23 @@
 <template>
-  <v-snackbar
-    bottom
-    multi-line
-    :timeout="timeout"
-    :value="snackBarOn"
-    :color="snackColor"
-    @input="offSnackBar"
-  >
-    {{snackText}}
-    <v-btn v-if="buttonText"
-           text
-           @click="doAction">{{buttonText}}
-    </v-btn>
-    <v-btn text @click="offSnackBar">关闭消息</v-btn>
-  </v-snackbar>
+    <v-snackbar
+        bottom
+        multi-line
+        :timeout="timeout"
+        :value="snackBarOn"
+        :color="snackColor"
+        @input="offSnackBar"
+    >
+        {{snackText}}
+        <v-btn v-if="buttonText"
+               text
+               @click="doAction">{{buttonText}}
+        </v-btn>
+        <v-btn text @click="offSnackBar">关闭消息</v-btn>
+    </v-snackbar>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {State as snackBarState} from '@/store/modules/componentSnackBar'
     import {commitSnackbarOff} from '@/store/modules/_mutations'
 
     export default Vue.extend({
@@ -29,17 +28,24 @@
         },
         props: {},
         computed: {
-            getSnackBarState(): snackBarState {
+            getSnackBarState: function (): SnackBarState {
                 return this.$store.state.componentSnackBar
             },
-            snackBarOn(): boolean {
-                let vm = this;
-                return vm.getSnackBarState.on
+            snackBarOn: function () {
+                return this.getSnackBarState.on
             },
-            snackText: (vm) => vm.getSnackBarState.payload.content,
-            buttonText: (vm) => vm.getSnackBarState.payload.buttonText,
-            timeout: (vm) => vm.getSnackBarState.payload.timeout,
-            snackColor: (vm) => vm.getSnackBarState.payload.color
+            snackText: function () {
+                return this.getSnackBarState.payload.content
+            },
+            buttonText: function () {
+                return this.getSnackBarState.payload.buttonText
+            },
+            timeout: function () {
+                return this.getSnackBarState.payload.timeout
+            },
+            snackColor: function () {
+                return this.getSnackBarState.payload.color
+            }
         },
         methods: {
             offSnackBar() {
@@ -52,7 +58,8 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '全局提示消息'
         }
     })
 </script>
@@ -63,5 +70,5 @@
 
 /**
 * Created by whb on 2019/11/25
-* Updated by []
+* Updated by [whb on 2020年1月8日20:34:54]
 */

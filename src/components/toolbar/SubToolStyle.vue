@@ -32,7 +32,10 @@
                 </v-card-subtitle>
                 <card-page-style-editor
                     :comp-type="key"
-                    :setting-list="document.getItemByState(key, 'isSelected')"
+                    :setting-list="
+                    key !== 'document'
+                    ? document.getItemByState(key, 'isSelected')
+                    : [document.Conf]"
                 >
 
                 </card-page-style-editor>
@@ -44,7 +47,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import {GraphSelfPart, id} from "@/utils/graphClass";
+    import {GraphSelfPart} from "@/utils/graphClass";
     import CardPageStyleEditor from "@/components/card/page/CardPageStyleEditor.vue";
 
     export default Vue.extend({
@@ -71,6 +74,10 @@
                         icon: getIcon('i-item', 'link'),
                         title: 'Selection Link'
                     },
+                    'document': {
+                        icon: getIcon('i-item', 'document'),
+                        title: 'Current Graph'
+                    }
                 }
             },
             document: function (): GraphSelfPart {
@@ -95,7 +102,9 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: ' 编辑样式用的工具栏'
+            //todo 专题样式编辑
         }
     })
 </script>

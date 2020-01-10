@@ -9,8 +9,6 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {StyleManagerState} from "@/store/modules/styleComponentSize";
-    import * as CSS from "csstype";
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
@@ -23,10 +21,10 @@
         },
         props: {},
         computed: {
-            styleManager: function(): StyleManagerState {
+            styleManager: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            toolbarStyle: function(): CSS.Properties {
+            toolbarStyle: function (): CSSProp {
                 return {
                     position: "absolute",
                     left: this.styleManager.leftCard.width + 'px',
@@ -37,13 +35,13 @@
                     overflow: "hidden"
                 }
             },
-            buttonStyle: function(): CSS.Properties {
-              return {
-                  left: (this.styleManager.leftCard.width + 12) + 'px',
-                  bottom: (this.styleManager.bottomBar.height - 28) + 'px',
-              }
+            buttonStyle: function (): CSSProp {
+                return {
+                    left: (this.styleManager.leftCard.width + 12) + 'px',
+                    bottom: (this.styleManager.bottomBar.height - 28) + 'px',
+                }
             },
-            arrowIcon: function() {
+            arrowIcon: function () {
                 return getIcon('i-collapse-arrow-double', !this.toolbarOn)
             }
         },
@@ -59,7 +57,8 @@
         },
         watch: {},
         record: {
-            status: 'empty'
+            status: 'done',
+            description: '下方用的工具栏'
         }
     })
 </script>

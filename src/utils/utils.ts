@@ -1,6 +1,3 @@
-import {BaseType, id, MediaInfoPart} from "@/utils/graphClass";
-import {DataManagerState} from "@/store/modules/dataManager";
-
 export function getCookie(name: string) {
     const arr = document.cookie.match(new RegExp(`(^| )${name}=([^;]*)(;|$)`));
     if (arr != null) {
@@ -187,3 +184,13 @@ export const getSrc = (src: string | undefined) => {
             : 'https://metaknew.oss-cn-beijing.aliyuncs.com/' + src
         : ''
 };
+
+export function mergeList<T>(list: Array<T[]>) {
+    let output: T[] = [];
+    list.map(value => {
+        value.map(item => {
+            output.push(item)
+        })
+    });
+    return output
+}

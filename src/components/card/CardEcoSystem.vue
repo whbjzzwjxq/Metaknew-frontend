@@ -27,7 +27,8 @@
         methods: {},
         watch: {},
         record: {
-            status: 'empty'
+            status: 'empty',
+            description: '生态相关内容'
         }
     })
 </script>

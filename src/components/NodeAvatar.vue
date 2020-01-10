@@ -113,13 +113,17 @@
             }
         },
         computed: {
-            fileToken: vm => vm.$store.state.userModule.fileToken,
+            fileToken: function () {
+                return this.$store.state.userModule.fileToken
+            },
             realSrc: function () {
                 return getSrc(this.sourceUrl)
             },
-            currentImage: vm => vm.currentFile
-                ? vm.currentFile.Ctrl.FileName
-                : vm.realSrc
+            currentImage: function () {
+                return this.currentFile
+                    ? this.currentFile.Ctrl.FileName
+                    : this.realSrc
+            }
         },
         methods: {
             save() {
@@ -160,7 +164,8 @@
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '节点MainImage的编辑器 '
         },
     })
 </script>

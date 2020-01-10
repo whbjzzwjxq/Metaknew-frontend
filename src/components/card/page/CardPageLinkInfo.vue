@@ -69,9 +69,8 @@
     import FieldJson from "@/components/field/FieldJson.vue";
     import CardSubLabelGroup from "@/components/card/subComp/CardSubLabelGroup.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
-    import {GraphSelfPart, LinkInfoPart, VisualNodeSettingPart} from "@/utils/graphClass";
-    import {FieldType, labelItems, ResolveType, unActivePropLink} from "@/utils/labelField";
-    import {EditProps} from "@/utils/interfaceInComponent";
+    import {GraphSelfPart, LinkInfoPart} from "@/utils/graphClass";
+    import {FieldType, labelItems, ResolveType, EditProps} from "@/utils/labelField";
     import {deepClone} from "@/utils/utils";
 
     export default Vue.extend({
@@ -104,7 +103,7 @@
             }
         },
         computed: {
-            start: function (): VisualNodeSettingPart {
+            start: function (): VisNodeSettingPart {
                 return this.baseData.Ctrl.Start
             },
             end: function () {
@@ -135,35 +134,39 @@
                 set(value: EditProps) {
                     this.updateValue('ExtraProps', value.ExtraProps.value);
                     let commonProps = deepClone(value);
+                    // 删除掉ExtraProps
                     delete commonProps.ExtraProps;
                     this.updateValue('CommonProps', commonProps)
                 }
             },
-            labelGroup: vm => [
-                {"name": "作者的标注", "labels": vm.info.Labels, "closeable": false, "editable": true, 'prop': 'Info'}
-            ]
+            labelGroup: function () {
+                return [
+                    {"name": "作者的标注", "labels": this.info.Labels, "closeable": false, "editable": true, 'prop': 'Info'}
+                ]
+            }
         },
         methods: {
             //更换Link start / end
-            changeNode(start: VisualNodeSettingPart | null, end: VisualNodeSettingPart | null) {
+            changeNode: function (start: VisNodeSettingPart | null, end: VisNodeSettingPart | null) {
                 this.baseData.changeNode(start, end)
             },
+
             //更新单个值
-            updateValue(prop: string, value: any) {
+            updateValue: function (prop: string, value: any) {
                 this.baseData.updateValue(prop, value)
             },
 
-            removeItem(removedLabel: string, prop: string) {
+            removeItem: function (removedLabel: string, prop: string) {
                 this.$set(this.baseData, 'isEdit', true);
             },
 
-            addItem(value: string[], prop: string) {
+            addItem: function (value: string[], prop: string) {
                 this.baseData.updateValue('Labels', value)
             },
         },
         watch: {},
         record: {
-            status: 'done-old',
+            status: 'done',
             description: "关系信息卡片"
         }
     })
@@ -175,5 +178,5 @@
 
 /**
 * Created by whb on 2019/11/29
-* Updated by []
+* Updated by [whb on 2020年1月8日19:16:09 第一次定稿]
 */

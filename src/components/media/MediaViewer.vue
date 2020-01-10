@@ -92,7 +92,8 @@
         },
 
         record: {
-            status: 'done'
+            status: 'editing',
+            description: '解析Media图像的工具'
         }
     }
 </script>

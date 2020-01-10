@@ -1,61 +1,61 @@
 <template>
-  <v-card :width="width" tile flat class="pa-2">
-    <v-card-text>
-      <span class="subheading">Current {{ propName }}</span>
-      <v-chip-group column active-class="primary--text">
-        <v-chip
-          v-for="(item, index) in existTags"
-          :key="item"
-          :color="indexToColor(index)"
-          label
-          outlined
-          :close="editMode"
-          tile
-          @click:close="removeTag(item)">
-          {{ item }}
-        </v-chip>
-      </v-chip-group>
-    </v-card-text>
+    <v-card :width="width" tile flat class="pa-2">
+        <v-card-text>
+            <span class="subheading">Current {{ propName }}</span>
+            <v-chip-group column active-class="primary--text">
+                <v-chip
+                    v-for="(item, index) in existTags"
+                    :key="item"
+                    :color="indexToColor(index)"
+                    label
+                    outlined
+                    :close="editMode"
+                    tile
+                    @click:close="removeTag(item)">
+                    {{ item }}
+                </v-chip>
+            </v-chip-group>
+        </v-card-text>
 
-    <v-card-text v-for="(list, key) in recommendTags" :key="key">
-      <span class="subheading">{{ key }}</span>
-      <v-chip-group column active-class="primary--text">
-        <v-chip v-for="(item, index) in list" :key="item" :color="indexToColor(index)" label outlined tile>
-          {{ item }}
-          <v-icon right @click="addTag(item)" small>mdi-plus</v-icon>
-        </v-chip>
-      </v-chip-group>
-    </v-card-text>
+        <v-card-text v-for="(list, key) in recommendTags" :key="key">
+            <span class="subheading">{{ key }}</span>
+            <v-chip-group column active-class="primary--text">
+                <v-chip v-for="(item, index) in list" :key="item" :color="indexToColor(index)" label outlined tile>
+                    {{ item }}
+                    <v-icon right @click="addTag(item)" small>mdi-plus</v-icon>
+                </v-chip>
+            </v-chip-group>
+        </v-card-text>
 
-    <v-card-text v-if="editMode">
-      <span class="subheading">Rollback delete</span>
-      <v-chip-group column active-class="primary--text">
-        <v-chip v-for="(item, index) in removedTags" :key="item" label tile>
-          {{item}}
-          <v-icon @click="restoreTag(index)" right>mdi-restore</v-icon>
-        </v-chip>
-      </v-chip-group>
-    </v-card-text>
+        <v-card-text v-if="editMode">
+            <span class="subheading">Rollback delete</span>
+            <v-chip-group column active-class="primary--text">
+                <v-chip v-for="(item, index) in removedTags" :key="item" label tile>
+                    {{item}}
+                    <v-icon @click="restoreTag(index)" right>mdi-restore</v-icon>
+                </v-chip>
+            </v-chip-group>
+        </v-card-text>
 
-    <v-card-text v-if="editMode">
-      <span class="subheading">Tips</span>
-      <v-icon @click="checkTags">mdi-magnify-outline</v-icon>
-      <p style="font-weight: bolder; color: darkred">
-        {{tipsContent}}
-      </p>
-    </v-card-text>
+        <v-card-text v-if="editMode">
+            <span class="subheading">Tips</span>
+            <v-icon @click="checkTags">mdi-magnify-outline</v-icon>
+            <p style="font-weight: bolder; color: darkred">
+                {{tipsContent}}
+            </p>
+        </v-card-text>
 
-    <v-card-text v-if="editMode">
-      <v-textarea
-        :value="tagsToString"
-        @input="updateValue"
-        outlined
-        label="直接使用字符编辑"
-        placeholder="使用;分隔内容">
+        <v-card-text v-if="editMode">
+            <v-textarea
+                :value="tagsToString"
+                @input="updateValue"
+                outlined
+                label="直接使用字符编辑"
+                placeholder="使用;分隔内容">
 
-      </v-textarea>
-    </v-card-text>
-  </v-card>
+            </v-textarea>
+        </v-card-text>
+    </v-card>
 </template>
 
 <script lang="ts">
@@ -103,7 +103,7 @@
                 }
             },
             basePool: {
-                type: Array,
+                type: Array as () => string[],
                 default() {
                     return []
                 }
@@ -120,37 +120,50 @@
             }
         },
         computed: {
-            tagsToString() {
+            tagsToString: function () {
                 return this.existTags.join(';');
             },
 
-            status: (vm: any) => !vm.duplicate
-                ? 'default'
-                : 'error',
+            //组件状态
+            status: function () {
+                return !this.duplicate
+                    ? 'default'
+                    : 'error'
+            },
 
-            pool: (vm) => vm.existTags.concat(vm.basePool),
+            // 默认字符池
+            pool: function () {
+                return this.existTags.concat(this.basePool)
+            },
 
-            duplicate: (vm) =>
-                vm.existTags.length > 0 &&
-                vm.existTags.filter((tag: string) => checkDuplicate(vm.pool, tag)).length === vm.existTags.length,
+            // 是否重复
+            duplicate: function () {
+                return this.existTags.length > 0 &&
+                    this.existTags.filter((tag: string) => checkDuplicate(this.pool, tag)).length === this.existTags.length
+            },
 
-            recommendTags: (vm) => vm.editable
-                ? vm.availableTags
-                : {},
+            //推荐的标签
+            recommendTags: function () {
+                return this.editMode
+                    ? this.availableTags
+                    : {}
+            },
 
-            tipsContent: (vm) => vm.duplicate
-                ? 'duplicate tag'
-                : '',
+            // 提示的内容
+            tipsContent: function () {
+                return this.duplicate
+                    ? 'duplicate tag'
+                    : ''
+            },
 
-            existTags(): string[] {
-                let vm = this;
-                if (vm.baseArray) {
-                    return vm.baseArray.filter((item: string) => item !== '')
+            //已有的标签
+            existTags: function (): string[] {
+                if (this.baseArray) {
+                    return this.baseArray.filter((item: string) => item !== '')
                 } else {
-                    return vm.defaultValue
+                    return this.defaultValue
                 }
             }
-            //
         },
         methods: {
             removeTag(item: string) {
@@ -190,16 +203,10 @@
                 this.updateTags($event.split(';').filter(tag => tag !== ''))
             }
         },
-        created() {
-
-        },
-
-        updated() {
-
-        },
 
         record: {
-            status: 'done-old'
+            status: 'done',
+            description: '数组编辑器'
         }
     })
 </script>
@@ -207,3 +214,7 @@
 <style scoped>
 
 </style>
+/**
+* Created by whb on 2019/12/4
+* Updated by [whb on 2020年1月8日19:58:44]
+*/

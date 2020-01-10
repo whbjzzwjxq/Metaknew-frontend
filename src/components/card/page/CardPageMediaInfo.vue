@@ -81,11 +81,10 @@
     import TitleTextField from "@/components/TitleTextField.vue";
     import CardSubLabelGroup from '@/components/card/subComp/CardSubLabelGroup.vue';
     import {getIsSelf, MediaInfoPart} from "@/utils/graphClass";
-    import {LabelGroup, IconItem} from "@/utils/interfaceInComponent";
+    import {LabelGroup} from "@/utils/interfaceInComponent";
     import {labelItems} from "@/utils/labelField";
     import {mediaUpdate} from '@/api/commonSource';
-    import * as CSS from 'csstype';
-    import {getIcon} from "@/utils/icon";
+    import {getIcon, iconMap} from "@/utils/icon";
     import IconGroup from "@/components/iconGroup/IconGroup.vue";
     import MediaDetail from "../../media/MediaDetail.vue"
     import {getSrc} from '@/utils/utils'
@@ -152,6 +151,11 @@
             editBase: {
                 type: Boolean,
                 default: false
+            },
+
+            iconColor: {
+                type: String as () => string,
+                default: 'grey'
             }
         },
         computed: {
@@ -212,7 +216,7 @@
             title: function () {
                 return this.info.PrimaryLabel + " --> " + this.info.Name;
             },
-            buttonGroupStyle: function (): CSS.Properties {
+            buttonGroupStyle: function (): CSSProp {
                 return {
                     opacity: this.showTool ? '50%' : '0%',
                     position: "absolute",
@@ -239,18 +243,21 @@
 
             iconList: function (): IconItem[] {
                 let vm = this;
+                let sizeIconGroup = iconMap["i-resize"];
+                let deleteAble = vm.isSelf || vm.showDeleteIcon;
                 return [
-                    {name: getIcon('i-resize', 'plus'), _func: vm.enlarge, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'minus'), _func: vm.narrow, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'five'), _func: vm.twentyPercent, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'three'), _func: vm.oneThird, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'two'), _func: vm.half, render: vm.inViewBox},
-                    {name: getIcon('i-resize', 'double'), _func: vm.double, render: vm.inViewBox},
+                    {name: sizeIconGroup.plus, _func: vm.enlarge, render: vm.inViewBox},
+                    {name: sizeIconGroup.minus, _func: vm.narrow, render: vm.inViewBox},
+                    {name: sizeIconGroup.five, _func: vm.twentyPercent, render: vm.inViewBox},
+                    {name: sizeIconGroup.three, _func: vm.oneThird, render: vm.inViewBox},
+                    {name: sizeIconGroup.two, _func: vm.half, render: vm.inViewBox},
+                    {name: sizeIconGroup.double, _func: vm.double, render: vm.inViewBox},
+                    {name: getIcon('i-item', 'link'), _func: vm.addLink, render: vm.inViewBox},
                     {name: "", _func: vm.doNothing},
-                    {name: "mdi-magnify", _func: vm.dialogDetail},
-                    {name: getIcon("i-collapse-arrow-double", vm.detailOn), _func: vm.changeDrawer},
-                    {name: "mdi-pencil", _func: vm.dialogDetailEdit, render: vm.isSelf},
-                    {name: "mdi-delete", _func: vm.deleteMedia, render: vm.isSelf || vm.showDeleteIcon},
+                    {name: "mdi-magnify", _func: vm.dialogWatch},
+                    {name: getIcon("i-collapse-arrow-double", vm.detailOn), _func: vm.changeDetail},
+                    {name: getIcon('i-edit-able', vm.isSelf), _func: vm.editSrc, disabled: vm.isSelf},
+                    {name: getIcon('i-delete-able', deleteAble), _func: vm.deleteMedia, disabled: deleteAble},
                     {name: "mdi-arrow-right-bold-circle-outline", _func: vm.addMediaToGraph, render: vm.showExportIcon}
                 ];
             },
@@ -263,13 +270,13 @@
             updateValue: function (prop: string, value: any) {
                 this.media.updateValue(prop, value);
             },
-            updateName(value: string) {
+            updateName: function (value: string) {
                 this.media.changeName(value)
             },
-            removeItem(removedLabel: string, prop: string) {
+            removeItem: function (removedLabel: string, prop: string) {
                 this.media.updateValue("Labels", [], true);
             },
-            addItem(value: string[], prop: string) {
+            addItem: function (value: string[], prop: string) {
                 prop === "Info"
                     ? this.media.updateValue("Labels", value)
                     : this.media.updateUserConcern("Labels", value);
@@ -278,11 +285,11 @@
                 this.detailOn = !this.detailOn
             },
 
-            deleteMedia() {
+            deleteMedia: function () {
                 this.$emit("delete-media");
             },
 
-            addMediaToGraph() {
+            addMediaToGraph: function () {
                 this.$emit("add-media-to-graph", this.media);
             },
             dialogDetail() {
@@ -332,11 +339,15 @@
                 this.$emit('media-resize', newWidth)
             },
 
+            addLink() {
+                this.$emit('add-link')
+            }
         },
         watch: {},
         record: {
-            status: "done-old",
-            description: "媒体信息卡片"
+            status: "editing",
+            description: "媒体信息卡片",
+            //todo 编辑 比例 收藏 分享
         }
     });
 </script>
@@ -346,3 +357,7 @@
     @import '../../../style/css/card.css';
 
 </style>
+/**
+* Created by whb on 2019/11/29
+* Updated by [whb on 2020年1月8日19:16:09 第一次定稿]
+*/

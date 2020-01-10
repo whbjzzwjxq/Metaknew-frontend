@@ -27,8 +27,7 @@
     import CardSubRow from '@/components/card/subComp/CardSubRow.vue';
     import CardSubStyleRow from '@/components/card/subComp/CardSubStyleRow.vue';
     import SelectionTable from "@/components/SelectionTable.vue";
-    import {AllSettingPart, BaseType} from '@/utils/graphClass'
-    import {typeSetting} from '@/utils/settingTemplate'
+    import {typeSetting} from '@/utils/template'
     import {ToPascalCase} from "@/utils/utils";
 
     export default Vue.extend({
@@ -61,7 +60,9 @@
         methods: {},
         watch: {},
         record: {
-            status: 'done'
+            status: 'done',
+            description: '样式编辑器'
+            //todo 更加细化的样式编辑器
         }
     })
 </script>

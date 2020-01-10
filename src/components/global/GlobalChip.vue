@@ -15,7 +15,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {commitNewLabel, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
-    import {SnackBarStatePayload} from "@/store/modules/componentSnackBar";
 
     export default Vue.extend({
         name: "GlobalChip",
@@ -73,7 +72,7 @@
             },
         },
         computed: {
-            labelColor(): string {
+            labelColor: function (): string {
                 if (this.color) {
                     return this.color
                 } else {
@@ -125,12 +124,14 @@
             },
 
             jump(label: string) {
-
+                //todo 标签跳转
             }
         },
         watch: {},
         record: {
-            status: 'done'
+            status: 'editing',
+            description: '全局用的跳转chip'
+            //todo 样式设置和跳转
         }
     })
 </script>
@@ -141,5 +142,5 @@
 
 /**
 * Created by whb on 2019/11/25
-* Updated by []
+* Updated by [whb on 2020年1月8日20:34:44]
 */

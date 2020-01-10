@@ -1,16 +1,35 @@
 import * as CSS from 'csstype'
 
-export interface PointObject {
-    x: number,
-    y: number,
+declare global {
+
+    type CSSProp = CSS.Properties
+
+    interface PointObject {
+        x: number,
+        y: number,
+    }
+
+    interface AreaRect extends PointObject {
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+    }
+
+    interface VisualNodeSetting extends AreaRect {
+        height: number,
+        width: number,
+        x: number,
+        y: number,
+        show: boolean,
+        isSelected: boolean,
+        isDeleted: boolean
+    } // 视觉相关设置
+
+    type PointMixed = Point | PointObject
 }
 
-export interface AreaRect extends PointObject {
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-}
+export type BorderType = 'nw'| 'n'| 'ne'| 'w'| 'e'| 'sw'| 's'| 'se' // 方向的英文缩写
 
 export class Point {
     x: number;
@@ -105,8 +124,6 @@ export const getPoint = (point: PointMixed) => {
     return new Point(point.x, point.y)
 };
 
-export type PointMixed = Point | PointObject
-
 export class RectByPoint {
     protected _start: Point;
     get start() {
@@ -147,7 +164,7 @@ export class RectByPoint {
         return checkInRect(this.positiveRect(), point);
     }
 
-    getDivCSS(css?: CSS.Properties): CSS.Properties {
+    getDivCSS(css?: CSSProp): CSSProp {
         css || (css = {});
         css = Object.assign({
             borderWidth: this.border + 'px',
@@ -169,19 +186,35 @@ export class RectByPoint {
     }
 }
 
-export type BorderType = 'top' | 'bottom' | 'left' | 'right' | 'proportion'
-
-export const transformBorderToRect = (rect: AreaRect, border: number, inner: number) => {
-    let {x, y, width, height} = rect;
-    let result: Record<BorderType, AreaRect> = {
-        'left': {x: 0, y: 0, width: border + inner, height: height + 2 * border},
-        'right': {x: width + border - inner, y: 0, width: border + inner, height: height + 2 * border},
-        'top': {x: 0, y: 0, width: width + 2 * border, height: border + inner},
-        'bottom': {x: 0, y: height + border - inner, width: width + 2 * border, height: border + inner},
-        'proportion': {x: width + border - inner, y: height + border - inner, width: border + inner, height: border + inner
+export const transformBorderToRect = (rect: RectByPoint, border: number, inner: number) => {
+    let borderList = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'] as BorderType[];
+    let {start, end} = rect;
+    let result: Record<string, RectByPoint> = {};
+    borderList.map(borderType => {
+        let x1, x2, y1, y2;
+        if (borderType.search('w') > -1) {
+            x1 = start.x - border;
+            x2 = start.x + inner;
+        } else if (borderType.search('e') > -1) {
+            x1 = end.x - inner;
+            x2 = end.x + border;
+        } else {
+            x1 = start.x + inner;
+            x2 = end.x - inner;
         }
-    };
-    return result
+        if (borderType.search('n') > -1) {
+            y1 = start.y - border;
+            y2 = start.y + inner;
+        } else if (borderType.search('s') > -1) {
+            y1 = end.y - inner;
+            y2 = end.y + border;
+        } else {
+            y1 = start.y + inner;
+            y2 = end.y - inner;
+        }
+        result[borderType] = new RectByPoint({x: x1, y: y1}, {x: x2, y: y2}, 0)
+    });
+    return result as Record<BorderType, RectByPoint>
 };
 
 export const getOriginRect = (pointA: PointMixed, pointB: PointMixed) => {
@@ -226,7 +259,7 @@ export const checkInRect = (rect: AreaRect, point: PointObject) => {
         y + height >= point.y
 };
 
-export const getDivCSS = (rect: AreaRect, css?: CSS.Properties) => {
+export const getDivCSS = (rect: AreaRect, css?: CSSProp) => {
     css || (css = {});
     return Object.assign({
         position: "absolute",
