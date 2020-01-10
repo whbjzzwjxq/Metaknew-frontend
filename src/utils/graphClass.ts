@@ -897,7 +897,7 @@ export class GraphSelfPart {
         return result
     }
 
-    getItemById(_id: id, _type: BaseType) {
+    getSubItemById(_id: id, _type: BaseType) {
         let list = this.getItemListByName(_type);
         return list.filter(item => item.Setting._id === _id)[0]
     }
@@ -927,7 +927,9 @@ export class GraphSelfPart {
                 ? itemList = this.Graph.medias
                 : name === 'link'
                 ? itemList = this.Graph.links
-                : itemList = this.Graph.nodes
+                : name === 'note'
+                    ? itemList = this.Graph.notes
+                    : itemList = this.Graph.nodes //  name === 'document | 'node
         } else {
             itemList = this.Graph[name]
         }
@@ -960,23 +962,23 @@ export class GraphSelfPart {
     }
 
     explode() {
-        let value = this.Conf.State.isExplode;
-        let nodes = this.Graph.nodes;
-        // 从baseNode里恢复
-        if (value) {
-            nodes.splice(0, 0, this.baseNode);
-            Vue.set(this.Conf.State, 'isExplode', false)
-        } else {
-            // 删除掉this里已有的节点
-            let index = 0;
-            nodes.map(item => {
-                if (item.Setting._id === this.id) {
-                    index = nodes.indexOf(item)
-                }
-            });
-            nodes.splice(index, 1);
-            Vue.set(this.Conf.State, 'isExplode', true)
-        }
+        Vue.set(this.Conf.State, 'isExplode', !this.Conf.State.isExplode)
+        // let value = this.Conf.State.isExplode;
+        // let nodes = this.Graph.nodes;
+        // // 从baseNode里恢复
+        // if (value) {
+        //     Vue.set(this.Conf.State, 'isExplode', false)
+        // } else {
+        //     // 删除掉graph里已有的节点 因为合并的时候会把合并进去
+        //     let index = -1;
+        //     nodes.map(item => {
+        //         if (item.Setting._id === this.id) {
+        //             index = nodes.indexOf(item)
+        //         }
+        //     });
+        //     index > -1 && nodes.splice(index, 1);
+        //     Vue.set(this.Conf.State, 'isExplode', true)
+        // }
     }
 
     allStateChange(value: boolean, state: 'isSelected' | 'isDeleted' | 'isSelf') {

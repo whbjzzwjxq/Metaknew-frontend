@@ -30,8 +30,6 @@
                 :size="impScaleRadius[index]"
                 :scale="realScale"
                 :point="nodeLocation[index].positiveRect()"
-                @kick-back-x="kickBackX"
-                @kick-back-y="kickBackY"
                 @mouseenter.native="mouseEnter(node)"
                 @mouseleave.native="mouseLeave(node)"
                 @mousedown.native="dragStart"
@@ -67,6 +65,7 @@
             v-for="(container, index) in activeGraphRectList"
             :key="index"
             :container="container"
+            v-show="activeGraphList[index + 1].Conf.State.isExplode"
             render-as-border>
 
         </rect-container>
@@ -91,10 +90,11 @@
         </graph-media>
 
         <graph-node-button
-            v-for="node in nodes"
+            v-for="(node, index) in nodes"
             :key="node.Setting._id"
             :node-setting="getTargetInfo(node)"
             :node="node"
+            :hide="!(node.State.isMouseOn && showNode[index])"
             @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
             @add-link="addLink(node)"
@@ -113,8 +113,8 @@
                 <v-slider
                     class="pl-3 pt-2"
                     v-model="scale"
-                    :min="25"
-                    :max="300"
+                    :min="20"
+                    :max="500"
                     color="grey"
                     thumb-size="small"
                     background-color="black"
@@ -303,10 +303,10 @@
             childDocumentList: function () {
                 return this.document.getChildDocument()
             },
-            // 不包含本身的graph
+            // 未被删除的Graph
             activeGraphList: function (): GraphSelfPart[] {
                 return [this.document].concat(this.childDocumentList.filter(graph => graph &&
-                    !graph.Conf.State.isDeleted && graph.Conf.State.isExplode))
+                    !graph.Conf.State.isDeleted))
             },
 
             activeGraphIdList: function (): id[] {
@@ -384,14 +384,17 @@
             },
             // 包含所有的Nodes Links
             nodes: function (): NodeSettingPart[] {
-                let result: NodeSettingPart[] = [];
+                let result = this.document.Graph.nodes
+                    .filter(node => node.Setting._id === this.document.id) as NodeSettingPart[];
+                // root Graph的节点显示
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Graph.nodes)
+                    result = result.concat(graph.Graph.nodes.filter(node => node.Setting._id !== graph.id))
+                    // Graph底下的节点由父亲Graph中的Nodes代替
                 });
                 return result
             },
 
-            nodeLength: function () {
+            nodeLength: function (): number {
                 return this.nodes.length
             },
 
@@ -553,15 +556,18 @@
             //显示节点
             showNode(): boolean[] {
                 return this.nodes.map(node =>
-                    this.labelViewDict[node.Setting._type][node.Setting._label] &&
-                    !node.State.isDeleted &&
-                    node.Setting.Show.showAll
+                    (node.parent.Conf.State.isExplode && // 父组件要炸开
+                        this.labelViewDict[node.Setting._type][node.Setting._label] &&
+                        !node.State.isDeleted &&
+                        node.Setting.Show.showAll) ||
+                    node.Setting.id === this.document.id
                 )
             },
 
             //显示边
             showLink(): boolean[] {
                 return this.links.map(link =>
+                    link.parent.Conf.State.isExplode && // 父组件要炸开
                     this.labelViewDict.link[link.Setting._label] &&
                     !link.State.isDeleted &&
                     this.getTargetInfo(link.Setting._start).show &&
@@ -636,8 +642,6 @@
                     } else {
                         moveFunc(target)
                     }
-                    // 检查是否越界
-                    this.checkOutside($event);
                 }
             },
 
@@ -655,37 +659,14 @@
                     let delta = getPoint(node.Setting.Base)
                         .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
                         .multiRect(parentMetaData.rect.positiveRect()) // 乘以矩形 e.g. -0.2 * 1000 = -200
-                        setting.parent.id === this.document.id && delta.multi(this.realScale)
-                        // 如果是根节点 则乘以缩放比 e.g. -200 * 0.5 = -100 否则缩放比在GraphMeta求的时候已经乘了
-                        delta.add(parentMetaData.absolute) // 加上绝对坐标 e.g. -100 + 320 = 220
+                    setting.parent.id === this.document.id && delta.multi(this.realScale)
+                    // 如果是根节点 则乘以缩放比 e.g. -200 * 0.5 = -100 否则缩放比在GraphMeta求的时候已经乘了
+                    delta.add(parentMetaData.absolute) // 加上绝对坐标 e.g. -100 + 320 = 220
                     return delta
                 }
                 let startPoint = getAbsPointFromParent(setting, graphMeta);
                 let endPoint = startPoint.copy().addRect({width, height});
                 return new RectByPoint(startPoint, endPoint)
-            },
-
-            //检查鼠标是否在svg外部
-            checkOutside($event: MouseEvent) {
-                return this.viewBox.checkInRect($event)
-            },
-
-            //x方向限定区域
-            kickBackX(node: VisNodeSettingPart, X: number) {
-                if (this.isDragging) {
-                    this.$set(node.Setting.Base, 'x', X / this.containerRect.width);
-                    node.State.isSelected = false;
-                    this.isDragging = false;
-                }
-            },
-
-            //y方向限定区域
-            kickBackY(node: VisNodeSettingPart, Y: number) {
-                if (this.isDragging) {
-                    this.$set(node.Setting.Base, 'y', Y / this.containerRect.height);
-                    node.State.isSelected = false;
-                    this.isDragging = false;
-                }
             },
 
             //node的原生事件
@@ -815,46 +796,49 @@
             },
 
             endSelect($event: MouseEvent) {
-                this.selecting($event);
-                this.isMoving = false;
-                this.isSelecting = false;
-                this.clearSelected("all");
-                let result: AllSettingPart[] = [];
-                // 基础的selection
-                let nodes = this.nodes.filter((node, index) =>
-                    this.selectRect.checkInRect(this.nodeLocation[index].midPoint())
-                );
+                if (this.isSelecting) {
+                    this.selecting($event);
+                    this.isMoving = false;
+                    this.isSelecting = false;
+                    // 单击也会触发 没办法
+                    this.clearSelected("all");
+                    let result: AllSettingPart[] = [];
+                    // 基础的selection
+                    let nodes = this.nodes.filter((node, index) =>
+                        this.selectRect.checkInRect(this.nodeLocation[index].midPoint())
+                    );
 
-                let links = this.links.filter((link, index) =>
-                    this.selectRect.checkInRect(this.midLocation[index])
-                );
-                let medias = this.medias.filter((media, index) =>
-                    this.selectRect.checkInRect(this.mediaLocation[index].midPoint())
-                );
-                let selectRoot = false;
-                nodes.map(node => {
-                        //是否选中Root节点
-                        selectRoot = selectRoot || node.Setting._id === this.document.id;
+                    let links = this.links.filter((link, index) =>
+                        this.selectRect.checkInRect(this.midLocation[index])
+                    );
+                    let medias = this.medias.filter((media, index) =>
+                        this.selectRect.checkInRect(this.mediaLocation[index].midPoint())
+                    );
+                    let selectRoot = false;
+                    nodes.map(node => {
+                            //是否选中Root节点
+                            selectRoot = selectRoot || node.Setting._id === this.document.id;
 
-                        //如果选中了Document 对应的Node
-                        let index = this.activeGraphIdList.indexOf(node.Setting._id);
-                        if (node.Setting._type === 'document' && index > -1) {
-                            this.activeGraphList[index].allStateChange(true, 'isSelected')
+                            //如果选中了Document 对应的Node
+                            let index = this.activeGraphIdList.indexOf(node.Setting._id);
+                            if (node.Setting._type === 'document' && index > -1) {
+                                this.activeGraphList[index].allStateChange(true, 'isSelected')
+                            }
                         }
+                    );
+                    if (selectRoot) {
+                        // 选中所有内容
+                        this.document.allStateChange(true, 'isSelected')
+                    } else {
+                        result = result.concat(nodes);
+                        result = result.concat(links);
+                        result = result.concat(medias);
+                        this.selectItem(result)
                     }
-                );
-                if (selectRoot) {
-                    // 选中所有内容
-                    this.document.allStateChange(true, 'isSelected')
-                } else {
-                    result = result.concat(nodes);
-                    result = result.concat(links);
-                    result = result.concat(medias);
-                    this.selectItem(result)
                 }
             },
 
-            clickSvg() {
+            clickSvg($event: MouseEvent) {
                 this.isLinking = false;
                 this.clearSelected('all')
             },

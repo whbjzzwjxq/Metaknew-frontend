@@ -8,6 +8,7 @@
         dense
         hoverable
         return-object
+        open-on-click
         :selection-type="'leaf'"
         v-model="selection"
     >
@@ -58,7 +59,8 @@
 
     interface DirectoryItemDocument extends DirectoryItem {
         type: 'document',
-        children: DirectoryItem[]
+        children: DirectoryItem[],
+        childDoc: DirectoryItemDocument[]
     }
 
     const isDocument = (item: DirectoryItem): item is DirectoryItemDocument => {
@@ -71,9 +73,8 @@
         data() {
             return {
                 tree: [] as DirectoryItemDocument[],
-                allItemList: [] as DirectoryItem[],
                 docItemDict: {} as Record<id, DirectoryItemDocument>,
-                docLayerDict: {} as Record<number, GraphSelfPart[]>,
+                docLayerDict: {} as Record<number, GraphSelfPart[]>, // 用层级记录的Item信息
                 lastOpenList: [] as DirectoryItem[],
             }
         },
@@ -88,7 +89,7 @@
             },
         },
         computed: {
-            dataManager: function(): DataManagerState {
+            dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
             // 不包含自身
@@ -98,16 +99,21 @@
             // 不包含自身
             activeDocumentList: function (): GraphSelfPart[] {
                 return this.childDocumentList.filter(graph => graph &&
-                    !graph.Conf.State.isDeleted)
+                    !graph.Conf.State.isDeleted) // 这里不要Explode是一次性加载完 不要重新构建目录
+            },
+
+            // 控制buildStructure
+            activeDocumentIdList: function () {
+                return this.activeDocumentList.map(document => document.id)
             },
 
             //包含自身
             documents: function (): GraphSelfPart[] {
-                return this.activeDocumentList.concat(this.document)
+                return [this.document].concat(this.activeDocumentList)
             },
 
             //Document-Children Dict
-            allDocToItemDict: function () {
+            allDocToItemDict: function (): Record<id, DirectoryItem[]> {
                 let result: Record<id, DirectoryItem[]> = {};
                 this.documents.map(document => {
                     result[document.id] = this.getDocumentChildList(document)
@@ -115,33 +121,36 @@
                 return result
             },
 
-            // 只包含节点关系媒体等内容的ItemList
-            baseItemList: function () {
+            // 包含除了根节点之外的所有内容
+            baseItemList: function (): DirectoryItem[] {
                 return mergeList(Object.values(this.allDocToItemDict))
+            },
+
+            baseItemIdList: function () {
+                return this.baseItemList.map(item => item.id)
             },
 
             selection: {
                 get(): DirectoryItem[] {
-                    let vm = this;
-                    return this.baseItemList.filter(item => vm.getOriginState(item).isSelected)
+                    return this.baseItemList.filter(item => this.getOriginItem(item).State.isSelected)
                 },
                 set(value: DirectoryItem[]) {
-                    let vm = this;
-                    this.baseItemList.map(item => {
-                        let origin = vm.getOriginState(item);
-                        value.includes(item)
-                            ? this.$set(origin, 'isSelected', true)
-                            : this.$set(origin, 'isSelected', false)
-                    });
-                    Object.values(this.docItemDict).map(docItem => {
-                        //todo
-                    })
+                    console.log(value);
+                    // this.baseItemList.map(item => {
+                    //     if (item.type !== 'document') {
+                    //         // 单选的时候
+                    //         let origin = this.getOriginItem(item).State;
+                    //         this.$set(origin, 'isSelected', value.includes(item))
+                    //     } else {
+                    //
+                    //     }
+                    // });
                 }
             }
         },
         methods: {
             buildStructure: function () {
-                // console.log('build');
+                console.log('build')
                 let docItemDict: Record<id, DirectoryItemDocument> = {};
                 let docLayerDict: Record<number, GraphSelfPart[]> = {};
                 let tree: DirectoryItemDocument[] = [];
@@ -160,7 +169,8 @@
                             let childItem = docItemDict[doc.id];
                             if (doc.Conf.parent) {
                                 let parentItem = docItemDict[doc.Conf.parent.id];
-                                parentItem.children.push(childItem)
+                                parentItem.children.push(childItem);
+                                parentItem.childDoc.push(childItem)
                             } else {
                                 // 已经是顶级目录
                                 tree.push(childItem)
@@ -173,16 +183,11 @@
                 this.docLayerDict = docLayerDict;
             },
 
-            directory: function () {
-                // console.log('directory')
+            buildDirectory: function () {
+                console.log('directory');
                 let vm = this;
-                this.allItemList = [];
                 let update = function (docItem: DirectoryItemDocument) {
-                    docItem.children.map(item => {
-                        if (isDocument(item)) {
-                            update(item)
-                        }
-                    });
+                    docItem.childDoc.map(item => update(item));
                     vm.updateItemsToParent(docItem)
                 };
                 this.tree.map(item => update(item));
@@ -243,11 +248,11 @@
                     deletable: false,
                     editable: document.Conf.State.isSelf,
                     children: [], // 注意这里的children是空的
-                    parent: document.Conf.parent
+                    parent: document.Conf.parent,
+                    childDoc: []
                 } as DirectoryItemDocument;
             },
             updateItemsToParent: function (documentItem: DirectoryItemDocument) {
-                this.allItemList.push(documentItem);
                 let currentDocument = documentItem.children.filter(item => isDocument(item));
                 let currentDocumentId = currentDocument.map(item => item.id);
                 // let currentChildrenId = documentItem.children.map(item => item.id);
@@ -258,9 +263,7 @@
                     if (currentDocumentId.includes(id)) {
                         //do Nothing 节点被抛弃 因为已经替换成了DocumentItem
                     } else {
-                        this.allItemList.push(item);
                         newChildren.push(item)
-                        //todo 更加轻量的update方式
                     }
                 });
                 this.$set(documentItem, 'children', newChildren);
@@ -291,21 +294,36 @@
             },
 
             getOriginItem(item: DirectoryItem) {
-                return item.parent.getItemById(item.id, item.type)
+                return item.parent.getSubItemById(item.id, item.type)
             },
 
             async getDocument(nodeItem: DirectoryItem) {
                 let node = this.getOriginItem(nodeItem) as NodeSettingPart;
                 let document = nodeItem.parent;
-                await dispatchNodeExplode({node, document})
+                await dispatchNodeExplode({node, document});
             },
 
             open(itemList: DirectoryItem[]) {
-                if (itemList.length > 0) {
-                    // 一定不能监听itemList = 0 的时候的事件 会让Explode重复 增加
-                    let idList = itemList.map(item => item.id);
-                    this.childDocumentList.filter(document => idList.includes(document.id)).map(document => document.explode())
-                }
+                let closeItems = this.lastOpenList.filter(item => !itemList.includes(item));
+                let openItems = itemList.filter(item => !this.lastOpenList.includes(item));
+                closeItems.map(item => {
+                    let targetDocument = this.documents.filter(doc => doc.id === item.id)[0];
+                    if (targetDocument && targetDocument.Conf.State.isExplode) {
+                        // 如果是打开的就关闭
+                        targetDocument.explode()
+                    } else {
+                        // todo open合理化
+                    }
+                });
+                openItems.map(item => {
+                    let targetDocument = this.documents.filter(doc => doc.id === item.id)[0];
+                    if (targetDocument && !targetDocument.Conf.State.isExplode) {
+                        // 如果是关闭的就打开
+                        targetDocument.explode()
+                    } else {
+                        //
+                    }
+                });
                 this.lastOpenList = itemList;
             },
 
@@ -321,29 +339,23 @@
                 return getIcon(name, type)
             },
 
-            getOriginState(item: DirectoryItem) {
-                let origin;
-                if (item.type === 'document') {
-                    origin = this.documents.filter(document => (document.id) === item.id)[0].Conf.State
-                } else {
-                    origin = this.getOriginItem(item).State
-                }
-                return origin as BaseState
-            },
-
         },
         watch: {
-            activeDocumentList() {
+            activeDocumentIdList() {
+                console.log(this.activeDocumentIdList);
                 this.buildStructure()
             },
-            baseItemList() {
-                this.directory()
+            // id发生变化的时候监听
+            baseItemIdList() {
+                console.log(this.baseItemIdList);
+                this.buildDirectory()
             }
 
         },
         mounted(): void {
+            console.log('mounted');
             this.buildStructure();
-            this.directory()
+            this.buildDirectory()
         },
         record: {
             status: 'editing',

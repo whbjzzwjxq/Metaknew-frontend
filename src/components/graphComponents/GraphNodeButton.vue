@@ -4,7 +4,7 @@
         :icon-list="buttonGroup"
         vertical
         x-small
-        :hide="!node.State.isMouseOn && node.Setting.Show.showAll">
+        :hide="hide">
 
     </icon-group>
 </template>
@@ -32,6 +32,11 @@
             node: {
                 type: Object as () => NodeSettingPart,
                 required: true
+            },
+
+            hide: {
+                type: Boolean as () => boolean,
+                default: false
             }
         },
         computed: {

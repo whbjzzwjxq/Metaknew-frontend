@@ -95,7 +95,7 @@
     export default Vue.extend({
         name: 'GraphNode',
         components: {},
-        data: function() {
+        data: function () {
             return {}
         },
         props: {
@@ -127,34 +127,34 @@
             },
         },
         computed: {
-            transform: function () {
+            transform: function (): string {
                 return 'translate(' + this.point.x + ' ' + this.point.y + ')'
             },
 
-            setting: function () {
+            setting: function (): NodeSetting {
                 return this.node.Setting
             },
-            state: function () {
+            state: function (): NodeState {
                 return this.node.State
             },
 
-            isSelected: function () {
+            isSelected: function (): boolean {
                 return this.state.isSelected
             },
 
-            getId: function () {
+            getId: function (): string {
                 return 'normalNode' + this.setting._id
             },
 
             //注意是实际二分之一的高度
-            height: function () {
+            height: function (): number {
                 return this.setting.Base.size !== 0
                     ? this.setting.Base.size * this.scale
                     : this.size * this.scale
             },
 
             //注意是实际二分之一的宽度
-            width: function () {
+            width: function (): number {
                 return this.height * this.setting.Base.scaleX
             },
 
@@ -170,7 +170,7 @@
             },
 
             //填充的颜色
-            fillColor: function () {
+            fillColor: function (): string {
                 if (this.setting.Base.color !== '') {
                     return this.setting.Base.color
                 } else {
@@ -181,7 +181,7 @@
             },
 
             //border的形式
-            borderSetting: function () {
+            borderSetting: function (): Record<string, any> {
                 let color;
                 if (this.setting.Border.color !== '') {
                     color = this.setting.Border.color
@@ -264,12 +264,12 @@
 
             textStyle: function (): CSSProp {
                 return {
-                    '-moz-user-select': 'none',
-                    'user-select': 'none',
+                    'MozUserSelect': 'none',
+                    'userSelect': 'none',
                     'fill': 'opposite',
-                    'font-size': this.textSetting.size + 'px',
-                    'text-align': 'center',
-                    'word-break': 'break-all',
+                    'fontSize': this.textSetting.size + 'px',
+                    'textAlign': 'center',
+                    'wordBreak': 'break-all',
                     'color': this.setting.Text.textColor
                 }
             },
@@ -278,8 +278,8 @@
                     ? this.setting.Text.textSize * this.scale
                     : 10;
                 let width = this.setting.Text.twoLine
-                    ? this.setting._name.length * 12
-                    : this.setting._name.length * 24;
+                    ? this.setting._name.length * 6 / this.scale
+                    : this.setting._name.length * 12 / this.scale;
                 let height = this.setting.Text.twoLine
                     ? (size + 5) * 2
                     : (size + 5);
@@ -295,12 +295,12 @@
             //todo 先将就着
             inlineTextStyle: function (): CSSProp {
                 return {
-                    '-moz-user-select': 'none',
-                    'user-select': 'none',
+                    'MozUserSelect': 'none',
+                    'userSelect': 'none',
                     'fill': 'opposite',
-                    'font-size': this.setting.Text.inlineTextSize + 'px',
-                    'text-align': 'center',
-                    'word-break': 'break-all',
+                    'fontSize': this.setting.Text.inlineTextSize + 'px',
+                    'textAlign': 'center',
+                    'wordBreak': 'break-all',
                     'color': this.setting.Text.inlineTextColor,
                 }
             },
@@ -348,12 +348,19 @@
                 return this.$store.state.dataManager.graphManager[this.node.Setting._id]
             },
 
-        },
-        methods: {
-            explode() {
-                this.$emit('explode')
+            maxWidth: function () {
+                return this.width * 2 > this.textSetting.width
+                    ? this.width * 2
+                    : this.textSetting.width
+            },
+            maxHeight: function () {
+                return this.height * 2 > this.textSetting.height
+                    ? this.height * 2
+                    : this.textSetting.height
             }
+
         },
+        methods: {},
         watch: {},
         record: {
             status: 'done',

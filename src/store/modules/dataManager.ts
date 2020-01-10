@@ -87,6 +87,7 @@ const mutations = {
         let {graph} = payload;
         let id = graph.id; // 这里payload是document
         state.currentGraph = graph;
+        graph.Conf.State.isExplode = true;
         commitItemChange(state.nodeManager[id]);
     },
 
