@@ -947,7 +947,8 @@ export function getMediaType(file: File) {
             ? (result = mimeType[1])
             : (result = mimeType[0]);
         // 特殊化的解析
-        if (mimeFile in Object.keys(specialMedia)) {
+        console.log(mimeFile);
+        if (Object.keys(specialMedia).includes(mimeFile)) {
             result = specialMedia[mimeFile]
         }
     } else {
