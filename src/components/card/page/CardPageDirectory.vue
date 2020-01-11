@@ -147,15 +147,21 @@
                         let node = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
                         return node.State.isSelected
                     }) as DirectoryItem[];
-                    return root.concat(this.baseItemList.filter(item => this.getOriginItem(item).State.isSelected))
+                    let result = root.concat(this.baseItemList.filter(item => this.getOriginItem(item).State.isSelected))
+                    console.log('get', result)
+                    return result
                 },
                 set(value: DirectoryItem[]) {
                     let idList = value.map(item => item.id);
-                    console.log(value)
+                    console.log('set', value, this.selection)
                     // 用id 因为item可能变化了
                     this.baseItemList.map(item => {
                         let origin = this.getOriginItem(item);
                         this.$set(origin.State, 'isSelected', idList.includes(item.id))
+                        if (item.type === 'document') {
+                            let subNode = origin.parent.getSubItemById(item.id, item.type)
+                            this.$set(subNode.State, 'isSelected', idList.includes(item.id))
+                        }
                     });
                     this.tree.map(root => {
                         let origin = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
@@ -371,7 +377,7 @@
             // id发生变化的时候监听
             baseItemLength: function () {
                 this.buildDirectory()
-            }
+            },
 
         },
         mounted: function (): void {

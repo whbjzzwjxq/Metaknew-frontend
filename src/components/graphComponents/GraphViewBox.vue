@@ -70,6 +70,19 @@
 
         </rect-container>
 
+        <graph-node-button
+            v-for="(node, index) in nodes"
+            :key="node.Setting._id"
+            :node-setting="getTargetInfo(node)"
+            :node="node"
+            :hide="!(node.State.isMouseOn && showNode[index])"
+            @mouseenter.native="mouseEnter(node)"
+            @mouseleave.native="mouseLeave(node)"
+            @add-link="addLink(node)"
+            @explode="explode">
+
+        </graph-node-button>
+
         <graph-media
             v-for="(node, index) in medias"
             :key="node.Setting._id"
@@ -88,19 +101,6 @@
         >
 
         </graph-media>
-
-        <graph-node-button
-            v-for="(node, index) in nodes"
-            :key="node.Setting._id"
-            :node-setting="getTargetInfo(node)"
-            :node="node"
-            :hide="!(node.State.isMouseOn && showNode[index])"
-            @mouseenter.native="mouseEnter(node)"
-            @mouseleave.native="mouseLeave(node)"
-            @add-link="addLink(node)"
-            @explode="explode">
-
-        </graph-node-button>
 
         <div :style="viewBoxToolStyle" class="d-flex flex-row">
             <graph-label-selector
@@ -168,7 +168,6 @@
             GraphLabelSelector,
             RectContainer
             // GraphNote,
-            // GraphRender,
         },
         data() {
             return {
@@ -560,7 +559,7 @@
                         this.labelViewDict[node.Setting._type][node.Setting._label] &&
                         !node.State.isDeleted &&
                         node.Setting.Show.showAll) ||
-                    node.Setting.id === this.document.id
+                    node.Setting._id === this.document.id
                 )
             },
 
@@ -645,7 +644,6 @@
                 if (this.isDragging && this.dragAble) {
                     this.drag(target, $event);
                     this.isDragging = false;
-                    this.updateCardLoc()
                 }
             },
 
@@ -668,44 +666,12 @@
             //node的原生事件
             mouseEnter(node: VisNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", true);
-                this.$set(node.State, "showCard", true);
-                this.showCardId = setTimeout(() => {
-                    this.$set(node.State, "showCard", true);
-                }, 1000)
             },
 
             //node的原生事件
             mouseLeave(node: VisNodeSettingPart) {
                 this.$set(node.State, "isMouseOn", false);
                 this.isDragging = false;
-                clearTimeout(this.showCardId);
-                !this.mouseOnCard &&
-                (this.closeCardId = setTimeout(() => {
-                    this.$set(node.State, "showCard", false);
-                }, 1000))
-            },
-
-            mouseEnterCard() {
-                this.mouseOnCard = true;
-                clearTimeout(this.closeCardId)
-            },
-
-            mouseLeaveCard(node: NodeSettingPart) {
-                this.mouseOnCard = false;
-                this.closeCardId = setTimeout(() => {
-                    this.$set(node.State, "showCard", false);
-                }, 1000)
-            },
-
-            //自适应位置 取得卡片数据 不需要计算属性 显示的时候重新计算位置就好
-            locationCard(node: NodeSettingPart) {
-
-            },
-
-            updateCardLoc() {
-                let result;
-                result = this.nodes.map(node => this.locationCard(node));
-                this.cardLocList = result
             },
 
             dbClickNode(node: VisNodeSettingPart) {
@@ -797,14 +763,14 @@
                     let result: AllSettingPart[] = [];
                     // 基础的selection
                     let nodes = this.nodes.filter((node, index) =>
-                        this.selectRect.checkInRect(this.nodeLocation[index].midPoint())
+                        this.selectRect.checkInRect(this.nodeLocation[index].midPoint()) && this.showNode[index]
                     );
 
                     let links = this.links.filter((link, index) =>
-                        this.selectRect.checkInRect(this.midLocation[index])
+                        this.selectRect.checkInRect(this.midLocation[index]) && this.showLink[index]
                     );
                     let medias = this.medias.filter((media, index) =>
-                        this.selectRect.checkInRect(this.mediaLocation[index].midPoint())
+                        this.selectRect.checkInRect(this.mediaLocation[index].midPoint()) && this.showMedia[index]
                     );
                     let selectRoot = false;
                     nodes.map(node => {
@@ -837,8 +803,7 @@
 
             clearSelected(items: 'all' | SettingPart[]) {
                 if (items === 'all') {
-                    this.document.selectAll('isSelected', false);
-                    this.childDocumentList.map(document => document.selectAll('isSelected', false));
+                    Object.values(this.dataManager.graphManager).map(document => document.selectAll('isSelected', false));
                 } else {
                     items.map(item => this.$set(item.State, 'isSelected', false));
                 }

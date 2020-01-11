@@ -1,4 +1,5 @@
 <template>
+    <div :style="divStyle" v-show="!hide">
     <icon-group
         :container-style="buttonGroupStyle"
         :icon-list="buttonGroup"
@@ -7,6 +8,7 @@
         :hide="hide">
 
     </icon-group>
+    </div>
 </template>
 
 <script lang="ts">
@@ -40,13 +42,22 @@
             }
         },
         computed: {
+            divStyle: function (): CSSProp {
+                return {
+                    width: '24px',
+                    height: '120px',
+                    left: this.x + 'px',
+                    top: this.y + 'px',
+                    position: 'absolute',
+                }
+            },
             buttonGroupStyle: function (): CSSProp {
                 return {
                     width: '18px',
                     height: '120px',
-                    left: this.x + 'px',
-                    top: this.y + 'px',
-                    position: 'absolute'
+                    left: '3px',
+                    top: 0,
+                    position: 'absolute',
                 }
             },
             x: function (): number {

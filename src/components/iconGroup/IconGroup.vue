@@ -9,7 +9,7 @@
             :large="large"
             :x-large="xLarge"
             :color="icon.color ? icon.color : color"
-            :disabled="icon.name === '' || icon.disabled"
+            :disabled="(icon.name === '' || icon.disabled) || hide"
             @click="icon._func"
         >
             <v-icon>{{ icon.name }}</v-icon>
