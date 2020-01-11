@@ -285,7 +285,6 @@
             updateItemsToParent: function (documentItem: DirectoryItemDocument) {
                 let currentDocument = documentItem.children.filter(item => isDocument(item));
                 let currentDocumentId = currentDocument.map(item => item.id);
-                // let currentChildrenId = documentItem.children.map(item => item.id);
                 let newItemList = this.allDocToItemDict[documentItem.id];
                 let newChildren = currentDocument;
                 newItemList.map(item => {
@@ -307,7 +306,7 @@
                     content: '删除了' + item.type,
                     buttonText: '撤销',
                     action: this.rollBackDelete,
-                    actionObject: this.getOriginItem(item),
+                    actionObject: item,
                     actionName: 'deleteItemFromGraph',
                     once: false
                 } as SnackBarStatePayload;
@@ -372,10 +371,18 @@
             },
 
             getDocumentChildList(document: GraphSelfPart): DirectoryItem[] {
-                let nodes = document.Graph.nodes.map(node => this.nodeToItem(node)).filter(item => item.id !== document.id);
-                let links = document.Graph.links.map(link => this.linkToItem(link));
-                let medias = document.Graph.medias.map(media => this.mediaToItem(media));
-                let notes = document.Graph.notes.map(note => this.noteToItem(note));
+                let nodes = document.Graph.nodes.filter(item => !item.State.isDeleted)
+                    .map(node => this.nodeToItem(node))
+                    .filter(item => item.id !== document.id);
+
+                let links = document.Graph.links.filter(item => !item.State.isDeleted)
+                    .map(link => this.linkToItem(link));
+
+                let medias = document.Graph.medias.filter(item => !item.State.isDeleted)
+                    .map(media => this.mediaToItem(media));
+
+                let notes = document.Graph.notes.filter(item => !item.State.isDeleted)
+                    .map(note => this.noteToItem(note));
                 return nodes.concat(links).concat(medias).concat(notes)
             },
 
