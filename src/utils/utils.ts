@@ -1,3 +1,5 @@
+import {localIdRegex} from "@/utils/graphClass";
+
 export function getCookie(name: string) {
     const arr = document.cookie.match(new RegExp(`(^| )${name}=([^;]*)(;|$)`));
     if (arr != null) {
@@ -193,4 +195,32 @@ export function mergeList<T>(list: Array<T[]>) {
         })
     });
     return output
+}
+
+export function idSort(idList: id[]): id[] {
+    let remoteId: number[] = [];
+    let localId: string[] = [];
+    idList.map(id => {
+        if (typeof id === 'number') {
+            remoteId.push(id)
+        } else {
+            localIdRegex.test(id)
+                ? localId.push(id)
+                : remoteId.push(parseInt(id))
+        }
+    });
+
+    function idStringSort(a: string, b: string) {
+        const num = (a: string) => {
+            return parseInt(a.substring(2))
+        };
+        return num(a) - num(b)
+    }
+
+    remoteId.sort();
+    localId.sort(idStringSort);
+    let result: id[] = [];
+    result = result.concat(remoteId);
+    result = result.concat(localId);
+    return result
 }

@@ -62,17 +62,17 @@
         </svg>
 
         <rect-container
-            v-for="(container, index) in activeGraphRectList"
-            :key="index"
-            :container="container"
-            v-show="activeGraphList[index + 1].Conf.State.isExplode"
+            v-for="(metaData, index) in activeGraphRectList"
+            :key="metaData.self.id"
+            :container="metaData.rect"
+            v-show="metaData.self.Conf.State.isExplode"
             render-as-border>
 
         </rect-container>
 
         <graph-node-button
             v-for="(node, index) in nodes"
-            :key="node.Setting._id"
+            :key="index"
             :node-setting="getTargetInfo(node)"
             :node="node"
             :hide="!(node.State.isMouseOn && showNode[index])"
@@ -85,7 +85,7 @@
 
         <graph-media
             v-for="(node, index) in medias"
-            :key="node.Setting._id"
+            :key="index"
             :setting="node"
             :container="mediaLocation[index]"
             :scale="realScale"
@@ -376,11 +376,11 @@
                 return result
             },
 
-            // 求出所有的Rect
-            activeGraphRectList: function (): RectByPoint[] {
+            // 除了Root以外的Rect
+            activeGraphRectList: function (): GraphMetaData[] {
                 return this.activeGraphMetaDataList.filter(meta => meta.self.id !== this.document.id)
-                    .map(meta => meta.rect)
             },
+
             // 包含所有的Nodes Links
             nodes: function (): NodeSettingPart[] {
                 let result = this.document.Graph.nodes
@@ -391,6 +391,10 @@
                     // Graph底下的节点由父亲Graph中的Nodes代替
                 });
                 return result
+            },
+
+            nodeIdList: function (): id[] {
+                return this.nodes.map(node => node.Setting._id)
             },
 
             nodeLength: function (): number {
@@ -469,7 +473,7 @@
             },
 
             //节点locationX
-            nodeLocation: function () {
+            nodeLocation: function (): RectByPoint[] {
                 return this.nodes.map((node, index) => {
                     let width = node.Setting.Base.size !== 0
                         ? node.Setting.Base.size * this.realScale
@@ -479,7 +483,7 @@
                 })
             },
 
-            mediaLocation: function () {
+            mediaLocation: function (): RectByPoint[] {
                 return this.medias.map(media => {
                     let width = media.Setting.Base.size * this.realScale >= 50
                         ? media.Setting.Base.size * this.realScale
@@ -603,7 +607,7 @@
                 }
             },
 
-            selector: function () {
+            selector: function (): AreaRect {
                 return this.selectRect.positiveRect()
             },
 
@@ -772,11 +776,7 @@
                     let medias = this.medias.filter((media, index) =>
                         this.selectRect.checkInRect(this.mediaLocation[index].midPoint()) && this.showMedia[index]
                     );
-                    let selectRoot = false;
                     nodes.map(node => {
-                            //是否选中Root节点
-                            selectRoot = selectRoot || node.Setting._id === this.document.id;
-
                             //如果选中了Document 对应的Node
                             let index = this.activeGraphIdList.indexOf(node.Setting._id);
                             if (node.Setting._type === 'document' && index > -1) {
@@ -784,15 +784,10 @@
                             }
                         }
                     );
-                    if (selectRoot) {
-                        // 选中所有内容
-                        this.document.selectAll('isSelected', true)
-                    } else {
                         result = result.concat(nodes);
                         result = result.concat(links);
                         result = result.concat(medias);
                         this.selectItem(result)
-                    }
                 }
             },
 

@@ -30,7 +30,7 @@ import {
 import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
 import {BackendGraph} from "@/api/commonSource";
 import {BooleanConcern, LevelConcern, UserConcern} from "@/utils/userConcern";
-import {commitInfoAdd} from "@/store/modules/_mutations";
+import {commitInfoAdd, commitSnackbarOff} from "@/store/modules/_mutations";
 
 declare global {
     type id = number | string;
@@ -270,7 +270,7 @@ export class NodeInfoPart {
         userConcern: UserConcern
     ) {
         const id = info.id;
-        this.isRemote = newIdRegex.test(id.toString());
+        this.isRemote = localIdRegex.test(id.toString());
         this.isEdit = false;
         this.id = id;
         this.Info = info;
@@ -321,7 +321,7 @@ export class NodeInfoPart {
         this.id = newId;
         Vue.set(this.Info, "id", newId);
         this.synchronizationSource("_id", newId);
-        this.isRemote = newIdRegex.test(newId.toString());
+        this.isRemote = localIdRegex.test(newId.toString());
         this.isEdit = false;
     }
 
@@ -386,7 +386,7 @@ export class LinkInfoPart {
     constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl) {
         const id = info.id;
         this.id = id;
-        this.isRemote = newIdRegex.test(id.toString());
+        this.isRemote = localIdRegex.test(id.toString());
         this.isEdit = false;
         this.Info = info;
         this.Ctrl = ctrl;
@@ -408,7 +408,7 @@ export class LinkInfoPart {
         this.id = newId;
         this.updateValue("id", newId);
         this.synchronizationSource("_id", newId);
-        this.isRemote = newIdRegex.test(newId.toString());
+        this.isRemote = localIdRegex.test(newId.toString());
         this.isEdit = false;
     }
 
@@ -495,7 +495,7 @@ export class MediaInfoPart {
         this.status = status;
         this.error = error;
         this.id = id;
-        this.isRemote = newIdRegex.test(id.toString());
+        this.isRemote = localIdRegex.test(id.toString());
         this.isEdit = false;
         this.Info = info;
         this.Ctrl = ctrl;
@@ -517,7 +517,7 @@ export class MediaInfoPart {
         this.id = newId;
         Vue.set(this.Info, "id", newId);
         this.synchronizationSource("_id", newId);
-        this.isRemote = newIdRegex.test(newId.toString());
+        this.isRemote = localIdRegex.test(newId.toString());
         this.isEdit = false;
     }
 
@@ -968,7 +968,8 @@ export class GraphSelfPart {
     }
 
     selectAll(state: 'isSelected', value: boolean) {
-        this.allItems().map(item => Vue.set(item.State, state, value));
+        this.allItems().filter(item => item.State.isSelected !== value)
+            .map(item => Vue.set(item.State, state, value));
     }
 
     addEmptyNode(_label: string) {
@@ -993,7 +994,7 @@ export class GraphSelfPart {
 }
 
 let globalIndex = 0;
-export let newIdRegex = new RegExp("\\$_[0-9]*");
+export let localIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
 let crucialRegex = new RegExp("_.*");
 
