@@ -2,7 +2,7 @@ declare global {
     type IconGroup = 'i-star' | 'i-good' | 'i-bad' | 'i-collapse-arrow-double' |
         'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
         'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
-        'i-resize' | 'i-item' | 'i-get-media-type' | 'i-note-type'
+        'i-resize' | 'i-item' | 'i-get-media-type' | 'i-note-type' | 'i-is-dark' | 'i-is-locked'
 
     type IconAlias = 'i-show'
 
@@ -11,7 +11,8 @@ declare global {
         _func: Function | null,
         color?: string,
         render?: boolean,
-        disabled?: boolean
+        disabled?: boolean,
+        [prop: string]: any
     }
 }
 
@@ -106,6 +107,14 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         fromCloud: 'mdi-cloud-search',
         fromWeb: 'mdi-web'
     },
+    'i-is-dark': {
+        true: 'mdi-brightness-4',
+        false: 'mdi-brightness-1'
+    },
+    'i-is-locked': {
+        true: 'mdi-lock-open',
+        false: 'mdi-lock-outline'
+    }
 
 };
 

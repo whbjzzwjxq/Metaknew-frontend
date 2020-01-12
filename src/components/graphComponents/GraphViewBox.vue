@@ -85,7 +85,7 @@
 
         <graph-media
             v-for="(node, index) in medias"
-            :key="index"
+            :key="node.Setting._id"
             :setting="node"
             :container="mediaLocation[index]"
             :scale="realScale"
@@ -101,6 +101,15 @@
         >
 
         </graph-media>
+
+        <graph-note
+            v-for="(note, index) in notes"
+            :note="note"
+            :container="viewBox"
+            :key="note.Setting._id"
+        >
+
+        </graph-note>
 
         <div :style="viewBoxToolStyle" class="d-flex flex-row">
             <graph-label-selector
@@ -150,6 +159,7 @@
     import GraphMedia from './GraphMedia.vue';
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
+    import GraphNote from "@/components/graphComponents/GraphNote.vue";
     import {GraphMetaData, LabelViewDict} from '@/utils/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitInfoAdd, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
@@ -166,8 +176,8 @@
             GraphMedia,
             GraphNodeButton,
             GraphLabelSelector,
-            RectContainer
-            // GraphNote,
+            RectContainer,
+            GraphNote,
         },
         data() {
             return {
@@ -784,10 +794,10 @@
                             }
                         }
                     );
-                        result = result.concat(nodes);
-                        result = result.concat(links);
-                        result = result.concat(medias);
-                        this.selectItem(result)
+                    result = result.concat(nodes);
+                    result = result.concat(links);
+                    result = result.concat(medias);
+                    this.selectItem(result)
                 }
             },
 
@@ -873,7 +883,6 @@
         },
 
         watch: {
-
             labelDict: function (): void {
                 this.getLabelViewDict()
             }

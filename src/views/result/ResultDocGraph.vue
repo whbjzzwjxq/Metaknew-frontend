@@ -18,8 +18,10 @@
                     </div>
                     <v-col cols="2" class="pa-0 ma-0">
                         <sub-tool-new-item
-                            @add-empty-node="newNode(arguments[0])"
+                            @add-empty-node="newNode"
+                            @add-empty-link="newLink"
                             @add-media="addMedia"
+                            @add-empty-note="newNote"
                         >
                         </sub-tool-new-item>
                     </v-col>
@@ -108,8 +110,9 @@
                 return document.addEmptyLink(start, end);
             },
 
-            newNote() {
-
+            newNote(document?: GraphSelfPart) {
+                document || (document = this.document);
+                return document.addEmptyNote();
             },
 
             addMedia: function (mediaIdList: id[], document?: GraphSelfPart) {

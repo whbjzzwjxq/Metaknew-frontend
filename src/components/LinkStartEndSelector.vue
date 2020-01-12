@@ -6,7 +6,7 @@
                 :items="nodeToLinkItems"
                 :disabled="!editable"
                 item-text="text"
-                item-value="value"
+                item-value="_id"
                 item-disabled="disabled"
                 label="startNode"
                 dense
@@ -20,7 +20,7 @@
                 :items="nodeToLinkItems"
                 :disabled="!editable"
                 item-text="text"
-                item-value="value"
+                item-value="_id"
                 item-disabled="disabled"
                 label="endNode"
                 dense
@@ -37,18 +37,14 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue'
-    import {
-        GraphSelfPart,
-        MediaSettingPart,
-        NodeSettingPart,
-        itemEqual,
-    } from "@/utils/graphClass";
+    import Vue from 'vue';
+    import {GraphSelfPart, itemEqual} from "@/utils/graphClass";
 
     interface NodeAsSelectorItem {
         disabled: boolean,
         text: string,
-        value: id
+        _id: id,
+        _type: BaseType
     }
 
     export default Vue.extend({
@@ -56,8 +52,8 @@
         components: {},
         data() {
             return {
-                startCache: null as unknown as NodeAsSelectorItem,
-                endCache: null as unknown as NodeAsSelectorItem,
+                startCache: undefined as NodeAsSelectorItem | undefined,
+                endCache: undefined as NodeAsSelectorItem | undefined,
                 editable: false,
                 itemClass: "pt-0 pb-0 pl-1 pr-1"
             }
@@ -72,24 +68,12 @@
                 required: true
             },
             currentStart: {
-                type: Object as () => VisNodeSettingPart,
-                default: () => ({
-                    Setting: {
-                        _id: -1,
-                        _type: 'node' as BaseType,
-                        _label: ''
-                    }
-                })
+                type: Object as () => VisNodeSettingPart | undefined,
+                default: undefined
             },
             currentEnd: {
-                type: Object as () => VisNodeSettingPart,
-                default: () => ({
-                    Setting: {
-                        _id: -1,
-                        _type: 'node' as BaseType,
-                        _label: ''
-                    }
-                })
+                type: Object as () => VisNodeSettingPart | undefined,
+                default: undefined
             }
         },
         computed: {
@@ -99,55 +83,54 @@
             nodes: function (): VisNodeSettingPart[] {
                 return this.document.Graph.nodes
             },
+            nodeIdList: function (): id[] {
+                return this.nodes.map(node => node.Setting._id)
+            },
             nodeToLinkItems: function (): NodeAsSelectorItem[] {
                 return this.nodes.map(node => ({
-                    "disabled": itemEqual(this.currentStart.Setting, node.Setting) ||
-                        itemEqual(this.currentEnd.Setting, node.Setting),
+                    "disabled":
+                        !((!this.addLinkStartModel || !itemEqual(this.addLinkStartModel, node.Setting)) &&
+                        (!this.addLinkEndModel || !itemEqual(this.addLinkEndModel, node.Setting))),
                     "text": node.Setting._name,
-                    "value": node.Setting._id
+                    "_id": node.Setting._id,
+                    "_type": node.Setting._type
                 }))
             },
 
             //是否能够添加Link
-            addLinkDisable: function () {
-                return this.editable && this.addLinkStartModel && this.addLinkEndModel
+            addLinkDisable: function (): boolean {
+                return this.editable &&
+                    (this.addLinkStartModel !== undefined) &&
+                    (this.addLinkEndModel !== undefined)
             },
 
             addLinkStartModel: {
-                get(): NodeAsSelectorItem {
-                    return this.currentStart instanceof NodeSettingPart || this.currentStart instanceof MediaSettingPart
-                        ? this.nodeToLinkItems[this.nodes.indexOf(this.currentStart)]
+                get(): NodeAsSelectorItem | undefined {
+                    return (!this.startCache && this.currentStart) // startCache 不存在而且有current
+                        ? this.nodeToLinkItems[this.nodeIdList.indexOf(this.currentStart.Setting._id)]
                         : this.startCache;
                 },
                 set(value: NodeAsSelectorItem): void {
-                    let start = this.nodes.filter(node => node.Setting._id === value.value)[0];
-                    value.disabled = true;
+                    let start = this.nodes.filter(node => node.Setting._id === value._id)[0];
                     this.startCache = value;
-                    this.$emit('selectItem-link', start, null)
+                    this.$emit('select-item-link', start, undefined)
                 }
             },
 
             addLinkEndModel: {
-                get(): NodeAsSelectorItem {
-                    return this.currentEnd instanceof NodeSettingPart || this.currentEnd instanceof MediaSettingPart
+                get(): NodeAsSelectorItem | undefined {
+                    return (!this.endCache && this.currentEnd)
                         ? this.nodeToLinkItems[this.nodes.indexOf(this.currentEnd)]
                         : this.endCache;
                 },
                 set(value: NodeAsSelectorItem): void {
-                    let end = this.nodes.filter(node => node.Setting._id === value.value)[0];
-                    value.disabled = true;
+                    let end = this.nodes.filter(node => node.Setting._id === value._id)[0];
                     this.endCache = value;
-                    this.$emit('selectItem-link', null, end)
+                    this.$emit('select-item-link', undefined, end)
                 }
             },
         },
         methods: {
-            select($event: NodeAsSelectorItem['value']) {
-                let node = this.nodes.filter(node => node.Setting._id === $event)[0];
-                let index = this.nodes.indexOf(node);
-                this.nodeToLinkItems[index].disabled = true;
-            },
-
             addLinkSelect() {
                 let result = this.clearSelect();
                 this.$emit('add-link', result[0], result[1])
@@ -156,20 +139,18 @@
             clearSelect() {
                 let start;
                 let end;
-                if (this.addLinkStartModel) {
-                    start = this.nodes.filter(node => node.Setting._id === this.addLinkStartModel.value)[0];
-                    let indexStart = this.nodes.indexOf(start);
-                    this.nodeToLinkItems[indexStart].disabled = false;
+                if (this.addLinkStartModel !== undefined) {
+                    let value = this.addLinkStartModel._id;
+                    start = this.nodes.filter(node => node.Setting._id === value)[0];
                 }
-                if (this.addLinkEndModel) {
-                    end = this.nodes.filter(node => node.Setting._id === this.addLinkEndModel.value)[0];
-                    let indexEnd = this.nodes.indexOf(end);
-                    this.nodeToLinkItems[indexEnd].disabled = false;
+                if (this.addLinkEndModel !== undefined) {
+                    let value = this.addLinkEndModel._id;
+                    end = this.nodes.filter(node => node.Setting._id === value)[0];
                 }
                 if (start && end) {
                     return [start, end]
                 } else {
-                    return [null, null]
+                    return [undefined, undefined]
                 }
             }
         },

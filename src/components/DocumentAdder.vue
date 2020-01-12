@@ -28,28 +28,28 @@
         },
         props: {},
         computed: {
-            itemDict: function () {
+            itemDict: function (): Record<string, IconItem> {
                 return {
                     graph: {
-                        icon: getIcon('i-item', 'DocGraph'),
+                        name: getIcon('i-item', 'DocGraph'),
                         text: 'New Graph',
                         isBlock: false,
                         _func: this.addGraph
                     },
                     paper: {
-                        icon: getIcon('i-item', 'DocPaper'),
+                        name: getIcon('i-item', 'DocPaper'),
                         text: 'New Paper',
                         isBlock: false,
                         _func: this.addPaper
                     },
                     fromCloud: {
-                        icon: getIcon('i-get-media-type', 'fromCloud'),
+                        name: getIcon('i-get-media-type', 'fromCloud'),
                         text: 'From CloudRepo',
                         isBlock: true,
                         _func: this.doNothing
                     },
                     fromWeb: {
-                        icon: getIcon('i-get-media-type', 'fromWeb'),
+                        name: getIcon('i-get-media-type', 'fromWeb'),
                         text: 'From HyperLink',
                         isBlock: true,
                         _func: this.doNothing

@@ -217,6 +217,7 @@ declare global {
     interface BaseState {
         isDeleted: boolean; // 是否被删除;
         isSelf: boolean; // 是否是自己的内容
+        [prop: string]: boolean;
     }
 
     interface NodeState extends BaseState {
@@ -238,6 +239,7 @@ declare global {
         isMouseOn: boolean;
         isAdd: boolean;
         isLock: boolean;
+        isDark: boolean;
     }
 
     interface GraphState extends BaseState {
@@ -491,7 +493,6 @@ export class MediaInfoPart {
     ) {
         let id = info.id;
         file ? (this.file = file) : (this.file = null);
-        // todo File详细定义
         this.status = status;
         this.error = error;
         this.id = id;
@@ -603,7 +604,8 @@ export class SettingPart {
         this.parent = parent;
     }
 
-    updateState(prop: string, value: boolean) {
+    updateState(prop: string, value?: boolean) {
+        value || (value = !this.State[prop]);
         Vue.set(this.State, prop, value);
     }
 
@@ -729,7 +731,7 @@ export class NoteSettingPart extends SettingPart {
     static emptyNoteSetting(
         _id: id,
         _label: string,
-        _content: string,
+        _content: NoteContent,
         parent: GraphSelfPart) {
         let setting = noteSettingTemplate(_id, _label, _content);
         let state = noteStateTemplate('isAdd');
@@ -991,6 +993,13 @@ export class GraphSelfPart {
         this.addItems([setting]);
         return setting;
     }
+
+    addEmptyNote() {
+        let id = getIndex();
+        let setting = NoteSettingPart.emptyNoteSetting(id, 'text', {text: ''}, this);
+        this.addItems([setting]);
+        return setting
+    }
 }
 
 let globalIndex = 0;
@@ -1003,7 +1012,7 @@ export const getIndex = () => {
     return '$_' + globalIndex
 }; // 获取新内容索引
 
-export const itemEqual = (itemA: Setting, itemB: Setting) =>
+export const itemEqual = (itemA: {_id: id, _type: BaseType}, itemB: {_id: id, _type: BaseType}) =>
     itemA._id === itemB._id && itemA._type === itemB._type; // 两个Item是否一样
 
 export const findItem = (list: Array<SettingPart>, _id: id, _type: BaseType) =>

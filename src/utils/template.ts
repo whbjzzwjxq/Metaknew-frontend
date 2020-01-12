@@ -597,8 +597,8 @@ const noteSetting: SettingConf = {
     Base: {
         size: {
             type: 'Number',
-            default: 0,
-            range: [10, 48],
+            default: 300,
+            range: [300, 600],
             tips: '如果为0则会根据综合指标体现大小',
             required: null,
             explain: '节点可视化尺寸'
@@ -730,7 +730,7 @@ export function graphSettingTemplate(_id: id) {
     return setting;
 }
 
-export function noteSettingTemplate(_id: id, _label: string, _content: Object) {
+export function noteSettingTemplate(_id: id, _label: string, _content: NoteContent) {
     let setting = <NoteSetting>{
         _id,
         _type: 'note',
@@ -765,10 +765,9 @@ export function noteStateTemplate(...rest: Array<string>) {
     return {
         isSelected: false,
         isMouseOn: false,
-        isDeleted: false,
         isAdd: rest.indexOf("isAdd") > -1,
-        isSelf: true,
-        isLock: false
+        isLock: false,
+        isDark: false
     } as NoteState
 }
 

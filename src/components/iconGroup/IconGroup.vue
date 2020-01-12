@@ -70,7 +70,7 @@
             activeIconList: function (): IconItem[] {
                 return this.iconList.filter(icon => icon.render === true || icon.render === undefined)
             },
-            classContent: function () {
+            classContent: function (): string {
                 return this.vertical
                     ? "d-flex flex-column"
                     : "d-flex flex-row"

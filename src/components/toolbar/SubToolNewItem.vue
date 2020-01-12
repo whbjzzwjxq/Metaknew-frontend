@@ -46,6 +46,13 @@
                     <document-adder v-else-if="key === 'document'">
 
                     </document-adder>
+                    <v-btn
+                        outlined
+                        tile
+                        v-else-if="key === 'note'"
+                        @click="addNote">
+                        New Text Note
+                    </v-btn>
                 </v-card-text>
             </v-card>
         </v-menu>
@@ -108,13 +115,17 @@
             addMedia(mediaIdList: id[]) {
                 this.$emit('add-media', mediaIdList);
             },
-            addLink() {
-
+            addLink(start: VisNodeSettingPart, end: VisNodeSettingPart) {
+                this.$emit('add-empty-link', start, end);
             },
 
             addGraph() {
 
             },
+
+            addNote() {
+                this.$emit('add-empty-note')
+            }
 
         },
         watch: {},
