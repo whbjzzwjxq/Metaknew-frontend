@@ -7,7 +7,7 @@
                 :disabled="!editable"
                 item-text="text"
                 item-value="_id"
-                item-disabled="disabled"
+                :item-disabled="getItemDisabled"
                 label="startNode"
                 dense
                 return-object>
@@ -21,7 +21,7 @@
                 :disabled="!editable"
                 item-text="text"
                 item-value="_id"
-                item-disabled="disabled"
+                :item-disabled="getItemDisabled"
                 label="endNode"
                 dense
                 return-object>
@@ -41,7 +41,6 @@
     import {GraphSelfPart, itemEqual} from "@/utils/graphClass";
 
     interface NodeAsSelectorItem {
-        disabled: boolean,
         text: string,
         _id: id,
         _type: BaseType
@@ -88,9 +87,6 @@
             },
             nodeToLinkItems: function (): NodeAsSelectorItem[] {
                 return this.nodes.map(node => ({
-                    "disabled":
-                        !((!this.addLinkStartModel || !itemEqual(this.addLinkStartModel, node.Setting)) &&
-                        (!this.addLinkEndModel || !itemEqual(this.addLinkEndModel, node.Setting))),
                     "text": node.Setting._name,
                     "_id": node.Setting._id,
                     "_type": node.Setting._type
@@ -152,6 +148,13 @@
                 } else {
                     return [undefined, undefined]
                 }
+            },
+
+            getItemDisabled(item: NodeAsSelectorItem): boolean {
+                let startUnDuplicate = !this.addLinkStartModel || !itemEqual(this.addLinkStartModel, item);
+                // 没有开始节点 那么不重复 或者有但是不相等 也不重复
+                let endUnDuplicate = !this.addLinkEndModel || !itemEqual(this.addLinkEndModel, item);
+                return !(startUnDuplicate && endUnDuplicate)
             }
         },
         watch: {},

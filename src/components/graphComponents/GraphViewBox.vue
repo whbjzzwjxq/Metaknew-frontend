@@ -416,7 +416,10 @@
             links: function (): LinkSettingPart[] {
                 let result: LinkSettingPart[] = [];
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Graph.links)
+                    result = result.concat(graph.Graph.links.filter(link => {
+                        return this.nodeIdList.includes(link.Setting._start.Setting._id) &&
+                            this.nodeIdList.includes(link.Setting._end.Setting._id)
+                    }))
                 });
                 return result
             },

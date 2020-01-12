@@ -8,7 +8,7 @@
                         :current-end="end"
                         :document="document"
                         :edit-mode="editMode"
-                        @select-link="changeNode">
+                        @select-item-link="changeNode">
 
                     </link-start-end-selector>
                     <v-text-field
@@ -72,6 +72,7 @@
     import {GraphSelfPart, LinkInfoPart} from "@/utils/graphClass";
     import {FieldType, labelItems, ResolveType, EditProps} from "@/utils/labelField";
     import {deepClone} from "@/utils/utils";
+    import {LabelGroup} from "@/utils/interfaceInComponent";
 
     export default Vue.extend({
         name: "CardPageLinkInfo",
@@ -106,10 +107,10 @@
             start: function (): VisNodeSettingPart {
                 return this.baseData.Ctrl.Start
             },
-            end: function () {
+            end: function (): VisNodeSettingPart {
                 return this.baseData.Ctrl.End
             },
-            info: function () {
+            info: function (): BaseLinkInfo {
                 return this.baseData.Info
             },
             pLabel: {
@@ -139,7 +140,7 @@
                     this.updateValue('CommonProps', commonProps)
                 }
             },
-            labelGroup: function () {
+            labelGroup: function (): LabelGroup[] {
                 return [
                     {"name": "作者的标注", "labels": this.info.Labels, "closeable": false, "editable": true, 'prop': 'Info'}
                 ]

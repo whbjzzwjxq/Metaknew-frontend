@@ -272,7 +272,7 @@ export class NodeInfoPart {
         userConcern: UserConcern
     ) {
         const id = info.id;
-        this.isRemote = localIdRegex.test(id.toString());
+        this.isRemote = !localIdRegex.test(id.toString());
         this.isEdit = false;
         this.id = id;
         this.Info = info;
@@ -388,7 +388,7 @@ export class LinkInfoPart {
     constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl) {
         const id = info.id;
         this.id = id;
-        this.isRemote = localIdRegex.test(id.toString());
+        this.isRemote = !localIdRegex.test(id.toString());
         this.isEdit = false;
         this.Info = info;
         this.Ctrl = ctrl;
@@ -496,7 +496,7 @@ export class MediaInfoPart {
         this.status = status;
         this.error = error;
         this.id = id;
-        this.isRemote = localIdRegex.test(id.toString());
+        this.isRemote = !localIdRegex.test(id.toString());
         this.isEdit = false;
         this.Info = info;
         this.Ctrl = ctrl;
