@@ -64,7 +64,7 @@
         <rect-container
             v-for="(metaData, index) in activeGraphRectList"
             :key="metaData.self.id"
-            :container="metaData.rect"
+            :container="getSubGraphByRect(metaData.rect)"
             v-show="metaData.self.Conf.State.isExplode"
             render-as-border>
 
@@ -322,40 +322,40 @@
                 return this.activeGraphList.map(graph => graph.id)
             },
 
+            //graph的元数据List 就是计算各个SubGraph的绝对坐标
             activeGraphMetaDataList: function (): GraphMetaData[] {
-                let realScale = this.realScale;
                 let vm = this;
                 let baseContainer = new RectByPoint({x: 0, y: 0}, {
                     x: this.containerRect.width,
-                    y: this.containerRect.height // 不乘是因为container恒定是ViewBox
-                }, 0);
+                    y: this.containerRect.height
+                }, 0); // 起始坐标置为(0,0)
+
                 let basePoint = getPoint(this.document.baseNode.Setting.Base).multiRect(this.containerRect);
-                let realPoint = this.lastViewPoint.copy().decrease(this.viewPoint.copy().decrease(basePoint).multi(realScale));
+                // 基础点就是Graph.baseNode点
                 let root: GraphMetaData = {
                     parent: null,
                     self: this.document,
                     rect: baseContainer,
-                    absolute: realPoint
-                };
+                    absolute: basePoint
+                }; // root的MetaData
 
+                // 从父亲Graph算出点的绝对位置
                 const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
-                    let delta = getPoint(node.Setting.Base)
-                        .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
-                        .multiRect(parentMetaData.rect.positiveRect()) // 乘以矩形 e.g. -0.2 * 1000 = -200
-                        .multi(realScale) // 乘以缩放比 e.g. -200 * 0.5 = -100
-                        .add(parentMetaData.absolute) // 加上绝对坐标 e.g. -100 + 320 = 220
+                    let delta = getPoint(node.Setting.Base) // 自己的位置比例
+                        .decrease(node.parent.baseNode.Setting.Base) // 父亲GraphBaseNode的位置比例
+                        .multiRect(parentMetaData.rect.positiveRect()) // 乘以父亲Graph的宽高
+                        .add(parentMetaData.absolute) // 加上父亲GraphBaseNode的绝对位置
                     return delta
                 }
-                // 从父亲Graph里的节点位置推出自身的矩形位置
-                const getRectFromAbsPoint = (document: GraphSelfPart, absPoint: Point) => {
-                    // 当前缩放下矩形的长宽
-                    let width = document.rect.width * realScale;
-                    let height = document.rect.height * realScale;
-                    // baseNode在矩形的位置
+
+                // 从父亲Graph里的节点位置推出自身的矩形的绝对位置
+                const getRectFromAbsPoint = (document: GraphSelfPart, parentPoint: Point) => {
+                    let {width, height} = document.rect;
+                    // 自身baseNode在自己矩形的位置
                     let delta = getPoint(document.baseNode.Setting.Base).multiRect({width, height});
-                    // 起点与parentNode的位置差为delta
-                    // 额外加上整个ViewBox的位置差
-                    let start = delta.multi(-1).add(absPoint);
+                    // 起点与parentNode的位置差为delta，可以算出起点(左上角)
+                    let start = delta.multi(-1).add(parentPoint);
+                    // 终点就是起点加长宽
                     let end = start.copy().addRect({width, height})
                     return new RectByPoint(start, end)
                 };
@@ -367,7 +367,7 @@
                         let {_type, _id, Base} = node.Setting;
                         let index = vm.activeGraphIdList.indexOf(_id);
                         if (_type === 'document' && index > -1 && _id !== graphMeta.self.id) {
-                            // 这个Graph被激活了
+                            // 如果这个Graph被激活了，就计算元数据
                             let doc = vm.activeGraphList[index];
                             let absPoint = getAbsPointFromParent(node, graphMeta);
                             let childRect = getRectFromAbsPoint(doc, absPoint);
@@ -378,10 +378,12 @@
                                 absolute: absPoint
                             };
                             result.push(childGraphMeta);
+                            // 搜索子图
                             searchGraph(childGraphMeta)
                         }
                     })
                 };
+                // 搜索根图
                 searchGraph(root);
                 return result
             },
@@ -504,7 +506,7 @@
             },
 
             //关系midX
-            midLocation(): PointObject[] {
+            midLocation: function (): PointObject[] {
                 return this.links.map(link => {
                     let result;
                     let x1 = this.getTargetInfo(link.Setting._start).x;
@@ -534,7 +536,7 @@
             },
 
             //压缩版本的nodeSetting
-            nodeSettingList(): VisualNodeSetting[] {
+            nodeSettingList: function (): VisualNodeSetting[] {
                 return this.nodes.map((node, index) => {
                     let {x, y, width, height} = this.nodeLocation[index].positiveRect();
                     return {
@@ -549,7 +551,7 @@
                 });
             },
 
-            mediaSettingList(): VisualNodeSetting[] {
+            mediaSettingList: function (): VisualNodeSetting[] {
                 return this.medias.map((media, index) => {
                     let {x, y, width, height} = this.mediaLocation[index].positiveRect();
                     let realX = x + width / 2;
@@ -567,7 +569,7 @@
             },
 
             //显示节点
-            showNode(): boolean[] {
+            showNode: function (): boolean[] {
                 return this.nodes.map(node =>
                     (node.parent.Conf.State.isExplode && // 父组件要炸开
                         this.labelViewDict[node.Setting._type][node.Setting._label] &&
@@ -578,7 +580,7 @@
             },
 
             //显示边
-            showLink(): boolean[] {
+            showLink: function (): boolean[] {
                 return this.links.map(link =>
                     link.parent.Conf.State.isExplode && // 父组件要炸开
                     this.labelViewDict.link[link.Setting._label] &&
@@ -588,7 +590,7 @@
                 )
             },
 
-            showMedia(): boolean[] {
+            showMedia: function (): boolean[] {
                 return this.medias.map(media =>
                     this.labelViewDict.media[media.Setting._label] &&
                     !media.State.isDeleted &&
@@ -597,7 +599,7 @@
             },
 
             //选择框的相关设置
-            selectorStyle(): CSSProp {
+            selectorStyle: function (): CSSProp {
                 return {
                     "position": "absolute",
                     "fill": "#000000",
@@ -609,7 +611,7 @@
                 }
             },
 
-            viewBoxToolStyle(): CSSProp {
+            viewBoxToolStyle: function (): CSSProp {
                 return {
                     position: 'absolute',
                     left: this.containerRect.width * 0.85 + 'px',
@@ -623,6 +625,34 @@
 
         },
         methods: {
+            getRectByPoint(width: number, height: number, setting: VisNodeSettingPart) {
+                // 将绝对的坐标点转化为矩形
+                //width,height: 从源点引申的尺寸，源点在左上角
+                let graphMeta = this.getGraphMetaData(setting.parent.id);
+                const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
+                    let delta = getPoint(node.Setting.Base)
+                        .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
+                        .multiRect(parentMetaData.rect.positiveRect()) // 乘以矩形 e.g. -0.2 * 1000 = -200
+                    // setting.parent.id === this.document.id && delta.multi(this.realScale)
+                    // 如果是根节点 则乘以缩放比 e.g. -200 * 0.5 = -100 否则缩放比在GraphMeta求的时候已经乘了
+                    delta.add(parentMetaData.absolute) // 加上绝对坐标 e.g. -100 + 320 = 220
+                    return delta
+                }
+                let startPoint = this.pointMoveComputed(getAbsPointFromParent(setting, graphMeta));
+                let endPoint = startPoint.copy().addRect({width, height});
+                return new RectByPoint(startPoint, endPoint)
+            },
+
+            getSubGraphByRect(absRect: RectByPoint) {
+                let start = this.pointMoveComputed(absRect.start)
+                let end = this.pointMoveComputed(absRect.end)
+                return new RectByPoint(start, end)
+            },
+
+            pointMoveComputed(point: Point) {
+                return this.lastViewPoint.copy().decrease(this.viewPoint.copy().decrease(point).multi(this.realScale));
+            },
+
             dragStart($event: MouseEvent) {
                 if (this.dragAble) {
                     this.dragStartPoint.update($event);
@@ -659,22 +689,6 @@
                     this.drag(target, $event);
                     this.isDragging = false;
                 }
-            },
-
-            getRectByPoint(width: number, height: number, setting: VisNodeSettingPart) {
-                let graphMeta = this.getGraphMetaData(setting.parent.id);
-                const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
-                    let delta = getPoint(node.Setting.Base)
-                        .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
-                        .multiRect(parentMetaData.rect.positiveRect()) // 乘以矩形 e.g. -0.2 * 1000 = -200
-                    setting.parent.id === this.document.id && delta.multi(this.realScale)
-                    // 如果是根节点 则乘以缩放比 e.g. -200 * 0.5 = -100 否则缩放比在GraphMeta求的时候已经乘了
-                    delta.add(parentMetaData.absolute) // 加上绝对坐标 e.g. -100 + 320 = 220
-                    return delta
-                }
-                let startPoint = getAbsPointFromParent(setting, graphMeta);
-                let endPoint = startPoint.copy().addRect({width, height});
-                return new RectByPoint(startPoint, endPoint)
             },
 
             //node的原生事件
