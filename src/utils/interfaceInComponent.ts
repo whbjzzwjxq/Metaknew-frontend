@@ -29,3 +29,21 @@ export type GraphMetaData = {
     rect: RectByPoint, // 对应的矩形
     parent: GraphMetaData | null, //对应的上级MetaData
 }
+
+//DataTable使用
+export interface FlatNodeInfo extends BaseInfo {
+    id: string;
+    Name: string;
+    Alias: Array<string>;
+    BaseImp: number;
+    BaseHardLevel: number;
+    Language: string;
+    Topic: Array<string>;
+    Labels: Array<string>;
+    Text: Translate;
+    Translate: Translate;
+    IncludedMedia: Array<string | number>;
+    MainPic: string;
+
+    [prop: string]: any
+}
