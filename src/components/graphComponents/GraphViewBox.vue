@@ -429,6 +429,10 @@
                 return this.document.Graph.medias
             },
 
+            mediaIdList: function (): id[] {
+                return this.medias.map(media => media.Setting._id)
+            },
+
             notes: function (): NoteSettingPart[] {
                 return this.document.Graph.notes
             },
@@ -647,12 +651,14 @@
             },
 
             getSubGraphByRect(absRect: RectByPoint) {
+                // 转化Rect
                 let start = this.pointMoveComputed(absRect.start)
                 let end = this.pointMoveComputed(absRect.end)
                 return new RectByPoint(start, end)
             },
 
             pointMoveComputed(point: Point) {
+                // 根据View和scale计算实际坐标
                 return this.lastViewPoint.copy().decrease(this.viewPoint.copy().decrease(point).multi(this.realScale));
             },
 
@@ -853,8 +859,8 @@
                 let result;
                 item
                     ? isMediaSetting(item)
-                    ? result = this.mediaSettingList[this.medias.indexOf(item)]
-                    : result = this.nodeSettingList[this.nodes.indexOf(item)]
+                    ? result = this.mediaSettingList[this.mediaIdList.indexOf(item.Setting._id)]
+                    : result = this.nodeSettingList[this.nodeIdList.indexOf(item.Setting._id)]
                     : result = {x: 0, y: 0, show: true};
                 return result
             },

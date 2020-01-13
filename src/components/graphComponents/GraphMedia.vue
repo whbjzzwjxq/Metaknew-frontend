@@ -25,7 +25,7 @@
     import Vue from 'vue'
     import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {Point, RectByPoint} from "@/utils/geoMetric";
+    import {getPoint, Point, RectByPoint} from "@/utils/geoMetric";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({
@@ -85,7 +85,7 @@
             }
         },
         methods: {
-            updateSize(start: Point, end: Point) {
+            updateSize(start: PointMixed, end: PointMixed) {
                 // 视觉上的更新尺寸start, end
                 let setting = this.setting.Setting;
                 let scale = this.scale;
@@ -95,7 +95,7 @@
                 //更新长宽
                 let width = setting.Base.size;
                 let height = setting.Base.scaleX * width;
-                let delta = end.copy().decrease(start).divide(this.scale);
+                let delta = getPoint(end).decrease(start).divide(this.scale);
                 width += delta.x;
                 height += delta.y;
                 setting.Base.scaleX = height / width;
@@ -103,10 +103,10 @@
             },
 
             updateSizeByBorder(delta: Point, resizeType: string) {
-                if (['bottom', 'right', 'proportion'].includes(resizeType)) {
-                    this.updateSize(new Point(0, 0), delta)
+                if (['w', 'nw', 'sw'].includes(resizeType)) {
+                    this.updateSize({x: 0, y: 0}, delta)
                 } else {
-                    this.updateSize(delta, new Point(0, 0))
+                    this.updateSize(delta, {x: 0, y: 0})
                 }
             },
 

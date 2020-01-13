@@ -176,7 +176,7 @@
                 return this.graphMetaData.rect
             },
 
-            emptyRect: function () {
+            emptyRect: function (): AreaRect {
                 return {
                     x: 0,
                     y: 0,
@@ -185,7 +185,7 @@
                 }
             },
 
-            baseRect: function () {
+            baseRect: function (): AreaRect {
                 return this.container.positiveRect()
             },
 

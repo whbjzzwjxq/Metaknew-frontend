@@ -138,7 +138,6 @@
         record: {
             status: 'editing',
             description: '矩形窗口',
-            // todo 尺寸限定在rect里 不要越界
         }
     })
 </script>
