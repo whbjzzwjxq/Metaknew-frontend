@@ -50,13 +50,13 @@
             //拖动事件监听的外延
             listenBorder: {
                 type: Number as () => number,
-                default: 1
+                default: 8
             },
 
             //拖动事件监听的内展
             listenInner: {
                 type: Number as () => number,
-                default: 1
+                default: 8
             },
 
             //是否被选中
@@ -98,7 +98,7 @@
                     result[name] = border.getDivCSS({
                         backgroundColor: 'grey',
                         borderWidth: 0,
-                        opacity: this.isSelected ? 0.3 : 0.3,
+                        opacity: this.isSelected ? 0.3 : 0,
                         cursor: name + '-resize'
                     })
                 });

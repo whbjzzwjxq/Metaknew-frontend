@@ -75,16 +75,16 @@
             }
         },
         computed: {
-            setting: function () {
+            setting: function (): LinkSetting {
                 return this.link.Setting
             },
 
             // 说的是线型 不是'link'
-            type: function () {
+            type: function (): string {
                 return this.setting.Base.type
             },
 
-            draw: function () {
+            draw: function (): Record<string, number> {
                 let source = this.source;
                 let target = this.target;
                 let distance = getPointDistance(source, target);
@@ -165,26 +165,26 @@
                 }
             },
 
-            strokeDash: function () {
+            strokeDash: function (): string {
                 return this.setting.Base.isDash
                     ? '9, 2'
                     : ''
             },
 
-            controlPoint: function () {
+            controlPoint: function (): PointMixed {
                 return this.setting.Base.direct === 'top'
                     ? {x: this.draw.x1, y: this.draw.y2}
                     : {x: this.draw.x2, y: this.draw.y1}
             },
 
-            curvePath: function () {
+            curvePath: function (): string {
                 return [
                     'M', this.draw.x1, this.draw.y1,
                     'Q', this.controlPoint.x, this.controlPoint.y, this.draw.x2, this.draw.y2
                 ].join(' ')
             },
 
-            polylinePath: function () {
+            polylinePath: function (): string {
                 return [
                     'M', this.draw.x1, this.draw.y1,
                     'L', this.controlPoint.x, this.controlPoint.y,
@@ -192,7 +192,7 @@
                 ].join(' ')
             },
 
-            arrowSetting: function () {
+            arrowSetting: function (): Record<string, any> {
                 let setting = this.setting.Arrow;
                 let length = setting.arrowLength;
                 let refY = length * 0.2; // y方向上的变化量
@@ -209,7 +209,7 @@
                 }
             },
 
-            textSetting: function () {
+            textSetting: function (): Record<string, any> {
                 return {
                     width: this.setting._label.length * 12,
                     height: 20

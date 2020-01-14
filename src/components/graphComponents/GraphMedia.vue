@@ -103,7 +103,7 @@
             },
 
             updateSizeByBorder(delta: Point, resizeType: string) {
-                if (['w', 'nw', 'sw'].includes(resizeType)) {
+                if (['e', 'ne', 'se', 's'].includes(resizeType)) {
                     this.updateSize({x: 0, y: 0}, delta)
                 } else {
                     this.updateSize(delta, {x: 0, y: 0})
