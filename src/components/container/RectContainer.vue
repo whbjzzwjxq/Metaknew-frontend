@@ -6,9 +6,9 @@
             </slot>
         </div>
         <div
-            v-for="(border, name) in borderStyleDict"
+            v-for="(border, name) in borderDict"
             :key="name"
-            :style="border"
+            :style="border.css"
             @mousedown.stop="startScale(arguments[0], name)"
             @mousemove.stop="scaling"
             @mouseup.stop="endScale"
@@ -69,6 +69,11 @@
             renderAsBorder: {
                 type: Boolean,
                 default: false
+            },
+
+            alwaysBorder: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -77,33 +82,30 @@
             },
             startPointStyle: function (): CSSProp {
                 // 注意没有长宽 只有起始点坐标
-                return this.container.getDivCSS({width: 0, height: 0})
+                return this.container.getDivCSS({width: 0, height: 0, borderWidth: 0})
             },
             contentStyle: function (): CSSProp {
                 // 注意是相对于父亲来说的
-                return this.container.getDivCSS({left: 0, top: 0})
+                return this.container.getDivCSS({left: 0, top: 0, borderWidth: 0})
+            },
+
+            showBorder: function (): boolean {
+                // 是否一直显示
+                return this.alwaysBorder || this.isSelected
             },
 
             // Border矩形的构成
-            borderList: function () {
+            borderDict: function (): Record<string, { css: CSSProp }> {
                 // 这里要把开始点置为0,0
                 let reGroupRect = new RectByPoint({x: 0, y: 0},
                     this.container.end.copy().decrease(this.container.start), 0);
-                return transformBorderToRect(reGroupRect, this.listenBorder, this.listenInner)
+                return transformBorderToRect(
+                    reGroupRect,
+                    this.listenBorder,
+                    this.listenInner,
+                    this.container.border,
+                    {opacity: this.showBorder ? 0.3 : 0, backgroundColor: 'grey'})
             },
-
-            borderStyleDict: function () {
-                let result: Record<string, CSSProp> = {};
-                Object.entries(this.borderList).map(([name, border]) => {
-                    result[name] = border.getDivCSS({
-                        backgroundColor: 'grey',
-                        borderWidth: 0,
-                        opacity: this.isSelected ? 0.3 : 0,
-                        cursor: name + '-resize'
-                    })
-                });
-                return result as Record<BorderType, CSSProp>
-            }
         },
         methods: {
             startScale: function ($event: MouseEvent, name: string) {

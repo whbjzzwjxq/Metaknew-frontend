@@ -29,7 +29,7 @@ declare global {
     type PointMixed = Point | PointObject
 }
 
-export type BorderType = 'nw'| 'n'| 'ne'| 'w'| 'e'| 'sw'| 's'| 'se' // 方向的英文缩写
+export type BorderType = 'nw' | 'n' | 'ne' | 'w' | 'e' | 'sw' | 's' | 'se' // 方向的英文缩写
 
 export class Point {
     x: number;
@@ -164,13 +164,14 @@ export class RectByPoint {
         return checkInRect(this.positiveRect(), point);
     }
 
-    getDivCSS(css?: CSSProp): CSSProp {
+    getDivCSS(css?: CSSProp, noBorder?: boolean): CSSProp {
         css || (css = {});
-        css = Object.assign({
+        !noBorder &&
+        (css = Object.assign({
             borderWidth: this.border + 'px',
             borderColor: "black",
             borderStyle: "solid"
-        }, css);
+        }, css));
         return getDivCSS(this.positiveRect(), css);
     }
 
@@ -186,35 +187,62 @@ export class RectByPoint {
     }
 }
 
-export const transformBorderToRect = (rect: RectByPoint, border: number, inner: number) => {
+export const transformBorderToRect = (rect: RectByPoint, border: number, inner: number, width: number, baseCSS?: CSSProp) => {
+    width < 1 && (width = 1);
+    width > 12 && (width = 12);
+    baseCSS || (baseCSS = {});
     let borderList = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'] as BorderType[];
     let {start, end} = rect;
-    let result: Record<string, RectByPoint> = {};
+    let result: Record<string, { css: CSSProp }> = {};
     borderList.map(borderType => {
-        let x1, x2, y1, y2;
+        let x1, x2, y1, y2, left, right, top, bottom;
         if (borderType.search('w') > -1) {
-            x1 = start.x - border;
+            x1 = start.x - width - border;
             x2 = start.x + inner;
+            left = border;
+            right = inner;
         } else if (borderType.search('e') > -1) {
             x1 = end.x - inner;
-            x2 = end.x + border;
+            x2 = end.x + width + border;
+            left = inner;
+            right = border;
         } else {
             x1 = start.x + inner;
             x2 = end.x - inner;
+            left = 0;
+            right = 0
         }
         if (borderType.search('n') > -1) {
-            y1 = start.y - border;
+            y1 = start.y - width - border;
             y2 = start.y + inner;
+            top = border;
+            bottom = inner;
         } else if (borderType.search('s') > -1) {
             y1 = end.y - inner;
-            y2 = end.y + border;
+            y2 = end.y + width + border;
+            top = inner;
+            bottom = border;
         } else {
             y1 = start.y + inner;
             y2 = end.y - inner;
+            top = 0;
+            bottom = 0;
         }
-        result[borderType] = new RectByPoint({x: x1, y: y1}, {x: x2, y: y2}, 0)
+        let rect = new RectByPoint({x: x1, y: y1}, {x: x2, y: y2}, 0);
+        result[borderType] = {
+            css: Object.assign({
+                borderLeftWidth: left + 'px',
+                borderRightWidth: right + 'px',
+                borderTopWidth: top + 'px',
+                borderBottomWidth: bottom + 'px',
+                borderColor: 'white',
+                borderStyle: 'solid',
+                cursor: borderType + '-resize',
+                // todo 半透明边框
+            } as CSSProp, baseCSS, rect.getDivCSS({}, true))
+        }
     });
-    return result as Record<BorderType, RectByPoint>
+    return result
 };
 
 export const getOriginRect = (pointA: PointMixed, pointB: PointMixed) => {

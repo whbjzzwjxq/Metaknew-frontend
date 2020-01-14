@@ -66,7 +66,8 @@
             :key="metaData.self.id"
             :container="getSubGraphByRect(metaData.rect)"
             v-show="metaData.self.Conf.State.isExplode"
-            render-as-border>
+            render-as-border
+            always-border>
 
         </rect-container>
 
