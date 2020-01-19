@@ -26,7 +26,8 @@
                 v-for="(node, index) in nodes"
                 v-show="showNode[index]"
                 :key="node.Setting._id"
-                :node="node"
+                :setting="node.Setting"
+                :state="node.State"
                 :size="impScaleRadius[index]"
                 :scale="realScale"
                 :point="nodeLocation[index].positiveRect()"
@@ -135,7 +136,6 @@
 
             </div>
         </div>
-
     </div>
 </template>
 

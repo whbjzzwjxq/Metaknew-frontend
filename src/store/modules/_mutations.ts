@@ -35,6 +35,10 @@ export const commitViewBoxResize = () => {
     return store.commit('getViewBox')
 };
 
+export const commitBottomDynamicBarResize = (payload?: number) => {
+    return store.commit('getBottomDynamicBar', payload)
+};
+
 export const commitItemChange = (payload: InfoPart) => {
     return store.commit('currentItemChange', payload)
 };

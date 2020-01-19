@@ -26,34 +26,61 @@
                         </sub-tool-new-item>
                     </v-col>
                     <v-col cols="2" class="pa-0 ma-0">
-                        <sub-tool-style
-
-                        >
+                        <sub-tool-style>
                         </sub-tool-style>
+                    </v-col>
+                    <v-col cols="2" class="pa-0 ma-0">
+                        <sub-tool-path
+                            :edit-mode="editMode"
+                            @path-open-current="bottomSheetOn('path')"
+                        >
+
+                        </sub-tool-path>
                     </v-col>
                 </div>
             </template>
         </toolbar-bottom>
+        <v-card :style="bottomSheetStyle" v-show="bottomSheet" class="unselected">
+            <v-card-title>
+                <template v-if="bottomSheetKey === 'path'">
+                    Current Path
+                </template>
+                <v-spacer></v-spacer>
+                <icon-group :icon-list="bottomSheetIconList"></icon-group>
+            </v-card-title>
+            <v-card-text class="pa-0 ma-0">
+                <path-drawer :container="bottomSheetRect">
+
+                </path-drawer>
+            </v-card-text>
+        </v-card>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
     import {RectByPoint} from "@/utils/geoMetric";
     import {
         getIndex,
         GraphSelfPart,
-        LinkInfoPart,
-        LinkSettingPart,
         NodeInfoPart,
-        NodeSettingPart,
         MediaSettingPart
     } from "@/utils/graphClass";
-    import {commitGraphAdd, commitGraphChange, commitInfoAdd, commitRootGraph} from "@/store/modules/_mutations";
+    import {
+        commitBottomDynamicBarResize,
+        commitGraphAdd,
+        commitGraphChange,
+        commitInfoAdd,
+        commitRootGraph
+    } from "@/store/modules/_mutations";
+    import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
+    import PathDrawer from "@/components/path/PathDrawer.vue";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
     import SubToolStyle from "@/components/toolbar/SubToolStyle.vue";
+    import SubToolPath from "@/components/toolbar/SubToolPath.vue";
+    import IconGroup from "@/components/iconGroup/IconGroup.vue";
+    import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -61,7 +88,10 @@
             GraphViewBox,
             ToolbarBottom,
             SubToolNewItem,
-            SubToolStyle
+            SubToolStyle,
+            SubToolPath,
+            IconGroup,
+            PathDrawer
         },
         data() {
             return {
@@ -70,7 +100,9 @@
                 baseNode: {
                     x: 0,
                     y: 0
-                }
+                },
+                bottomSheet: false,
+                bottomSheetKey: 'path'
             }
         },
         props: {},
@@ -90,27 +122,39 @@
                 )
             },
 
-            document: function(): GraphSelfPart {
+            document: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
-            editMode: function(): boolean {
+            editMode: function (): boolean {
                 return this.editPageRegex.test(String(this.$route.name))
+            },
+            bottomSheetRect: function (): RectByPoint {
+                return this.allComponentsStyle.bottomDynamicBar
+            },
+            bottomSheetStyle: function (): CSSProp {
+                return this.bottomSheetRect.getDivCSS({zIndex: 5}, true)
+            },
+            bottomSheetIconList: function (): IconItem[] {
+                return [
+                    {name: getIcon('i-collapse-arrow-double', true), _func: this.bottomSheetLarge},
+                    {name: getIcon('i-collapse-arrow-double', false), _func: this.bottomSheetDecrease},
+                    {name: getIcon('i-edit', 'close'), _func: this.bottomSheetOff},
+                ]
             }
         },
         methods: {
-            newNode(_label: string, document?: GraphSelfPart) {
+            newNode: function (_label: string, document?: GraphSelfPart) {
                 document || (document = this.document);
                 //Info Ctrl部分
                 return document.addEmptyNode(_label);
             },
-
-            newLink(start: VisNodeSettingPart, end: VisNodeSettingPart, document?: GraphSelfPart) {
+            newLink: function (start: VisNodeSettingPart, end: VisNodeSettingPart, document?: GraphSelfPart) {
                 document || (document = this.document);
                 //Info Ctrl部分
                 return document.addEmptyLink(start, end);
             },
 
-            newNote(document?: GraphSelfPart) {
+            newNote: function (document?: GraphSelfPart) {
                 document || (document = this.document);
                 return document.addEmptyNote();
             },
@@ -142,6 +186,29 @@
             saveDocument() {
 
             },
+
+            bottomSheetOn: function (key: string) {
+                this.bottomSheet = true;
+                this.bottomSheetKey = key
+            },
+            bottomSheetOff: function () {
+                this.bottomSheet = false
+            },
+
+            bottomSheetLarge: function () {
+                this.bottomSheetResize(true);
+            },
+
+            bottomSheetDecrease: function () {
+                this.bottomSheetResize(false);
+            },
+
+            bottomSheetResize: function (large?: boolean) {
+                large === undefined && (large = true);
+                let height = this.bottomSheetRect.start.y;
+                large ? (height -= 240) : (height += 240);
+                commitBottomDynamicBarResize(height)
+            }
         },
         watch: {},
         created(): void {
@@ -160,7 +227,8 @@
             let newGraph = this.addDocument('DocGraph');
             this.newNode('BaseNode');
             this.addDocument('DocGraph', newGraph);
-            this.newNode('BaseNode', newGraph)
+            this.newNode('BaseNode', newGraph);
+            // path test
         },
         mounted(): void {
 
@@ -173,10 +241,7 @@
 </script>
 
 <style scoped>
-    .empty {
-        height: 100%;
-        width: 12px;
-    }
+
 </style>
 
 /**

@@ -178,7 +178,7 @@
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/labelField";
     import {LabelGroup} from "@/utils/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
-    import {LevelConcern} from "@/utils/userConcern";
+    import {LevelConcern, UserConcern} from "@/utils/userConcern";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -219,13 +219,13 @@
             }
         },
         computed: {
-            info: function () {
+            info: function (): BaseNodeInfo {
                 return this.baseData.Info
             },
-            ctrl: function () {
+            ctrl: function (): BaseNodeCtrl {
                 return this.baseData.Ctrl
             },
-            userConcern: function () {
+            userConcern: function (): UserConcern {
                 return this.baseData.UserConcern
             },
 
@@ -233,15 +233,15 @@
                 return this.$store.state.dataManager
             },
 
-            type: function () {
+            type: function (): BaseType {
                 return this.info.type
             },
 
-            typeSelectable: function () {
+            typeSelectable: function (): boolean {
                 return ['node'].includes(this.type)
             },
 
-            simplifySetting: function () {
+            simplifySetting: function (): Record<string, any> {
                 return this.isSimplify
                     ? {
                         titleSize: 'font-size: 14px',
@@ -352,17 +352,19 @@
                 return {}
             },
 
-            imageList: function () {
-                return this.isSimplify
-                    ? []
-                    : this.info.IncludedMedia.map(id => {
+            imageList: function (): MediaInfoPart[] {
+                let result: MediaInfoPart[] = [];
+                if (this.isSimplify) {
+                    result = [];
+                } else {
+                    this.info.IncludedMedia.map(id => {
                         let media = this.dataManager.mediaManager[id];
                         if (media && media.Info.PrimaryLabel === 'image') {
-                            return media as MediaInfoPart
-                        } else {
-                            return undefined
+                            result.push(media)
                         }
-                    }).filter(media => media !== undefined)
+                    })
+                }
+                return result;
             },
 
         },

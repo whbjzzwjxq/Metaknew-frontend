@@ -1,4 +1,4 @@
-import {darkColorScaleSet, deepClone, getCookie} from "@/utils/utils";
+import {deepClone, getCookie} from "@/utils/utils";
 import Vue from "vue";
 import {
     graphSettingTemplate,
@@ -28,14 +28,14 @@ import {
     isNoteSetting
 } from "@/utils/typeCheck";
 import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
-import {BackendGraph} from "@/api/commonSource";
+import {BackendGraph, SourceQueryObject} from "@/api/commonSource";
 import {BooleanConcern, LevelConcern, UserConcern} from "@/utils/userConcern";
-import {commitInfoAdd, commitSnackbarOff} from "@/store/modules/_mutations";
+import {commitInfoAdd} from "@/store/modules/_mutations";
 
 declare global {
     type id = number | string;
     type ItemType = "node" | "link" | "document" | "media"
-    type BaseType = ItemType | "note";
+    type BaseType = ItemType | "note" | 'path';
     type BaseTypeList = 'nodes' | 'medias' | 'links' | "notes";
     type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
     type idMap = Record<id, id>; // 新旧id的Map
@@ -255,6 +255,34 @@ declare global {
         links: Array<LinkSettingPart>;
         medias: Array<MediaSettingPart>;
         notes: Array<NoteSettingPart>;
+    }
+
+    interface Path {
+        subItems: Array<PathItem>[],
+        subLinks: []
+    }
+
+    interface PathSetting extends Setting {
+
+    }
+
+    interface PathItem extends NodeSetting {
+        depth: number, // 深度
+        child: number[], // 孩子节点
+        time: number // 所需时间
+    }
+
+    interface PathLink extends LinkSetting {
+
+    }
+
+    interface BasePathInfo {
+        type: 'path',
+        PrimaryLabel: 'path',
+    }
+
+    interface BasePathCtrl {
+
     }
 }
 
@@ -552,10 +580,7 @@ export class MediaInfoPart {
         }
     }
 
-    updateUserConcern(
-        prop: LevelConcern | BooleanConcern | "Labels",
-        value?: number | string[]
-    ) {
+    updateUserConcern(prop: LevelConcern | BooleanConcern | "Labels", value?: number | string[]) {
         if (isBooleanConcern(prop)) {
             Vue.set(this.UserConcern, prop, !this.UserConcern[prop]);
             this.UserConcern[prop]
@@ -765,7 +790,6 @@ export class GraphSettingPart extends SettingPart {
 export class GraphSelfPart {
     Graph: Graph;
     Conf: GraphSettingPart;
-    Path: Array<Object>; // todo Path
     id: id;
     draftId: number;
     rootList: Array<GraphSelfPart>; // Graph的遍历链条
@@ -790,7 +814,6 @@ export class GraphSelfPart {
         this.root = this.getRoot();
         this.Conf = setting;
         this.Graph = graph;
-        this.Path = path;
         this.rect = {x: 0, y: 0, width: 600, height: 400};
         if (GraphSelfPart.list === undefined) {
             GraphSelfPart.list = [this]
@@ -1002,6 +1025,28 @@ export class GraphSelfPart {
     }
 }
 
+export class PathSelfPart {
+    Content: Path;
+    Conf: PathSetting;
+    id: id;
+
+    constructor(id: id, conf: PathSetting, content: Path) {
+        this.id = id;
+        this.Conf = conf;
+        this.Content = content
+    }
+}
+
+export class PathInfoPart {
+    Info: BasePathInfo;
+    Ctrl: BasePathCtrl;
+
+    constructor(info: BasePathInfo, ctrl: BasePathCtrl) {
+        this.Info = info;
+        this.Ctrl = ctrl;
+    }
+}
+
 let globalIndex = 0;
 export let localIdRegex = new RegExp("\\$_[0-9]*");
 let ctrlPropRegex = new RegExp("\\$.*");
@@ -1012,7 +1057,7 @@ export const getIndex = () => {
     return '$_' + globalIndex
 }; // 获取新内容索引
 
-export const itemEqual = (itemA: {_id: id, _type: BaseType}, itemB: {_id: id, _type: BaseType}) =>
+export const itemEqual = (itemA: { _id: id, _type: BaseType }, itemB: { _id: id, _type: BaseType }) =>
     itemA._id === itemB._id && itemA._type === itemB._type; // 两个Item是否一样
 
 export const findItem = (list: Array<SettingPart>, _id: id, _type: BaseType) =>

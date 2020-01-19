@@ -14,7 +14,7 @@
         >
             <template v-slot:activator="{ on }">
                 <v-btn icon v-on="on">
-                    <v-icon v-text="item.icon">
+                    <v-icon v-text="item.name">
 
                     </v-icon>
                 </v-btn>
@@ -60,22 +60,22 @@
         },
         props: {},
         computed: {
-            contentItemDict: function () {
+            contentItemDict: function ():Record<string, IconItem> {
                 return {
                     'node': {
-                        icon: getIcon('i-item', 'node'),
+                        name: getIcon('i-item', 'node'),
                         title: 'Selection Node'
                     },
                     'media': {
-                        icon: getIcon('i-item', 'media'),
+                        name: getIcon('i-item', 'media'),
                         title: 'Selection Media'
                     },
                     'link': {
-                        icon: getIcon('i-item', 'link'),
+                        name: getIcon('i-item', 'link'),
                         title: 'Selection Link'
                     },
                     'document': {
-                        icon: getIcon('i-item', 'document'),
+                        name: getIcon('i-item', 'document'),
                         title: 'Current Graph'
                     }
                 }
@@ -84,22 +84,7 @@
                 return this.$store.state.dataManager.currentGraph
             },
         },
-        methods: {
-            addNode($event: string) {
-                this.$emit('add-empty-node', $event);
-            },
-            addMedia(mediaIdList: id[]) {
-                this.$emit('add-media', mediaIdList);
-            },
-            addLink() {
-
-            },
-
-            addGraph() {
-
-            },
-
-        },
+        methods: {},
         watch: {},
         record: {
             status: 'done',

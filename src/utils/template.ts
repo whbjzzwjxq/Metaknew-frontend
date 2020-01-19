@@ -13,7 +13,7 @@ export interface BaseSettingConf {
     explain: string
 }
 
-const nodeSetting: SettingConf = {
+  const nodeSetting: SettingConf = {
     Base: {
         size: {
             type: 'Number',
@@ -638,12 +638,15 @@ const noteSetting: SettingConf = {
     }
 };
 
+const pathSetting: SettingConf = {};
+
 export const typeSetting: Record<BaseType, SettingConf> = {
     'node': nodeSetting,
     'link': linkSetting,
     'document': documentSetting,
     'media': mediaSetting,
-    'note': noteSetting
+    'note': noteSetting,
+    'path': pathSetting
 };
 
 export function settingTemplate(_type: BaseType) {

@@ -3,12 +3,11 @@ import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, SourceQue
 import {getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
-    getIndex,
     GraphSelfPart,
-    LinkInfoPart, LinkSettingPart,
+    LinkInfoPart,
     MediaInfoPart,
     NodeInfoPart,
-    NodeSettingPart
+    NodeSettingPart, PathSelfPart
 } from "@/utils/graphClass";
 import {
     commitFileToken,
@@ -38,6 +37,7 @@ declare global {
         nodeManager: Record<id, NodeInfoPart>,
         linkManager: Record<id, LinkInfoPart>,
         mediaManager: Record<id, MediaInfoPart>,
+        pathManager: Record<id, PathSelfPart>,
         userConcernManager: Object, // todo
         fileToken: FileToken,
         newIdRegex: RegExp,
@@ -59,6 +59,7 @@ const state: DataManagerState = {
     nodeManager: {},
     linkManager: {},
     mediaManager: {},
+    pathManager: {},
     userConcernManager: {},
     fileToken: {
         'AccessKeySecret': '',

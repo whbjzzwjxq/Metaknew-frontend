@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import {RectByPoint} from "@/utils/geoMetric";
-import {commitViewBoxResize} from "@/store/modules/_mutations";
+import {commitBottomDynamicBarResize, commitViewBoxResize} from "@/store/modules/_mutations";
 
 declare global {
     interface StyleManagerState {
@@ -9,7 +9,8 @@ declare global {
         viewBox: RectByPoint,
         toolBar: ToolBar,
         leftCard: LeftCard,
-        bottomBar: BottomBar
+        bottomBar: BottomBar,
+        bottomDynamicBar: RectByPoint
     }
 
     interface ComponentSize {
@@ -46,8 +47,9 @@ const state: StyleManagerState = {
     },
     bottomBar: {
         width: '100%',
-        height: 90
+        height: 108
     },
+    bottomDynamicBar: new RectByPoint({x: 0, y: document.documentElement.clientHeight - 240}, {x: 0, y: 0}, 0),
     screenX: document.documentElement.clientWidth,
     screenY: document.documentElement.clientHeight,
     viewBox: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}, 2)
@@ -58,19 +60,35 @@ const mutations = {
         state.screenX = document.documentElement.clientWidth;
         state.screenY = document.documentElement.clientHeight;
         commitViewBoxResize();
+        commitBottomDynamicBarResize();
     },
 
     resetLeftCard: (state: StyleManagerState, payload: number) => {
         Vue.set(state.leftCard, 'width', payload);
         commitViewBoxResize();
+        commitBottomDynamicBarResize();
     },
 
     resetBottomBar: (state: StyleManagerState, payload: number) => {
         Vue.set(state.bottomBar, 'height', payload);
     },
+
     getViewBox: (state: StyleManagerState) => {
         state.viewBox.start.update({x: state.leftCard.width, y: state.toolBar.height});
         state.viewBox.end.update({x: state.screenX, y: state.screenY})
+    },
+
+    getBottomDynamicBar: (state: StyleManagerState, payload?: number) => {
+        console.log('1', payload);
+        if (payload) {
+            payload <= state.toolBar.height && (payload = state.toolBar.height); // 最高
+            payload >= state.screenY - 240 && (payload = state.screenY - 240); // 最矮
+        } else {
+            (payload = state.screenY - 240) // doNothing
+        }
+        console.log(payload);
+        state.bottomDynamicBar.start.update({x: state.leftCard.width, y: payload});
+        state.bottomDynamicBar.end.update({x: state.screenX, y: state.screenY})
     }
 
 };
