@@ -28,9 +28,10 @@ import {
     isNoteSetting
 } from "@/utils/typeCheck";
 import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
-import {BackendGraph, SourceQueryObject} from "@/api/commonSource";
+import {BackendGraph} from "@/api/commonSource";
 import {BooleanConcern, LevelConcern, UserConcern} from "@/utils/userConcern";
 import {commitInfoAdd} from "@/store/modules/_mutations";
+import {PathLinkSettingPart, PathNodeSettingPart} from "@/utils/pathClass";
 
 declare global {
     type id = number | string;
@@ -258,51 +259,50 @@ declare global {
     }
 
     interface Path {
-        subItems: Array<PathItem>[],
-        subLinks: []
+        subNodes: Array<PathNodeSettingPart>,
+        subLinks: Array<PathLinkSettingPart>,
+        root: PathNodeSettingPart
     }
 
     interface PathSetting extends Setting {
-
+        _type: 'document',
+        _label: 'path'
     }
 
-    interface PathItem extends NodeSetting {
-        depth: number, // 深度
-        child: number[], // 孩子节点
-        time: number // 所需时间
-    }
-
-    interface PathLink extends LinkSetting {
-
-    }
-
-    interface BasePathInfo {
-        type: 'path',
+    interface BasePathInfo extends BaseNodeInfo {
+        type: 'document',
         PrimaryLabel: 'path',
     }
 
-    interface BasePathCtrl {
-
+    interface BasePathCtrl extends BaseNodeCtrl {
+        Size: number;
+        MainNodes: Array<id>;
+        Complete: number
     }
 }
 
 export class NodeInfoPart {
-    id: id;
     isRemote: boolean;
     isEdit: boolean;
     Info: BaseNodeInfo;
     Ctrl: BaseNodeCtrl;
     UserConcern: UserConcern;
 
+    get id() {
+        return this.Info.id
+    }
+
+    set id(newId) {
+        this.changeId(newId)
+    }
+
     constructor(
         info: BaseNodeInfo,
         ctrl: BaseNodeCtrl,
         userConcern: UserConcern
     ) {
-        const id = info.id;
-        this.isRemote = !localIdRegex.test(id.toString());
+        this.isRemote = !localIdRegex.test(info.id.toString());
         this.isEdit = false;
-        this.id = id;
         this.Info = info;
         this.Ctrl = ctrl;
         this.UserConcern = userConcern;
@@ -1022,28 +1022,6 @@ export class GraphSelfPart {
         let setting = NoteSettingPart.emptyNoteSetting(id, 'text', {text: ''}, this);
         this.addItems([setting]);
         return setting
-    }
-}
-
-export class PathSelfPart {
-    Content: Path;
-    Conf: PathSetting;
-    id: id;
-
-    constructor(id: id, conf: PathSetting, content: Path) {
-        this.id = id;
-        this.Conf = conf;
-        this.Content = content
-    }
-}
-
-export class PathInfoPart {
-    Info: BasePathInfo;
-    Ctrl: BasePathCtrl;
-
-    constructor(info: BasePathInfo, ctrl: BasePathCtrl) {
-        this.Info = info;
-        this.Ctrl = ctrl;
     }
 }
 

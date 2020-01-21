@@ -7,7 +7,7 @@ import {
     LinkInfoPart,
     MediaInfoPart,
     NodeInfoPart,
-    NodeSettingPart, PathSelfPart
+    NodeSettingPart
 } from "@/utils/graphClass";
 import {
     commitFileToken,
@@ -22,6 +22,7 @@ import {Commit, Dispatch} from "vuex";
 import {isNodeBackend} from "@/utils/typeCheck";
 import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 import {userConcernTemplate} from "@/utils/template";
+import {PathSelfPart} from "@/utils/pathClass";
 
 const getManager = (_type: string) =>
     _type === 'link'

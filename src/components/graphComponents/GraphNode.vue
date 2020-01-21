@@ -102,8 +102,8 @@
 
             // 设置
             setting: {
-              type: Object as  () => NodeSetting,
-              required: true
+                type: Object as () => NodeSetting,
+                required: true
             },
 
             // 状态

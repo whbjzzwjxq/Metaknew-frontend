@@ -32,5 +32,6 @@ export const nodeTemplateTheme: Record<string, Record<string, Record<string, any
             textColor: '#000000',
             twoLine: false
         },
-    }
+    },
+
 };

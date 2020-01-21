@@ -8,8 +8,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {PathSelfPart} from "@/utils/graphClass";
     import {RectByPoint} from "@/utils/geoMetric";
+    import {PathSelfPart} from "@/utils/pathClass";
 
     export default Vue.extend({
         name: 'PathDrawer',
@@ -56,6 +56,9 @@
                     width: itemSize * depth,
                     height: itemSize * row
                 }
+            },
+            nodes: function (): PathNode[] {
+                return this.path.Content.subNodes
             }
         },
         methods: {},
