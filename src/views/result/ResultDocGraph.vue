@@ -37,6 +37,9 @@
 
                         </sub-tool-path>
                     </v-col>
+                    <v-col cols="2" class="pa-0 ma-0">
+
+                    </v-col>
                 </div>
             </template>
         </toolbar-bottom>
@@ -79,7 +82,7 @@
     import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
     import SubToolStyle from "@/components/toolbar/SubToolStyle.vue";
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
-    import IconGroup from "@/components/iconGroup/IconGroup.vue";
+    import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
@@ -146,7 +149,7 @@
             newNode: function (_label: string, document?: GraphSelfPart) {
                 document || (document = this.document);
                 //Info Ctrl部分
-                return document.addEmptyNode(_label);
+                return document.addEmptyNode('node', _label);
             },
             newLink: function (start: VisNodeSettingPart, end: VisNodeSettingPart, document?: GraphSelfPart) {
                 document || (document = this.document);
@@ -172,15 +175,8 @@
             },
 
             addDocument: function (_label: 'DocGraph' | 'DocPaper', document?: GraphSelfPart) {
-                let defaultDoc = this.document;
-                document || (document = defaultDoc);
-                let id = getIndex();
-                let graph = GraphSelfPart.emptyGraphSelfPart(id, document);
-                let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', _label);
-                document.addItems([graph.baseNode.deepCloneSelf()]);
-                commitGraphAdd({graph, strict: true});
-                commitInfoAdd({item: info, strict: true});
-                return graph
+                document || (document = this.document);
+                return document.addSubGraph();
             },
 
             saveDocument() {

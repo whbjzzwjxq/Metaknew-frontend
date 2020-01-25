@@ -43,13 +43,13 @@
                         _func: this.addPaper
                     },
                     fromCloud: {
-                        name: getIcon('i-get-media-type', 'fromCloud'),
+                        name: getIcon('i-add-media-method', 'fromCloud'),
                         text: 'From CloudRepo',
                         isBlock: true,
                         _func: this.doNothing
                     },
                     fromWeb: {
-                        name: getIcon('i-get-media-type', 'fromWeb'),
+                        name: getIcon('i-add-media-method', 'fromWeb'),
                         text: 'From HyperLink',
                         isBlock: true,
                         _func: this.doNothing

@@ -56,7 +56,9 @@
             CardPageStyleEditor
         },
         data() {
-            return {}
+            return {
+                styleIcon: getIcon('i-style', '画板')
+            }
         },
         props: {},
         computed: {

@@ -147,30 +147,29 @@
                         let node = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
                         return node.State.isSelected
                     }) as DirectoryItem[];
-                    let result = root.concat(this.baseItemList.filter(item => this.getOriginItem(item).State.isSelected))
-                    return result
+                    return root.concat(this.baseItemList.filter(item => this.getOriginItem(item).State.isSelected))
                 },
                 set(value: DirectoryItem[]) {
                     let newIdList = value.map(item => item.id);
                     let oldIdList = this.selection.map(item => item.id);
-                    let selectedItems = value.filter(item => !oldIdList.includes(item.id))
-                    let unseletedItems = this.selection.filter(item => !newIdList.includes(item.id))
+                    let selectedItems = value.filter(item => !oldIdList.includes(item.id));
+                    let unselectedItems = this.selection.filter(item => !newIdList.includes(item.id));
                     let select = (list: DirectoryItem[], state: boolean) => {
                         list.map(item => {
                             let origin = this.getOriginItem(item);
-                            this.$set(origin.State, 'isSelected', state)
+                            this.$set(origin.State, 'isSelected', state);
                             if (item.type === 'document') {
-                                let subNode = origin.parent.getSubItemById(item.id, item.type)
-                                this.$set(subNode.State, 'isSelected', state)
+                                let subNode = origin.parent.getSubItemById(item.id, item.type);
+                                this.$set(subNode.State, 'isSelected', state);
                                 // 如果是新选中的Document
                                 if (state) {
                                     this.dataManager.graphManager[item.id].selectAll('isSelected', true)
                                 }
                             }
                         })
-                    }
-                    select(selectedItems, true)
-                    select(unseletedItems, false)
+                    };
+                    select(selectedItems, true);
+                    select(unselectedItems, false);
                     // 把root级别的subNode也找到
                     this.tree.map(root => {
                         let origin = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
@@ -263,7 +262,7 @@
                 name: note.Setting._title,
                 icon: getIcon('i-note-type', note.Setting._label),
                 deletable: true,
-                editable: false,
+                editable: true,
                 parent: note.parent.id,
             }) as DirectoryItem,
 
@@ -324,19 +323,19 @@
                 } else if (item.type === 'media') {
                     // media编辑
                 } else if (item.type === 'note') {
-                    // note编辑
+                    let note = this.getOriginItem(item);
+                    note.updateState('isEditing')
                 } else if (item.type === 'document') {
                     let graph = this.dataManager.graphManager[item.id];
                     graph && commitGraphChange({graph: graph})
                 }
-                ;
             },
 
             getOriginItem(item: DirectoryItem) {
                 let document;
                 item.parent !== '$_-1'
                     ? document = this.dataManager.graphManager[item.parent]
-                    : document = this.document
+                    : document = this.document;
                 return document.getSubItemById(item.id, item.type)
             },
 

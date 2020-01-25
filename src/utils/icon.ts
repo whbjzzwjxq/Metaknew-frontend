@@ -2,8 +2,8 @@ declare global {
     type IconGroup = 'i-star' | 'i-good' | 'i-bad' | 'i-collapse-arrow-double' |
         'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
         'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
-        'i-resize' | 'i-item' | 'i-get-media-type' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
-        'i-path'
+        'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
+        'i-path' | 'i-fragment' | 'i-style' | 'i-page'
 
     type IconAlias = 'i-show'
 
@@ -37,10 +37,12 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     'i-edit': {
         edit: 'mdi-pencil',
         delete: 'mdi-delete',
-        copy: '',
-        save: '',
+        copy: 'mdi-content',
+        save: 'mdi-save',
         autoSave: '',
-        close: 'mdi-close'
+        close: 'mdi-close',
+        share: 'mdi-share-variant',
+        search: 'mdi-magnify'
     },
     'i-delete-able': {
         true: 'mdi-delete',
@@ -75,7 +77,9 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     },
     'i-collapse-arrow': {
         true: 'mdi-chevron-up',
-        false: 'mdi-chevron-down'
+        false: 'mdi-chevron-down',
+        left: 'mdi-chevron-left',
+        right: 'mdi-chevron-right'
     },
     'i-collapse-arrow-double': {
         true: 'mdi-chevron-double-up',
@@ -104,7 +108,7 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         DocPaper: 'mdi-notebook',
         path: 'mdi-map-marker-path',
     },
-    'i-get-media-type': {
+    'i-add-media-method': {
         upload: 'mdi-upload',
         fromCloud: 'mdi-cloud-search',
         fromWeb: 'mdi-web'
@@ -122,6 +126,18 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         list: 'mdi-format-list-bulleted',
         next: 'mdi-skip-next',
         pre: 'mdi-skip-previous',
+    },
+    'i-fragment': {
+
+    },
+    'i-style': {
+        画板: ''
+    },
+    'i-page': {
+        prev: 'mdi-minus',
+        next: 'mdi-plus',
+        first: "mdi-page-first",
+        last: "mdi-page-last"
     }
 
 };

@@ -29,11 +29,11 @@
         },
         props: {
             text: {
-                type: String,
+                type: String as () => string,
                 required: true
             },
             editMode: {
-                type: Boolean,
+                type: Boolean as () => boolean,
                 default: false
             }
         },

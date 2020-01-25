@@ -41,7 +41,7 @@ export interface FlatNodeInfo extends BaseInfo {
     Topic: Array<string>;
     Labels: Array<string>;
     Text: Translate;
-    Translate: Translate;
+    Description: Translate;
     IncludedMedia: Array<string | number>;
     MainPic: string;
 

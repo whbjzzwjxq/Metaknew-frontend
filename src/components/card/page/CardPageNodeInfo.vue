@@ -90,11 +90,11 @@
 
                 </v-text-field>
                 <field-text
-                    :base-text="info.Translate"
+                    :base-text="info.Description"
                     :editable="editMode"
-                    :prop-name="'Translate'"
+                    :prop-name="'Description'"
                     @update-value="updateValue"
-                    label="Translate"
+                    label="Description"
                     single-line
                 >
 
@@ -158,9 +158,14 @@
             </template>
         </card-sub-row>
 
-        <v-btn text>
-            Learn More
-        </v-btn>
+        <div class="cardBottom" :style="bottomStyle">
+<!--            <item-sharer :item-info="baseData">-->
+
+<!--            </item-sharer>-->
+            <item-marker :ctrl="baseData.Ctrl">
+
+            </item-marker>
+        </div>
     </div>
 </template>
 
@@ -178,8 +183,8 @@
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/labelField";
     import {LabelGroup} from "@/utils/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
-    import {LevelConcern, UserConcern} from "@/utils/userConcern";
-
+    import ItemSharer from "@/components/ItemSharer.vue";
+    import ItemMarker from "@/components/ItemMarker.vue";
     export default Vue.extend({
         name: "CardPageNodeInfo",
         components: {
@@ -190,7 +195,9 @@
             CardSubRow,
             CardSubRating,
             NodeAvatar,
-            GlobalChip
+            GlobalChip,
+            ItemSharer,
+            ItemMarker
         },
         data() {
             return {
@@ -226,7 +233,7 @@
                 return this.baseData.Ctrl
             },
             userConcern: function (): UserConcern {
-                return this.baseData.UserConcern
+                return this.$store.state.userConcernManager[this.baseData.type][this.baseData.id]
             },
 
             dataManager: function (): DataManagerState {
@@ -367,6 +374,15 @@
                 return result;
             },
 
+            bottomStyle: function (): CSSProp {
+                return {
+                    position: "fixed",
+                    bottom: 0,
+                    backgroundColor: "#eeeeee",
+                    width: this.$store.state.styleComponentSize.leftCard.width + "px"
+                }
+            }
+
         },
         methods: {
             updateValue(prop: string, value: any) {
@@ -385,11 +401,11 @@
             addItem(value: string[], prop: string) {
                 prop === 'Info'
                     ? this.baseData.updateValue('Labels', value)
-                    : this.baseData.updateUserConcern('Labels', value)
+                    : console.log('todo')// todo
             },
 
             updateRating(prop: LevelConcern, rating: number) {
-                this.baseData.updateUserConcern(prop, rating)
+                // todo
             }
         },
         watch: {},

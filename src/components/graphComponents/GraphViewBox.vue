@@ -435,7 +435,7 @@
             },
 
             notes: function (): NoteSettingPart[] {
-                return this.document.Graph.notes
+                return this.document.Graph.notes.filter(item => !item.State.isDeleted)
             },
 
             labelDict: function () {

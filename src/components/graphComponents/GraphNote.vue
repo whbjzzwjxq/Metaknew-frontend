@@ -11,7 +11,7 @@
                         @mouseenter.stop="mouseEnter"
                         height="18px"
                         flat
-                        :dark="isDark"
+                        :dark="!isDark"
                         color="#EEEEEE"
                         tile>
                         <v-toolbar-title></v-toolbar-title>
@@ -58,7 +58,7 @@
     import {getDivCSS, RectByPoint} from "@/utils/geoMetric";
     import {getIcon} from "@/utils/icon";
     import {randomIntegerInRange} from "@/utils/utils";
-    import IconGroup from "@/components/iconGroup/IconGroup.vue";
+    import IconGroup from "@/components/IconGroup.vue";
 
     export default Vue.extend({
         name: 'GraphNote',
@@ -68,7 +68,6 @@
         data() {
             return {
                 isCollapsed: true,
-                isEditing: false,
                 //drag起始位置
                 dragStartLoc: {
                     x: 0,
@@ -108,6 +107,9 @@
             },
             containerRect: function (): AreaRect {
                 return this.container.positiveRect()
+            },
+            isEditing: function (): boolean {
+                return this.note.State.isEditing
             },
             sizeSetting: function (): AreaRect {
                 return {
@@ -193,7 +195,7 @@
             },
 
             edit() {
-                this.isEditing = !this.isEditing;
+                this.note.updateState('isEditing', !this.isEditing);
             },
 
             reloadTip() {

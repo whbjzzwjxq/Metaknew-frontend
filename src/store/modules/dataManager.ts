@@ -39,7 +39,6 @@ declare global {
         linkManager: Record<id, LinkInfoPart>,
         mediaManager: Record<id, MediaInfoPart>,
         pathManager: Record<id, PathSelfPart>,
-        userConcernManager: Object, // todo
         fileToken: FileToken,
         newIdRegex: RegExp,
         rootGraph: GraphSelfPart
@@ -61,7 +60,6 @@ const state: DataManagerState = {
     linkManager: {},
     mediaManager: {},
     pathManager: {},
-    userConcernManager: {},
     fileToken: {
         'AccessKeySecret': '',
         'AccessKeyId': '',
@@ -70,7 +68,6 @@ const state: DataManagerState = {
     },
     newIdRegex: new RegExp('\\$_[0-9]*')
 };
-
 const getters = {
     currentGraphInfo: (state: DataManagerState) => {
         return state.nodeManager[state.currentGraph.id]
@@ -173,7 +170,7 @@ const actions = {
         await documentQuery(_id).then(res => {
             let {data} = res;
             let graphSelf = GraphSelfPart.resolveFromBackEnd(data, parent);
-            let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl, userConcernTemplate());
+            let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl);
             commitInfoAdd({item: graphInfo});
             commitGraphAdd({graph: graphSelf});
             // 请求节点
@@ -200,7 +197,7 @@ const actions = {
                 const {data} = res;
                 data.map(node => {
                     if (isNodeBackend(node)) {
-                        let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl, userConcernTemplate());
+                        let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl);
                         nodeInfo.synchronizationAll();
                         commitInfoAdd({item: nodeInfo})
                     }
@@ -258,7 +255,7 @@ const actions = {
             return mediaQueryMulti(noCacheMedia).then(res => {
                 const {data} = res;
                 data.map(media => {
-                    let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, userConcernTemplate(), 'remote', []);
+                    let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, 'remote', []);
                     mediaInfo.synchronizationAll();
                     commitInfoAdd({item: mediaInfo})
                 });

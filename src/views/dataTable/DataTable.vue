@@ -18,7 +18,7 @@
             <v-col class="col-xl-6 col-md-5 col-sm-5">
                 <v-text-field
                     v-model="search"
-                    append-icon="mdi-magnify"
+                    :append-icon="editIcon[search]"
                     label="Search"
                     hide-details
                     class="pb-5">
@@ -52,8 +52,8 @@
                     calculate-widths>
 
                     <template v-slot:item.$_action="{ item }">
-                        <v-icon class="mr-2" small @click="copyItem(item)">mdi-content-copy</v-icon>
-                        <v-icon class="mr-2" small @click="deleteItem(item)">mdi-delete</v-icon>
+                        <v-icon class="mr-2" small @click="copyItem(item)"> {{ editIcon['copy'] }}</v-icon>
+                        <v-icon class="mr-2" small @click="deleteItem(item)">{{ editIcon['delete'] }}</v-icon>
                     </template>
 
                     <template v-slot:item.id="{item}">
@@ -100,6 +100,7 @@
     import {getIndex} from '@/utils/graphClass'
     import {nodeCreateMulti} from "@/api/commonSource"
     import {FlatNodeInfo} from "@/utils/interfaceInComponent";
+    import {getIcon} from "@/utils/icon";
 
     interface HeaderItem {
         text: string,
@@ -134,7 +135,7 @@
                     'BaseImp': "Imp",
                     "BaseHardLevel": "Hard",
                     "$IsCommon": "Common",
-                    "$IsShared": "Shared",
+                    "$IsFree": "Free",
                     "$IsOpenSource": "OpenSource"
                 } as Record<string, string>,
                 //全部的节点
@@ -147,10 +148,18 @@
                 footSetting: {
                     showFirstLastPage: true,
                     itemsPerPageOptions: [10, 25, 50, -1],
-                    prevIcon: 'mdi-minus',
-                    nextIcon: 'mdi-plus',
-                    firstIcon: "mdi-page-first",
-                    lastIcon: "mdi-page-last"
+                    prevIcon: getIcon('i-page', 'prev'),
+                    nextIcon: getIcon('i-page', 'next'),
+                    firstIcon: getIcon('i-page', 'first'),
+                    lastIcon: getIcon('i-page', 'last')
+                },
+
+                //icon
+                editIcon: {
+                    edit: getIcon('i-edit', 'edit'),
+                    delete: getIcon('i-edit', 'delete'),
+                    copy: getIcon('i-edit', 'copy'),
+                    search: getIcon('i-edit', 'search')
                 },
 
                 //搜索字段
@@ -359,7 +368,7 @@
                 });
                 node.id = this.getIndex();
                 // 合并Prop
-                this.mergeProp(node.Translate, translate);
+                this.mergeProp(node.Description, translate);
                 this.mergeProp(node.Text, text);
                 this.mergeProp(node.ExtraProps, extraProps);
                 return node
@@ -415,7 +424,7 @@
         },
         watch: {},
         record: {
-            status: 'done-old'
+            status: 'done'
         }
     })
 </script>

@@ -41,7 +41,7 @@
                     bottom: (this.styleManager.bottomBar.height - 28) + 'px',
                 }
             },
-            arrowIcon: function () {
+            arrowIcon: function (): string {
                 return getIcon('i-collapse-arrow-double', !this.toolbarOn)
             }
         },

@@ -37,7 +37,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import IconGroup from "@/components/iconGroup/IconGroup.vue";
+    import IconGroup from "@/components/IconGroup.vue";
 
     export default Vue.extend({
         name: "SubToolPath",

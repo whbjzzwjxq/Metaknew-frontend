@@ -1,7 +1,6 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
 import {GraphSelfPart} from "@/utils/graphClass";
-import styleComponentSize from "@/store/modules/styleComponentSize";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)
@@ -73,4 +72,8 @@ export const commitGraphRemove = (payload: id) => {
 
 export const commitGraphChangeId = (payload: idMap) => {
     return store.commit('graphChangeId', payload)
+};
+
+export const commitUserConcernAdd = (payload: {_id: id, _type: BaseType, userConcern: UserConcern}) => {
+    return store.commit('userConcernAdd', payload)
 };

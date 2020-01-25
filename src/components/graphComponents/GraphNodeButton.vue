@@ -14,7 +14,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import IconGroup from "@/components/iconGroup/IconGroup.vue";
+    import IconGroup from "@/components/IconGroup.vue";
     import {NodeSettingPart} from "@/utils/graphClass";
 
     export default Vue.extend({

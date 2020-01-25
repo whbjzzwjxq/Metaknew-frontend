@@ -8,7 +8,7 @@
                 <v-btn
                     v-on="on"
                     @click="changeKey(key)"
-                    icon
+                    text
                     tile
                     block
                     depressed
@@ -66,15 +66,15 @@
                 dialogWidth: 720,
                 itemsDict: {
                     'upload': {
-                        icon: getIcon('i-get-media-type', 'upload'),
+                        icon: getIcon('i-add-media-method', 'upload'),
                         text: 'Upload NewFile',
                     },
                     'fromCloud': {
-                        icon: getIcon('i-get-media-type', 'fromCloud'),
+                        icon: getIcon('i-add-media-method', 'fromCloud'),
                         text: 'From CloudRepo'
                     },
                     'fromWeb': {
-                        icon: getIcon('i-get-media-type', 'fromWeb'),
+                        icon: getIcon('i-add-media-method', 'fromWeb'),
                         text: 'From HyperLink'
                     }
                 },

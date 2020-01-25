@@ -1,4 +1,3 @@
-import {UserConcern} from "@/utils/userConcern";
 import {NodeInfoPart} from "@/utils/graphClass";
 
 export class PathSelfPart {
@@ -13,7 +12,7 @@ export class PathSelfPart {
     }
 
     static emptyPathSelfPart() {
-        
+
     }
 }
 
@@ -21,8 +20,8 @@ export class PathInfoPart extends NodeInfoPart {
     Info: BasePathInfo;
     Ctrl: BasePathCtrl;
 
-    constructor(info: BasePathInfo, ctrl: BasePathCtrl, userConcern: UserConcern) {
-        super(info, ctrl, userConcern);
+    constructor(info: BasePathInfo, ctrl: BasePathCtrl) {
+        super(info, ctrl);
         this.Info = info;
         this.Ctrl = ctrl;
     }

@@ -125,16 +125,16 @@
             }
         },
         computed: {
-            text: function () {
+            text: function (): Translate {
                 return Object.keys(this.baseText).length > 0
                     ? deepClone(this.baseText)
                     : deepClone(this.defaultValue)
             },
 
-            languageList: function () {
+            languageList: function (): string[] {
                 return Object.keys(this.text)
             },
-            editModeSetting: function () {
+            editModeSetting: function (): Record<string, boolean> {
                 return {
                     showSetter: true,
                     multiLanguage: this.multiLanguage,
@@ -142,7 +142,7 @@
                     singleLine: this.singleLine
                 }
             },
-            normalModeSetting: function () {
+            normalModeSetting: function (): Record<string, boolean> {
                 return {
                     showSetter: false,
                     multiLanguage: this.languageList.length > 1,
@@ -150,13 +150,13 @@
                     singleLine: this.singleLine
                 }
             },
-            setting: function () {
+            setting: function (): Record<string, boolean> {
                 return this.editable ? this.editModeSetting : this.normalModeSetting
             },
-            setterIcon: function () {
+            setterIcon: function (): string {
                 return this.multiLanguage ? 'mdi-check' : 'mdi-close'
             },
-            singleKey: function () {
+            singleKey: function (): string {
                 return Object.keys(this.text)[0]
             }
         },

@@ -85,7 +85,7 @@
     import {labelItems} from "@/utils/labelField";
     import {mediaUpdate} from '@/api/commonSource';
     import {getIcon, iconMap} from "@/utils/icon";
-    import IconGroup from "@/components/iconGroup/IconGroup.vue";
+    import IconGroup from "@/components/IconGroup.vue";
     import MediaDetail from "../../media/MediaDetail.vue"
     import {getSrc} from '@/utils/utils'
     export default Vue.extend({

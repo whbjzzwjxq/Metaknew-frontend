@@ -33,7 +33,6 @@
                             :width="width">
 
                         </card-page-media-list>
-
                     </v-tab-item>
                 </v-tabs-items>
             </v-tabs>
