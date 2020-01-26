@@ -7,6 +7,7 @@ import styleLabelColor from "@/store/modules/styleLabelColor";
 import dataManager from "@/store/modules/dataManager";
 import styleComponentSize from "@/store/modules/styleComponentSize";
 import userDataManager from "@/store/modules/userDataManager";
+
 Vue.use(Vuex);
 
 export default new Vuex.Store({

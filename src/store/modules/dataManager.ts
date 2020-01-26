@@ -21,7 +21,6 @@ import {
 import {Commit, Dispatch} from "vuex";
 import {isNodeBackend} from "@/utils/typeCheck";
 import {dispatchGraphQuery} from "@/store/modules/_dispatch";
-import {userConcernTemplate} from "@/utils/template";
 import {PathSelfPart} from "@/utils/pathClass";
 
 const getManager = (_type: string) =>

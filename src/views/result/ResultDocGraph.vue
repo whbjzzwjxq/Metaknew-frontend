@@ -74,7 +74,7 @@
         commitGraphAdd,
         commitGraphChange,
         commitInfoAdd,
-        commitRootGraph
+        commitRootGraph, commitUserConcernAdd
     } from "@/store/modules/_mutations";
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
     import PathDrawer from "@/components/path/PathDrawer.vue";
@@ -84,6 +84,7 @@
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
+    import {userConcernTemplate} from "@/utils/template";
 
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -216,6 +217,8 @@
                 commitInfoAdd({item: info, strict: true});
                 commitGraphChange({graph});
                 commitRootGraph({graph});
+                let userConcern = userConcernTemplate();
+                commitUserConcernAdd({_id: id, _type: 'document', userConcern});
                 this.loading = false
             } else {
                 this.loading = false

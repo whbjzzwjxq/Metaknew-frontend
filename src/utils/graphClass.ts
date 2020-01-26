@@ -342,7 +342,6 @@ export abstract class InfoPart {
 export class NodeInfoPart extends InfoPart {
     Info: BaseNodeInfo;
     Ctrl: BaseNodeCtrl;
-
     constructor(
         info: BaseNodeInfo,
         ctrl: BaseNodeCtrl,
@@ -772,30 +771,37 @@ export class GraphSettingPart extends SettingPart {
 }
 
 export class GraphSelfPart {
+    static list: Array<GraphSelfPart>;
+    static baseList: Array<BackendGraph>; // 原始数据
     Graph: Graph;
     Conf: GraphSettingPart;
-    id: id;
+    // 草稿保存
     draftId: number;
-    rootList: Array<GraphSelfPart>; // Graph的遍历链条
-    root: GraphSelfPart | null;
+    // 图形尺寸
+    rect: AreaRect;
     protected _baseNode: NodeSettingPart;
     get baseNode() {
         return this._baseNode
     }
 
-    rect: AreaRect;
-    static list: Array<GraphSelfPart>;
-    static baseList: Array<BackendGraph>; // 原始数据
+    get id() {
+        return this.Conf.Setting._id
+    }
+
+    get rootList() {
+        return findRoot(this.Conf)
+    }
+
+    get root() {
+        return this.rootList ? this.rootList[0] : null;
+    }
 
     constructor(
         graph: Graph,
         setting: GraphSettingPart,
-        _id: id,
+        baseNode: NodeSetting
     ) {
-        this.draftId = -1;
-        this.id = _id;
-        this.rootList = findRoot(setting);
-        this.root = this.getRoot();
+        this.draftId = -1; // 自动保存id
         this.Conf = setting;
         this.Graph = graph;
         this.rect = {x: 0, y: 0, width: 600, height: 400};
@@ -804,14 +810,8 @@ export class GraphSelfPart {
         } else {
             GraphSelfPart.list.push(this)
         }
-        this._baseNode = NodeSettingPart.emptyNodeSetting(
-            _id,
-            "document",
-            "DocGraph",
-            "NewDocument" + _id,
-            "",
-            this
-        );
+        let state = nodeStateTemplate();
+        this._baseNode = new NodeSettingPart(baseNode, state, this);
     }
 
     updateBaseNode(node: NodeSettingPart) {
@@ -826,8 +826,9 @@ export class GraphSelfPart {
             notes: []
         };
         let setting = GraphSettingPart.emptyGraphSetting(_id, parent);
-        let graphSelf = new GraphSelfPart(graph, setting, _id);
-        graphSelf.Graph.nodes.push(graphSelf.baseNode);
+        let baseNode = nodeSettingTemplate(_id, 'document', 'DocGraph', 'NewDocument' + _id, '');
+        let graphSelf = new GraphSelfPart(graph, setting, baseNode);
+        graphSelf.addItems([graphSelf.baseNode]);
         return graphSelf
     }
 
@@ -849,7 +850,7 @@ export class GraphSelfPart {
         let result = new GraphSelfPart(
             graph,
             setting,
-            baseData.Base.Info.id
+            baseData.Graph.nodes.filter(setting => setting._id === baseData.Conf._id)[0]
         );
         result.Graph.nodes = baseData.Graph.nodes.map(
             setting => {
@@ -883,7 +884,7 @@ export class GraphSelfPart {
     }
 
     changeId(newId: id) {
-        this.id = newId;
+        this.Conf.Setting._id = newId;
     }
 
     getRoot() {
@@ -983,18 +984,23 @@ export class GraphSelfPart {
         let id = getIndex();
         let info = NodeInfoPart.emptyNodeInfoPart(id, _type, _label);
         commitInfoAdd({item: info});
+        let userConcern = userConcernTemplate();
+        commitUserConcernAdd({_id: id, _type, userConcern});
         let setting = NodeSettingPart.emptyNodeSetting(id, _type, _label, 'NewNode' + id, '', this);
         setting.State.isSelf = true;
         this.addItems([setting]);
-        let userConcern = userConcernTemplate();
-        commitUserConcernAdd({_id: id, _type, userConcern});
         return setting
     }
 
     addEmptyLink(_start: VisNodeSettingPart, _end: VisNodeSettingPart) {
         let id = getIndex();
+        // info
         let info = LinkInfoPart.emptyLinkInfo(id, "Default", _start, _end);
         commitInfoAdd({item: info, strict: true});
+        // userConcern
+        let userConcern = userConcernTemplate();
+        commitUserConcernAdd({_id: id, _type: 'link', userConcern});
+        // setting
         let setting = LinkSettingPart.emptyLinkSetting(id, "Default", _start, _end, this);
         setting.State.isSelf = true;
         this.addItems([setting]);
@@ -1015,6 +1021,8 @@ export class GraphSelfPart {
         this.addItems([graph.baseNode.deepCloneSelf()]);
         commitGraphAdd({graph, strict: true});
         commitInfoAdd({item: info, strict: true});
+        let userConcern = userConcernTemplate();
+        commitUserConcernAdd({_id: id, _type: 'document', userConcern});
         return graph
     }
 }

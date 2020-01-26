@@ -79,14 +79,12 @@ const mutations = {
     },
 
     getBottomDynamicBar: (state: StyleManagerState, payload?: number) => {
-        console.log('1', payload);
         if (payload) {
             payload <= state.toolBar.height && (payload = state.toolBar.height); // 最高
             payload >= state.screenY - 240 && (payload = state.screenY - 240); // 最矮
         } else {
             (payload = state.screenY - 240) // doNothing
         }
-        console.log(payload);
         state.bottomDynamicBar.start.update({x: state.leftCard.width, y: payload});
         state.bottomDynamicBar.end.update({x: state.screenX, y: state.screenY})
     }
