@@ -7,7 +7,7 @@
                     <v-icon left small> {{ value.icon }}</v-icon>
                     {{ value.name }}
                 </v-tab>
-                <v-tabs-items v-model="currentTab">
+                <v-tabs-items v-model="currentTab" class="cardItem" style="height: 100%">
                     <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
                         <card-page-directory
                             v-if="tab === 'directory'"

@@ -1,5 +1,5 @@
 <template>
-    <div :style="totalCardStyle" class="cardItem">
+    <div :style="totalCardStyle">
         <v-tabs v-model="currentTab" fixed-tabs>
             <v-tabs-slider color="todo"></v-tabs-slider>
             <v-tab v-for="(value, tab) in availableTabs" :key="tab" class="pa-0">
@@ -7,7 +7,7 @@
                 {{ tabTrans[tab][lang] }}
             </v-tab>
         </v-tabs>
-        <v-tabs-items v-model="currentTab">
+        <v-tabs-items v-model="currentTab" style="height: 100%">
             <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
                 <card-eco-system v-if=" tab === 'eco'" v-bind="value.props"></card-eco-system>
                 <card-document
@@ -28,6 +28,7 @@
                 </card-meta-knowledge>
             </v-tab-item>
         </v-tabs-items>
+        <web-site-info></web-site-info>
     </div>
 </template>
 
@@ -39,13 +40,15 @@
     import {GraphSelfPart} from "@/utils/graphClass";
     import {getIcon} from "@/utils/icon";
     import {TabContent} from "@/utils/interfaceInComponent";
+    import WebSiteInfo from "@/components/WebSiteInfo.vue";
 
     export default Vue.extend({
         name: "CardRoot",
         components: {
             CardDocument,
             CardMetaKnowledge,
-            CardEcoSystem
+            CardEcoSystem,
+            WebSiteInfo
         },
         data() {
             return {
@@ -76,14 +79,17 @@
             allComponentSize: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            toolBar: function () {
+            toolBar: function (): ComponentSize {
                 return this.allComponentSize.toolBar
             },
             totalCardStyle: function (): CSSProp {
                 return {
                     width: this.allComponentSize.leftCard.width + 'px',
                     height: '100%',
-                    zIndex: 1
+                    backgroundColor: "white",
+                    zIndex: 1,
+                    overflowY: "hidden",
+                    overflowX: "hidden"
                 }
             },
             tabItems(): Record<string, TabContent> {
@@ -123,13 +129,6 @@
 
 <style scoped>
     @import '../../style/css/card.css';
-
-    .cardTitle {
-        -moz-user-select: none;
-        -webkit-user-select: none;
-        user-select: none;
-        font-weight: bolder;
-    }
 
 </style>
 
