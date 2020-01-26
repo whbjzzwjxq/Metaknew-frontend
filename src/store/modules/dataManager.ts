@@ -223,12 +223,10 @@ const actions = {
                 data.map(link => {
                     if (!isNodeBackend(link)) {
                         let linkSetting = noCacheLink.filter(setting => setting._id === link.Info.id)[0];
-                        let linkInfo = new LinkInfoPart(link.Info,
-                            Object.assign(link.Ctrl, {
-                                Start: linkSetting._start,
-                                End: linkSetting._end,
-                            }) as BaseLinkCtrl
-                        );
+                        let linkInfo = new LinkInfoPart(link.Info, <BaseLinkCtrl>Object.assign(link.Ctrl, {
+                            Start: linkSetting._start,
+                            End: linkSetting._end,
+                        }));
 
                         commitInfoAdd({item: linkInfo})
                     }

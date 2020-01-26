@@ -159,9 +159,9 @@
         </card-sub-row>
 
         <div class="cardBottom" :style="bottomStyle">
-            <item-sharer :item-info="baseData">
+<!--            <item-sharer :item-info="baseData">-->
 
-            </item-sharer>
+<!--            </item-sharer>-->
             <item-marker :ctrl="baseData.Ctrl">
 
             </item-marker>

@@ -824,7 +824,6 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         CommonProps: commonProps,
         BaseImp: 0,
         BaseHardLevel: 0,
-        BaseUseful: 0,
         $IsOpenSource: false,
         $IsCommon: true,
         $IsFree: true,
@@ -877,12 +876,12 @@ export function mediaInfoTemplate(_id: id, file: File) {
         type: "media",
         PrimaryLabel: getMediaType(file),
         Name: file.name.split(".")[0],
+        Text: {},
         Labels: [],
         $IsCommon: true,
         $IsOpenSource: false,
         $IsFree: true,
-        ExtraProps: {},
-        Description: {}
+        ExtraProps: {}
     };
 }
 
@@ -922,9 +921,9 @@ export function linkInfoTemplate(_id: id, _label: string) {
         Name: '',
         Labels: [],
         ExtraProps: {},
+        Text: {},
         Confidence: 0.5,
-        CommonProps: commonProps,
-        Description: {}
+        CommonProps: commonProps
     };
 }
 

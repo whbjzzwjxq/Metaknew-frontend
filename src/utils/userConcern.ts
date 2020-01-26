@@ -27,7 +27,10 @@ declare global {
     interface FragmentInfo extends BaseInfo {
         type: 'fragment',
         PrimaryLabel: 'text' | 'image',
+        Name: string,
+        Description: Translate,
         Src: string,
+        Labels: string[]
     }
 }
 
