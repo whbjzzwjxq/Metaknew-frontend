@@ -1,11 +1,19 @@
 <template>
-    <div>
-        <icon-group :icon-list="iconList" small>
-
-        </icon-group>
-        <v-btn small>
-            Learn More
-        </v-btn>
+    <div style="align-content: normal">
+        <v-row>
+            <v-col v-for="icon in iconList" :key="icon.name" cols="2">
+                <v-btn icon
+                       @click="icon._func"
+                       :color="icon.color ? icon.color : 'grey'">
+                    <v-icon> {{ icon.name }}</v-icon>
+                </v-btn>
+            </v-col>
+            <v-col cols="4">
+                <v-btn text>
+                    Learn+
+                </v-btn>
+            </v-col>
+        </v-row>
     </div>
 </template>
 
@@ -16,6 +24,7 @@
     import {FragmentInfoPart} from "@/utils/userConcern";
     import {dispatchFragmentAdd} from "@/store/modules/_dispatch";
     import IconGroup from "@/components/IconGroup.vue";
+
     export default Vue.extend({
         name: "ItemSharer",
         components: {
@@ -31,12 +40,12 @@
             }
         },
         computed: {
-            userConcernManager: function (): UserDataManagerState {
-                return this.$store.state.userConcernManager
+            userDataManager: function (): UserDataManagerState {
+                return this.$store.state.userDataManager
             },
 
             userConcern: function (): UserConcern {
-                return this.userConcernManager.UserConcernDict[this.itemInfo.type][this.itemInfo.id]
+                return this.userDataManager.UserConcernDict[this.itemInfo.type][this.itemInfo.id]
             },
 
             iconList: function (): IconItem[] {
@@ -47,6 +56,10 @@
                     {name: getIcon('i-bad', isBad), color: isBad ? 'red' : 'grey', _func: this.badItem},
                     {name: getIcon('i-star', isStar), color: isStar ? 'yellow' : 'grey', _func: this.starItem},
                 ]
+            },
+
+            ctrl: function (): CommonCtrl {
+                return this.itemInfo.Ctrl
             }
         },
         methods: {

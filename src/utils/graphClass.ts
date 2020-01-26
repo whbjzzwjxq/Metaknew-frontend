@@ -49,6 +49,9 @@ declare global {
         id: id;
         type: BaseType;
         PrimaryLabel: string;
+        Name: string,
+        Description: Translate,
+        Labels: string[], //统计后的标签
         $IsCommon: boolean;
         $IsFree: boolean;
         $IsOpenSource: boolean;
@@ -60,37 +63,38 @@ declare global {
         CreateUser: id; // 用户新建
         CreateType: string; // 用户新建或者自动或者之类的
         UpdateTime: string;
-
+        Labels: Array<string>; // 用户自己的标签
+        PrimaryLabel: string; // 验证用
         [prop: string]: any;
     }
 
-    interface BaseNodeInfo extends BaseInfo {
-        type: "node" | "document";
-        Name: string;
-        Alias: Array<string>;
-        BaseImp: number;
-        BaseHardLevel: number;
-        Language: string;
-        Topic: Array<string>;
-        Labels: Array<string>;
-        ExtraProps: ExtraProps;
-        CommonProps: Record<string, ValueWithType<any>>;
-        Text: Translate;
-        Description: Translate;
-        IncludedMedia: Array<string | number>;
-        MainPic: string;
-    }
-
-    interface BaseNodeCtrl extends BaseCtrl {
-        PrimaryLabel: string;
-        Imp: number;
-        HardLevel: number;
-        Useful: number;
+    interface CommonCtrl extends BaseCtrl {
         isStar: number;
         isShared: number;
         isGood: number;
         isBad: number;
-        Labels: Array<string>;
+        // 向外发布的内容才有统计数据
+    }
+
+    interface BaseNodeInfo extends BaseInfo {
+        type: "node" | "document";
+        Alias: Array<string>;
+        BaseImp: number;
+        BaseHardLevel: number;
+        BaseUseful: number;
+        Language: string;
+        Topic: Array<string>;
+        ExtraProps: ExtraProps;
+        CommonProps: Record<string, ValueWithType<any>>;
+        Text: Translate; // 名字的翻译
+        IncludedMedia: Array<string | number>;
+        MainPic: string;
+    }
+
+    interface BaseNodeCtrl extends CommonCtrl {
+        Imp: number;
+        HardLevel: number;
+        Useful: number;
         Contributor: Object;
         TotalTime: number;
     }
@@ -104,24 +108,14 @@ declare global {
 
     interface BaseMediaInfo extends BaseInfo {
         type: "media";
-        Name: string;
-        Labels: Array<string>;
-        Text: Translate;
         ExtraProps: ExtraProps;
-
         [propName: string]: any;
     }
 
-    interface BaseMediaCtrl extends BaseCtrl {
+    interface BaseMediaCtrl extends CommonCtrl {
         FileName: string; // URL
         Format: string; // 格式
         Thumb: string; // 缩略图
-        PrimaryLabel: string;
-        isStar: number;
-        isShared: number;
-        isGood: number;
-        isBad: number;
-        Labels: Array<string>;
     }
 
     interface BaseLinkInfo extends BaseInfo {
@@ -130,13 +124,12 @@ declare global {
         Labels: Array<string>;
         CommonProps: Record<string, ValueWithType<any>>;
         ExtraProps: ExtraProps;
-        Text: Translate;
         Confidence: number;
 
         [propName: string]: any;
     }
 
-    interface BaseLinkCtrl extends BaseCtrl {
+    interface BaseLinkCtrl extends CommonCtrl {
         Start: NodeSettingPart;
         End: NodeSettingPart;
     }

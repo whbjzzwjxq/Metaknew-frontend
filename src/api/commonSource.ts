@@ -18,7 +18,7 @@ export interface BackendMediaInfoPart {
     Ctrl: BaseMediaCtrl;
 }
 
-export interface BackendLinkCtrl extends BaseCtrl {
+export interface BackendLinkCtrl extends CommonCtrl {
     Start: SourceQueryObject;
     End: SourceQueryObject;
 }
