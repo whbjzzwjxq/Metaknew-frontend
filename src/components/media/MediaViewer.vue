@@ -5,8 +5,8 @@
         flat
         tile>
         <div v-if="media.Info.PrimaryLabel === 'image'">
-            <v-img :src="realSrc" :width="width" :max-height="height">
-            </v-img>
+            <img :src="realSrc" :width="width" :max-height="height" id="image">
+
             <slot name="button-group">
 
             </slot>
@@ -18,7 +18,7 @@
 
             </slot>
         </div>
-        <div  v-else-if="media.Info.PrimaryLabel === 'text'">
+        <div  v-else-if="media.Info.PrimaryLabel === 'markdown'">
             <v-card scroll :height="height" :width="width" class="cardItem">
             <mavon-editor style="z-index: 0"
                 :value="mdText"
@@ -35,13 +35,14 @@
     </v-card>
 </template>
 
-<script>
+<script lang="ts">
     import pdf from 'vue-pdf'
     import {getSrc} from '@/utils/utils'
     import axios from 'axios'
     import {mavonEditor} from "mavon-editor";
     import "mavon-editor/dist/css/index.css";
     import { MediaInfoPart } from '@/utils/graphClass'
+    import Viewer from 'viewerjs'
 
     export default {
         name: 'mediaViewer',
@@ -57,7 +58,7 @@
 
         props: {
             media: {
-                type: Object, // MediaInfoPart,
+                type: Object as () => any, // MediaInfoPart,
                 required: true
             },
             width: {
@@ -87,13 +88,32 @@
                     })
                 }
             },
+            bigPic() {
+                let vm = this;
+                let viewer = new Viewer(document.getElementById('image'), {
+                    url: getSrc(vm.media.Ctrl.FileName),
+                    title: false,
+                    navbar: false,
+                    toolbar: {
+                        zoomIn: true,
+                        zoomOut: true,
+                        play: {
+                            show: 0,
+                        },
+                        rotateLeft: true,
+                        reset: true,
+                        rotateRight: true,
+                        flipHorizontal: true,
+                        flipVertical: true,
+                    }
+                })
+            },
         },
         watch: {
-            realSrc(newUrl, oldUrl) {
+            realSrc(newUrl: any, oldUrl: any) {
               this.init()
             }
         },
-
         record: {
             status: 'editing',
             description: '解析Media图像的工具'

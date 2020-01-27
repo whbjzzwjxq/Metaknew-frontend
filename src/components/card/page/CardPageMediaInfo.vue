@@ -11,7 +11,7 @@
     >
         <v-card :height="height">
             <v-card :width="width" :height="getHeight" flat>
-                <media-viewer :media="media" :width="width" :height="height">
+                <media-viewer :media="media" :width="width" :height="height" ref="mediaViewer">
                     <template v-slot:button-group>
                         <icon-group
                             v-if="height >= 100"
@@ -19,6 +19,7 @@
                             :container-style="buttonGroupStyle"
                             x-small
                             vertical
+                            ref="img"
                         >
                         </icon-group>
                     </template>
@@ -52,10 +53,11 @@
                     </v-btn>
                     <v-btn text @click="saveMedia" :disabled="!media.isSelf">Save</v-btn>
                 </v-card-actions>
+
                 <media-detail
                     :dialog-detail="dialogDetailVisible"
-                    :dialog-mode="dialogEdit"
-                    @close="closeDialogDetail"
+                    :dialog-edit="dialogEdit"
+                    @close="closeDialog"
                     :media="media"
                 >
                 </media-detail>
@@ -88,6 +90,8 @@
     import IconGroup from "@/components/iconGroup/IconGroup.vue";
     import MediaDetail from "../../media/MediaDetail.vue"
     import {getSrc} from '@/utils/utils'
+    import 'viewerjs/dist/viewer.css'
+
     export default Vue.extend({
         name: "CardPageMediaInfo",
         components: {
@@ -256,7 +260,7 @@
                     {name: "", _func: vm.doNothing},
                     {name: "mdi-magnify", _func: vm.dialogWatch},
                     {name: getIcon("i-collapse-arrow-double", vm.detailOn), _func: vm.changeDetail},
-                    {name: getIcon('i-edit-able', vm.isSelf), _func: vm.editSrc, disabled: vm.isSelf},
+                    {name: getIcon('i-edit-able', vm.isSelf), _func: vm.editSrc, disabled: !vm.isSelf},
                     {name: getIcon('i-delete-able', deleteAble), _func: vm.deleteMedia, disabled: deleteAble},
                     {name: "mdi-arrow-right-bold-circle-outline", _func: vm.addMediaToGraph, render: vm.showExportIcon}
                 ];
@@ -265,6 +269,10 @@
             getHeight: function () {
                 return this.height / 2
             },
+            viewer(): Vue & { validate: () => boolean } {
+ return this.$refs.viewer as Vue
+                & { validate: () => boolean }
+}
         },
         methods: {
             updateValue: function (prop: string, value: any) {
@@ -281,7 +289,7 @@
                     ? this.media.updateValue("Labels", value)
                     : this.media.updateUserConcern("Labels", value);
             },
-            changeDrawer() {
+            changeDetail() {
                 this.detailOn = !this.detailOn
             },
 
@@ -292,14 +300,19 @@
             addMediaToGraph: function () {
                 this.$emit("add-media-to-graph", this.media);
             },
-            dialogDetail() {
-                this.dialogDetailVisible = true;
-                this.dialogEdit = false
+            dialogWatch() {
+                if (this.media.Ctrl.PrimaryLabel === 'image') {
+                    let el: any = this.$refs.mediaViewer;
+                    el.bigPic()
+                } else {
+                    this.dialogDetailVisible = true;
+                    this.dialogEdit = false
+                }
             },
-            closeDialogDetail() {
+            closeDialog() {
                 this.dialogDetailVisible = false
             },
-            dialogDetailEdit() {
+            editSrc() {
                 this.dialogDetailVisible = true;
                 this.dialogEdit = true
             },
