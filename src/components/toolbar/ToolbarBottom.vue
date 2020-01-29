@@ -1,8 +1,20 @@
 <template>
     <v-card tile flat outlined :style="toolbarStyle">
-        <v-btn fixed fab color="pink" @click="collapse" :style="buttonStyle">
-            <v-icon color="#111111"> {{ arrowIcon }}</v-icon>
-        </v-btn>
+        <div :style="buttonStyle" class="floatButton">
+            <div class="button-normal pb-4">
+                
+            </div>
+            <div class="button-normal pb-4">
+                <v-btn fixed fab color="green">
+                    <v-icon color="#111111"> {{ fragmentIcon }}</v-icon>
+                </v-btn>
+            </div>
+            <div class="button-normal pb-4">
+                <v-btn fixed fab color="pink" @click="collapse">
+                    <v-icon color="#111111"> {{ arrowIcon }}</v-icon>
+                </v-btn>
+            </div>
+        </div>
         <slot name="subTool"></slot>
     </v-card>
 </template>
@@ -16,7 +28,8 @@
         components: {},
         data() {
             return {
-                toolbarOn: true
+                toolbarOn: true,
+                fragmentIcon: getIcon('i-item', 'fragment')
             }
         },
         props: {},
@@ -37,8 +50,12 @@
             },
             buttonStyle: function (): CSSProp {
                 return {
-                    left: (this.styleManager.leftCard.width + 12) + 'px',
-                    bottom: (this.styleManager.bottomBar.height - 28) + 'px',
+                    left: '12px',
+                    bottom: (this.styleManager.bottomBar.height - 72) + 'px',
+                    position: "absolute",
+                    width: '56px',
+                    height: '168px',
+                    zIndex: 2
                 }
             },
             arrowIcon: function (): string {
@@ -50,7 +67,7 @@
                 let height;
                 this.toolbarOn
                     ? height = 8
-                    : height = 90;
+                    : height = 108;
                 this.$store.commit('resetBottomBar', height);
                 this.toolbarOn = !this.toolbarOn
             }
@@ -64,7 +81,10 @@
 </script>
 
 <style scoped>
-
+    .button-normal {
+        width: 56px;
+        height: 64px;
+    }
 </style>
 
 /**

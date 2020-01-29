@@ -10,6 +10,7 @@ import {
     NodeSettingPart
 } from "@/utils/graphClass";
 import {
+    commitChangeSubTab,
     commitFileToken,
     commitGraphAdd,
     commitGraphChangeId,
@@ -32,7 +33,7 @@ const getManager = (_type: string) =>
 declare global {
     interface DataManagerState {
         currentGraph: GraphSelfPart,
-        currentItem: InfoPart,
+        currentItem: NodeInfoPart | LinkInfoPart,
         graphManager: Record<id, GraphSelfPart>,
         nodeManager: Record<id, NodeInfoPart>,
         linkManager: Record<id, LinkInfoPart>,
@@ -88,7 +89,7 @@ const mutations = {
         state.rootGraph = graph
     },
 
-    currentItemChange(state: DataManagerState, payload: InfoPart) {
+    currentItemChange(state: DataManagerState, payload: NodeInfoPart | LinkInfoPart) {
         state.currentItem = payload;
     },
 

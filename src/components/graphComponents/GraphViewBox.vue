@@ -161,7 +161,7 @@
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
     import {GraphMetaData, LabelViewDict} from '@/utils/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
-    import {commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {commitChangeSubTab, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
 
@@ -709,6 +709,7 @@
 
             dbClickNode(node: VisNodeSettingPart) {
                 this.selectItem([node]);
+                commitChangeSubTab('info');
                 if (this.isLinking && node && this.startNode) {
                     if (node.parent.id === this.startNode.parent.id) {
                         // 如果是同一张图里的

@@ -15,7 +15,7 @@
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
-    import {NodeSettingPart} from "@/utils/graphClass";
+    import {GraphSelfPart, NodeSettingPart} from "@/utils/graphClass";
 
     export default Vue.extend({
         name: "GraphNodeButton",
@@ -72,7 +72,7 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            boundGraph: function () {
+            boundGraph: function (): GraphSelfPart {
                 return this.dataManager.graphManager[this.node.Setting._id]
             },
             buttonGroup: function (): IconItem[] {
@@ -98,12 +98,7 @@
                     {name: 'mdi-arrow-top-right', _func: this.addLink},
                     {name: getIcon('i-eye', this.node.Setting.Show.showAll), _func: this.unShow},
                     {name: 'mdi-content-copy', _func: this.copyItem},
-                    {
-                        name: getIcon("i-explode", explodeIcon),
-                        _func: this.explode,
-                        render: this.node.Setting._type === 'document',
-                        disabled: explodeAble
-                    }
+                    {name: getIcon("i-explode", explodeIcon), _func: this.explode, render: this.node.Setting._type === 'document', disabled: explodeAble}
                 ]
             }
         },

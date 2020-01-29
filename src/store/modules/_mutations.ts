@@ -1,6 +1,6 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {GraphSelfPart} from "@/utils/graphClass";
+import {GraphSelfPart, LinkInfoPart, NodeInfoPart} from "@/utils/graphClass";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)
@@ -38,7 +38,7 @@ export const commitBottomDynamicBarResize = (payload?: number) => {
     return store.commit('getBottomDynamicBar', payload)
 };
 
-export const commitItemChange = (payload: InfoPart) => {
+export const commitItemChange = (payload: NodeInfoPart | LinkInfoPart) => {
     return store.commit('currentItemChange', payload)
 };
 

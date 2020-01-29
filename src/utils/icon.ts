@@ -3,7 +3,7 @@ declare global {
         'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
         'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
         'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
-        'i-path' | 'i-fragment' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge'
+        'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge'
 
     type IconAlias = 'i-show'
 
@@ -13,7 +13,8 @@ declare global {
         color?: string,
         render?: boolean,
         disabled?: boolean,
-
+        toolTip?: string,
+        toolTipOn?: boolean,
         [prop: string]: any
     }
 }
@@ -108,6 +109,7 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         DocGraph: 'mdi-graph-outline',
         DocPaper: 'mdi-notebook',
         path: 'mdi-map-marker-path',
+        fragment: 'mdi-cube-unfolded'
     },
     'i-add-media-method': {
         upload: 'mdi-upload',
@@ -128,7 +130,6 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         next: 'mdi-skip-next',
         pre: 'mdi-skip-previous',
     },
-    'i-fragment': {},
     'i-style': {
         palette: 'mdi-palette'
     },
