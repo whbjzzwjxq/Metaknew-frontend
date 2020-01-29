@@ -1,13 +1,13 @@
 <template>
     <v-card width="width" height="100%" flat tile>
         <v-card-text class="pa-0">
-            <v-tabs v-model="currentTab" grow height="36px" color="grey">
+            <v-tabs v-model="subTab" grow height="36px" color="grey">
                 <v-tabs-slider class="subTab"></v-tabs-slider>
                 <v-tab v-for="(value, tab) in availableTabs" :key="tab" class="pa-0">
                     <v-icon left small> {{ value.icon }}</v-icon>
                     {{ tabTrans[tab][lang] }}
                 </v-tab>
-                <v-tabs-items v-model="currentTab">
+                <v-tabs-items v-model="subTab" class="cardItem">
                     <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
                         <template v-if="tab === 'info'">
                             <card-page-node-info
@@ -25,10 +25,9 @@
                             >
 
                             </card-page-link-info>
-
                         </template>
                         <card-page-media-list
-                            v-if="tab === 'medias'  && type === 'node'"
+                            v-if="tab === 'medias' && type === 'node'"
                             :base-data="info"
                             :width="width">
 
@@ -47,6 +46,7 @@
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
     import {GraphSelfPart} from "@/utils/graphClass";
     import {TabContent} from "@/utils/interfaceInComponent";
+    import {tabDict} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
         name: "CardMetaKnowledge",
@@ -57,29 +57,13 @@
         },
         data() {
             return {
-                currentTab: 0,
-                lang: "zh",
-                tabTrans: {
-                    "info": {
-                        "zh": "基本信息"
-                    },
-                    "medias": {
-                        "zh": "包含媒体"
-                    },
-                    "eco": {
-                        "zh": "相关知识"
-                    }
-                }
+                tabList: tabDict['metaKnowledge']
             }
         },
         props: {
             info: {
                 type: Object as () => InfoPart,
                 required: true
-            },
-            width: {
-                type: Number as () => number,
-                default: 400
             },
             editMode: {
                 type: Boolean as () => boolean,
@@ -91,7 +75,7 @@
             }
         },
         computed: {
-            tabItems(): Record<string, TabContent> {
+            tabItems: function (): Record<string, TabContent> {
                 return {
                     "info": {
                         icon: 'mdi-information-outline',
@@ -116,6 +100,11 @@
                     return 'node'
                 } else {
                     return _type
+                }
+            },
+            subTab: {
+                get: function () {
+
                 }
             }
         },

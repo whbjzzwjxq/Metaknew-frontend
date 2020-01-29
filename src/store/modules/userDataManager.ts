@@ -4,14 +4,14 @@ import Vue from 'vue';
 
 declare global {
     interface UserDataManagerState {
-        UserConcernDict: Record<BaseType, Record<id, UserConcern>>,
-        Fragments: Array<FragmentInfoPart>,
-        UserSetting: Record<string, Record<string, any>>
+        userConcernDict: Record<BaseType, Record<id, UserConcern>>,
+        fragments: Array<FragmentInfoPart>,
+        userSetting: Record<string, Record<string, any>>
     }
 }
 
 const state: UserDataManagerState = {
-    UserConcernDict: {
+    userConcernDict: {
         node: {},
         link: {},
         media: {},
@@ -19,27 +19,31 @@ const state: UserDataManagerState = {
         note: {},
         fragment: {} // 不使用
     },
-    Fragments: [],
-    UserSetting: {
+    fragments: [],
+    userSetting: {
         fragmentCollect: {}
     }
 };
 
 const mutations = {
-    userConcernAdd(state: UserDataManagerState, payload: {_id: id, _type: BaseType, userConcern: UserConcern}) {
+    userConcernAdd(state: UserDataManagerState, payload: { _id: id, _type: BaseType, userConcern: UserConcern }) {
         let {_id, _type, userConcern} = payload;
-        Vue.set(state.UserConcernDict[_type], _id, userConcern)
+        Vue.set(state.userConcernDict[_type], _id, userConcern)
     }
 };
 
 const actions = {
     fragmentAdd(context: { commit: Commit, state: UserDataManagerState }, payload: FragmentInfoPart) {
-        state.Fragments.push(payload)
+        state.fragments.push(payload)
         // todo
     }
 };
 
-const getters = {};
+const getters = {
+    fragmentSourceIdList(state: UserDataManagerState) {
+        return state.fragments.map(fragment => fragment.Ctrl.SourceId)
+    }
+};
 
 export default {
     state,

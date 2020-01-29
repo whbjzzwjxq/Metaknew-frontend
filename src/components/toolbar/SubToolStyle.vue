@@ -2,7 +2,7 @@
     <v-card flat tile class="pa-0 ma-0">
         <v-card-subtitle class="pa-0 ma-0" dense>
             Style Edit
-            <v-icon v-text="'mdi-palette'" small></v-icon>
+            <v-icon small> {{ styleIcon }}</v-icon>
         </v-card-subtitle>
         <v-menu
             top
@@ -57,7 +57,7 @@
         },
         data() {
             return {
-                styleIcon: getIcon('i-style', '画板')
+                styleIcon: getIcon('i-style', 'palette')
             }
         },
         props: {},

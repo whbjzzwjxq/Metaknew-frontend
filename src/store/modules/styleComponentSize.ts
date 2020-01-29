@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import {RectByPoint} from "@/utils/geoMetric";
 import {commitBottomDynamicBarResize, commitViewBoxResize} from "@/store/modules/_mutations";
+import {instance} from "@/api/main";
 
 declare global {
     interface StyleManagerState {
@@ -10,7 +11,11 @@ declare global {
         toolBar: ToolBar,
         leftCard: LeftCard,
         bottomBar: BottomBar,
-        bottomDynamicBar: RectByPoint
+        bottomDynamicBar: RectByPoint,
+        leftCardTab: {
+            root: number,
+            sub: number
+        }
     }
 
     interface ComponentSize {
@@ -19,11 +24,17 @@ declare global {
 
         [propName: string]: number | string
     }
+
+    type RootTabName = 'ecoSystem' | 'document' | 'metaKnowledge';
+    type EcoTabName = 'knownMap' | 'community' | 'course';
+    type DocumentTabName = 'directory' | 'historyBranch' | 'comments';
+    type MetaKnowledgeTabName = 'info' | 'mediaList' | 'relative'
+    type SubTabName = EcoTabName | DocumentTabName | MetaKnowledgeTabName
 }
 
 interface LeftCard extends ComponentSize {
     width: number
-    height: string
+    height: number
 }
 
 interface BottomBar extends ComponentSize {
@@ -36,6 +47,26 @@ interface ToolBar extends ComponentSize {
     height: number,
 }
 
+export const tabDict: Record<RootTabName, string[]> = {
+    'ecoSystem': [
+        "knownMap",
+        "community",
+        "course"
+    ] as EcoTabName[],
+    'document': [
+        "directory",
+        "historyBranch",
+        "comments"
+    ] as DocumentTabName[],
+    "metaKnowledge": [
+        "info",
+        "mediaList",
+        "relative"
+    ] as MetaKnowledgeTabName[]
+};
+
+const rootTabIndex: RootTabName[] = ["ecoSystem", "document", "metaKnowledge"];
+
 const state: StyleManagerState = {
     toolBar: {
         width: '100%',
@@ -43,7 +74,7 @@ const state: StyleManagerState = {
     },
     leftCard: {
         width: 400,
-        height: '100%'
+        height: document.documentElement.clientHeight - 48
     },
     bottomBar: {
         width: '100%',
@@ -52,7 +83,12 @@ const state: StyleManagerState = {
     bottomDynamicBar: new RectByPoint({x: 0, y: document.documentElement.clientHeight - 240}, {x: 0, y: 0}, 0),
     screenX: document.documentElement.clientWidth,
     screenY: document.documentElement.clientHeight,
-    viewBox: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}, 2)
+    viewBox: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}, 2),
+    leftCardTab: {
+        root: 0,
+        sub: 0
+    }
+
 };
 
 const mutations = {
@@ -74,6 +110,7 @@ const mutations = {
     },
 
     getViewBox: (state: StyleManagerState) => {
+        // 计算ViewBox
         state.viewBox.start.update({x: state.leftCard.width, y: state.toolBar.height});
         state.viewBox.end.update({x: state.screenX, y: state.screenY})
     },
@@ -87,6 +124,29 @@ const mutations = {
         }
         state.bottomDynamicBar.start.update({x: state.leftCard.width, y: payload});
         state.bottomDynamicBar.end.update({x: state.screenX, y: state.screenY})
+    },
+
+    changeRootTab: (state: StyleManagerState, payload: RootTabName | number) => {
+        typeof payload === 'number'
+        ? state.leftCardTab.root = payload
+        : state.leftCardTab.root = rootTabIndex.indexOf(payload);
+        state.leftCardTab.sub = 0
+    },
+
+    changeSubTab: (state: StyleManagerState, payload: SubTabName) => {
+        let root = 'document' as RootTabName;
+        let sub = 0;
+        Object.entries(tabDict).map(([key, nameList]) => {
+            let index = nameList.indexOf(payload);
+            if (index > -1) {
+                sub = index;
+                root = key as RootTabName
+            } else {
+                //
+            }
+        });
+        state.leftCardTab.root = rootTabIndex.indexOf(root);
+        state.leftCardTab.sub = sub
     }
 
 };

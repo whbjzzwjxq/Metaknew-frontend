@@ -3,7 +3,7 @@ declare global {
         'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
         'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
         'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
-        'i-path' | 'i-fragment' | 'i-style' | 'i-page'
+        'i-path' | 'i-fragment' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge'
 
     type IconAlias = 'i-show'
 
@@ -13,6 +13,7 @@ declare global {
         color?: string,
         render?: boolean,
         disabled?: boolean,
+
         [prop: string]: any
     }
 }
@@ -127,19 +128,31 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         next: 'mdi-skip-next',
         pre: 'mdi-skip-previous',
     },
-    'i-fragment': {
-
-    },
+    'i-fragment': {},
     'i-style': {
-        画板: ''
+        palette: 'mdi-palette'
     },
     'i-page': {
         prev: 'mdi-minus',
         next: 'mdi-plus',
         first: "mdi-page-first",
         last: "mdi-page-last"
+    },
+    'i-eco-system': {
+        map: '',
+        community: '',
+        course: ''
+    },
+    'i-document-comp': {
+        directory: 'mdi-format-list-checkbox',
+        historyAndBranch: 'mdi-source-branch',
+        comments: 'mdi-comment-multiple-outline'
+    },
+    'i-meta-knowledge': {
+        info: 'mdi-information-outline',
+        medias: 'mdi-folder-multiple-image',
+        relative: 'mdi-expand-all-outline'
     }
-
 };
 
 const iconAlias: Record<IconAlias, IconGroup> = {
@@ -163,5 +176,5 @@ export const getIcon = (iconGroupName: IconGroup | IconAlias, status: string | b
         : index = status;
     return iconGroup[index]
         ? iconGroup[index]
-        : iconGroup['true']
+        : Object.values(iconGroup)[0]
 };

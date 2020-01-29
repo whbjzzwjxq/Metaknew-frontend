@@ -77,3 +77,11 @@ export const commitGraphChangeId = (payload: idMap) => {
 export const commitUserConcernAdd = (payload: {_id: id, _type: BaseType, userConcern: UserConcern}) => {
     return store.commit('userConcernAdd', payload)
 };
+
+export const commitChangeRootTab = (payload: RootTabName | number) => {
+    return store.commit('changeRootTab', payload)
+};
+
+export const commitChangeSubTab = (payload: SubTabName) => {
+    return store.commit('changeSubTab', payload)
+};

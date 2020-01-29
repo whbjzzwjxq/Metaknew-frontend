@@ -60,7 +60,7 @@
             iconItemList: function (): IconItem[] {
                 return [
                     {
-                        name: getIcon('i-item', 'current'),
+                        name: getIcon('i-path', 'current'),
                         _func: this.openCurrent,
                     },
                     {

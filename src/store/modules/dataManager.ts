@@ -70,16 +70,7 @@ const state: DataManagerState = {
 const getters = {
     currentGraphInfo: (state: DataManagerState) => {
         return state.nodeManager[state.currentGraph.id]
-    },
-
-    currentChildGraphList: (state: DataManagerState) => {
-        return state.currentGraph.getChildDocument()
-    },
-
-    currentGraphDict: (state: DataManagerState) => {
-        return {}
     }
-
 };
 const mutations = {
 
@@ -119,7 +110,7 @@ const mutations = {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
         if (oldGraph) {
-            oldGraph.changeId(newId);
+            oldGraph.id = newId;
             commitGraphAdd({graph: oldGraph});
             commitGraphRemove(oldId);
         }

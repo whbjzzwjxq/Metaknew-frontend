@@ -1,26 +1,24 @@
 <template>
-    <v-card width="width" height="100%" flat tile>
-        <v-card-text class="pa-0">
-            <v-tabs v-model="currentTab" fixed-tabs height="36px" color="grey">
-                <v-tabs-slider class="subTab"></v-tabs-slider>
-                <v-tab v-for="(value, tab) in availableTabs" :key="tab" class="pa-0">
-                    <v-icon left small> {{ value.icon }}</v-icon>
-                    {{ value.name }}
-                </v-tab>
-                <v-tabs-items v-model="currentTab" class="cardItem" style="height: 100%">
-                    <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
-                        <card-page-directory
+    <div>
+        <v-tabs v-model="currentTab" fixed-tabs height="36px" color="grey">
+            <v-tabs-slider class="subTab"></v-tabs-slider>
+            <v-tab v-for="(value, tab) in availableTabs" :key="tab" class="pa-0">
+                <v-icon left small> {{ value.icon }}</v-icon>
+                {{ value.name }}
+            </v-tab>
+            <v-tabs-items v-model="currentTab" class="cardItem" style="height: 100%">
+                <v-tab-item v-for="(value, tab) in availableTabs" :key="tab" style="height: 100%">
+                    <card-page-directory
                             v-if="tab === 'directory'"
                             :edit-mode="editMode"
                             :document="document"
-                        >
+                    >
 
-                        </card-page-directory>
-                    </v-tab-item>
-                </v-tabs-items>
-            </v-tabs>
-        </v-card-text>
-    </v-card>
+                    </card-page-directory>
+                </v-tab-item>
+            </v-tabs-items>
+        </v-tabs>
+    </div>
 </template>
 
 <script lang="ts">

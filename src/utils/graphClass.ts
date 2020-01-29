@@ -781,6 +781,10 @@ export class GraphSelfPart {
         return this.Conf.Setting._id
     }
 
+    set id(newId) {
+        this.Conf.Setting._id = newId
+    }
+
     get rootList() {
         return findRoot(this.Conf)
     }
@@ -874,19 +878,6 @@ export class GraphSelfPart {
         );
 
         return result;
-    }
-
-    changeId(newId: id) {
-        this.Conf.Setting._id = newId;
-    }
-
-    getRoot() {
-        let length = this.rootList.length;
-        if (length > 0) {
-            return this.rootList[0]
-        } else {
-            return null
-        }
     }
 
     getChildDocument() {

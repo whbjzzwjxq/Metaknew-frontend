@@ -18,8 +18,9 @@ export type LabelViewDict = Record<string, Record<string, boolean>>
 // v-tab 相关组件使用
 export interface TabContent {
     icon: string,
-    props?: Record<string, any>,
-    name?: string | Record<string, string>
+    children?: TabContent[],
+    name: string,
+    key: string
 }
 
 // graph-viewBox graph-render相关组件使用

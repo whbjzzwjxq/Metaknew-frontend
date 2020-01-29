@@ -1,10 +1,14 @@
 <template>
     <v-container
+        v-if="!loading"
         fluid
         fill-height
         v-resize="onResize"
         class="d-flex flex-row ma-0 pa-0">
-        <card-root></card-root>
+        <card-root
+            :document="graph">
+
+        </card-root>
         <router-view></router-view>
     </v-container>
 </template>
@@ -12,7 +16,15 @@
 <script lang="ts">
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
-    import {commitScreenResize} from "@/store/modules/_mutations";
+    import {
+        commitGraphAdd,
+        commitGraphChange,
+        commitInfoAdd,
+        commitRootGraph,
+        commitScreenResize, commitUserConcernAdd
+    } from "@/store/modules/_mutations";
+    import {getIndex, GraphSelfPart, NodeInfoPart} from "@/utils/graphClass";
+    import {userConcernTemplate} from "@/utils/template";
 
     export default Vue.extend({
         name: "Result",
@@ -20,16 +32,45 @@
             CardRoot
         },
         data() {
-            return {}
+            return {
+                loading: true
+            }
         },
         props: {},
-        computed: {},
+        computed: {
+            dataManager: function (): DataManagerState {
+                return this.$store.state.dataManager
+            },
+            graph: function (): GraphSelfPart {
+                return this.dataManager.currentGraph
+            },
+        },
         methods: {
             onResize() {
                 commitScreenResize()
             }
         },
         watch: {},
+        created(): void {
+            if (this.graph.id === '$_-1') {
+                let id = getIndex();
+                let graph = GraphSelfPart.emptyGraphSelfPart(id, null);
+                let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
+                commitGraphAdd({graph, strict: true});
+                commitInfoAdd({item: info, strict: true});
+                commitGraphChange({graph});
+                commitRootGraph({graph});
+                let userConcern = userConcernTemplate();
+                commitUserConcernAdd({_id: id, _type: 'document', userConcern});
+                this.loading = false
+            } else {
+                this.loading = false
+            }
+            let newGraph = this.graph.addSubGraph();
+            newGraph.addEmptyNode("node", "BaseNode");
+            newGraph.addEmptyNode("node", "None");
+            // path test
+        },
         mounted() {
             this.onResize()
         },

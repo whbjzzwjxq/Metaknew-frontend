@@ -1,8 +1,8 @@
 <template>
     <div>
-        <div v-if="!loading" :style="viewBoxStyle">
+        <div :style="viewBoxStyle">
             <graph-view-box
-                :document="document"
+                :graph="graph"
                 :view-box="viewBox"
                 render-selector
                 render-label-selector
@@ -99,12 +99,7 @@
         },
         data() {
             return {
-                loading: true,
                 editPageRegex: new RegExp('edit-.*'),
-                baseNode: {
-                    x: 0,
-                    y: 0
-                },
                 bottomSheet: false,
                 bottomSheetKey: 'path'
             }
@@ -121,12 +116,10 @@
                 return this.allComponentsStyle.viewBox
             },
             viewBoxStyle: function (): CSSProp {
-                return this.viewBox.getDivCSS(
-                    {borderWidth: 0, overflow: "hidden"}
-                )
+                return this.viewBox.getDivCSS({overflow: "hidden"}, true)
             },
 
-            document: function (): GraphSelfPart {
+            graph: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
             editMode: function (): boolean {
@@ -147,37 +140,37 @@
             }
         },
         methods: {
-            newNode: function (_label: string, document?: GraphSelfPart) {
-                document || (document = this.document);
+            newNode: function (_label: string, graph?: GraphSelfPart) {
+                graph || (graph = this.graph);
                 //Info Ctrl部分
-                return document.addEmptyNode('node', _label);
+                return graph.addEmptyNode('node', _label);
             },
-            newLink: function (start: VisNodeSettingPart, end: VisNodeSettingPart, document?: GraphSelfPart) {
-                document || (document = this.document);
+            newLink: function (start: VisNodeSettingPart, end: VisNodeSettingPart, graph?: GraphSelfPart) {
+                graph || (graph = this.graph);
                 //Info Ctrl部分
-                return document.addEmptyLink(start, end);
+                return graph.addEmptyLink(start, end);
             },
 
-            newNote: function (document?: GraphSelfPart) {
-                document || (document = this.document);
-                return document.addEmptyNote();
+            newNote: function (graph?: GraphSelfPart) {
+                graph || (graph = this.graph);
+                return graph.addEmptyNote();
             },
 
-            addMedia: function (mediaIdList: id[], document?: GraphSelfPart) {
-                let defaultDoc = this.document;
-                document || (document = defaultDoc);
+            addMedia: function (mediaIdList: id[], graph?: GraphSelfPart) {
+                let defaultDoc = this.graph;
+                graph || (graph = defaultDoc);
                 let mediaSettingList = mediaIdList.map(id => this.dataManager.mediaManager[id])
                     .map(info => {
-                        document || (document = defaultDoc);
-                        return MediaSettingPart.emptyMediaSettingFromInfo(info, document)
+                        graph || (graph = defaultDoc);
+                        return MediaSettingPart.emptyMediaSettingFromInfo(info, graph)
                     });
-                document.addItems(mediaSettingList);
+                graph.addItems(mediaSettingList);
                 return mediaSettingList
             },
 
-            addDocument: function (_label: 'DocGraph' | 'DocPaper', document?: GraphSelfPart) {
-                document || (document = this.document);
-                return document.addSubGraph();
+            addDocument: function (_label: 'DocGraph' | 'DocPaper', graph?: GraphSelfPart) {
+                graph || (graph = this.graph);
+                return graph.addSubGraph();
             },
 
             saveDocument() {
@@ -209,25 +202,7 @@
         },
         watch: {},
         created(): void {
-            if (this.document.id === '$_-1') {
-                let id = getIndex();
-                let graph = GraphSelfPart.emptyGraphSelfPart(id, null);
-                let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
-                commitGraphAdd({graph, strict: true});
-                commitInfoAdd({item: info, strict: true});
-                commitGraphChange({graph});
-                commitRootGraph({graph});
-                let userConcern = userConcernTemplate();
-                commitUserConcernAdd({_id: id, _type: 'document', userConcern});
-                this.loading = false
-            } else {
-                this.loading = false
-            }
-            let newGraph = this.addDocument('DocGraph');
-            this.newNode('BaseNode');
-            this.addDocument('DocGraph', newGraph);
-            this.newNode('BaseNode', newGraph);
-            // path test
+
         },
         mounted(): void {
 

@@ -1,80 +1,118 @@
 <template>
     <div :style="totalCardStyle">
-        <v-tabs v-model="currentTab" fixed-tabs>
+        <v-tabs v-model="rootTab" fixed-tabs>
             <v-tabs-slider color="todo"></v-tabs-slider>
-            <v-tab v-for="(value, tab) in availableTabs" :key="tab" class="pa-0">
+            <v-tab v-for="value in rootTabList" :key="value.key" class="pa-0">
                 <v-icon left> {{ value.icon }}</v-icon>
-                {{ tabTrans[tab][lang] }}
+                {{ value.name }}
             </v-tab>
         </v-tabs>
-        <v-tabs-items v-model="currentTab" style="height: 100%">
-            <v-tab-item v-for="(value, tab) in availableTabs" :key="tab">
-                <card-eco-system v-if=" tab === 'eco'" v-bind="value.props"></card-eco-system>
-                <card-document
-                    v-if="tab === 'document'"
-                    v-bind="value.props"
-                    :document="document"
-                    :edit-mode="editMode">
+        <v-tabs-items v-model="rootTab">
+            <v-tab-item v-for="value in rootTabList" :key="value.key">
+                <v-tabs :value="subTab" @change="updateSubTab(arguments[0], value.children)" fixed-tabs>
+                    <v-tabs-slider color="grey"></v-tabs-slider>
+                    <v-tab v-for="subValue in value.children" :key="subValue.key" class="pa-0">
+                        <v-icon left small> {{ subValue.icon }}</v-icon>
+                        {{ subValue.name }}
+                    </v-tab>
+                </v-tabs>
+                <v-tabs-items v-model="subTab">
+                    <v-tab-item v-for="subValue in value.children" :key="subValue.key">
+                        <div class="cardItem" :style="subCardStyle">
+                            <keep-alive>
+                                <template v-if="value.key === 'ecoSystem'">
 
-                </card-document>
-                <card-meta-knowledge
-                    v-if="tab === 'node'"
-                    :info="dataManager.currentItem"
-                    :width="allComponentSize.leftCard.width"
-                    :edit-mode="editMode"
-                    :document="document"
-                >
+                                </template>
+                                <template v-else-if="value.key === 'document'">
+                                    <card-page-directory
+                                        v-if="subValue.key === 'directory'"
+                                        :edit-mode="editMode"
+                                    >
 
-                </card-meta-knowledge>
+                                    </card-page-directory>
+                                </template>
+                                <template v-else-if="value.key === 'metaKnowledge'">
+                                    <template v-if="subValue.key === 'info'">
+                                        <card-page-node-info
+                                            v-if="currentItemType === 'node'"
+                                            :edit-mode="editMode"
+                                            :base-data="currentItem">
+
+                                        </card-page-node-info>
+                                        <card-page-link-info
+                                            v-else-if="currentItemType === 'link'"
+                                            :edit-mode="editMode"
+                                            :base-data="currentItem"
+                                            :document="document">
+
+                                        </card-page-link-info>
+                                    </template>
+                                    <template v-else-if="subValue.key === 'mediaList' && currentItemType === 'node'">
+                                        <card-page-media-list
+                                            :base-data="currentItem">
+
+                                        </card-page-media-list>
+                                    </template>
+                                </template>
+                            </keep-alive>
+                        </div>
+                    </v-tab-item>
+                </v-tabs-items>
             </v-tab-item>
         </v-tabs-items>
-        <web-site-info></web-site-info>
+        <v-card :height="bottomHeight" flat tile outlined>
+            <item-sharer :item-info="documentInfo"></item-sharer>
+        </v-card>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import CardEcoSystem from '@/components/card/CardEcoSystem.vue';
-    import CardDocument from '@/components/card/CardDocument.vue';
-    import CardMetaKnowledge from '@/components/card/CardMetaKnowledge.vue';
-    import {GraphSelfPart} from "@/utils/graphClass";
+    import {GraphSelfPart, LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
     import {getIcon} from "@/utils/icon";
     import {TabContent} from "@/utils/interfaceInComponent";
-    import WebSiteInfo from "@/components/WebSiteInfo.vue";
+    import {commitChangeRootTab, commitChangeSubTab} from "@/store/modules/_mutations";
+    import ItemSharer from "@/components/ItemSharer.vue";
+    import CardPageDirectory from "@/components/card/page/CardPageDirectory.vue";
+    import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
+    import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
+    import CardPageLinkInfo from "@/components/card/page/CardPageLinkInfo.vue";
 
     export default Vue.extend({
         name: "CardRoot",
         components: {
-            CardDocument,
-            CardMetaKnowledge,
-            CardEcoSystem,
-            WebSiteInfo
+            ItemSharer,
+            CardPageDirectory,
+            CardPageNodeInfo,
+            CardPageLinkInfo,
+            CardPageMediaList
         },
         data() {
             return {
-                tabTrans: {
-                    "eco": {
-                        "zh": "知识生态"
-                    },
-                    "document": {
-                        "zh": "知识专题"
-                    },
-                    "node": {
-                        "zh": "知识元"
-                    }
-                },
-                currentTab: 1,
-                lang: 'zh',
-                editPageRegex: new RegExp('edit.*')
+                editPageRegex: new RegExp('edit.*'),
+                bottomHeight: 108
             }
         },
-        props: {},
+        props: {
+            document: {
+                type: Object as () => GraphSelfPart,
+                required: true
+            }
+        },
         computed: {
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            document: function (): GraphSelfPart {
-                return this.dataManager.currentGraph
+            currentItem: function (): NodeInfoPart | LinkInfoPart | MediaInfoPart {
+                return this.dataManager.currentItem
+            },
+            currentItemType: function (): BaseType {
+                let _type = this.currentItem.type;
+                _type === 'document' && (_type = 'node');
+                return _type
+            },
+            documentInfo: function (): NodeInfoPart {
+                return this.$store.getters.currentGraphInfo
             },
             allComponentSize: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
@@ -85,50 +123,127 @@
             totalCardStyle: function (): CSSProp {
                 return {
                     width: this.allComponentSize.leftCard.width + 'px',
-                    height: '100%',
+                    height: this.allComponentSize.leftCard.height + 'px',
                     backgroundColor: "white",
                     zIndex: 1,
                     overflowY: "hidden",
                     overflowX: "hidden"
                 }
             },
-            tabItems(): Record<string, TabContent> {
+            subCardStyle: function (): CSSProp {
                 return {
-                    "eco": {
+                    width: this.allComponentSize.leftCard.width + 'px',
+                    height: (this.allComponentSize.leftCard.height - 96 - this.bottomHeight) + 'px',
+                    backgroundColor: 'white'
+                }
+            },
+            rootTabList: function (): TabContent[] {
+                return [
+                    {
+                        key: 'ecoSystem',
                         icon: getIcon('i-knowledge-level', 'eco'),
-                        props: {}
+                        name: '知识生态',
+                        children: [
+                            {
+                                icon: getIcon('i-eco-system', 'map'),
+                                name: '知识地图',
+                                key: 'knownMap'
+                            },
+                            {
+                                icon: getIcon('i-eco-system', 'community'),
+                                name: '知识社区',
+                                key: 'community'
+                            },
+                            {
+                                icon: getIcon('i-eco-system', 'course'),
+                                name: '知识课程',
+                                key: 'course'
+                            }
+                        ],
                     },
-                    "document": {
+                    {
+                        key: 'document',
                         icon: getIcon('i-knowledge-level', 'document'),
-                        props: {}
+                        name: '知识专题',
+                        children: [
+                            {
+                                icon: getIcon('i-document-comp', 'directory'),
+                                name: '知识目录',
+                                key: 'directory'
+                            },
+                            {
+                                icon: getIcon('i-document-comp', 'historyAndBranch'),
+                                name: '其他版本',
+                                key: 'historyBranch'
+                            },
+                            {
+                                icon: getIcon('i-document-comp', 'comments'),
+                                name: '知识评论',
+                                key: 'comments'
+                            }
+                        ],
                     },
-                    "node": {
+                    {
+                        key: "metaKnowledge",
                         icon: getIcon('i-knowledge-level', 'node'),
-                        props: {}
+                        name: '知识元',
+                        children: [
+                            {
+                                icon: getIcon('i-meta-knowledge', 'info'),
+                                name: '基本信息',
+                                key: 'info'
+                            },
+                            {
+                                icon: getIcon('i-meta-knowledge', 'medias'),
+                                name: '包含媒体',
+                                key: 'mediaList'
+                            },
+                            {
+                                icon: getIcon('i-meta-knowledge', 'relative'),
+                                name: '相关内容',
+                                key: 'relative'
+                            }
+                        ]
                     }
+                ]
+            },
+
+            editMode: function (): boolean {
+                return this.editPageRegex.test(String(this.$route.name))
+            },
+
+            rootTab: {
+                get: function (): number {
+                    return this.allComponentSize.leftCardTab.root
+                },
+                set: function (value: number) {
+                    commitChangeRootTab(value)
                 }
             },
 
-            availableTabs(): Record<string, TabContent> {
-                return this.tabItems
-            },
-
-            editMode(): boolean {
-                return this.editPageRegex.test(String(this.$route.name))
+            subTab: {
+                get: function (): number {
+                    return this.allComponentSize.leftCardTab.sub
+                },
+                set: function (value: SubTabName) {
+                    commitChangeSubTab(value)
+                }
             }
         },
-        methods: {},
+        methods: {
+            updateSubTab: function (tabIndex: number, subTabList: TabContent[]) {
+                this.subTab = subTabList[tabIndex].key as SubTabName
+            }
+        },
         watch: {},
         record: {
             status: 'editing',
             description: '左边卡片的根组件'
-            //todo 用vuex来控制组件
         }
     })
 </script>
 
 <style scoped>
-    @import '../../style/css/card.css';
 
 </style>
 
