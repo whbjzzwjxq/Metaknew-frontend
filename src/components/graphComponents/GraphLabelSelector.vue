@@ -46,7 +46,9 @@
                 keyTrans: {
                     'node': '节点',
                     'media': '媒体&文本',
-                    "link": '关系'
+                    'link': '关系',
+                    'note': '笔记',
+                    'document': '专题',
                 }
             }
         },
@@ -63,7 +65,7 @@
             },
 
             resetLabel() {
-                const typeList: BaseType[] = ['node', 'link', 'media'];
+                const typeList: BaseType[] = ['node', 'link', 'media', 'document', 'note'];
                 typeList.map((_type) => {
                     Object.entries(this.labelViewDict[_type]).map(([key, value]) => {
                         this.$set(this.labelViewDict[_type], key, true)

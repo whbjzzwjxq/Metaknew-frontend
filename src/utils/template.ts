@@ -1,5 +1,8 @@
 import {getCookie, randomNumberInRange} from '@/utils/utils';
 import {fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
+import {UserConcern} from "@/utils/userConcern";
+import PDFJS from 'pdfjs-dist';
+PDFJS.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/build/pdf.worker.js';
 
 type SettingConf = Record<string, Record<string, BaseSettingConf>>
 
@@ -720,6 +723,16 @@ export function mediaSettingTemplate(_id: id, _label: string, _name: string, _sr
             cancelAnimationFrame(query)
         };
         checkLoad()
+    }
+    if (_label === 'pdf') {
+        let loadingTask = PDFJS.getDocument(_src);
+        loadingTask.promise.then(function(pdf:any) {
+             pdf.getPage(1).then(function(page:any) {
+                 let viewport = page.getViewport({scale: 1.5});
+                 setting.Base.size = viewport.width;
+                 setting.Base.scaleX = viewport.height / viewport.width;
+             });
+        })
     }
     return setting;
 }

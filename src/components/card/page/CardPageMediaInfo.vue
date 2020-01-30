@@ -11,7 +11,7 @@
     >
         <v-card :height="height">
             <v-card :width="width" :height="getHeight" flat>
-                <media-viewer :media="media" :width="width" :height="height">
+                <media-viewer :media="media" :width="width" :height="height" ref="mediaViewer">
                     <template v-slot:button-group>
                         <icon-group
                             v-if="height >= 100"
@@ -19,6 +19,7 @@
                             :container-style="buttonGroupStyle"
                             x-small
                             vertical
+                            ref="img"
                         >
                         </icon-group>
                     </template>
@@ -52,10 +53,11 @@
                     </v-btn>
                     <v-btn text @click="saveMedia" :disabled="!media.isSelf">Save</v-btn>
                 </v-card-actions>
+
                 <media-detail
                     :dialog-detail="dialogDetailVisible"
-                    :dialog-mode="dialogEdit"
-                    @close="closeDialogDetail"
+                    :dialog-edit="dialogEdit"
+                    @close="closeDialog"
                     :media="media"
                 >
                 </media-detail>
@@ -88,6 +90,8 @@
     import IconGroup from "@/components/IconGroup.vue";
     import MediaDetail from "../../media/MediaDetail.vue"
     import {getSrc} from '@/utils/utils'
+    import 'viewerjs/dist/viewer.css'
+
     export default Vue.extend({
         name: "CardPageMediaInfo",
         components: {
@@ -264,6 +268,10 @@
             getHeight: function () {
                 return this.height / 2
             },
+            viewer(): Vue & { validate: () => boolean } {
+ return this.$refs.viewer as Vue
+                & { validate: () => boolean }
+}
         },
         methods: {
             updateValue: function (prop: string, value: any) {
@@ -291,14 +299,19 @@
             addMediaToGraph: function () {
                 this.$emit("add-media-to-graph", this.media);
             },
-            dialogDetailWatch() {
-                this.dialogDetailVisible = true;
-                this.dialogEdit = false
+            dialogWatch() {
+                if (this.media.Ctrl.PrimaryLabel === 'image') {
+                    let el: any = this.$refs.mediaViewer;
+                    el.bigPic()
+                } else {
+                    this.dialogDetailVisible = true;
+                    this.dialogEdit = false
+                }
             },
-            closeDialogDetail() {
+            closeDialog() {
                 this.dialogDetailVisible = false
             },
-            dialogDetailEdit() {
+            editSrc() {
                 this.dialogDetailVisible = true;
                 this.dialogEdit = true
             },
