@@ -52,10 +52,30 @@
             iconList: function (): IconItem[] {
                 let {isShared, isGood, isBad, isStar} = this.userConcern;
                 return [
-                    {name: getIcon('i-edit', 'share'), color: isShared ? 'blue' : 'grey', _func: this.shareItem, num: this.ctrl.isShared},
-                    {name: getIcon('i-good', isGood), color: isGood ? 'green' : 'grey', _func: this.goodItem, num: this.ctrl.isGood},
-                    {name: getIcon('i-bad', isBad), color: isBad ? 'red' : 'grey', _func: this.badItem, num: this.ctrl.isBad},
-                    {name: getIcon('i-star', isStar), color: isStar ? 'yellow' : 'grey', _func: this.starItem, num: this.ctrl.isStar},
+                    {
+                        name: getIcon('i-edit', 'share'),
+                        color: isShared ? 'blue' : 'grey',
+                        _func: this.shareItem,
+                        num: this.ctrl.isShared
+                    },
+                    {
+                        name: getIcon('i-good', isGood),
+                        color: isGood ? 'green' : 'grey',
+                        _func: this.goodItem,
+                        num: this.ctrl.isGood
+                    },
+                    {
+                        name: getIcon('i-bad', isBad),
+                        color: isBad ? 'red' : 'grey',
+                        _func: this.badItem,
+                        num: this.ctrl.isBad
+                    },
+                    {
+                        name: getIcon('i-star', isStar),
+                        color: isStar ? 'yellow' : 'grey',
+                        _func: this.starItem,
+                        num: this.ctrl.isStar
+                    },
                 ]
             },
 
@@ -92,11 +112,17 @@
 
             addFragment: function (method: string) {
                 let id = getIndex();
-                if (this.itemInfo.isRemote && this.fragmentSourceIdList.includes(this.itemInfo.id)) {
-                    let fragment = FragmentInfoPart.fragmentFromItem(this.itemInfo, id, method);
-                    dispatchFragmentAdd(fragment)
+                if (!this.fragmentSourceIdList.includes(this.itemInfo.id)) {
+                    if (this.itemInfo.isRemote) {
+                        let fragment = FragmentInfoPart.fragmentFromItem(this.itemInfo, id, method);
+                        dispatchFragmentAdd(fragment)
+                    } else {
+                        // 非远端不生成 测试功能暂时使用
+                        let fragment = FragmentInfoPart.fragmentFromItem(this.itemInfo, id, method);
+                        dispatchFragmentAdd(fragment)
+                    }
                 } else {
-                    //必须远端的才能自动生成碎片
+                    // 自动生成不重复
                 }
             }
 

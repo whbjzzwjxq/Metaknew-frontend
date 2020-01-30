@@ -76,7 +76,7 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '的别名与翻译'">
+        <card-sub-row :text="nameTrans[type] + '的别名'">
             <template v-slot:content>
                 <v-text-field
                     :disabled="!editMode"
@@ -89,16 +89,6 @@
                     v-model="alias">
 
                 </v-text-field>
-                <field-text
-                    :base-text="info.Description"
-                    :editable="editMode"
-                    :prop-name="'Description'"
-                    @update-value="updateValue"
-                    label="Description"
-                    single-line
-                >
-
-                </field-text>
             </template>
         </card-sub-row>
 

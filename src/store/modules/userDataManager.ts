@@ -6,7 +6,8 @@ declare global {
     interface UserDataManagerState {
         userConcernDict: Record<BaseType, Record<id, UserConcern>>,
         fragments: Array<FragmentInfoPart>,
-        userSetting: Record<string, Record<string, any>>
+        userSetting: Record<string, Record<string, any>>,
+        userNotes: Record<any, any>
     }
 }
 
@@ -22,6 +23,9 @@ const state: UserDataManagerState = {
     fragments: [],
     userSetting: {
         fragmentCollect: {}
+    },
+    userNotes: {
+        
     }
 };
 
@@ -34,6 +38,7 @@ const mutations = {
 
 const actions = {
     fragmentAdd(context: { commit: Commit, state: UserDataManagerState }, payload: FragmentInfoPart) {
+        console.log(payload);
         state.fragments.push(payload)
         // todo
     }

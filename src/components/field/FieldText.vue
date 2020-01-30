@@ -1,19 +1,14 @@
 <template>
     <v-card :width="width" tile flat>
-        <v-card-title v-if="setting.showSetter">
-            <v-btn text small @click="multiLanguage = !multiLanguage">
-                <v-icon>
-                    {{setterIcon}}
-                </v-icon>
-                MultiLanguage ?
-            </v-btn>
-        </v-card-title>
-        <v-tabs v-model="tab" v-if="setting.multiLanguage" height="24px" color="accent" fixed-tabs>
+        <v-tabs v-model="tab" v-if="setting.multiLanguage" height="24px" color="accent">
             <v-tabs-slider></v-tabs-slider>
             <v-tab v-for="(value, key) in text" :key="key" :href="'#tab-' + key">
-                {{ key }}
+                <p style="margin: unset">{{ key }}</p>
                 <v-btn icon x-small @click="deleteText(key)" class="mt-n1" v-if="setting.editable">
                     <v-icon>mdi-close</v-icon>
+                </v-btn>
+                <v-btn icon x-small v-else>
+
                 </v-btn>
             </v-tab>
             <v-tab :href="'#tab-default'" v-if="setting.editable">
@@ -29,7 +24,7 @@
                 </v-btn>
             </v-tab>
 
-            <v-tab-item v-for="(value, key) in text" :key="key" :value="'tab-'+ key" class="pa-1">
+            <v-tab-item v-for="(value, key) in text" :key="key" :value="'tab-'+ key">
                 <field-text-area-or-field
                     :value="value"
                     :prop-name="key"
@@ -37,6 +32,7 @@
                     :single-line="setting.singleLine"
                     :label="label"
                     :placeholder="placeholder"
+                    :width="width"
                     @update-text="updateText">
 
                 </field-text-area-or-field>
@@ -55,6 +51,9 @@
         </v-tabs>
 
         <template v-else>
+            <div style="height: 24px">
+
+            </div>
             <field-text-area-or-field
                 :value="text[singleKey]"
                 :prop-name="singleKey"
@@ -62,10 +61,22 @@
                 :single-line="setting.singleLine"
                 :label="label"
                 :placeholder="placeholder"
+                :width="width"
                 @update-text="updateText">
 
             </field-text-area-or-field>
         </template>
+
+        <v-card-actions v-if="setting.showSetter" class="pa-0" style="height: 24px">
+            <v-btn icon x-small @click="multiLanguage = !multiLanguage">
+                <v-icon>
+                    {{setterIcon}}
+                </v-icon>
+            </v-btn>
+            <div>
+                <p style="font-size: 16px;margin: unset">MultiLanguage</p>
+            </div>
+        </v-card-actions>
     </v-card>
 </template>
 

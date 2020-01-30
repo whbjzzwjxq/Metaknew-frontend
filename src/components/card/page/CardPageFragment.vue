@@ -1,19 +1,21 @@
 <template>
-    <v-card>
-        <v-card-title>
+    <v-card flat outlined tile>
+        <v-card-title class="pa-0 px-2" style="height: 32px;">
             <title-text-field
                 :text="fragment.Info.Name"
                 :edit-mode="editMode"
+                :font-css="fontCSS"
                 @update-text="updateValue('Name', $event)">
 
             </title-text-field>
         </v-card-title>
-        <v-card-text>
+        <v-card-text class="pa-2" style="">
             <field-text
                 v-if="label === 'text'"
                 :base-text="fragment.Info.Description"
                 :prop-name="'Description'"
                 :editable="editMode"
+                :width="'100%'"
                 @update-value="updateValue">
 
             </field-text>
@@ -47,7 +49,11 @@
         },
         data: function () {
             return {
-                editMode: false
+                editMode: false,
+                fontCSS: {
+                    fontSize: "large",
+                    fontWeight: "bold"
+                } as CSSProp
             }
         },
         props: {
@@ -67,7 +73,7 @@
                 return [
                     {name: getIcon('i-edit', 'edit'), _func: this.edit},
                     {name: getIcon('i-edit', 'delete'), _func: this.deleteFragment},
-                    {name: getIcon('i-collapse-arrow-double', 'left'), _func: this.exportFragment},
+                    {name: getIcon('i-arrow-double', 'right'), _func: this.exportFragment},
                     {name: getIcon('i-edit', 'save'), _func: this.saveFragment}
                 ]
             }

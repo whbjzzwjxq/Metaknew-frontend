@@ -133,8 +133,8 @@
             },
             bottomSheetIconList: function (): IconItem[] {
                 return [
-                    {name: getIcon('i-collapse-arrow-double', true), _func: this.bottomSheetLarge},
-                    {name: getIcon('i-collapse-arrow-double', false), _func: this.bottomSheetDecrease},
+                    {name: getIcon('i-arrow-double', true), _func: this.bottomSheetLarge},
+                    {name: getIcon('i-arrow-double', false), _func: this.bottomSheetDecrease},
                     {name: getIcon('i-edit', 'close'), _func: this.bottomSheetOff},
                 ]
             }

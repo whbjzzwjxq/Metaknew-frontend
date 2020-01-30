@@ -1,7 +1,7 @@
 declare global {
-    type IconGroup = 'i-star' | 'i-good' | 'i-bad' | 'i-collapse-arrow-double' |
+    type IconGroup = 'i-star' | 'i-good' | 'i-bad' | 'i-arrow-double' |
         'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
-        'i-eye' | 'i-media-type' | 'i-collapse' | 'i-collapse-arrow' | 'i-knowledge-level' |
+        'i-eye' | 'i-media-type' | 'i-collapse' | 'i-arrow' | 'i-knowledge-level' |
         'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
         'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge'
 
@@ -39,8 +39,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     'i-edit': {
         edit: 'mdi-pencil',
         delete: 'mdi-delete',
-        copy: 'mdi-content',
-        save: 'mdi-save',
+        copy: 'mdi-content-copy',
+        save: 'mdi-content-save',
         autoSave: '',
         close: 'mdi-close',
         share: 'mdi-share-variant',
@@ -77,15 +77,17 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         true: 'mdi-minus',
         false: 'mdi-plus'
     },
-    'i-collapse-arrow': {
+    'i-arrow': {
         true: 'mdi-chevron-up',
         false: 'mdi-chevron-down',
         left: 'mdi-chevron-left',
         right: 'mdi-chevron-right'
     },
-    'i-collapse-arrow-double': {
+    'i-arrow-double': {
         true: 'mdi-chevron-double-up',
-        false: 'mdi-chevron-double-down'
+        false: 'mdi-chevron-double-down',
+        left: 'mdi-chevron-double-left',
+        right: 'mdi-chevron-double-right'
     },
     'i-knowledge-level': {
         eco: 'mdi-earth',
