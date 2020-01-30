@@ -82,7 +82,7 @@
     import FieldText from "@/components/field/FieldText.vue";
     import TitleTextField from "@/components/TitleTextField.vue";
     import CardSubLabelGroup from '@/components/card/subComp/CardSubLabelGroup.vue';
-    import {getIsSelf, MediaInfoPart} from "@/utils/graphClass";
+    import {MediaInfoPart} from "@/utils/graphClass";
     import {LabelGroup} from "@/utils/interfaceInComponent";
     import {labelItems} from "@/utils/labelField";
     import {mediaUpdate} from '@/api/commonSource';
@@ -172,14 +172,20 @@
             ctrl: function () {
                 return this.media.Ctrl;
             },
-            userConcern: function () {
-                return this.media.UserConcern;
-            },
+
             dataManager: function () {
                 return this.$store.state.dataManager;
             },
+
+            userDataManager: function (): UserDataManagerState {
+               return this.$store.state.userDataManager
+            },
+
+            userConcern: function (): UserConcern {
+                return this.userDataManager.userConcernDict['media'][this.media.id]
+            },
             isSelf: function () {
-                return getIsSelf(this.media.Ctrl);
+                return this.media.isSelf
             },
             labelGroup: function (): LabelGroup[] {
                 return this.editBase
@@ -283,11 +289,7 @@
             removeItem: function (removedLabel: string, prop: string) {
                 this.media.updateValue("Labels", [], true);
             },
-            addItem: function (value: string[], prop: string) {
-                prop === "Info"
-                    ? this.media.updateValue("Labels", value)
-                    : this.media.updateUserConcern("Labels", value);
-            },
+
             changeDetail() {
                 this.detailOn = !this.detailOn
             },
@@ -299,7 +301,7 @@
             addMediaToGraph: function () {
                 this.$emit("add-media-to-graph", this.media);
             },
-            dialogWatch() {
+            dialogDetailWatch() {
                 if (this.media.Ctrl.PrimaryLabel === 'image') {
                     let el: any = this.$refs.mediaViewer;
                     el.bigPic()
@@ -311,7 +313,7 @@
             closeDialog() {
                 this.dialogDetailVisible = false
             },
-            editSrc() {
+            dialogDetailEdit() {
                 this.dialogDetailVisible = true;
                 this.dialogEdit = true
             },

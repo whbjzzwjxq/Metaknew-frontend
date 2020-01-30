@@ -1,6 +1,5 @@
 import {getCookie, randomNumberInRange} from '@/utils/utils';
 import {fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
-import {UserConcern} from "@/utils/userConcern";
 import PDFJS from 'pdfjs-dist';
 PDFJS.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/build/pdf.worker.js';
 

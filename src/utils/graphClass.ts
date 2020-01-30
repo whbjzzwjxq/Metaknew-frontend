@@ -300,6 +300,10 @@ export abstract class InfoPart {
         return this.Ctrl.CreateType === 'User'
     }
 
+    get isSelf() {
+        return getIsSelf(this.Ctrl)
+    }
+
     protected constructor(info: BaseInfo, ctrl: BaseCtrl) {
         this.Info = info;
         this.Ctrl = ctrl;

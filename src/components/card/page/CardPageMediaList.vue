@@ -35,7 +35,7 @@
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
     import {mediaAppendToNode, SourceQueryObject} from "@/api/commonSource";
-    import {NodeInfoPart, MediaInfoPart, MediaSettingPart, getIsSelf} from "@/utils/graphClass";
+    import {NodeInfoPart, MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
     import {getFileToken} from '@/api/user'
     import {commitFileToken} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
@@ -81,7 +81,7 @@
                 return this.dataManager.fileToken
             },
             nodeIsSelf: function (): boolean {
-                return getIsSelf(this.baseData.Ctrl)
+                return this.baseData.isSelf
             },
             width: function () {
                 return this.$store.state.styleComponentSize.leftCard.width - 24
