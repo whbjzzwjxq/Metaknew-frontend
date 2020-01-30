@@ -48,7 +48,7 @@ const routes = [
             },
             {
                 path: 'graph/edit',
-                name: 'edit-graph',
+                name: 'graph-edit',
                 component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocGraph.vue'),
             },
             {

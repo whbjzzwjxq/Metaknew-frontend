@@ -18,8 +18,9 @@ export type LabelViewDict = Record<string, Record<string, boolean>>
 // v-tab 相关组件使用
 export interface TabContent {
     icon: string,
-    props?: Record<string, any>,
-    name?: string | Record<string, string>
+    children?: TabContent[],
+    name: string,
+    key: string
 }
 
 // graph-viewBox graph-render相关组件使用
@@ -28,4 +29,22 @@ export type GraphMetaData = {
     self: GraphSelfPart, // 对应的Graph
     rect: RectByPoint, // 对应的矩形
     parent: GraphMetaData | null, //对应的上级MetaData
+}
+
+//DataTable使用
+export interface FlatNodeInfo extends BaseInfo {
+    id: string;
+    Name: string;
+    Alias: Array<string>;
+    BaseImp: number;
+    BaseHardLevel: number;
+    Language: string;
+    Topic: Array<string>;
+    Labels: Array<string>;
+    Text: Translate;
+    Description: Translate;
+    IncludedMedia: Array<string | number>;
+    MainPic: string;
+
+    [prop: string]: any
 }

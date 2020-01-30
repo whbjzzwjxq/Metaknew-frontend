@@ -90,7 +90,7 @@
     import {commitNewLabel} from '@/store/modules/_mutations'
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
-    import {NodeSettingPart} from "@/utils/graphClass";
+    import {GraphSelfPart, NodeSettingPart} from "@/utils/graphClass";
 
     export default Vue.extend({
         name: 'GraphNode',
@@ -99,28 +99,38 @@
             return {}
         },
         props: {
-            //基础数据
-            node: {
-                type: Object as () => NodeSettingPart,
-                required: true,
-            },
 
-            //半径
-            size: {
-                type: Number as () => number,
+            // 设置
+            setting: {
+                type: Object as () => NodeSetting,
                 required: true
             },
+
+            // 状态
+            state: {
+                type: Object as () => NodeState,
+                required: true
+            },
+
+            // 默认半径
+            size: {
+                type: Number as () => number,
+                default: 12
+            },
+
             //缩放情况
             scale: {
                 type: Number as () => number,
-                required: true
+                default: 1
             },
 
+            // 所处位置
             point: {
                 type: Object as () => PointMixed,
                 required: true
             },
 
+            // 模式
             mode: {
                 type: String as () => string,
                 default: 'normal'
@@ -129,13 +139,6 @@
         computed: {
             transform: function (): string {
                 return 'translate(' + this.point.x + ' ' + this.point.y + ')'
-            },
-
-            setting: function (): NodeSetting {
-                return this.node.Setting
-            },
-            state: function (): NodeState {
-                return this.node.State
             },
 
             isSelected: function (): boolean {
@@ -208,43 +211,43 @@
                 }
             },
 
-            showText: function () {
+            showText: function (): boolean {
                 return this.setting.Show.showAll && this.setting.Show.showName && !this.state.isMouseOn
             },
-            showInlineText: function () {
+            showInlineText: function (): boolean {
                 return this.setting.Show.showAll && this.setting.Show.showInlineText
             },
-            showPicture: function () {
+            showPicture: function (): boolean {
                 return this.setting._image &&
                     this.setting.Show.showAll &&
                     this.setting.Show.showPic &&
                     this.height >= 16
             },
-            showColor: function () {
+            showColor: function (): boolean {
                 return this.setting.Show.showAll &&
                     this.setting.Show.showColor
             },
 
             //是否显示边
-            showBorder: function () {
+            showBorder: function (): boolean {
                 return this.setting.Show.showAll && this.setting.Show.showBorder
             },
 
-            hoverStyle: function () {
+            hoverStyle: function (): CSSProp {
                 return {
                     'fill': this.hoverColor,
                     'opacity': this.hoverOpacity,
                     'stroke': 'white',
-                    'stroke-width': 10,
-                    'stroke-opacity': 0
+                    'strokeWidth': '10px',
+                    'strokeOpacity': 0
                 }
             },
-            hoverColor: function () {
+            hoverColor: function (): string {
                 return this.setting.Show.isMain
                     ? '#FFCA28'
                     : this.fillColor
             },
-            hoverOpacity: function () {
+            hoverOpacity: function (): number {
                 return this.setting.Show.showAll
                     ? this.isSelected
                         ? 0.2
@@ -254,11 +257,11 @@
                     : 0
             },
 
-            hoverHeight: function () {
+            hoverHeight: function (): number {
                 return this.height + this.borderSetting.width + 5
             },
 
-            hoverWidth: function () {
+            hoverWidth: function (): number {
                 return this.width + this.borderSetting.width + 5
             },
 
@@ -273,7 +276,7 @@
                     'color': this.setting.Text.textColor
                 }
             },
-            textSetting: function () {
+            textSetting: function (): Record<string, any> {
                 let size = this.setting.Text.textSize * this.scale >= 10
                     ? this.setting.Text.textSize * this.scale
                     : 10;
@@ -292,7 +295,6 @@
                 }
             },
 
-            //todo 先将就着
             inlineTextStyle: function (): CSSProp {
                 return {
                     'MozUserSelect': 'none',
@@ -305,7 +307,7 @@
                 }
             },
 
-            inlineTextSetting: function () {
+            inlineTextSetting: function (): Record<string, any> {
                 let width = this.setting.Text.inlineTwoline
                     ? this.setting.Text.inlineText.length * 12
                     : this.setting.Text.inlineText.length * 24;
@@ -320,45 +322,33 @@
                 }
             },
 
-            imageStyle: function () {
+            imageStyle: function (): CSSProp {
                 return {
-                    'clip-path': 'url(#' + this.getClipId + ')',
+                    'clipPath': 'url(#' + this.getClipId + ')',
                 }
             },
 
-            getMainPic: function () {
+            getMainPic: function (): string {
                 return getSrc(this.setting._image)
             },
-            getClipId: function () {
+            getClipId: function (): string {
                 return 'clipPath_' + this.setting._id
             },
-            rhombusPath: function () {
+            rhombusPath: function (): string {
                 let loc = [-this.width + ',0', '0,' + -this.height, this.width + ',0', '0,' + this.height];
                 return loc.join(' ')
             },
-            rhombusHoverPath: function () {
+            rhombusHoverPath: function (): string {
                 let loc = [-this.hoverWidth + ',0', '0,' + -this.hoverHeight, this.hoverWidth + ',0', '0,' + this.hoverHeight];
                 return loc.join(' ')
             },
-            geometryType: function () {
+            geometryType: function (): string {
                 return this.setting.Base.type
             },
 
-            boundGraph: function () {
-                return this.$store.state.dataManager.graphManager[this.node.Setting._id]
-            },
-
-            maxWidth: function () {
-                return this.width * 2 > this.textSetting.width
-                    ? this.width * 2
-                    : this.textSetting.width
-            },
-            maxHeight: function () {
-                return this.height * 2 > this.textSetting.height
-                    ? this.height * 2
-                    : this.textSetting.height
+            boundGraph: function (): GraphSelfPart {
+                return this.$store.state.dataManager.graphManager[this.setting._id]
             }
-
         },
         methods: {},
         watch: {},

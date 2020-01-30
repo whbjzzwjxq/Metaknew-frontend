@@ -1,5 +1,6 @@
 import {GraphSelfPart, MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
 import {instance} from './main'
+import {FlatNodeInfo} from "@/utils/interfaceInComponent";
 
 export interface SourceQueryObject {
     _id: id;
@@ -17,7 +18,7 @@ export interface BackendMediaInfoPart {
     Ctrl: BaseMediaCtrl;
 }
 
-export interface BackendLinkCtrl extends BaseCtrl {
+export interface BackendLinkCtrl extends CommonCtrl {
     Start: SourceQueryObject;
     End: SourceQueryObject;
 }
@@ -100,7 +101,7 @@ export function nodeUpdate(data: NodeInfoPart) {
     })
 }
 
-export function nodeCreateMulti(pLabel: string, nodes: BaseNodeInfo[]) {
+export function nodeCreateMulti(pLabel: string, nodes: FlatNodeInfo[]) {
     return instance.request({
         url: '/subgraph/create/node/bulk_create',
         method: 'post',

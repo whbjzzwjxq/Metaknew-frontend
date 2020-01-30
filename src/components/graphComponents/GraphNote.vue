@@ -11,46 +11,27 @@
                         @mouseenter.stop="mouseEnter"
                         height="18px"
                         flat
-                        :dark="isDark"
+                        :dark="!isDark"
+                        color="#EEEEEE"
                         tile>
                         <v-toolbar-title></v-toolbar-title>
                         <div class="flex-grow-1"></div>
-                        <v-btn x-small text :dark="isDark" @click="changeDark">
-                            dark: {{isDark ? 'yes' : 'no'}}
-                        </v-btn>
-                        <v-btn x-small icon
-                               :disabled="!note.isSelf"
-                               :color="lockColor"
-                               @click="lock">
-                            <v-icon>{{lockIcon}}</v-icon>
-                        </v-btn>
-                        <v-btn x-small icon
-                               :color="editColor"
-                               :disabled="!editable"
-                               @click="isEditing = !isEditing">
-                            <v-icon>{{editIcon}}</v-icon>
-                        </v-btn>
-                        <v-btn x-small icon>
-                            <v-icon
-                                :disabled="!editable"
-                                @click="deleteNote">mdi-delete
-                            </v-icon>
-                        </v-btn>
-                        <v-btn x-small icon>
-                            <v-icon @click="collapse">{{collapsedIcon}}</v-icon>
-                        </v-btn>
+                        <icon-group
+                            x-small
+                            :icon-list="iconList">
+
+                        </icon-group>
                     </v-toolbar>
                 </div>
                 <div v-show="isCollapsed" :style="fieldStyle">
                     <v-container fluid class="d-flex pa-2">
                         <v-textarea
                             v-model="content"
-                            :disabled="!editing"
+                            :disabled="!isEditing"
                             :placeholder="'tips: '+ currentTip"
-                            :style="textStyle"
                             :dark="isDark"
                             row-height="16px"
-                            class="pa-0 ma-0"
+                            class="pa-0 ma-0 unselected"
                             auto-grow>
 
                         </v-textarea>
@@ -70,19 +51,23 @@
     </div>
 </template>
 
-<script lang="js">
-    import { randomIntegerInRange } from '30-seconds-of-code'
-    import { commitSnackbarOn } from '@/store/modules/_mutations'
+<script lang="ts">
+    import {commitSnackbarOn} from '@/store/modules/_mutations'
+    import Vue from 'vue'
+    import {NoteSettingPart} from "@/utils/graphClass";
+    import {getDivCSS, RectByPoint} from "@/utils/geoMetric";
+    import {getIcon} from "@/utils/icon";
+    import {randomIntegerInRange} from "@/utils/utils";
+    import IconGroup from "@/components/IconGroup.vue";
 
-    export default {
+    export default Vue.extend({
         name: 'GraphNote',
-        data () {
+        components: {
+            IconGroup
+        },
+        data() {
             return {
-                conf: this.note.Setting.Conf,
-                content: this.note.Content,
                 isCollapsed: true,
-                isLock: false,
-                isEditing: false,
                 //drag起始位置
                 dragStartLoc: {
                     x: 0,
@@ -107,26 +92,48 @@
         },
         props: {
             note: {
-                type: Object,
+                type: Object as () => NoteSettingPart,
                 required: true
             },
             container: {
-                type: Object,
+                type: Object as () => RectByPoint,
                 required: true
             }
         },
 
         computed: {
-            divStyle () {
+            setting: function (): NoteSetting {
+                return this.note.Setting
+            },
+            containerRect: function (): AreaRect {
+                return this.container.positiveRect()
+            },
+            isEditing: function (): boolean {
+                return this.note.State.isEditing
+            },
+            sizeSetting: function (): AreaRect {
                 return {
-                    'width': this.width,
-                    'position': 'absolute',
-                    'left': this.left,
-                    'top': this.top,
-                    'z-index': 2
+                    x: this.setting.Base.x * this.containerRect.width,
+                    y: this.setting.Base.y * this.containerRect.height,
+                    width: this.setting.Base.size,
+                    height: this.setting.Base.size * this.setting.Base.scaleX
+                } as AreaRect
+            },
+            content: {
+                get: function (): string {
+                    return this.setting._content.text
+                },
+                set: function (value: string) {
+                    this.$set(this.setting._content, 'text', value)
                 }
             },
-            fieldStyle () {
+            isDark: function (): boolean {
+                return this.note.State.isDark
+            },
+            divStyle: function (): CSSProp {
+                return getDivCSS(this.sizeSetting, {height: "auto"})
+            },
+            fieldStyle: function (): CSSProp {
                 return {
                     width: '100%',
                     height: '100%',
@@ -134,7 +141,7 @@
                     opacity: 0.8,
                 }
             },
-            toolBarStyle () {
+            toolBarStyle: function (): CSSProp {
                 return {
                     'width': '100%',
                     'height': '18px',
@@ -142,142 +149,137 @@
                 }
             },
 
-            sliderStyle () {
+            sliderStyle: function (): CSSProp {
                 return {
                     'width': '18px',
-                    'opacity': 0.5 * (this.isSliderDragging || this.showSlider),
+                    'opacity': (this.isSliderDragging || this.showSlider) ? 0.5 : 0,
                     'background': 'black'
                 }
             },
-            textStyle () {
-                return {
-                    '-moz-user-select': 'none',
-                    'user-select': 'none',
-                }
+
+            iconList: function (): IconItem[] {
+                let vm = this;
+                return [
+                    {
+                        name: getIcon('i-edit-able', !vm.isLock),
+                        _func: vm.edit,
+                        color: vm.isEditing ? 'success' : 'default'
+                    },
+                    {
+                        name: getIcon('i-is-locked', !vm.isLock),
+                        _func: vm.lock,
+                        color: vm.isLock ? 'red darken-1' : 'default'
+                    },
+                    {name: getIcon('i-delete-able', true), _func: vm.deleteNote},
+                    {name: getIcon('i-is-dark', vm.isDark), _func: vm.dark},
+                    {name: getIcon('i-collapse', vm.isCollapsed), _func: vm.collapse}
+                ]
             },
-            left: vm => vm.conf.x * vm.container.width + 'px',
-            top: vm => vm.conf.y * vm.container.height + 'px',
-            width: vm => vm.conf.width + 'px',
-            height: vm => vm.conf.height + 'px',
-            editable: vm => vm.note.isSelf && !vm.isLock,
-            editing: vm => vm.isEditing && !vm.isLock,
-            collapsedIcon: vm => !vm.isCollapsed
-                ? 'mdi-plus-box-outline'
-                : 'mdi-minus-box-outline',
-
-            lockIcon: vm => vm.isLock
-                ? 'mdi-lock-outline'
-                : 'mdi-lock-open',
-
-            editIcon: vm => vm.editable
-                ? 'mdi-pencil-outline'
-                : 'mdi-pencil-off',
-
-            editColor: vm => vm.isEditing
-                ? 'success'
-                : 'default',
-
-            lockColor: vm => vm.isLock
-                ? 'red darken-1'
-                : 'default',
-
-            isDark: vm => vm.conf.dark
+            isLock: function (): boolean {
+                return this.note.State.isLock
+            }
         },
 
         methods: {
-            collapse () {
+            collapse() {
                 this.isCollapsed = !this.isCollapsed
             },
 
-            dragStart ($event) {
+            dark: function () {
+                this.note.updateState('isDark')
+            },
+
+            lock: function () {
+                this.note.updateState('isLock');
+                this.isDragging = false
+            },
+
+            edit() {
+                this.note.updateState('isEditing', !this.isEditing);
+            },
+
+            reloadTip() {
+                let index = randomIntegerInRange(0, this.tips.length - 1);
+                this.currentTip = this.tips[index]
+            },
+
+            dragStart($event: MouseEvent) {
                 this.isLock ||
-                this.$set(this.dragStartLoc, 'x', $event.x)
-                this.$set(this.dragStartLoc, 'y', $event.y)
+                this.$set(this.dragStartLoc, 'x', $event.x);
+                this.$set(this.dragStartLoc, 'y', $event.y);
                 this.isDragging = true
             },
 
-            drag (event) {
+            drag($event: MouseEvent) {
                 if (!this.isLock && this.isDragging) {
-                    let deltaX = (event.x - this.dragStartLoc.x) / this.container.width
-                    let deltaY = (event.y - this.dragStartLoc.y) / this.container.height
-                    this.dragStart(event)
-                    this.$set(this.conf, 'x', this.conf.x + deltaX)
-                    this.$set(this.conf, 'y', this.conf.y + deltaY)
+                    let deltaX = ($event.x - this.dragStartLoc.x) / this.containerRect.width;
+                    let deltaY = ($event.y - this.dragStartLoc.y) / this.containerRect.height;
+                    this.dragStart($event);
+                    this.$set(this.setting.Base, 'x', this.setting.Base.x + deltaX);
+                    this.$set(this.setting.Base, 'y', this.setting.Base.y + deltaY)
                 }
             },
 
-            dragEnd (event) {
+            dragEnd($event: MouseEvent) {
                 (!this.isLock && this.isDragging) &&
-                this.drag(event)
+                this.drag($event);
                 this.isDragging = false
             },
 
             //防止拖动问题
-            mouseLeave () {
-                this.isDragging = false
+            mouseLeave() {
+                this.isDragging = false;
                 this.isSliderDragging = false
             },
 
-            mouseEnter () {
+            mouseEnter() {
 
             },
 
             //右侧边栏拖动
-            enlargeStart (event) {
+            enlargeStart($event: MouseEvent) {
                 this.isLock ||
-                this.$set(this.dragStartLoc, 'enLargeX', event.x)
+                this.$set(this.dragStartLoc, 'enLargeX', $event.x);
                 this.isSliderDragging = true
             },
 
-            enlarge (event) {
+            enlarge($event: MouseEvent) {
                 if (!this.isLock && this.isSliderDragging) {
-                    let note = this.note
-                    if (note.isSelf) {
-                        let deltaX = (event.x - this.dragStartLoc.enLargeX)
-                        this.enlargeStart(event)
-                        this.$set(this.conf, 'width', this.conf.width + deltaX)
-                        if (this.conf.width < 120) {
-                            let payload = {
-                                'content': '便签宽度不能小于100像素',
-                                'color': 'warning',
-                                'actionName': 'noteTooNarrow',
-                                'once': false
-                            }
-                            commitSnackbarOn(payload)
-                            this.isSliderDragging = false
-                            this.$set(this.conf, 'width', this.conf.width + 5)
-                        }
-                    } else {
+                    let deltaX = ($event.x - this.dragStartLoc.enLargeX);
+                    this.enlargeStart($event);
+                    this.$set(this.setting.Base, 'size', this.setting.Base.size + deltaX);
+                    if (this.sizeSetting.width < 120) {
                         let payload = {
-                            'content': '不可以改变作者发布的便签',
+                            'content': '便签宽度不能小于100像素',
                             'color': 'warning',
-                            'actionName': 'moveUnSelfObj',
-                            'once': true
-                        }
-                        commitSnackbarOn(payload)
-                        this.isSliderDragging = false
+                            'actionName': 'noteTooNarrow',
+                            'once': false
+                        };
+                        commitSnackbarOn(payload);
+                        this.isSliderDragging = false;
+                        this.$set(this.setting.Base, 'size', this.setting.Base.size + 5);
                     }
                 }
             },
 
-            enlargeEnd (event) {
+            enlargeEnd($event: MouseEvent) {
                 (!this.isLock && this.isSliderDragging) &&
-                this.enlarge(event)
+                this.enlarge($event);
                 this.isSliderDragging = false
             },
 
-            mouseEnterSlider () {
+            mouseEnterSlider() {
                 this.showSlider = true
             },
 
-            mouseLeaveSlider () {
-                this.showSlider = false
+            mouseLeaveSlider() {
+                this.showSlider = false;
                 this.isSliderDragging = false
             },
 
             //删除Note
-            deleteNote () {
-                this.$set(this.note, 'isDeleted', true)
+            deleteNote() {
+                this.$set(this.note, 'isDeleted', true);
                 let payload = {
                     'timeout': 5000,
                     'color': 'error',
@@ -287,43 +289,35 @@
                     'actionObject': this.note,
                     'actionName': 'rollBackNote',
                     'once': false
-                }
+                } as SnackBarStatePayload;
                 commitSnackbarOn(payload)
             },
 
             //恢复Note
-            rollBackDelete (target) {
-                this.$set(target, 'isDeleted', false)
+            rollBackDelete(target: NoteSettingPart) {
+                target.updateState('isDeleted', false)
             },
-
-            lock () {
-                this.isLock = !this.isLock
-                this.isDragging = false
-            },
-
-            reloadTip () {
-                let index = randomIntegerInRange(0, this.tips.length - 1)
-                this.currentTip = this.tips[index]
-            },
-
-            changeDark () {
-                this.$set(this.conf, 'dark', !this.isDark)
-            }
 
         },
 
         watch: {
-            text () {
-                this.Content === '' && this.reloadTip()
+            text() {
+                this.content === '' && this.reloadTip()
             }
         },
 
-        mounted () {
+        mounted: function (): void {
             this.reloadTip()
-        }
-    }
+        },
+
+        record: {
+            status: 'editing',
+            description: 'Note组件'
+        },
+    })
 </script>
 
 <style scoped>
+    @import '../../../src/style/css/unselected.css';
 
 </style>

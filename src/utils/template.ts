@@ -599,8 +599,8 @@ const noteSetting: SettingConf = {
     Base: {
         size: {
             type: 'Number',
-            default: 0,
-            range: [10, 48],
+            default: 300,
+            range: [300, 600],
             tips: '如果为0则会根据综合指标体现大小',
             required: null,
             explain: '节点可视化尺寸'
@@ -640,12 +640,17 @@ const noteSetting: SettingConf = {
     }
 };
 
+const pathSetting: SettingConf = {};
+
+const fragmentSetting: SettingConf = {};
+
 export const typeSetting: Record<BaseType, SettingConf> = {
     'node': nodeSetting,
     'link': linkSetting,
     'document': documentSetting,
     'media': mediaSetting,
-    'note': noteSetting
+    'note': noteSetting,
+    'fragment': fragmentSetting
 };
 
 export function settingTemplate(_type: BaseType) {
@@ -742,7 +747,7 @@ export function graphSettingTemplate(_id: id) {
     return setting;
 }
 
-export function noteSettingTemplate(_id: id, _label: string, _content: Object) {
+export function noteSettingTemplate(_id: id, _label: string, _content: NoteContent) {
     let setting = <NoteSetting>{
         _id,
         _type: 'note',
@@ -777,10 +782,9 @@ export function noteStateTemplate(...rest: Array<string>) {
     return {
         isSelected: false,
         isMouseOn: false,
-        isDeleted: false,
         isAdd: rest.indexOf("isAdd") > -1,
-        isSelf: true,
-        isLock: false
+        isLock: false,
+        isDark: false
     } as NoteState
 }
 
@@ -828,14 +832,15 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         Labels: [],
         Topic: [],
         Text: {'auto': ''},
-        Translate: {},
+        Description: {},
         ExtraProps: {},
         CommonProps: commonProps,
         BaseImp: 0,
         BaseHardLevel: 0,
+        BaseUseful: 0,
         $IsOpenSource: false,
         $IsCommon: true,
-        $IsShared: false,
+        $IsFree: true,
         IncludedMedia: [],
         MainPic: ''
     };
@@ -865,7 +870,8 @@ export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
         isBad: 0,
         Contributor: {create: getCookie("user_name"), update: []},
         TotalTime: 50,
-        Labels: []
+        Labels: [],
+        CreateType: 'User'
     };
     if (_type === 'node') {
         return ctrl as BaseNodeCtrl
@@ -884,12 +890,12 @@ export function mediaInfoTemplate(_id: id, file: File) {
         type: "media",
         PrimaryLabel: getMediaType(file),
         Name: file.name.split(".")[0],
-        Text: {},
         Labels: [],
         $IsCommon: true,
         $IsOpenSource: false,
-        $IsShared: false,
-        ExtraProps: {}
+        $IsFree: true,
+        ExtraProps: {},
+        Description: {}
     };
 }
 
@@ -908,7 +914,8 @@ export function mediaCtrlTemplate(file: File) {
         isGood: 0,
         isBad: 0,
         isShared: 0,
-        Labels: []
+        Labels: [],
+        CreateType: 'User'
     };
 }
 
@@ -923,13 +930,14 @@ export function linkInfoTemplate(_id: id, _label: string) {
         type: "link",
         PrimaryLabel: _label,
         $IsCommon: true,
-        $IsShared: false,
+        $IsFree: true,
         $IsOpenSource: false,
+        Name: '',
         Labels: [],
         ExtraProps: {},
-        Text: {},
         Confidence: 0.5,
-        CommonProps: commonProps
+        CommonProps: commonProps,
+        Description: {}
     };
 }
 
@@ -938,7 +946,7 @@ export function linkCtrlTemplate(_start: VisNodeSettingPart, _end: VisNodeSettin
     return <BaseLinkCtrl>{
         UpdateTime: time.toLocaleDateString(),
         CreateUser: getCookie("user_id"),
-        $IsUserMade: true,
+        CreateType: 'User',
         Start: _start,
         End: _end
     };

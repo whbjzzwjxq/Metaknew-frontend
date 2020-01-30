@@ -1,12 +1,11 @@
 import {
-    LinkSettingPart,
+    LinkSettingPart, MediaInfoPart,
     MediaSettingPart,
     NodeSettingPart,
     NoteSettingPart,
     SettingPart,
 } from "@/utils/graphClass";
 import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
-import {BooleanConcern, LevelConcern} from "@/utils/userConcern";
 
 export function isNodeBackend(item: BackendNodeInfoPart | BackendLinkInfoPart): item is BackendNodeInfoPart {
     let type = (item as BackendNodeInfoPart).Info.type;
@@ -50,4 +49,8 @@ export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels")
 
 export function isLevelConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is LevelConcern {
     return prop === "Imp" || prop === "HardLevel" || prop === "Useful";
+}
+
+export function isMediaInfoPart(info: InfoPart): info is MediaInfoPart {
+    return info.Info.type === 'media'
 }

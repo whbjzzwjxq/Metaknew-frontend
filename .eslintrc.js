@@ -20,7 +20,8 @@ module.exports = {
         'comma-dangle': 'off',
         'spaced-comment': 'off',
         'no-unused-vars': 'off',
-        '@typescript-eslint/no-unused-vars': 'off'
+        'vue/no-unused-vars': 'off',
+        'vue/no-unused-components': 'off'
     },
     parserOptions: {
         parser: '@typescript-eslint/parser'
@@ -36,7 +37,9 @@ module.exports = {
             },
             rules: {
                 'no-unused-vars': 'off',
-                '@typescript-eslint/no-unused-vars': 'off'
+                '@typescript-eslint/no-unused-vars': 'off',
+                'vue/no-unused-vars': 'off',
+                'vue/no-unused-components': 'off'
             }
         }
     ]

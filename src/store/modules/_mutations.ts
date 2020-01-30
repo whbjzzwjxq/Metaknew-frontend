@@ -1,7 +1,6 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {GraphSelfPart} from "@/utils/graphClass";
-import styleComponentSize from "@/store/modules/styleComponentSize";
+import {GraphSelfPart, LinkInfoPart, NodeInfoPart} from "@/utils/graphClass";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)
@@ -35,7 +34,11 @@ export const commitViewBoxResize = () => {
     return store.commit('getViewBox')
 };
 
-export const commitItemChange = (payload: InfoPart) => {
+export const commitBottomDynamicBarResize = (payload?: number) => {
+    return store.commit('getBottomDynamicBar', payload)
+};
+
+export const commitItemChange = (payload: NodeInfoPart | LinkInfoPart) => {
     return store.commit('currentItemChange', payload)
 };
 
@@ -69,4 +72,16 @@ export const commitGraphRemove = (payload: id) => {
 
 export const commitGraphChangeId = (payload: idMap) => {
     return store.commit('graphChangeId', payload)
+};
+
+export const commitUserConcernAdd = (payload: {_id: id, _type: BaseType, userConcern: UserConcern}) => {
+    return store.commit('userConcernAdd', payload)
+};
+
+export const commitChangeRootTab = (payload: RootTabName | number) => {
+    return store.commit('changeRootTab', payload)
+};
+
+export const commitChangeSubTab = (payload: SubTabName) => {
+    return store.commit('changeSubTab', payload)
 };

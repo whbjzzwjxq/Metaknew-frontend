@@ -1,5 +1,5 @@
 <template>
-    <div style="width: 360px">
+    <div :style="{width: activeWidth}">
         <hr class="cardHr"/>
         <v-row class="px-6 pb-2 pt-0 justify-content-between">
             <v-col class="pa-0 ma-0" cols="11">
@@ -37,12 +37,21 @@
             text: {
                 type: String as () => string,
                 default: ''
+            },
+            width: {
+                type: String as () => string,
+                default: ''
             }
         },
         computed: {
             collapsedIcon: function (): string {
                 return getIcon("i-collapse", !this.isCollapsed)
             },
+            activeWidth: function (): string {
+                return this.width !== ''
+                    ? this.width
+                    : this.$store.state.styleComponentSize.leftCard.width + 'px'
+            }
 
         },
         methods: {

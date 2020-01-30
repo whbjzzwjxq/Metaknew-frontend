@@ -9,6 +9,7 @@
         @input="cacheText = $event"
         v-if="singleLine"
         dense
+        style="border-radius: unset"
     >
 
     </v-text-field>
@@ -73,8 +74,10 @@
         },
         computed: {
             style: function (): CSSProp {
+                let width = this.width as string | number;
+                typeof width === "number" && (width = width + 'px' as string);
                 return {
-                    'width': this.width + 'px'
+                    width: width
                 }
             }
         },

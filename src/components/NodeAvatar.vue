@@ -11,13 +11,13 @@
             </template>
             <v-btn @click="clearMainPic" icon absolute x-small style="bottom: 10px; right: 22px;">
                 <v-icon>
-                    mdi-delete
+                    {{ deleteIcon }}
                 </v-icon>
             </v-btn>
             <v-edit-dialog>
                 <v-btn icon absolute x-small style="bottom: 10px; right: 6px;">
                     <v-icon>
-                        mdi-upload
+                        {{ uploadIcon }}
                     </v-icon>
                 </v-btn>
                 <template v-slot:input>
@@ -99,7 +99,9 @@
                     placeholder: "Click to Upload Image",
                     prependIcon: getIcon('i-media-type', 'image'),
                 },
-                guid: guid
+                guid: guid,
+                deleteIcon: getIcon('i-edit', 'delete'),
+                uploadIcon: getIcon('i-add-media-method', 'upload')
             }
         },
         props: {
@@ -113,13 +115,13 @@
             }
         },
         computed: {
-            fileToken: function () {
+            fileToken: function (): FileToken {
                 return this.$store.state.userModule.fileToken
             },
-            realSrc: function () {
+            realSrc: function (): string {
                 return getSrc(this.sourceUrl)
             },
-            currentImage: function () {
+            currentImage: function (): string {
                 return this.currentFile
                     ? this.currentFile.Ctrl.FileName
                     : this.realSrc

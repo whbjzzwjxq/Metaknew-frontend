@@ -25,7 +25,7 @@ export interface ValueWithType<T> extends PropDescription {
     value: T,
 } // 将已有value转化为描述形式
 
-interface PLabelProps {
+export interface PLabelProps {
     [propName: string]: PropDescription
 } //描述已有属性
 
@@ -39,6 +39,73 @@ export type EditProps = {
     ExtraProps: ValueWithType<ExtraProps>,
     [prop: string]: ValueWithType<any>
 } // 一个Source的属性由两部分组成：一部分是标准属性 系统定义 一部分是额外属性 用户定义
+
+export const baseNodeProp: () => PLabelProps = () => ({
+    Name: {
+        type: "StringField",
+        resolve: "name"
+    },
+    Alias: {
+        type: "ArrayField",
+        resolve: "name"
+    },
+    Language: {
+        type: "StringField",
+        resolve: "normal"
+    },
+    Labels: {
+        type: "ArrayField",
+        resolve: "normal"
+    },
+    Topic: {
+        type: "ArrayField",
+        resolve: "normal"
+    },
+    Text: {
+        type: "TextField",
+        resolve: "normal"
+    },
+    Description: {
+        type: "TextField",
+        resolve: "normal"
+    },
+    ExtraProps: {
+        type: "JsonField",
+        resolve: "normal"
+    },
+    BaseImp: {
+        type: "NumberField",
+        resolve: "normal"
+    },
+    BaseHardLevel: {
+        type: "NumberField",
+        resolve: "normal"
+    },
+    BaseUseful: {
+        type: "NumberField",
+        resolve: "normal"
+    },
+    $IsOpenSource: {
+        type: "BooleanField",
+        resolve: "normal"
+    },
+    $IsCommon: {
+        type: "BooleanField",
+        resolve: "normal"
+    },
+    $IsFree: {
+        type: "BooleanField",
+        resolve: "normal"
+    },
+    IncludedMedia: {
+        type: "FileField",
+        resolve: 'normal'
+    },
+    MainPic: {
+        type: "FileField",
+        resolve: 'normal'
+    },
+});
 
 // node的属性
 export const nodePropType: pLabelPropsDict = {
@@ -158,7 +225,8 @@ export const labelItems = {
     public: ['Todo', 'Done', 'Test', 'Draft', 'QuickServe']
 };
 
-export const fieldSetting: Record<string, any> = {
+export type FieldSetting = Record<string, Record<string, any>>
+export const fieldSetting: FieldSetting = {
     Name: {},
     Alias: {
         availableTags: {}

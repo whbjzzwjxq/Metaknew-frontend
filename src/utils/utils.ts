@@ -1,4 +1,8 @@
-export function getCookie(name: string) {
+import {localIdRegex} from "@/utils/graphClass";
+
+export type cookieName = 'user_name' | 'user_id' | 'token';
+
+export function getCookie(name: cookieName) {
     const arr = document.cookie.match(new RegExp(`(^| )${name}=([^;]*)(;|$)`));
     if (arr != null) {
         return unescape(arr[2])
@@ -7,14 +11,14 @@ export function getCookie(name: string) {
 }
 
 // 设置cookie name为cookie的名字，value是值，expire为过期时间（天数）
-export function setCookie(name: string, value: string, expire: number) {
+export function setCookie(name: cookieName, value: string, expire: number) {
     const expireDays = new Date();
     expireDays.setDate(expireDays.getDate() + expire);
     document.cookie = `${name}=${encodeURI(value)}${(expire == null) ? '' : `;expires=${expireDays.toUTCString()};path=/`}`
 }
 
 // 删除cookie
-export function delCookie(name: string) {
+export function delCookie(name: cookieName) {
     const exp = new Date();
     exp.setTime(exp.getTime() - 1);
     const currentCookie = getCookie(name);
@@ -83,9 +87,9 @@ export function ToPascalCase(str: string) {
 }
 
 export function toCamelCase(str: string) {
-    let output = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+    let output = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g);
     if (output) {
-        let s = output.map(x => x.slice(0, 1).toUpperCase() + x.slice(1).toLowerCase()).join('')
+        let s = output.map(x => x.slice(0, 1).toUpperCase() + x.slice(1).toLowerCase()).join('');
         return s.slice(0, 1).toLowerCase() + s.slice(1);
     } else {
         return ''
@@ -193,4 +197,33 @@ export function mergeList<T>(list: Array<T[]>) {
         })
     });
     return output
+}
+
+// 区别远端id和客户端id
+export function idSort(idList: id[]): id[] {
+    let remoteId: number[] = [];
+    let localId: string[] = [];
+    idList.map(id => {
+        if (typeof id === 'number') {
+            remoteId.push(id)
+        } else {
+            localIdRegex.test(id)
+                ? localId.push(id)
+                : remoteId.push(parseInt(id))
+        }
+    });
+
+    function idStringSort(a: string, b: string) {
+        const num = (a: string) => {
+            return parseInt(a.substring(2))
+        };
+        return num(a) - num(b)
+    }
+
+    remoteId.sort();
+    localId.sort(idStringSort);
+    let result: id[] = [];
+    result = result.concat(remoteId);
+    result = result.concat(localId);
+    return result
 }

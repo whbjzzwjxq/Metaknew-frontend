@@ -64,16 +64,17 @@
         SettingPart,
     } from "@/utils/graphClass";
     import {RectByPoint, getPoint, Point} from "@/utils/geoMetric";
-    import {LabelViewDict, GraphMetaData} from "@/utils/interfaceInComponent";
+    import {LabelViewDict} from "@/utils/interfaceInComponent";
     import {isMediaSetting} from "@/utils/typeCheck";
     import {commitItemChange} from "@/store/modules/_mutations";
     import {getInfoPart, maxN, minN} from "@/utils/utils";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import RectContainer from "@/components/container/RectContainer.vue";
-
+    import GraphViewBox from "@/components/graphComponents/GraphViewBox.vue";
     export default Vue.extend({
         name: "GraphRender",
+        extends: GraphViewBox,
         components: {
             GraphLink,
             GraphNode,
@@ -81,10 +82,6 @@
         },
         data() {
             return {
-                // ------ style ------
-                width: 600,
-                height: 400,
-                baseContainer: RectByPoint.emptyRect(),
                 // ------ select ------
                 //正在select
                 isSelecting: false as boolean,
@@ -109,9 +106,8 @@
                 required: true
             },
 
-            // 在根图中的节点
-            graphMetaData: {
-                type: Object as () => GraphMetaData,
+            container: {
+                type: Object as () => RectByPoint,
                 required: true
             },
 
@@ -120,7 +116,7 @@
                 required: true
             },
 
-            realScale: {
+              realScale: {
                 type: Number as () => number,
                 default: 1
             },
@@ -172,11 +168,7 @@
                 return this.allComponentsStyle.viewBox
             },
 
-            container: function (): RectByPoint {
-                return this.graphMetaData.rect
-            },
-
-            emptyRect: function () {
+            emptyRect: function (): AreaRect {
                 return {
                     x: 0,
                     y: 0,
@@ -185,7 +177,7 @@
                 }
             },
 
-            baseRect: function () {
+            baseRect: function (): AreaRect {
                 return this.container.positiveRect()
             },
 
@@ -460,7 +452,7 @@
                 if (itemList.length === 1) {
                     let item = itemList[0];
                     let info = getInfoPart(item.Setting._id, item.Setting._type, this.dataManager);
-                    info && commitItemChange(info);
+                    // info && commitItemChange(info);
                 }
             },
 

@@ -76,7 +76,7 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '的别名与翻译'">
+        <card-sub-row :text="nameTrans[type] + '的别名'">
             <template v-slot:content>
                 <v-text-field
                     :disabled="!editMode"
@@ -89,16 +89,6 @@
                     v-model="alias">
 
                 </v-text-field>
-                <field-text
-                    :base-text="info.Translate"
-                    :editable="editMode"
-                    :prop-name="'Translate'"
-                    @update-value="updateValue"
-                    label="Translate"
-                    single-line
-                >
-
-                </field-text>
             </template>
         </card-sub-row>
 
@@ -158,9 +148,6 @@
             </template>
         </card-sub-row>
 
-        <v-btn text>
-            Learn More
-        </v-btn>
     </div>
 </template>
 
@@ -178,8 +165,8 @@
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/labelField";
     import {LabelGroup} from "@/utils/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
-    import {LevelConcern} from "@/utils/userConcern";
-
+    import ItemSharer from "@/components/ItemSharer.vue";
+    import ItemMarker from "@/components/ItemMarker.vue";
     export default Vue.extend({
         name: "CardPageNodeInfo",
         components: {
@@ -190,7 +177,9 @@
             CardSubRow,
             CardSubRating,
             NodeAvatar,
-            GlobalChip
+            GlobalChip,
+            ItemSharer,
+            ItemMarker
         },
         data() {
             return {
@@ -219,29 +208,29 @@
             }
         },
         computed: {
-            info: function () {
+            info: function (): BaseNodeInfo {
                 return this.baseData.Info
             },
-            ctrl: function () {
+            ctrl: function (): BaseNodeCtrl {
                 return this.baseData.Ctrl
             },
-            userConcern: function () {
-                return this.baseData.UserConcern
+            userConcern: function (): UserConcern {
+                return this.$store.state.userConcernManager[this.baseData.type][this.baseData.id]
             },
 
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
 
-            type: function () {
+            type: function (): BaseType {
                 return this.info.type
             },
 
-            typeSelectable: function () {
+            typeSelectable: function (): boolean {
                 return ['node'].includes(this.type)
             },
 
-            simplifySetting: function () {
+            simplifySetting: function (): Record<string, any> {
                 return this.isSimplify
                     ? {
                         titleSize: 'font-size: 14px',
@@ -352,18 +341,29 @@
                 return {}
             },
 
-            imageList: function () {
-                return this.isSimplify
-                    ? []
-                    : this.info.IncludedMedia.map(id => {
+            imageList: function (): MediaInfoPart[] {
+                let result: MediaInfoPart[] = [];
+                if (this.isSimplify) {
+                    result = [];
+                } else {
+                    this.info.IncludedMedia.map(id => {
                         let media = this.dataManager.mediaManager[id];
                         if (media && media.Info.PrimaryLabel === 'image') {
-                            return media as MediaInfoPart
-                        } else {
-                            return undefined
+                            result.push(media)
                         }
-                    }).filter(media => media !== undefined)
+                    })
+                }
+                return result;
             },
+
+            bottomStyle: function (): CSSProp {
+                return {
+                    position: "fixed",
+                    bottom: 0,
+                    backgroundColor: "#eeeeee",
+                    width: this.$store.state.styleComponentSize.leftCard.width + "px"
+                }
+            }
 
         },
         methods: {
@@ -383,11 +383,11 @@
             addItem(value: string[], prop: string) {
                 prop === 'Info'
                     ? this.baseData.updateValue('Labels', value)
-                    : this.baseData.updateUserConcern('Labels', value)
+                    : console.log('todo')// todo
             },
 
             updateRating(prop: LevelConcern, rating: number) {
-                this.baseData.updateUserConcern(prop, rating)
+                // todo
             }
         },
         watch: {},

@@ -288,7 +288,7 @@
                     '</span>' + ' ' + '<span class="grey--text text--secondary">' + pLabel + '</span>'
             },
 
-            getArrow: (item: ListTitle): string => getIcon('i-collapse-arrow', item.isCollapse),
+            getArrow: (item: ListTitle): string => getIcon('i-arrow', item.isCollapse),
 
             collapse(item: ListTitle) {
                 this.$set(item, 'isCollapse', !item.isCollapse)

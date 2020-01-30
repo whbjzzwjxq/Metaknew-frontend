@@ -39,8 +39,6 @@
     "node_modules/vue-cropper"
   ],
   "exclude": [
-    "node_modules",
-    "src/components/graphComponents/GraphNote.vue",
-    "src/views/dataTable/DataTable.vue"
+    "node_modules"
   ]
 }

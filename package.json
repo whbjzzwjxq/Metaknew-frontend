@@ -10,7 +10,6 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "30-seconds-of-code": "^1.2.3",
     "@mdi/font": "^4.7.95",
     "@types/viewerjs": "^1.0.2",
     "ali-oss": "^6.2.1",
