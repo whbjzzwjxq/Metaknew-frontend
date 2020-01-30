@@ -1,6 +1,5 @@
 import {getCookie, randomNumberInRange} from '@/utils/utils';
 import {fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
-import {UserConcern} from "@/utils/userConcern";
 
 type SettingConf = Record<string, Record<string, BaseSettingConf>>
 
@@ -638,12 +637,17 @@ const noteSetting: SettingConf = {
     }
 };
 
+const pathSetting: SettingConf = {};
+
+const fragmentSetting: SettingConf = {};
+
 export const typeSetting: Record<BaseType, SettingConf> = {
     'node': nodeSetting,
     'link': linkSetting,
     'document': documentSetting,
     'media': mediaSetting,
-    'note': noteSetting
+    'note': noteSetting,
+    'fragment': fragmentSetting
 };
 
 export function settingTemplate(_type: BaseType) {
@@ -815,14 +819,15 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         Labels: [],
         Topic: [],
         Text: {'auto': ''},
-        Translate: {},
+        Description: {},
         ExtraProps: {},
         CommonProps: commonProps,
         BaseImp: 0,
         BaseHardLevel: 0,
+        BaseUseful: 0,
         $IsOpenSource: false,
         $IsCommon: true,
-        $IsShared: false,
+        $IsFree: true,
         IncludedMedia: [],
         MainPic: ''
     };
@@ -852,7 +857,8 @@ export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
         isBad: 0,
         Contributor: {create: getCookie("user_name"), update: []},
         TotalTime: 50,
-        Labels: []
+        Labels: [],
+        CreateType: 'User'
     };
     if (_type === 'node') {
         return ctrl as BaseNodeCtrl
@@ -871,12 +877,12 @@ export function mediaInfoTemplate(_id: id, file: File) {
         type: "media",
         PrimaryLabel: getMediaType(file),
         Name: file.name.split(".")[0],
-        Text: {},
         Labels: [],
         $IsCommon: true,
         $IsOpenSource: false,
-        $IsShared: false,
-        ExtraProps: {}
+        $IsFree: true,
+        ExtraProps: {},
+        Description: {}
     };
 }
 
@@ -895,7 +901,8 @@ export function mediaCtrlTemplate(file: File) {
         isGood: 0,
         isBad: 0,
         isShared: 0,
-        Labels: []
+        Labels: [],
+        CreateType: 'User'
     };
 }
 
@@ -910,13 +917,14 @@ export function linkInfoTemplate(_id: id, _label: string) {
         type: "link",
         PrimaryLabel: _label,
         $IsCommon: true,
-        $IsShared: false,
+        $IsFree: true,
         $IsOpenSource: false,
+        Name: '',
         Labels: [],
         ExtraProps: {},
-        Text: {},
         Confidence: 0.5,
-        CommonProps: commonProps
+        CommonProps: commonProps,
+        Description: {}
     };
 }
 
@@ -925,7 +933,7 @@ export function linkCtrlTemplate(_start: VisNodeSettingPart, _end: VisNodeSettin
     return <BaseLinkCtrl>{
         UpdateTime: time.toLocaleDateString(),
         CreateUser: getCookie("user_id"),
-        $IsUserMade: true,
+        CreateType: 'User',
         Start: _start,
         End: _end
     };

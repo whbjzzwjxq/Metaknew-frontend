@@ -1,6 +1,7 @@
 <template>
-    <div class="title" onselect="return false">
+    <div class="title unselected">
         <v-text-field
+            :style="fontCss"
             :value="text"
             @input="updateText"
             dense
@@ -9,10 +10,7 @@
             v-if="editMode">
 
         </v-text-field>
-        <p class="title-text" v-else
-           @copy="doNothing"
-           @drag="doNothing"
-           @dragstart="doNothing">
+        <p class="title-text pt-2" v-else :style="fontCss">
             {{ text }}
         </p>
     </div>
@@ -29,12 +27,16 @@
         },
         props: {
             text: {
-                type: String,
+                type: String as () => string,
                 required: true
             },
             editMode: {
-                type: Boolean,
+                type: Boolean as () => boolean,
                 default: false
+            },
+            fontCss: {
+                type: Object as () => CSSProp,
+                default: {}
             }
         },
         computed: {},
@@ -55,25 +57,29 @@
 </script>
 
 <style scoped>
-    @import "../style/css/unselected.css";
 
     .title {
-        height: 48px;
+        height: 32px;
         color: grey;
-        -moz-user-select:none;
-        -webkit-user-select:none;
-        user-select:none;
-        -ms-user-select:none;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -ms-user-select: none;
+        width: 100%;
+        top: 0;
+        left: 0;
     }
 
     .title-text {
-        text-align: center;
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-break: normal;
         overflow: hidden;
         line-height: 20px;
         font-size: 16px;
+        margin: unset;
+        text-overflow:ellipsis;
+        white-space: nowrap;
     }
 </style>
 

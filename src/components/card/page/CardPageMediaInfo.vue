@@ -85,7 +85,7 @@
     import {labelItems} from "@/utils/labelField";
     import {mediaUpdate} from '@/api/commonSource';
     import {getIcon, iconMap} from "@/utils/icon";
-    import IconGroup from "@/components/iconGroup/IconGroup.vue";
+    import IconGroup from "@/components/IconGroup.vue";
     import MediaDetail from "../../media/MediaDetail.vue"
     import {getSrc} from '@/utils/utils'
     export default Vue.extend({
@@ -254,7 +254,7 @@
                     {name: getIcon('i-item', 'link'), _func: vm.addLink, render: vm.inViewBox},
                     {name: "", _func: vm.doNothing},
                     {name: "mdi-magnify", _func: vm.dialogDetailWatch},
-                    {name: getIcon("i-collapse-arrow-double", vm.detailOn), _func: vm.changeDetail},
+                    {name: getIcon("i-arrow-double", vm.detailOn), _func: vm.changeDetail},
                     {name: getIcon('i-edit-able', vm.isSelf), _func: vm.dialogDetailEdit, disabled: vm.isSelf},
                     {name: getIcon('i-delete-able', deleteAble), _func: vm.deleteMedia, disabled: deleteAble},
                     {name: "mdi-arrow-right-bold-circle-outline", _func: vm.addMediaToGraph, render: vm.showExportIcon}

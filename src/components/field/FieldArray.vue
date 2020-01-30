@@ -120,24 +120,24 @@
             }
         },
         computed: {
-            tagsToString: function () {
+            tagsToString: function (): string {
                 return this.existTags.join(';');
             },
 
             //组件状态
-            status: function () {
+            status: function (): string {
                 return !this.duplicate
                     ? 'default'
                     : 'error'
             },
 
             // 默认字符池
-            pool: function () {
+            pool: function (): string[] {
                 return this.existTags.concat(this.basePool)
             },
 
             // 是否重复
-            duplicate: function () {
+            duplicate: function (): boolean {
                 return this.existTags.length > 0 &&
                     this.existTags.filter((tag: string) => checkDuplicate(this.pool, tag)).length === this.existTags.length
             },
@@ -150,7 +150,7 @@
             },
 
             // 提示的内容
-            tipsContent: function () {
+            tipsContent: function (): string {
                 return this.duplicate
                     ? 'duplicate tag'
                     : ''

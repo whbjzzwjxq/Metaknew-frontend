@@ -1,19 +1,23 @@
 <template>
-    <div :style="StyleWithOpacity" :class="classContent">
-        <v-btn
-            v-for="(icon, index) in activeIconList"
-            icon
-            :key="index"
-            :small="small"
-            :x-small="xSmall"
-            :large="large"
-            :x-large="xLarge"
-            :color="icon.color ? icon.color : color"
-            :disabled="(icon.name === '' || icon.disabled) || hide"
-            @click="icon._func"
-        >
-            <v-icon>{{ icon.name }}</v-icon>
-        </v-btn>
+    <div :style="styleWithOpacity" :class="classContent">
+        <v-tooltip bottom v-for="(icon, index) in activeIconList" :key="index">
+            <template v-slot:activator="{ on }">
+                <v-btn
+                    icon
+                    :small="small"
+                    :x-small="xSmall"
+                    :large="large"
+                    :x-large="xLarge"
+                    :color="icon.color ? icon.color : color"
+                    :disabled="(icon.name === '' || icon.disabled) || hide"
+                    @click="icon._func"
+                    v-on="on"
+                >
+                    <v-icon>{{ icon.name }}</v-icon>
+                </v-btn>
+            </template>
+            <span> {{ icon.toolTip }} </span>
+        </v-tooltip>
     </div>
 </template>
 
@@ -75,7 +79,7 @@
                     ? "d-flex flex-column"
                     : "d-flex flex-row"
             },
-            StyleWithOpacity: function (): CSSProp {
+            styleWithOpacity: function (): CSSProp {
                 return Object.assign({opacity: this.hide ? 0 : 1}, this.containerStyle)
             }
         },
@@ -84,7 +88,7 @@
         record: {
             status: 'done',
             description: 'Icon的排列'
-
+            // todo Icon的提示
         }
     })
 </script>

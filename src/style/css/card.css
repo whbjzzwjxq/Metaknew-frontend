@@ -8,7 +8,7 @@
   overflow: hidden;
   border-style: inset;
   border-width: 1px;
-  color: grey;
+  color: whitesmoke;
   opacity: 0.3
 }
 
@@ -19,19 +19,19 @@
 }
 
 .cardItem::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
   height: 1px;
 }
 
 .cardItem::-webkit-scrollbar-thumb {
   border-radius: 4px;
-  background: grey;
+  background: lightslategrey;
   height: 0;
 }
 
 .cardItem::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  -webkit-box-shadow: inset 0 0 5px rgba(255, 255, 255, 0);
   border-radius: 10px;
-  background: #EDEDED;
+  background: white;
 }
 

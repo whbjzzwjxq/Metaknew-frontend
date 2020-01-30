@@ -99,28 +99,38 @@
             return {}
         },
         props: {
-            //基础数据
-            node: {
-                type: Object as () => NodeSettingPart,
-                required: true,
-            },
 
-            //半径
-            size: {
-                type: Number as () => number,
+            // 设置
+            setting: {
+                type: Object as () => NodeSetting,
                 required: true
             },
+
+            // 状态
+            state: {
+                type: Object as () => NodeState,
+                required: true
+            },
+
+            // 默认半径
+            size: {
+                type: Number as () => number,
+                default: 12
+            },
+
             //缩放情况
             scale: {
                 type: Number as () => number,
-                required: true
+                default: 1
             },
 
+            // 所处位置
             point: {
                 type: Object as () => PointMixed,
                 required: true
             },
 
+            // 模式
             mode: {
                 type: String as () => string,
                 default: 'normal'
@@ -129,13 +139,6 @@
         computed: {
             transform: function (): string {
                 return 'translate(' + this.point.x + ' ' + this.point.y + ')'
-            },
-
-            setting: function (): NodeSetting {
-                return this.node.Setting
-            },
-            state: function (): NodeState {
-                return this.node.State
             },
 
             isSelected: function (): boolean {
@@ -344,7 +347,7 @@
             },
 
             boundGraph: function (): GraphSelfPart {
-                return this.$store.state.dataManager.graphManager[this.node.Setting._id]
+                return this.$store.state.dataManager.graphManager[this.setting._id]
             }
         },
         methods: {},

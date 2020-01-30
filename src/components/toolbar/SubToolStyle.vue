@@ -2,7 +2,7 @@
     <v-card flat tile class="pa-0 ma-0">
         <v-card-subtitle class="pa-0 ma-0" dense>
             Style Edit
-            <v-icon v-text="'mdi-palette'" small></v-icon>
+            <v-icon small> {{ styleIcon }}</v-icon>
         </v-card-subtitle>
         <v-menu
             top
@@ -14,7 +14,7 @@
         >
             <template v-slot:activator="{ on }">
                 <v-btn icon v-on="on">
-                    <v-icon v-text="item.icon">
+                    <v-icon v-text="item.name">
 
                     </v-icon>
                 </v-btn>
@@ -56,26 +56,28 @@
             CardPageStyleEditor
         },
         data() {
-            return {}
+            return {
+                styleIcon: getIcon('i-style', 'palette')
+            }
         },
         props: {},
         computed: {
-            contentItemDict: function () {
+            contentItemDict: function ():Record<string, IconItem> {
                 return {
                     'node': {
-                        icon: getIcon('i-item', 'node'),
+                        name: getIcon('i-item', 'node'),
                         title: 'Selection Node'
                     },
                     'media': {
-                        icon: getIcon('i-item', 'media'),
+                        name: getIcon('i-item', 'media'),
                         title: 'Selection Media'
                     },
                     'link': {
-                        icon: getIcon('i-item', 'link'),
+                        name: getIcon('i-item', 'link'),
                         title: 'Selection Link'
                     },
                     'document': {
-                        icon: getIcon('i-item', 'document'),
+                        name: getIcon('i-item', 'document'),
                         title: 'Current Graph'
                     }
                 }
@@ -84,22 +86,7 @@
                 return this.$store.state.dataManager.currentGraph
             },
         },
-        methods: {
-            addNode($event: string) {
-                this.$emit('add-empty-node', $event);
-            },
-            addMedia(mediaIdList: id[]) {
-                this.$emit('add-media', mediaIdList);
-            },
-            addLink() {
-
-            },
-
-            addGraph() {
-
-            },
-
-        },
+        methods: {},
         watch: {},
         record: {
             status: 'done',
@@ -110,28 +97,7 @@
 </script>
 
 <style scoped>
-    .cardItem {
-        overflow-y: scroll;
-        overflow-x: hidden;
-        background: white;
-    }
 
-    .cardItem::-webkit-scrollbar {
-        width: 6px;
-        height: 1px;
-    }
-
-    .cardItem::-webkit-scrollbar-thumb {
-        border-radius: 4px;
-        background: grey;
-        height: 0;
-    }
-
-    .cardItem::-webkit-scrollbar-track {
-        -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-        border-radius: 10px;
-        background: #EDEDED;
-    }
 </style>
 
 /**

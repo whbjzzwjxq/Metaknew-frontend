@@ -1,5 +1,6 @@
 import store from '../index';
 import {GraphSelfPart, MediaInfoPart, NodeSettingPart} from "@/utils/graphClass";
+import {FragmentInfoPart} from "@/utils/userConcern";
 
 export function dispatchUploadFile(payload: {
     item?: MediaInfoPart,
@@ -16,4 +17,8 @@ export function dispatchGraphQuery(payload: { _id: id, parent: GraphSelfPart | n
 
 export function dispatchNodeExplode(payload: { node: NodeSettingPart, document: GraphSelfPart }) {
     return store.dispatch('nodeExplode', payload)
+}
+
+export function dispatchFragmentAdd(payload: FragmentInfoPart) {
+    return store.dispatch('fragmentAdd', payload)
 }

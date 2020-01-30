@@ -6,6 +6,7 @@ import dataTextResolveCache from "@/store/modules/dataTextResolveCache";
 import styleLabelColor from "@/store/modules/styleLabelColor";
 import dataManager from "@/store/modules/dataManager";
 import styleComponentSize from "@/store/modules/styleComponentSize";
+import userDataManager from "@/store/modules/userDataManager";
 
 Vue.use(Vuex);
 
@@ -20,6 +21,7 @@ export default new Vuex.Store({
         dataTextResolveCache: dataTextResolveCache,
         dataManager: dataManager,
         styleLabelColor: styleLabelColor,
-        styleComponentSize: styleComponentSize
+        styleComponentSize: styleComponentSize,
+        userDataManager: userDataManager,
     }
 })

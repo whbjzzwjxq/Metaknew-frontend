@@ -3,14 +3,14 @@ import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, SourceQue
 import {getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
-    getIndex,
     GraphSelfPart,
-    LinkInfoPart, LinkSettingPart,
+    LinkInfoPart,
     MediaInfoPart,
     NodeInfoPart,
     NodeSettingPart
 } from "@/utils/graphClass";
 import {
+    commitChangeSubTab,
     commitFileToken,
     commitGraphAdd,
     commitGraphChangeId,
@@ -22,7 +22,7 @@ import {
 import {Commit, Dispatch} from "vuex";
 import {isNodeBackend} from "@/utils/typeCheck";
 import {dispatchGraphQuery} from "@/store/modules/_dispatch";
-import {userConcernTemplate} from "@/utils/template";
+import {PathSelfPart} from "@/utils/pathClass";
 
 const getManager = (_type: string) =>
     _type === 'link'
@@ -33,12 +33,12 @@ const getManager = (_type: string) =>
 declare global {
     interface DataManagerState {
         currentGraph: GraphSelfPart,
-        currentItem: InfoPart,
+        currentItem: NodeInfoPart | LinkInfoPart,
         graphManager: Record<id, GraphSelfPart>,
         nodeManager: Record<id, NodeInfoPart>,
         linkManager: Record<id, LinkInfoPart>,
         mediaManager: Record<id, MediaInfoPart>,
-        userConcernManager: Object, // todo
+        pathManager: Record<id, PathSelfPart>,
         fileToken: FileToken,
         newIdRegex: RegExp,
         rootGraph: GraphSelfPart
@@ -59,7 +59,7 @@ const state: DataManagerState = {
     nodeManager: {},
     linkManager: {},
     mediaManager: {},
-    userConcernManager: {},
+    pathManager: {},
     fileToken: {
         'AccessKeySecret': '',
         'AccessKeyId': '',
@@ -68,20 +68,10 @@ const state: DataManagerState = {
     },
     newIdRegex: new RegExp('\\$_[0-9]*')
 };
-
 const getters = {
     currentGraphInfo: (state: DataManagerState) => {
         return state.nodeManager[state.currentGraph.id]
-    },
-
-    currentChildGraphList: (state: DataManagerState) => {
-        return state.currentGraph.getChildDocument()
-    },
-
-    currentGraphDict: (state: DataManagerState) => {
-        return {}
     }
-
 };
 const mutations = {
 
@@ -99,7 +89,7 @@ const mutations = {
         state.rootGraph = graph
     },
 
-    currentItemChange(state: DataManagerState, payload: InfoPart) {
+    currentItemChange(state: DataManagerState, payload: NodeInfoPart | LinkInfoPart) {
         state.currentItem = payload;
     },
 
@@ -121,7 +111,7 @@ const mutations = {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
         if (oldGraph) {
-            oldGraph.changeId(newId);
+            oldGraph.id = newId;
             commitGraphAdd({graph: oldGraph});
             commitGraphRemove(oldId);
         }
@@ -171,7 +161,7 @@ const actions = {
         await documentQuery(_id).then(res => {
             let {data} = res;
             let graphSelf = GraphSelfPart.resolveFromBackEnd(data, parent);
-            let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl, userConcernTemplate());
+            let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl);
             commitInfoAdd({item: graphInfo});
             commitGraphAdd({graph: graphSelf});
             // 请求节点
@@ -198,7 +188,7 @@ const actions = {
                 const {data} = res;
                 data.map(node => {
                     if (isNodeBackend(node)) {
-                        let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl, userConcernTemplate());
+                        let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl);
                         nodeInfo.synchronizationAll();
                         commitInfoAdd({item: nodeInfo})
                     }
@@ -225,10 +215,12 @@ const actions = {
                 data.map(link => {
                     if (!isNodeBackend(link)) {
                         let linkSetting = noCacheLink.filter(setting => setting._id === link.Info.id)[0];
-                        let linkInfo = new LinkInfoPart(link.Info, <BaseLinkCtrl>Object.assign(link.Ctrl, {
-                            Start: linkSetting._start,
-                            End: linkSetting._end,
-                        }));
+                        let linkInfo = new LinkInfoPart(link.Info,
+                            Object.assign(link.Ctrl, {
+                                Start: linkSetting._start,
+                                End: linkSetting._end,
+                            }) as BaseLinkCtrl
+                        );
 
                         commitInfoAdd({item: linkInfo})
                     }
@@ -256,7 +248,7 @@ const actions = {
             return mediaQueryMulti(noCacheMedia).then(res => {
                 const {data} = res;
                 data.map(media => {
-                    let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, userConcernTemplate(), 'remote', []);
+                    let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, 'remote', []);
                     mediaInfo.synchronizationAll();
                     commitInfoAdd({item: mediaInfo})
                 });

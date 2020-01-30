@@ -1,9 +1,5 @@
 import {mainNationRegionEn} from '@/utils/nation';
 
-export type BaseProp = 'Name' | 'Alias' | 'Language' | 'Labels'
-    | 'Topic' | 'Text' | 'Translate' | 'BaseImp' | 'baseHardLevel' |
-    '$IsOpenSource' | '$IsShared' | '$IsCommon' | 'IncludedMedia' | 'MainPic'
-
 export type FieldType = 'TextField' | 'ArrayField' | 'NumberField' | 'StringField' |
     'JsonField' | 'FileField' | 'ImageField' | 'BooleanField' // 不同种类的属性
 
@@ -69,7 +65,7 @@ export const baseNodeProp: () => PLabelProps = () => ({
         type: "TextField",
         resolve: "normal"
     },
-    Translate: {
+    Description: {
         type: "TextField",
         resolve: "normal"
     },
@@ -85,6 +81,10 @@ export const baseNodeProp: () => PLabelProps = () => ({
         type: "NumberField",
         resolve: "normal"
     },
+    BaseUseful: {
+        type: "NumberField",
+        resolve: "normal"
+    },
     $IsOpenSource: {
         type: "BooleanField",
         resolve: "normal"
@@ -93,7 +93,7 @@ export const baseNodeProp: () => PLabelProps = () => ({
         type: "BooleanField",
         resolve: "normal"
     },
-    $IsShared: {
+    $IsFree: {
         type: "BooleanField",
         resolve: "normal"
     },

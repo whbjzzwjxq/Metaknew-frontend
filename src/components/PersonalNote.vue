@@ -1,22 +1,24 @@
 <template>
-    <div></div>
+    <div>
+
+    </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
 
     export default Vue.extend({
-        name: "IconGroupGraphItem",
+        name: "PersonalNote",
         components: {},
-        data() {
+        data: function () {
             return {}
         },
         props: {},
         computed: {},
         methods: {},
-        watch: {},
         record: {
-            status: 'empty'
+            status: 'empty',
+            description: ''
         }
     })
 </script>
@@ -24,8 +26,3 @@
 <style scoped>
 
 </style>
-
-/**
-* Created by whb on 2019/12/18
-* Updated by []
-*/

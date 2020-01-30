@@ -1,20 +1,22 @@
 <template>
-    <div class="unselected d-flex flex-column">
-        <v-col cols></v-col>
-    </div>
+    <v-card flat tile class="ma-0 pa-0">
+        <v-card-title class="ma-0 pa-0" dense>
+            Fragment
+            <v-icon small></v-icon>
+        </v-card-title>
+    </v-card>
 </template>
 
-<script>
+<script lang="ts">
     import Vue from 'vue'
+    import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
-        name: 'PathDrawer',
+        name: "SubToolFragment",
         components: {},
         data: function () {
             return {
-                // 最大行数
-                maxRow: 6,
-
+                fragmentIcon: getIcon('i-item', 'fragment')
             }
         },
         props: {},
@@ -28,5 +30,5 @@
 </script>
 
 <style scoped>
-    @import "src/style/css/unselected.css";
+
 </style>

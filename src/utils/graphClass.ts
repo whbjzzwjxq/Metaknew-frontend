@@ -1,4 +1,4 @@
-import {darkColorScaleSet, deepClone, getCookie} from "@/utils/utils";
+import {deepClone, getCookie} from "@/utils/utils";
 import Vue from "vue";
 import {
     graphSettingTemplate,
@@ -15,13 +15,10 @@ import {
     nodeSettingTemplate,
     nodeStateTemplate,
     noteSettingTemplate,
-    noteStateTemplate,
-    userConcernTemplate
+    noteStateTemplate, userConcernTemplate,
 } from "@/utils/template";
 import {
     isBaseType,
-    isBooleanConcern,
-    isLevelConcern,
     isLinkSetting,
     isMediaSetting,
     isNodeSetting,
@@ -29,13 +26,13 @@ import {
 } from "@/utils/typeCheck";
 import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
 import {BackendGraph} from "@/api/commonSource";
-import {BooleanConcern, LevelConcern, UserConcern} from "@/utils/userConcern";
-import {commitInfoAdd, commitSnackbarOff} from "@/store/modules/_mutations";
+import {commitGraphAdd, commitInfoAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
+import {PathLinkSettingPart, PathNodeSettingPart} from "@/utils/pathClass";
 
 declare global {
     type id = number | string;
-    type ItemType = "node" | "link" | "document" | "media"
-    type BaseType = ItemType | "note";
+    type ItemType = "node" | "link" | "media"
+    type BaseType = ItemType | "note" | "document" | "fragment";
     type BaseTypeList = 'nodes' | 'medias' | 'links' | "notes";
     type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
     type idMap = Record<id, id>; // 新旧id的Map
@@ -52,45 +49,52 @@ declare global {
         id: id;
         type: BaseType;
         PrimaryLabel: string;
+        Name: string,
+        Description: Translate,
+        Labels: string[], //统计后的标签
         $IsCommon: boolean;
-        $IsShared: boolean;
+        $IsFree: boolean;
         $IsOpenSource: boolean;
+
+        [prop: string]: any;
     }
 
     interface BaseCtrl {
-        $IsUserMade: boolean;
-        CreateUser: string | number;
+        CreateUser: id; // 用户新建
+        CreateType: string; // 用户新建或者自动或者之类的
         UpdateTime: string;
-        Source: string
+        Labels: Array<string>; // 用户自己的标签
+        PrimaryLabel: string; // 验证用
+        [prop: string]: any;
     }
 
-    interface BaseNodeInfo extends BaseInfo {
-        type: "node" | "document";
-        Name: string;
-        Alias: Array<string>;
-        BaseImp: number;
-        BaseHardLevel: number;
-        Language: string;
-        Topic: Array<string>;
-        Labels: Array<string>;
-        ExtraProps: ExtraProps;
-        CommonProps: Record<string, ValueWithType<any>>;
-        Text: Translate;
-        Translate: Translate;
-        IncludedMedia: Array<string | number>;
-        MainPic: string;
-    }
-
-    interface BaseNodeCtrl extends BaseCtrl {
-        PrimaryLabel: string;
-        Imp: number;
-        HardLevel: number;
-        Useful: number;
+    interface CommonCtrl extends BaseCtrl {
         isStar: number;
         isShared: number;
         isGood: number;
         isBad: number;
-        Labels: Array<string>;
+        // 向外发布的内容才有统计数据
+    }
+
+    interface BaseNodeInfo extends BaseInfo {
+        type: "node" | "document";
+        Alias: Array<string>;
+        BaseImp: number;
+        BaseHardLevel: number;
+        BaseUseful: number;
+        Language: string;
+        Topic: Array<string>;
+        ExtraProps: ExtraProps;
+        CommonProps: Record<string, ValueWithType<any>>;
+        Text: Translate; // 名字的翻译
+        IncludedMedia: Array<string | number>;
+        MainPic: string;
+    }
+
+    interface BaseNodeCtrl extends CommonCtrl {
+        Imp: number;
+        HardLevel: number;
+        Useful: number;
         Contributor: Object;
         TotalTime: number;
     }
@@ -104,38 +108,28 @@ declare global {
 
     interface BaseMediaInfo extends BaseInfo {
         type: "media";
-        Name: string;
-        Labels: Array<string>;
-        Text: Translate;
         ExtraProps: ExtraProps;
-
         [propName: string]: any;
     }
 
-    interface BaseMediaCtrl extends BaseCtrl {
+    interface BaseMediaCtrl extends CommonCtrl {
         FileName: string; // URL
         Format: string; // 格式
         Thumb: string; // 缩略图
-        PrimaryLabel: string;
-        isStar: number;
-        isShared: number;
-        isGood: number;
-        isBad: number;
-        Labels: Array<string>;
     }
 
     interface BaseLinkInfo extends BaseInfo {
         type: "link";
+        Name: string;
         Labels: Array<string>;
         CommonProps: Record<string, ValueWithType<any>>;
         ExtraProps: ExtraProps;
-        Text: Translate;
         Confidence: number;
 
         [propName: string]: any;
     }
 
-    interface BaseLinkCtrl extends BaseCtrl {
+    interface BaseLinkCtrl extends CommonCtrl {
         Start: NodeSettingPart;
         End: NodeSettingPart;
     }
@@ -240,6 +234,7 @@ declare global {
         isAdd: boolean;
         isLock: boolean;
         isDark: boolean;
+        isEditing: boolean;
     }
 
     interface GraphState extends BaseState {
@@ -256,36 +251,65 @@ declare global {
         medias: Array<MediaSettingPart>;
         notes: Array<NoteSettingPart>;
     }
-}
 
-export class NodeInfoPart {
-    id: id;
-    isRemote: boolean;
-    isEdit: boolean;
-    Info: BaseNodeInfo;
-    Ctrl: BaseNodeCtrl;
-    UserConcern: UserConcern;
-
-    constructor(
-        info: BaseNodeInfo,
-        ctrl: BaseNodeCtrl,
-        userConcern: UserConcern
-    ) {
-        const id = info.id;
-        this.isRemote = !localIdRegex.test(id.toString());
-        this.isEdit = false;
-        this.id = id;
-        this.Info = info;
-        this.Ctrl = ctrl;
-        this.UserConcern = userConcern;
+    interface Path {
+        subNodes: Array<PathNodeSettingPart>,
+        subLinks: Array<PathLinkSettingPart>,
+        root: PathNodeSettingPart
     }
 
-    static emptyNodeInfoPart(_id: id, _type: 'node' | 'document', _label: string) {
-        return new NodeInfoPart(
-            nodeInfoTemplate(_id, _type, _label),
-            nodeCtrlTemplate(_type, _label),
-            userConcernTemplate()
-        );
+    interface PathSetting extends Setting {
+        _type: 'document',
+        _label: 'path'
+    }
+
+    interface BasePathInfo extends BaseNodeInfo {
+        type: 'document',
+        PrimaryLabel: 'path',
+    }
+
+    interface BasePathCtrl extends BaseNodeCtrl {
+        Size: number;
+        MainNodes: Array<id>;
+        Complete: number
+    }
+}
+
+export abstract class InfoPart {
+    Info: BaseInfo;
+    Ctrl: BaseCtrl;
+    isEdit: boolean;
+
+    get id() {
+        return this.Info.id
+    }
+
+    set id(newId) {
+        this.changeId(newId)
+    }
+
+    get type() {
+        return this.Info.type
+    }
+
+    get isRemote() {
+        return !localIdRegex.test(this.id.toString());
+    }
+
+    get isUserMade() {
+        return this.Ctrl.CreateType === 'User'
+    }
+
+    protected constructor(info: BaseInfo, ctrl: BaseCtrl) {
+        this.Info = info;
+        this.Ctrl = ctrl;
+        this.isEdit = false;
+    }
+
+    changeId(newId: id) {
+        this.id = newId;
+        Vue.set(this.Info, "id", newId);
+        this.isEdit = false;
     }
 
     // info修改值
@@ -298,33 +322,41 @@ export class NodeInfoPart {
                 Vue.set(this.Info, prop, newValue);
             }
         } else {
-            //空载的更新
-            this.isEdit = true;
+            if (this.Info[prop] !== newValue) {
+                Vue.set(this.Info, prop, newValue);
+                this.isEdit = true;
+            } else {
+                //空载的更新
+            }
         }
     }
+}
 
-    updateUserConcern(
-        prop: LevelConcern | BooleanConcern | "Labels",
-        value?: number | string[]
+export class NodeInfoPart extends InfoPart {
+    Info: BaseNodeInfo;
+    Ctrl: BaseNodeCtrl;
+    constructor(
+        info: BaseNodeInfo,
+        ctrl: BaseNodeCtrl,
     ) {
-        if (isBooleanConcern(prop)) {
-            Vue.set(this.UserConcern, prop, !this.UserConcern[prop]);
-            this.UserConcern[prop]
-                ? (this.Ctrl[prop] += 1)
-                : (this.Ctrl[prop] -= 1);
-        } else if (isLevelConcern(prop)) {
-            Vue.set(this.UserConcern, prop, value);
-        } else {
-            Vue.set(this.UserConcern, prop, value);
-        }
+        super(info, ctrl);
+        this.Info = info;
+        this.Ctrl = ctrl;
+    }
+
+    static emptyNodeInfoPart(_id: id, _type: 'node' | 'document', _label: string) {
+        return new NodeInfoPart(
+            nodeInfoTemplate(_id, _type, _label),
+            nodeCtrlTemplate(_type, _label),
+        );
     }
 
     changeId(newId: id) {
         this.id = newId;
         Vue.set(this.Info, "id", newId);
-        this.synchronizationSource("_id", newId);
-        this.isRemote = localIdRegex.test(newId.toString());
         this.isEdit = false;
+        // node 重写
+        this.synchronizationSource("_id", newId);
     }
 
     changePrimaryLabel(newLabel: string) {
@@ -375,21 +407,16 @@ export class NodeInfoPart {
     }
 
     save() {
+
     }
 }
 
-export class LinkInfoPart {
-    id: id;
-    isRemote: boolean;
-    isEdit: boolean;
+export class LinkInfoPart extends InfoPart {
     Info: BaseLinkInfo;
     Ctrl: BaseLinkCtrl;
 
     constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl) {
-        const id = info.id;
-        this.id = id;
-        this.isRemote = !localIdRegex.test(id.toString());
-        this.isEdit = false;
+        super(info, ctrl);
         this.Info = info;
         this.Ctrl = ctrl;
     }
@@ -410,7 +437,6 @@ export class LinkInfoPart {
         this.id = newId;
         this.updateValue("id", newId);
         this.synchronizationSource("_id", newId);
-        this.isRemote = localIdRegex.test(newId.toString());
         this.isEdit = false;
     }
 
@@ -464,16 +490,17 @@ export class LinkInfoPart {
     }
 }
 
-export class MediaInfoPart {
-    id: id;
+export class MediaInfoPart extends InfoPart {
     file: File | Blob | null;
     status: MediaStatus;
     error: string[]; // file存在的错误
-    isRemote: boolean;
-    isEdit: boolean;
     Info: BaseMediaInfo;
     Ctrl: BaseMediaCtrl;
-    UserConcern: UserConcern;
+
+    get statusColor() {
+        return MediaInfoPart.statusDict[this.status]
+    }
+
     static statusDict: Record<MediaStatus, string> = {
         new: 'blue',
         remote: 'yellow',
@@ -486,28 +513,23 @@ export class MediaInfoPart {
     constructor(
         info: BaseMediaInfo,
         ctrl: BaseMediaCtrl,
-        userConcern: UserConcern,
         status: MediaStatus,
         error: string[],
         file?: File
     ) {
-        let id = info.id;
+        super(info, ctrl);
         file ? (this.file = file) : (this.file = null);
         this.status = status;
         this.error = error;
-        this.id = id;
-        this.isRemote = !localIdRegex.test(id.toString());
         this.isEdit = false;
         this.Info = info;
         this.Ctrl = ctrl;
-        this.UserConcern = userConcern;
     }
 
     static emptyMediaInfo(_id: id, file: File) {
         return new MediaInfoPart(
             mediaInfoTemplate(_id, file),
             mediaCtrlTemplate(file),
-            userConcernTemplate(),
             "new",
             [],
             file
@@ -518,7 +540,6 @@ export class MediaInfoPart {
         this.id = newId;
         Vue.set(this.Info, "id", newId);
         this.synchronizationSource("_id", newId);
-        this.isRemote = localIdRegex.test(newId.toString());
         this.isEdit = false;
     }
 
@@ -552,22 +573,6 @@ export class MediaInfoPart {
         }
     }
 
-    updateUserConcern(
-        prop: LevelConcern | BooleanConcern | "Labels",
-        value?: number | string[]
-    ) {
-        if (isBooleanConcern(prop)) {
-            Vue.set(this.UserConcern, prop, !this.UserConcern[prop]);
-            this.UserConcern[prop]
-                ? (this.Ctrl[prop] += 1)
-                : (this.Ctrl[prop] -= 1);
-        } else if (isLevelConcern(prop)) {
-            Vue.set(this.UserConcern, prop, value);
-        } else {
-            Vue.set(this.UserConcern, prop, value);
-        }
-    }
-
     synchronizationSource(prop: string, value: any) {
         let mediaList = MediaSettingPart.list;
         crucialRegex.test(prop) &&
@@ -582,10 +587,6 @@ export class MediaInfoPart {
             node.updateCrucialProp("_src", this.Ctrl.FileName);
             node.updateCrucialProp("_name", this.Info.Name);
         });
-    }
-
-    getStatusColor() {
-        return MediaInfoPart.statusDict[this.status]
     }
 }
 
@@ -763,48 +764,51 @@ export class GraphSettingPart extends SettingPart {
 }
 
 export class GraphSelfPart {
+    static list: Array<GraphSelfPart>;
+    static baseList: Array<BackendGraph>; // 原始数据
     Graph: Graph;
     Conf: GraphSettingPart;
-    Path: Array<Object>; // todo Path
-    id: id;
+    // 草稿保存
     draftId: number;
-    rootList: Array<GraphSelfPart>; // Graph的遍历链条
-    root: GraphSelfPart | null;
+    // 图形尺寸
+    rect: AreaRect;
     protected _baseNode: NodeSettingPart;
     get baseNode() {
         return this._baseNode
     }
 
-    rect: AreaRect;
-    static list: Array<GraphSelfPart>;
-    static baseList: Array<BackendGraph>; // 原始数据
+    get id() {
+        return this.Conf.Setting._id
+    }
+
+    set id(newId) {
+        this.Conf.Setting._id = newId
+    }
+
+    get rootList() {
+        return findRoot(this.Conf)
+    }
+
+    get root() {
+        return this.rootList ? this.rootList[0] : null;
+    }
+
     constructor(
         graph: Graph,
         setting: GraphSettingPart,
-        path: Array<Object>,
-        _id: id,
+        baseNode: NodeSetting
     ) {
-        this.draftId = -1;
-        this.id = _id;
-        this.rootList = findRoot(setting);
-        this.root = this.getRoot();
+        this.draftId = -1; // 自动保存id
         this.Conf = setting;
         this.Graph = graph;
-        this.Path = path;
         this.rect = {x: 0, y: 0, width: 600, height: 400};
         if (GraphSelfPart.list === undefined) {
             GraphSelfPart.list = [this]
         } else {
             GraphSelfPart.list.push(this)
         }
-        this._baseNode = NodeSettingPart.emptyNodeSetting(
-            _id,
-            "document",
-            "DocGraph",
-            "NewDocument" + _id,
-            "",
-            this
-        );
+        let state = nodeStateTemplate();
+        this._baseNode = new NodeSettingPart(baseNode, state, this);
     }
 
     updateBaseNode(node: NodeSettingPart) {
@@ -819,9 +823,9 @@ export class GraphSelfPart {
             notes: []
         };
         let setting = GraphSettingPart.emptyGraphSetting(_id, parent);
-        let path = [{}]; // todo path
-        let graphSelf = new GraphSelfPart(graph, setting, path, _id);
-        graphSelf.Graph.nodes.push(graphSelf.baseNode);
+        let baseNode = nodeSettingTemplate(_id, 'document', 'DocGraph', 'NewDocument' + _id, '');
+        let graphSelf = new GraphSelfPart(graph, setting, baseNode);
+        graphSelf.addItems([graphSelf.baseNode]);
         return graphSelf
     }
 
@@ -843,8 +847,7 @@ export class GraphSelfPart {
         let result = new GraphSelfPart(
             graph,
             setting,
-            baseData.Path,
-            baseData.Base.Info.id
+            baseData.Graph.nodes.filter(setting => setting._id === baseData.Conf._id)[0]
         );
         result.Graph.nodes = baseData.Graph.nodes.map(
             setting => {
@@ -875,19 +878,6 @@ export class GraphSelfPart {
         );
 
         return result;
-    }
-
-    changeId(newId: id) {
-        this.id = newId;
-    }
-
-    getRoot() {
-        let length = this.rootList.length;
-        if (length > 0) {
-            return this.rootList[0]
-        } else {
-            return null
-        }
     }
 
     getChildDocument() {
@@ -974,11 +964,13 @@ export class GraphSelfPart {
             .map(item => Vue.set(item.State, state, value));
     }
 
-    addEmptyNode(_label: string) {
+    addEmptyNode(_type: 'node' | 'document', _label: string) {
         let id = getIndex();
-        let info = NodeInfoPart.emptyNodeInfoPart(id, 'node', _label);
+        let info = NodeInfoPart.emptyNodeInfoPart(id, _type, _label);
         commitInfoAdd({item: info});
-        let setting = NodeSettingPart.emptyNodeSetting(id, 'node', _label, 'NewNode' + id, '', this);
+        let userConcern = userConcernTemplate();
+        commitUserConcernAdd({_id: id, _type, userConcern});
+        let setting = NodeSettingPart.emptyNodeSetting(id, _type, _label, 'NewNode' + id, '', this);
         setting.State.isSelf = true;
         this.addItems([setting]);
         return setting
@@ -986,8 +978,13 @@ export class GraphSelfPart {
 
     addEmptyLink(_start: VisNodeSettingPart, _end: VisNodeSettingPart) {
         let id = getIndex();
+        // info
         let info = LinkInfoPart.emptyLinkInfo(id, "Default", _start, _end);
         commitInfoAdd({item: info, strict: true});
+        // userConcern
+        let userConcern = userConcernTemplate();
+        commitUserConcernAdd({_id: id, _type: 'link', userConcern});
+        // setting
         let setting = LinkSettingPart.emptyLinkSetting(id, "Default", _start, _end, this);
         setting.State.isSelf = true;
         this.addItems([setting]);
@@ -999,6 +996,18 @@ export class GraphSelfPart {
         let setting = NoteSettingPart.emptyNoteSetting(id, 'text', {text: ''}, this);
         this.addItems([setting]);
         return setting
+    }
+
+    addSubGraph() {
+        let id = getIndex();
+        let graph = GraphSelfPart.emptyGraphSelfPart(id, this);
+        let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
+        this.addItems([graph.baseNode.deepCloneSelf()]);
+        commitGraphAdd({graph, strict: true});
+        commitInfoAdd({item: info, strict: true});
+        let userConcern = userConcernTemplate();
+        commitUserConcernAdd({_id: id, _type: 'document', userConcern});
+        return graph
     }
 }
 
@@ -1012,7 +1021,7 @@ export const getIndex = () => {
     return '$_' + globalIndex
 }; // 获取新内容索引
 
-export const itemEqual = (itemA: {_id: id, _type: BaseType}, itemB: {_id: id, _type: BaseType}) =>
+export const itemEqual = (itemA: { _id: id, _type: BaseType }, itemB: { _id: id, _type: BaseType }) =>
     itemA._id === itemB._id && itemA._type === itemB._type; // 两个Item是否一样
 
 export const findItem = (list: Array<SettingPart>, _id: id, _type: BaseType) =>
