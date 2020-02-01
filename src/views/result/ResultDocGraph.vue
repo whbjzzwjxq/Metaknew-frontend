@@ -10,7 +10,7 @@
 
             </graph-view-box>
         </div>
-        <toolbar-bottom>
+        <toolbar-bottom @add-note-to-graph="newNote">
             <template v-slot:subTool>
                 <div style="width: 100%; height: 100%" class="d-flex flex-row">
                     <div style="width: 80px; height: 100%">

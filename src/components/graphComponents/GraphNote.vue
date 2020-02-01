@@ -279,7 +279,7 @@
 
             //删除Note
             deleteNote() {
-                this.$set(this.note, 'isDeleted', true);
+                this.$set(this.note.State, 'isDeleted', true);
                 let payload = {
                     'timeout': 5000,
                     'color': 'error',

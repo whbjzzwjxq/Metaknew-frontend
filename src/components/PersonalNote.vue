@@ -13,7 +13,7 @@
                 dense
             ></v-text-field>
 
-            <icon-group :icon-list="iconList" color="black">
+            <icon-group :icon-list="iconList" color="black" small>
 
             </icon-group>
 
@@ -79,16 +79,16 @@
                         </v-card-title>
                         <v-card-text class="pa-1">
                             <div style="height: 572px; width: 100%" class="cardItem">
-                            <v-textarea
-                                :disabled="!isEditing"
-                                :value="currentNote.Text"
-                                :rows="22"
-                                auto-grow
-                                filled
-                                @input="updateValue('Text', arguments[0])"
-                                counter>
+                                <v-textarea
+                                    :disabled="!isEditing"
+                                    :value="currentNote.Text"
+                                    :rows="22"
+                                    auto-grow
+                                    filled
+                                    @input="updateValue('Text', arguments[0])"
+                                    counter>
 
-                            </v-textarea>
+                                </v-textarea>
                             </div>
                         </v-card-text>
                     </v-card>
@@ -156,7 +156,8 @@
                 return [
                     {name: getIcon('i-edit', 'search'), _func: this.search},
                     {name: getIcon('i-note-type', 'addNote'), _func: this.addNote},
-                    {name: getIcon('i-edit', 'save'), _func: this.save}
+                    {name: getIcon('i-edit', 'save'), _func: this.save},
+                    {name: getIcon('i-arrow-double', 'right'), _func: this.addNoteToGraph, toolTip: '添加一个便签到图形内'}
                 ]
             },
             noteIconList: function (): IconItem[] {
@@ -269,6 +270,10 @@
 
             markdownNote: function () {
                 this.currentNote.$IsMarkdown = !this.isMarkdown
+            },
+
+            addNoteToGraph: function () {
+                this.$emit('add-note-to-graph')
             },
 
             save: function () {

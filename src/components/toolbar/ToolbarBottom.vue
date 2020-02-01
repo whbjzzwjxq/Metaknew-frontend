@@ -8,7 +8,7 @@
                             <v-icon color="#111111"> {{ noteIcon }}</v-icon>
                         </v-btn>
                     </template>
-                    <personal-note></personal-note>
+                    <personal-note @add-note-to-graph="addNoteToGraph"></personal-note>
                 </v-menu>
             </div>
             <div class="button-normal pb-4">
@@ -87,6 +87,10 @@
                     : height = 108;
                 this.$store.commit('resetBottomBar', height);
                 this.toolbarOn = !this.toolbarOn
+            },
+
+            addNoteToGraph() {
+                this.$emit('add-note-to-graph')
             }
         },
         watch: {},

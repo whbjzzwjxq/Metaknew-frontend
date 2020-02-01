@@ -783,7 +783,10 @@ export function noteStateTemplate(...rest: Array<string>) {
         isMouseOn: false,
         isAdd: rest.indexOf("isAdd") > -1,
         isLock: false,
-        isDark: false
+        isDark: false,
+        isDeleted: false,
+        isSelf: true,
+        isEditing: false
     } as NoteState
 }
 
