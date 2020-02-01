@@ -1,4 +1,4 @@
-import {getCookie, randomNumberInRange} from '@/utils/utils';
+import {currentTime, getCookie, randomNumberInRange} from '@/utils/utils';
 import {fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
 import PDFJS from 'pdfjs-dist';
 PDFJS.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/build/pdf.worker.js';
@@ -853,12 +853,11 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
 
 export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
     // Ctrl数据
-    let time = new Date();
     let ctrl = {
         $IsUserMade: true,
         CreateUser: getCookie("user_id"),
         Source: 'User',
-        UpdateTime: time.toLocaleDateString(),
+        UpdateTime: currentTime(),
         PrimaryLabel: _label,
         Imp: 50,
         HardLevel: 50,
@@ -905,7 +904,7 @@ export function mediaCtrlTemplate(file: File) {
         Format: file.name.split(".")[1],
         PrimaryLabel: getMediaType(file),
         Thumb: "",
-        UpdateTime: time.toLocaleDateString(),
+        UpdateTime: currentTime(),
         CreateUser: getCookie("user_id"),
         $IsUserMade: true,
         Source: 'User',
@@ -943,7 +942,7 @@ export function linkInfoTemplate(_id: id, _label: string) {
 export function linkCtrlTemplate(_start: VisNodeSettingPart, _end: VisNodeSettingPart) {
     let time = new Date();
     return <BaseLinkCtrl>{
-        UpdateTime: time.toLocaleDateString(),
+        UpdateTime: currentTime(),
         CreateUser: getCookie("user_id"),
         CreateType: 'User',
         Start: _start,

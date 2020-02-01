@@ -39,8 +39,9 @@
     import {getFileToken} from '@/api/user'
     import {commitFileToken} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
+    import {SortProp} from "@/utils/interfaceInComponent";
+    import {sortCtrl} from "@/utils/utils";
 
-    type SortProp = 'UpdateTime' | 'isStar' | 'PrimaryLabel' // 排序方式
     export default Vue.extend({
         name: "CardPageMediaList",
         components: {
@@ -112,12 +113,7 @@
                 this.dataManager.currentGraph.addItems([newMediaSetting])
             },
             reRankFile: function () {
-                let type = this.filterProp;
-                let sorter = (a: MediaInfoPart, b: MediaInfoPart): number => a.Ctrl[type] > b.Ctrl[type]
-                    ? 1
-                    : a.Ctrl[type] === b.Ctrl[type]
-                        ? 0
-                        : -1;
+                let sorter = sortCtrl(this.filterProp);
                 this.reRankedList = this.mediaList;
                 this.reRankedList.sort(sorter);
             }

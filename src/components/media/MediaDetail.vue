@@ -17,11 +17,11 @@
                     <v-spacer></v-spacer>
                 </v-toolbar>
 
-                <v-card >
-                <div v-if="media.Info.PrimaryLabel === 'image'"
-                     style="overflow-y:scroll;overflow-x:hidden;text-align:center">
-                    <img :src=realSrc id="image" @click="bigPic" alt="图片描述">
-                </div>
+                <v-card>
+                    <div v-if="media.Info.PrimaryLabel === 'image'"
+                         style="overflow-y:scroll;overflow-x:hidden;text-align:center">
+                        <img :src=realSrc id="image" @click="bigPic" alt="图片描述">
+                    </div>
                 </v-card>
 
                 <div v-if="media.Info.PrimaryLabel === 'pdf'"
@@ -54,8 +54,8 @@
                 </div>
 
                 <v-bottom-navigation :value="activeBtn" grow color="teal" height="40px">
-                   <!-- <v-btn @click="scaleD">+</v-btn>
-                    <v-btn @click="scaleX">-</v-btn>-->
+                    <!-- <v-btn @click="scaleD">+</v-btn>
+                     <v-btn @click="scaleX">-</v-btn>-->
                     <v-btn @click="changeMode">
                         {{ dialogEdit ? 'Preview' : 'Edit' }}
                     </v-btn>
@@ -91,8 +91,8 @@
                 widgets: false,
                 activeBtn: 1,
                 windowSize: {
-                  x: 0,
-                  y: 0,
+                    x: 0,
+                    y: 0,
                 },
                 //pdf阅读器样式
                 numPages: "",
@@ -187,9 +187,9 @@
                     }
                 } else {
                     return this.doNothing()
-                    }
-                },
+                }
             },
+        },
 
         methods: {
             init() {
@@ -235,9 +235,9 @@
             },
             changeMode() {
                 this.dialogEdit = !this.dialogEdit
-                },
+            },
             handleSave() {
-                if (this.media.Ctrl.PrimaryLabel === "markdown") {
+                if (this.media.PrimaryLabel === "markdown") {
                     let currentValue = this.$refs.md.d_value;
                     let updateValue = [];
                     updateValue.push(currentValue);
@@ -246,7 +246,7 @@
                 } else {
                     this.doNothing()
                 }
-                },
+            },
             bigPic() {
                 let vm = this;
                 let viewer = new Viewer(document.getElementById('image'), {
@@ -269,7 +269,7 @@
             },
             doNothing() {
             }
-            },
+        },
 
         record: {
             status: "done",

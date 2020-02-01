@@ -66,12 +66,12 @@
         </v-card>
 
         <div style="height: 6px"></div>
-        <title-text-field
+        <field-title
             :edit-mode="editMode"
             :text="media.Info.Name"
             @update-text="updateName"
             v-show="showText"
-        ></title-text-field>
+        ></field-title>
 
     </v-card>
 </template>
@@ -80,7 +80,7 @@
     import Vue from "vue";
     import MediaViewer from "../../media/MediaViewer.vue";
     import FieldText from "@/components/field/FieldText.vue";
-    import TitleTextField from "@/components/TitleTextField.vue";
+    import FieldTitle from "@/components/field/FieldTitle.vue";
     import CardSubLabelGroup from '@/components/card/subComp/CardSubLabelGroup.vue';
     import {MediaInfoPart} from "@/utils/graphClass";
     import {LabelGroup} from "@/utils/interfaceInComponent";
@@ -95,7 +95,7 @@
     export default Vue.extend({
         name: "CardPageMediaInfo",
         components: {
-            TitleTextField,
+            FieldTitle,
             MediaViewer,
             FieldText,
             CardSubLabelGroup,
@@ -302,7 +302,7 @@
                 this.$emit("add-media-to-graph", this.media);
             },
             dialogDetailWatch() {
-                if (this.media.Ctrl.PrimaryLabel === 'image') {
+                if (this.media.PrimaryLabel === 'image') {
                     let el: any = this.$refs.mediaViewer;
                     el.bigPic()
                 } else {

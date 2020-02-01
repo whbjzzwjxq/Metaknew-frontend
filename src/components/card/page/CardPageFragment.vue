@@ -1,13 +1,13 @@
 <template>
     <v-card flat outlined tile>
         <v-card-title class="pa-0 px-2" style="height: 32px;">
-            <title-text-field
+            <field-title
                 :text="fragment.Info.Name"
                 :edit-mode="editMode"
                 :font-css="fontCSS"
                 @update-text="updateValue('Name', $event)">
 
-            </title-text-field>
+            </field-title>
         </v-card-title>
         <v-card-text class="pa-2" style="">
             <field-text
@@ -38,14 +38,14 @@
     import IconGroup from "@/components/IconGroup.vue";
     import FieldText from "@/components/field/FieldText.vue";
     import FieldArray from "@/components/field/FieldArray.vue";
-    import TitleTextField from "@/components/TitleTextField.vue";
+    import FieldTitle from "@/components/field/FieldTitle.vue";
     export default Vue.extend({
         name: "CardPageFragment",
         components: {
             IconGroup,
             FieldText,
             FieldArray,
-            TitleTextField
+            FieldTitle
         },
         data: function () {
             return {

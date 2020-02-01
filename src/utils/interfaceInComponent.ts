@@ -48,3 +48,5 @@ export interface FlatNodeInfo extends BaseInfo {
 
     [prop: string]: any
 }
+
+export type SortProp = 'UpdateTime' | 'isStar' | 'PrimaryLabel' // 排序方式

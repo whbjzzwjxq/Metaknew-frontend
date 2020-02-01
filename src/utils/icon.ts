@@ -9,7 +9,7 @@ declare global {
 
     interface IconItem {
         name: string,
-        _func?: Function | null,
+        _func: Function,
         color?: string,
         render?: boolean,
         disabled?: boolean,
@@ -71,7 +71,9 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     },
     'i-note-type': {
         text: 'mdi-note-text',
-        canvas: 'mdi-brush'
+        canvas: 'mdi-brush',
+        notebook: 'mdi-notebook-multiple',
+        addNote: 'mdi-plus'
     },
     'i-collapse': {
         true: 'mdi-minus',

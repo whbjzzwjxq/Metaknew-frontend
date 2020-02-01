@@ -1,6 +1,7 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {GraphSelfPart, LinkInfoPart, NodeInfoPart} from "@/utils/graphClass";
+import {GraphSelfPart, InfoPart, LinkInfoPart, NodeInfoPart} from "@/utils/graphClass";
+import {NoteBook} from "@/store/modules/userDataManager";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)
@@ -74,7 +75,7 @@ export const commitGraphChangeId = (payload: idMap) => {
     return store.commit('graphChangeId', payload)
 };
 
-export const commitUserConcernAdd = (payload: {_id: id, _type: BaseType, userConcern: UserConcern}) => {
+export const commitUserConcernAdd = (payload: { _id: id, _type: BaseType, userConcern: UserConcern }) => {
     return store.commit('userConcernAdd', payload)
 };
 
@@ -84,4 +85,12 @@ export const commitChangeRootTab = (payload: RootTabName | number) => {
 
 export const commitChangeSubTab = (payload: SubTabName) => {
     return store.commit('changeSubTab', payload)
+};
+
+export const commitNoteBookAdd = (payload: { note: NoteBook }) => {
+    return store.commit('noteBookAdd', payload)
+};
+
+export const commitNoteBookRemove = (payload: { note: NoteBook }) => {
+    return store.commit('noteBookRemove', payload)
 };

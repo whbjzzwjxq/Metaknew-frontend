@@ -36,7 +36,6 @@ declare global {
     type BaseTypeList = 'nodes' | 'medias' | 'links' | "notes";
     type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
     type idMap = Record<id, id>; // 新旧id的Map
-    type InfoPart = NodeInfoPart | MediaInfoPart | LinkInfoPart;
     type VisNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从视觉上来说是Node的对象
     type AllItemSettingPart = VisNodeSettingPart | LinkSettingPart | NoteSettingPart; // 所有Item对象
     type AllSettingPart = AllItemSettingPart | GraphSettingPart // 所有Setting对象
@@ -62,9 +61,8 @@ declare global {
     interface BaseCtrl {
         CreateUser: id; // 用户新建
         CreateType: string; // 用户新建或者自动或者之类的
-        UpdateTime: string;
+        UpdateTime: number; // 时间戳
         Labels: Array<string>; // 用户自己的标签
-        PrimaryLabel: string; // 验证用
         [prop: string]: any;
     }
 
@@ -302,6 +300,10 @@ export abstract class InfoPart {
 
     get isSelf() {
         return getIsSelf(this.Ctrl)
+    }
+
+    get PrimaryLabel() {
+        return this.Info.PrimaryLabel
     }
 
     protected constructor(info: BaseInfo, ctrl: BaseCtrl) {

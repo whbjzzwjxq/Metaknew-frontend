@@ -3,7 +3,7 @@ import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, SourceQue
 import {getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
-    GraphSelfPart,
+    GraphSelfPart, InfoPart,
     LinkInfoPart,
     MediaInfoPart,
     NodeInfoPart,

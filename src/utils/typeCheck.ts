@@ -1,4 +1,5 @@
 import {
+    InfoPart,
     LinkSettingPart, MediaInfoPart,
     MediaSettingPart,
     NodeSettingPart,

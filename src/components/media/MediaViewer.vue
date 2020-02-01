@@ -18,30 +18,30 @@
 
             </slot>
         </div>
-        <div  v-else-if="media.Info.PrimaryLabel === 'markdown'">
+        <div v-else-if="media.Info.PrimaryLabel === 'markdown'">
             <v-card scroll :height="height" :width="width" class="cardItem">
-            <mavon-editor style="z-index: 0"
-                :value="mdText"
-                :subfield = "false"
-                :defaultOpen = "'preview'"
-                :toolbarsFlag = "false"
-                :boxShadow="false"
-            ></mavon-editor>
-            <slot name="button-group">
+                <mavon-editor style="z-index: 0"
+                              :value="mdText"
+                              :subfield="false"
+                              :defaultOpen="'preview'"
+                              :toolbarsFlag="false"
+                              :boxShadow="false"
+                ></mavon-editor>
+                <slot name="button-group">
 
-            </slot>
+                </slot>
             </v-card>
         </div>
     </v-card>
 </template>
 
-<script lang="ts">
+<script>
     import pdf from 'vue-pdf'
     import {getSrc} from '@/utils/utils'
     import axios from 'axios'
     import {mavonEditor} from "mavon-editor";
     import "mavon-editor/dist/css/index.css";
-    import { MediaInfoPart } from '@/utils/graphClass'
+    import {MediaInfoPart} from '@/utils/graphClass'
     import Viewer from 'viewerjs'
 
     export default {
@@ -54,11 +54,11 @@
             return {
                 mdText: ""
             }
-           },
+        },
 
         props: {
             media: {
-                type: Object as () => any, // MediaInfoPart,
+                type: Object, // MediaInfoPart,
                 required: true
             },
             width: {
@@ -82,7 +82,7 @@
         methods: {
             init() {
                 let realSrc = getSrc(this.media.Ctrl.FileName);
-                if (this.media.Ctrl.PrimaryLabel === 'markdown') {
+                if (this.media.PrimaryLabel === 'markdown') {
                     axios.get(realSrc).then(response => {
                         this.mdText = response.data
                     })
@@ -110,8 +110,8 @@
             },
         },
         watch: {
-            realSrc(newUrl: any, oldUrl: any) {
-              this.init()
+            realSrc(newUrl, oldUrl) {
+                this.init()
             }
         },
         record: {

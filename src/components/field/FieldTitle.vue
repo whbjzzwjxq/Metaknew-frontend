@@ -1,5 +1,5 @@
 <template>
-    <div class="title unselected">
+    <div class="title unselected" :style="divCss">
         <v-text-field
             :style="fontCss"
             :value="text"
@@ -20,7 +20,7 @@
     import Vue from 'vue'
 
     export default Vue.extend({
-        name: "TitleTextField",
+        name: "FieldTitle",
         components: {},
         data() {
             return {}
@@ -36,7 +36,11 @@
             },
             fontCss: {
                 type: Object as () => CSSProp,
-                default: {}
+                default: () => {}
+            },
+            divCss: {
+                type: Object as () => CSSProp,
+                default: () => {}
             }
         },
         computed: {},

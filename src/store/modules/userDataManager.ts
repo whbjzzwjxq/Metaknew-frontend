@@ -7,8 +7,20 @@ declare global {
         userConcernDict: Record<BaseType, Record<id, UserConcern>>,
         fragments: Array<FragmentInfoPart>,
         userSetting: Record<string, Record<string, any>>,
-        userNotes: Record<any, any>
+        userNotes: NoteBook[]
     }
+}
+
+interface NoteBookState extends BaseState {
+    isEditing: boolean
+}
+export interface NoteBook extends BaseCtrl {
+    Name: string,
+    Text: string,
+    Svg: any,
+    id: id,
+    State: NoteBookState,
+    $IsMarkdown: boolean
 }
 
 const state: UserDataManagerState = {
@@ -24,15 +36,24 @@ const state: UserDataManagerState = {
     userSetting: {
         fragmentCollect: {}
     },
-    userNotes: {
-        
-    }
+    userNotes: []
 };
 
 const mutations = {
     userConcernAdd(state: UserDataManagerState, payload: { _id: id, _type: BaseType, userConcern: UserConcern }) {
         let {_id, _type, userConcern} = payload;
         Vue.set(state.userConcernDict[_type], _id, userConcern)
+    },
+
+    noteBookAdd(state: UserDataManagerState, payload: { note: NoteBook }) {
+        let {note} = payload;
+        state.userNotes.push(note)
+    },
+
+    noteBookRemove(state: UserDataManagerState, payload: { note: NoteBook }) {
+        let {note} = payload;
+        let index = state.userNotes.indexOf(note);
+        state.userNotes.splice(index, 1);
     }
 };
 

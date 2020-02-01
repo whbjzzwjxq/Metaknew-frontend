@@ -1,4 +1,5 @@
-import {localIdRegex} from "@/utils/graphClass";
+import {InfoPart, localIdRegex} from "@/utils/graphClass";
+import {SortProp} from "@/utils/interfaceInComponent";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -227,3 +228,48 @@ export function idSort(idList: id[]): id[] {
     result = result.concat(localId);
     return result
 }
+
+export function sortCtrl(sortType: SortProp): (a: any, b: any) => number {
+    return (a: InfoPart, b: InfoPart): number => a.Ctrl[sortType] > b.Ctrl[sortType]
+        ? 1
+        : a.Ctrl[sortType] === b.Ctrl[sortType]
+            ? 0
+            : -1
+}
+
+export const sortByTime = (a: InfoPart, b: InfoPart) => {
+    return a.Ctrl.UpdateTime > b.Ctrl.UpdateTime
+        ? 1
+        : a.Ctrl.UpdateTime === b.Ctrl.UpdateTime
+            ? 0
+            : -1
+};
+
+export const sortByLabel = (a: InfoPart, b: InfoPart) => {
+    return a.PrimaryLabel > b.PrimaryLabel
+        ? 1
+        : a.PrimaryLabel === b.PrimaryLabel
+            ? 0
+            : -1
+};
+
+export const sortByName = (a: InfoPart, b: InfoPart) => {
+    return a.Info.Name > b.Info.Name
+        ? 1
+        : a.Info.Name === b.Info.Name
+            ? 0
+            : -1
+};
+
+export const sortByIsStar = (a: UserConcern, b: UserConcern) => {
+    return a.isStar > b.isStar
+        ? 1
+        : a.isStar === b.isStar
+            ? 0
+            : -1
+};
+
+export const currentTime = () => {
+    let time = new Date();
+    return time.getTime();
+};

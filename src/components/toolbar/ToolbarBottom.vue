@@ -2,13 +2,13 @@
     <v-card tile flat outlined :style="toolbarStyle">
         <div :style="buttonStyle" class="floatButton">
             <div class="button-normal pb-4">
-                <v-menu top offset-x :close-on-content-click="false">
+                <v-menu top offset-x :close-on-content-click="false" nudge-bottom="100" nudge-right="12">
                     <template v-slot:activator="{ on }">
                         <v-btn fixed fab color="blue" large v-on="on" v-show="toolbarOn">
                             <v-icon color="#111111"> {{ noteIcon }}</v-icon>
                         </v-btn>
                     </template>
-
+                    <personal-note></personal-note>
                 </v-menu>
             </div>
             <div class="button-normal pb-4">
@@ -35,10 +35,12 @@
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
     import FragmentList from "@/components/FragmentList.vue";
+    import PersonalNote from "@/components/PersonalNote.vue";
     export default Vue.extend({
         name: "ToolbarBottom",
         components: {
-            FragmentList
+            FragmentList,
+            PersonalNote
         },
         data() {
             return {
