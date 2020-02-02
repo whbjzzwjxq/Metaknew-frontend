@@ -1,9 +1,7 @@
 import {
-    DocumentInfoPart,
-    DocumentSettingPart,
-    InfoPart, LinkInfoPart,
+    InfoPart,
     LinkSettingPart, MediaInfoPart,
-    MediaSettingPart, NodeInfoPart,
+    MediaSettingPart,
     NodeSettingPart,
     NoteSettingPart,
     SettingPart,
@@ -15,20 +13,9 @@ export function isNodeBackend(item: BackendNodeInfoPart | BackendLinkInfoPart): 
     return type === 'node' || type === 'document'
 }
 
-export function isNodeInfoPart(item: InfoPart): item is InfoPart {
-    return (item as NodeInfoPart).type === 'node' || (item as NodeInfoPart).type === 'document'
-}
-
-export function isLinkInfoPart(item: InfoPart): item is InfoPart {
-    return (item as LinkInfoPart).type === 'link'
-}
-
-export function isMediaInfoPart(item: InfoPart): item is MediaInfoPart {
-    return (item as MediaInfoPart).type === 'media'
-}
-
-export function isDocumentInfoPart(item: InfoPart): item is DocumentInfoPart {
-    return (item as DocumentInfoPart).type === 'document'
+export function isNodeInfoPart(item: BaseNodeInfo | BaseMediaInfo | BaseLinkInfo): item is BaseNodeInfo {
+    return (item as BaseNodeInfo).type === 'node' ||
+        (item as BaseNodeInfo).type === 'document'
 }
 
 export function isBaseType(str: string): str is BaseType {
@@ -40,23 +27,19 @@ export function isBaseType(str: string): str is BaseType {
 }
 
 export function isLinkSetting(item: SettingPart): item is LinkSettingPart {
-    return (item as LinkSettingPart)._type === 'link'
+    return (item as LinkSettingPart).Setting._type === 'link'
 }
 
 export function isMediaSetting(item: SettingPart): item is MediaSettingPart {
-    return (item as MediaSettingPart)._type === 'media'
+    return (item as MediaSettingPart).Setting._type === 'media'
 }
 
 export function isNodeSetting(item: SettingPart): item is NodeSettingPart {
-    return (item as NodeSettingPart)._type === 'node'
-}
-
-export function isDocumentSetting(item: SettingPart): item is DocumentSettingPart {
-    return (item as DocumentSettingPart)._type === 'document'
+    return (item as NodeSettingPart).Setting._type === 'node' || (item as NodeSettingPart).Setting._type === 'document'
 }
 
 export function isNoteSetting(item: SettingPart): item is NoteSettingPart {
-    return (item as NoteSettingPart)._type === 'note'
+    return (item as NoteSettingPart).Setting._type === 'note'
 }
 
 export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is BooleanConcern {
@@ -67,4 +50,8 @@ export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels")
 
 export function isLevelConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is LevelConcern {
     return prop === "Imp" || prop === "HardLevel" || prop === "Useful";
+}
+
+export function isMediaInfoPart(info: InfoPart): info is MediaInfoPart {
+    return info.Info.type === 'media'
 }

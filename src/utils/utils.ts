@@ -170,6 +170,16 @@ export function fileCheck(file: File, size?: number, formats?: string[], filePoo
     return rules.map(rule => rule()).filter(result => result !== '')
 }
 
+export function getInfoPart(_id: id, _type: BaseType, dataManager: DataManagerState) {
+    let manager;
+    _type === 'link'
+        ? manager = dataManager.linkManager
+        : _type === 'media'
+        ? manager = dataManager.mediaManager
+        : manager = dataManager.nodeManager;
+    return manager[_id]
+}
+
 const blobRegex = new RegExp('blob:.*');
 
 export const getSrc = (src: string | undefined) => {
