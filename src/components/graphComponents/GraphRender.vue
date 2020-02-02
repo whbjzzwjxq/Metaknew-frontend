@@ -66,8 +66,7 @@
     import {RectByPoint, getPoint, Point} from "@/utils/geoMetric";
     import {LabelViewDict} from "@/utils/interfaceInComponent";
     import {isMediaSetting} from "@/utils/typeCheck";
-    import {commitItemChange} from "@/store/modules/_mutations";
-    import {getInfoPart, maxN, minN} from "@/utils/utils";
+    import {maxN, minN} from "@/utils/utils";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import RectContainer from "@/components/container/RectContainer.vue";
@@ -451,7 +450,6 @@
                 //如果是单选就切换内容
                 if (itemList.length === 1) {
                     let item = itemList[0];
-                    let info = getInfoPart(item.Setting._id, item.Setting._type, this.dataManager);
                     // info && commitItemChange(info);
                 }
             },

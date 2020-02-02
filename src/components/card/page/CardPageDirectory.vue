@@ -51,7 +51,7 @@
         NodeSettingPart,
         NoteSettingPart
     } from "@/utils/graphClass";
-    import {getInfoPart, mergeList} from "@/utils/utils";
+    import {mergeList} from "@/utils/utils";
     import {getIcon} from "@/utils/icon";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
 
@@ -317,8 +317,11 @@
             },
 
             editItem(item: DirectoryItem) {
-                if (item.type === 'node' || item.type === 'link') {
-                    let info = getInfoPart(item.id, item.type, this.dataManager);
+                if (item.type === 'node') {
+                    let info = this.dataManager.nodeManager[item.id];
+                    commitItemChange(info)
+                } else if (item.type === 'link') {
+                    let info = this.dataManager.linkManager[item.id];
                     commitItemChange(info)
                 } else if (item.type === 'media') {
                     // media编辑
