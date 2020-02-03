@@ -1,5 +1,5 @@
 <template>
-    <v-card :width="width" :height="height" style="overflow: hidden">
+    <v-card :width="container.width" :height="container.height" style="overflow: hidden">
         <v-toolbar color="deep-purple accent-4" flat dense :extension-height="36">
             <v-icon> {{ noteIcon }}</v-icon>
             <v-toolbar-title style="font-weight: bolder" class="pl-2">NOTE BOOK</v-toolbar-title>
@@ -116,18 +116,17 @@
     import {commitNoteBookAdd, commitNoteBookRemove} from "@/store/modules/_mutations";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import TimeRender from "@/components/TimeRender.vue";
-
+    import MarkdownViewer from "@/components/media/MarkdownViewer.vue";
     export default Vue.extend({
         name: "PersonalNote",
         components: {
             IconGroup,
             FieldTitle,
-            TimeRender
+            TimeRender,
+            MarkdownViewer
         },
         data: function () {
             return {
-                width: 520,
-                height: 720,
                 noteIcon: getIcon('i-note-type', 'notebook'),
                 deleteIcon: getIcon('i-edit', 'delete'),
                 menuIcon: getIcon('i-arrow', false),
@@ -145,6 +144,15 @@
         computed: {
             userDataManager: function (): UserDataManagerState {
                 return this.$store.state.userDataManager
+            },
+            styleManager: function (): StyleManagerState {
+                return this.$store.state.styleComponentSize
+            },
+            container: function (): ComponentSize {
+                return this.styleManager.noteBook
+            },
+            markdownContainer: function () : AreaRect {
+                return this.$store.getters.noteBookMarkDown
             },
             noteBooks: function (): NoteBook[] {
                 return this.userDataManager.userNotes
@@ -187,7 +195,7 @@
                 return this.currentNote
                     ? this.currentNote.$IsMarkdown
                     : false
-            }
+            },
         },
         methods: {
             pushNoteInShowed: function (note: NoteBook) {

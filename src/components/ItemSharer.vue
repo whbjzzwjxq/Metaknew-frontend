@@ -2,7 +2,7 @@
     <div>
         <v-row style="width: 360px" class="ma-0 pl-8">
             <v-col v-for="icon in iconList" :key="icon.name" cols="2" class="pa-1" style="align-content: normal">
-                <v-btn icon
+                <v-btn text
                        @click="icon._func"
                        :color="icon.color ? icon.color : 'grey'">
                     <v-icon left class="pr-1"> {{ icon.name }}</v-icon>

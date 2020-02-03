@@ -1,21 +1,21 @@
 import Vue from 'vue'
 import {RectByPoint} from "@/utils/geoMetric";
 import {commitBottomDynamicBarResize, commitViewBoxResize} from "@/store/modules/_mutations";
-import {instance} from "@/api/main";
 
 declare global {
     interface StyleManagerState {
         screenX: number,
         screenY: number,
-        viewBox: RectByPoint,
         toolBar: ToolBar,
         leftCard: LeftCard,
         bottomBar: BottomBar,
+        noteBook: NoteBook
         bottomDynamicBar: RectByPoint,
+        viewBox: RectByPoint,
         leftCardTab: {
             root: number,
             sub: number
-        }
+        },
     }
 
     interface ComponentSize {
@@ -45,6 +45,11 @@ interface BottomBar extends ComponentSize {
 interface ToolBar extends ComponentSize {
     width: string
     height: number,
+}
+
+interface NoteBook extends ComponentSize {
+    width: number,
+    height: number
 }
 
 export const tabDict: Record<RootTabName, string[]> = {
@@ -79,6 +84,10 @@ const state: StyleManagerState = {
     bottomBar: {
         width: '100%',
         height: 108
+    },
+    noteBook: {
+        width: 520,
+        height: 720,
     },
     bottomDynamicBar: new RectByPoint({x: 0, y: document.documentElement.clientHeight - 240}, {x: 0, y: 0}, 0),
     screenX: document.documentElement.clientWidth,
@@ -151,7 +160,16 @@ const mutations = {
 
 };
 const actions = {};
-const getters = {};
+const getters = {
+    noteBookMarkDown: function (state: StyleManagerState): AreaRect {
+        return {
+            x: state.leftCard.width + 64 + state.noteBook.width,
+            y: state.screenY - state.bottomBar.height - state.noteBook.height,
+            width: state.noteBook.width,
+            height: state.noteBook.height
+        }
+    }
+};
 
 export default {
     state,

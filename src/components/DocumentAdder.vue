@@ -7,7 +7,7 @@
             class="pr-6 pl-4"
             depressed
             outlined
-            icon
+            text
             tile
             v-for="(item, key) in itemDict">
             <v-icon> {{ item.icon }}</v-icon>

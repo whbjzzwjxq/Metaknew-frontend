@@ -157,10 +157,10 @@
                     let select = (list: DirectoryItem[], state: boolean) => {
                         list.map(item => {
                             let origin = this.getOriginItem(item);
-                            this.$set(origin.State, 'isSelected', state);
+                            origin.updateState('isSelected', state);
                             if (item.type === 'document') {
                                 let subNode = origin.parent.getSubItemById(item.id, item.type);
-                                this.$set(subNode.State, 'isSelected', state);
+                                subNode.updateState('isSelected', state);
                                 // 如果是新选中的Document
                                 if (state) {
                                     this.dataManager.graphManager[item.id].selectAll('isSelected', true)
@@ -173,7 +173,7 @@
                     // 把root级别的subNode也找到
                     this.tree.map(root => {
                         let origin = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
-                        this.$set(origin.State, 'isSelected', newIdList.includes(root.id))
+                        origin.updateState('isSelected', newIdList.includes(root.id));
                     })
                 }
             }
@@ -317,8 +317,11 @@
             },
 
             editItem(item: DirectoryItem) {
-                if (item.type === 'node' || item.type === 'link') {
-                    let info = getInfoPart(item.id, item.type, this.dataManager);
+                if (item.type === 'node') {
+                    let info = this.dataManager.nodeManager[item.id];
+                    commitItemChange(info)
+                } else if (item.type === 'link') {
+                    let info = this.dataManager.linkManager[item.id];
                     commitItemChange(info)
                 } else if (item.type === 'media') {
                     // media编辑

@@ -143,7 +143,7 @@
     import Vue from 'vue'
     import {
         GraphSelfPart,
-        GraphSettingPart,
+        GraphConf,
         LinkSettingPart,
         MediaSettingPart,
         NodeInfoPart,
@@ -294,7 +294,7 @@
             state: function (): GraphState {
                 return this.graph.Conf.State
             },
-            setting: function (): GraphSettingPart {
+            setting: function (): GraphConf {
                 return this.graph.Conf
             },
             containerRect: function (): AreaRect {

@@ -38,7 +38,7 @@ declare global {
     type idMap = Record<id, id>; // 新旧id的Map
     type VisNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从视觉上来说是Node的对象
     type AllItemSettingPart = VisNodeSettingPart | LinkSettingPart | NoteSettingPart; // 所有Item对象
-    type AllSettingPart = AllItemSettingPart | GraphSettingPart // 所有Setting对象
+    type AllSettingPart = AllItemSettingPart | GraphConf // 所有Setting对象
 
     //带有翻译的格式
     type Translate = Record<string, string>
@@ -611,6 +611,10 @@ export class SettingPart {
         this.parent = parent;
     }
 
+    get _type() {
+        return this.Setting._type
+    }
+
     updateState(prop: string, value?: boolean) {
         value || (value = !this.State[prop]);
         Vue.set(this.State, prop, value);
@@ -746,7 +750,7 @@ export class NoteSettingPart extends SettingPart {
     }
 }
 
-export class GraphSettingPart extends SettingPart {
+export class GraphConf extends SettingPart {
     Setting: GraphSetting;
     State: GraphState;
     parent: GraphSelfPart | null;
@@ -765,7 +769,7 @@ export class GraphSettingPart extends SettingPart {
     static emptyGraphSetting(_id: id, parent: GraphSelfPart | null) {
         let setting = graphSettingTemplate(_id);
         let state = graphStateTemplate("isSelf", "isAdd");
-        return new GraphSettingPart(setting, state, parent);
+        return new GraphConf(setting, state, parent);
     }
 }
 
@@ -773,7 +777,7 @@ export class GraphSelfPart {
     static list: Array<GraphSelfPart>;
     static baseList: Array<BackendGraph>; // 原始数据
     Graph: Graph;
-    Conf: GraphSettingPart;
+    Conf: GraphConf;
     // 草稿保存
     draftId: number;
     // 图形尺寸
@@ -801,7 +805,7 @@ export class GraphSelfPart {
 
     constructor(
         graph: Graph,
-        setting: GraphSettingPart,
+        setting: GraphConf,
         baseNode: NodeSetting
     ) {
         this.draftId = -1; // 自动保存id
@@ -828,7 +832,7 @@ export class GraphSelfPart {
             medias: [],
             notes: []
         };
-        let setting = GraphSettingPart.emptyGraphSetting(_id, parent);
+        let setting = GraphConf.emptyGraphSetting(_id, parent);
         let baseNode = nodeSettingTemplate(_id, 'document', 'DocGraph', 'NewDocument' + _id, '');
         let graphSelf = new GraphSelfPart(graph, setting, baseNode);
         graphSelf.addItems([graphSelf.baseNode]);
@@ -843,7 +847,7 @@ export class GraphSelfPart {
         let args = [];
         getIsSelf(baseData.Base.Ctrl) && args.push("isSelf");
         let state = graphStateTemplate(...args);
-        let setting = new GraphSettingPart(baseData.Conf, state, parent);
+        let setting = new GraphConf(baseData.Conf, state, parent);
         let graph = <Graph>{
             nodes: [],
             links: [],
