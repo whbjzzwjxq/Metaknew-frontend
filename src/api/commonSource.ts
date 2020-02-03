@@ -4,7 +4,7 @@ import {FlatNodeInfo} from "@/utils/interfaceInComponent";
 
 export interface SourceQueryObject {
     _id: id;
-    _type: GraphType;
+    _type: GraphItemType;
     _label: string;
 } // 用于Query
 
@@ -41,7 +41,6 @@ export interface BackendGraph {
         svgs: Array<SvgSetting>;
     };
     Conf: GraphSetting;
-    Path: Array<Object>;
 }
 
 export function mediaCreate(data: { name: string, Info: BaseMediaInfo }) {

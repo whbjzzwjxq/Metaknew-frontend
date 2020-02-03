@@ -836,16 +836,11 @@ export function noteStateTemplate(...rest: Array<string>) {
 
 export function graphStateTemplate(...rest: Array<string>) {
     return <GraphState>{
-        isSelected: false,
-        showCard: false,
-        isMouseOn: false,
         isDeleted: false,
         isChanged: false,
-        SavedIn5Min: false,
+        isSavedIn5min: false,
         isExplode: false,
         isSelf: rest.indexOf("isSelf") > -1,
-        isAdd: rest.indexOf("isAdd") > -1,
-        isLoading: rest.indexOf("isLoading") > -1,
     };
 }
 

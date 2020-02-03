@@ -49,15 +49,14 @@
         LinkSettingPart,
         MediaSettingPart,
         NodeSettingPart,
-        NoteSettingPart
     } from "@/utils/graphClass";
-    import {getInfoPart, mergeList} from "@/utils/utils";
+    import {mergeList} from "@/utils/utils";
     import {getIcon} from "@/utils/icon";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
 
     interface DirectoryItem {
         id: id,
-        type: GraphType,
+        type: GraphItemType,
         label: string,
         name: string,
         icon: string,
@@ -255,17 +254,6 @@
                 parent: media.parent.id
             }) as DirectoryItem,
 
-            noteToItem: (note: NoteSettingPart) => ({
-                id: note.Setting._id,
-                type: note.Setting._type,
-                label: note.Setting._label,
-                name: note.Setting._title,
-                icon: getIcon('i-note-type', note.Setting._label),
-                deletable: true,
-                editable: true,
-                parent: note.parent.id,
-            }) as DirectoryItem,
-
             documentToItem: function (document: GraphSelfPart) {
                 return {
                     id: document.id,
@@ -325,7 +313,7 @@
                     commitItemChange(info)
                 } else if (item.type === 'media') {
                     // media编辑
-                } else if (item.type === 'note') {
+                } else if (item.type === 'text') {
                     let note = this.getOriginItem(item);
                     note.updateState('isEditing')
                 } else if (item.type === 'document') {
@@ -383,9 +371,7 @@
                 let medias = document.Graph.medias.filter(item => !item.State.isDeleted)
                     .map(media => this.mediaToItem(media));
 
-                let notes = document.Graph.notes.filter(item => !item.State.isDeleted)
-                    .map(note => this.noteToItem(note));
-                return nodes.concat(links).concat(medias).concat(notes)
+                return nodes.concat(links).concat(medias)
             },
 
             getIcon(name: IconGroup, type: string) {

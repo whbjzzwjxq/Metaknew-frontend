@@ -19,7 +19,7 @@ declare global {
 
     interface FragmentCtrl extends BaseCtrl {
         SourceId: id,
-        SourceType: GraphType,
+        SourceType: GraphItemType,
         SourceLabel: string,
         $IsLinked: boolean
     }

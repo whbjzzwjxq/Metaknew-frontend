@@ -9,7 +9,12 @@ declare global {
         y: number,
     }
 
-    interface AreaRect extends PointObject {
+    interface RectObject {
+        width: number,
+        height: number
+    }
+
+    interface AreaRect extends PointObject, RectObject {
         x: number,
         y: number,
         width: number,

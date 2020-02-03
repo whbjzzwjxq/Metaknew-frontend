@@ -52,9 +52,9 @@ declare global {
 }
 
 const state: DataManagerState = {
-    currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null),
-    currentItem: NodeInfoPart.emptyNodeInfoPart('$_-1', 'node', 'BaseNode'),
-    rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null),
+    currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null).graph,
+    currentItem: GraphSelfPart.emptyGraphSelfPart('$_-1', null).info,
+    rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null).graph,
     graphManager: {},
     nodeManager: {},
     linkManager: {},

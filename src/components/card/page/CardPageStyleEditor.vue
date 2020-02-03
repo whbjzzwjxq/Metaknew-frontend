@@ -48,7 +48,7 @@
                 required: true
             },
             compType: {
-                type: String as () => GraphType,
+                type: String as () => GraphItemType,
                 required: true
             }
         },

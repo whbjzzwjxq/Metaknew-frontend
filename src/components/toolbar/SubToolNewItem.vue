@@ -104,7 +104,7 @@
                         toolTip: ''
                     },
                     'note': {
-                        icon: getIcon('i-item', 'note'),
+                        icon: getIcon('i-item', 'text'),
                         title: 'New note',
                         toolTip: ''
                     }

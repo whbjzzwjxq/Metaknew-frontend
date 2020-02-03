@@ -450,7 +450,7 @@
                     'link': getLabels(this.links),
                     'media': getLabels(this.medias),
                     'document': ['DocGraph', 'DocPaper']
-                } as Record<GraphType, string[]>;
+                } as Record<GraphItemType, string[]>;
                 return labelDict
             },
 
@@ -751,7 +751,7 @@
                 }
             },
 
-            selectLabel(_type: GraphType, _label: string) {
+            selectLabel(_type: GraphItemType, _label: string) {
                 let result = this.nodes.filter(node => node.Setting._label === _label);
                 this.selectItem(result)
             },

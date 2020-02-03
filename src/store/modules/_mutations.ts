@@ -75,7 +75,7 @@ export const commitGraphChangeId = (payload: idMap) => {
     return store.commit('graphChangeId', payload)
 };
 
-export const commitUserConcernAdd = (payload: { _id: id, _type: GraphType, userConcern: UserConcern }) => {
+export const commitUserConcernAdd = (payload: { _id: id, _type: GraphItemType, userConcern: UserConcern }) => {
     return store.commit('userConcernAdd', payload)
 };
 

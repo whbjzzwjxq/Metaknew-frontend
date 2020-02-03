@@ -18,13 +18,13 @@ export function isNodeInfoPart(item: BaseNodeInfo | BaseMediaInfo | BaseLinkInfo
         (item as BaseNodeInfo).type === 'document'
 }
 
-export function isGraphType(str: string): str is GraphType {
-    return (str as GraphType) === 'node' ||
-        (str as GraphType) === 'link' ||
-        (str as GraphType) === 'media' ||
-        (str as GraphType) === 'document' ||
-        (str as GraphType) === 'svg' ||
-        (str as GraphType) === 'text'
+export function isGraphType(str: string): str is GraphItemType {
+    return (str as GraphItemType) === 'node' ||
+        (str as GraphItemType) === 'link' ||
+        (str as GraphItemType) === 'media' ||
+        (str as GraphItemType) === 'document' ||
+        (str as GraphItemType) === 'svg' ||
+        (str as GraphItemType) === 'text'
 }
 
 export function isLinkSetting(item: SettingPart): item is LinkSettingPart {

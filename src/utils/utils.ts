@@ -1,5 +1,7 @@
-import {InfoPart, localIdRegex} from "@/utils/graphClass";
+import {getIndex, GraphSelfPart, InfoPart, localIdRegex, NodeSettingPart} from "@/utils/graphClass";
 import {SortProp} from "@/utils/interfaceInComponent";
+import {commitInfoAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
+import {userConcernTemplate} from "@/utils/template";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -170,7 +172,7 @@ export function fileCheck(file: File, size?: number, formats?: string[], filePoo
     return rules.map(rule => rule()).filter(result => result !== '')
 }
 
-export function getInfoPart(_id: id, _type: GraphType, dataManager: DataManagerState) {
+export function getInfoPart(_id: id, _type: GraphItemType, dataManager: DataManagerState) {
     let manager;
     _type === 'link'
         ? manager = dataManager.linkManager
@@ -283,3 +285,10 @@ export const emptyGraph = () => {
         svgs: []
     } as Graph
 };
+
+export function pushInList<T>(list: undefined | T[], item: T) {
+    list
+        ? list.push(item)
+        : (list = [item]);
+    return list
+}

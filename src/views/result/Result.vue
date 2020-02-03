@@ -54,8 +54,7 @@
         created(): void {
             if (this.graph.id === '$_-1') {
                 let id = getIndex();
-                let graph = GraphSelfPart.emptyGraphSelfPart(id, null);
-                let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
+                let {graph, info} = GraphSelfPart.emptyGraphSelfPart(id, null);
                 commitGraphAdd({graph, strict: true});
                 commitInfoAdd({item: info, strict: true});
                 commitGraphChange({graph});
@@ -66,10 +65,6 @@
             } else {
                 this.loading = false
             }
-            let newGraph = this.graph.addSubGraph();
-            newGraph.addEmptyNode("node", "BaseNode");
-            newGraph.addEmptyNode("node", "None");
-            // path test
         },
         mounted() {
             this.onResize()

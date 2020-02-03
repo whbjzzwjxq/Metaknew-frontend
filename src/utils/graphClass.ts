@@ -1,4 +1,4 @@
-import {deepClone, emptyGraph, getCookie} from "@/utils/utils";
+import {deepClone, emptyGraph, getCookie, pushInList} from "@/utils/utils";
 import Vue from "vue";
 import {
     graphSettingTemplate,
@@ -17,30 +17,23 @@ import {
     noteSettingTemplate,
     noteStateTemplate, userConcernTemplate,
 } from "@/utils/template";
-import {
-    isGraphType,
-    isLinkSetting,
-    isMediaSetting,
-    isNodeSetting,
-    isNoteSetting, isSvgSetting
-} from "@/utils/typeCheck";
+import {isGraphType, isLinkSetting, isMediaSetting, isNodeSetting, isSvgSetting} from "@/utils/typeCheck";
 import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
 import {BackendGraph} from "@/api/commonSource";
-import {commitGraphAdd, commitInfoAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
 import {PathLinkSettingPart, PathNodeSettingPart} from "@/utils/pathClass";
+import {commitInfoAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
 
 declare global {
     type id = number | string;
     type ItemType = "node" | "link" | "media" | "document" // 基础的type
-    type GraphType = ItemType | "text" | "svg"; // Graph里使用的type
-    type SourceType = GraphType | "fragment" | "note";
+    type GraphItemType = ItemType | "text" | "svg"; // Graph里使用的type
+    type SourceType = GraphItemType | "fragment" | "note";
     type GraphTypeS = 'nodes' | 'medias' | 'links' | "texts" | "svgs";
     type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
     type idMap = Record<id, id>; // 新旧id的Map
     type VisNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从视觉上来说是Node的对象
-    type AllItemSettingPart = VisNodeSettingPart | LinkSettingPart | SvgSettingPart | TextSettingPart; // 所有Item对象
-    type AllSettingPart = AllItemSettingPart | NoteSettingPart | GraphConf // 所有Setting对象
-
+    type GraphItemSettingPart = VisNodeSettingPart | LinkSettingPart | SvgSettingPart | TextSettingPart; // 所有Item对象
+    type AllSettingPart = GraphItemSettingPart | NoteSettingPart | GraphConf // 所有Setting对象
     //带有翻译的格式
     type Translate = Record<string, string>
 
@@ -145,7 +138,7 @@ declare global {
     }
 
     interface GraphItemSetting extends Setting {
-        _type: GraphType
+        _type: GraphItemType
     }
 
     type BaseStateKey = 'isSelected' | 'isDeleted' | 'isSelf'
@@ -221,6 +214,9 @@ declare global {
         _type: 'text'
     }
 
+    type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
+    type AllStateProp = 'isLock' | 'isDark' | 'isLoading' | 'isChanged' | 'isExplode' | 'isSavedIn5min' | GraphStateProp
+
     interface BaseState {
         isDeleted: boolean; // 是否被删除;
         isSelf: boolean; // 是否是自己的内容
@@ -256,10 +252,9 @@ declare global {
     }
 
     interface GraphState extends BaseState {
-        isLoading: boolean;
-        isChanged: boolean;
-        SavedIn5Min: boolean; // 5分钟内是否保存
-        isExplode: boolean;
+        isChanged: boolean; // 是否变化
+        isSavedIn5min: boolean; // 5分钟内是否保存
+        isExplode: boolean; // 是否爆炸
     }
 
     //Graph
@@ -641,11 +636,19 @@ export class SettingPart {
         this.parent = parent;
     }
 
+    get _id() {
+        return this.Setting._id
+    }
+
     get _type() {
         return this.Setting._type
     }
 
-    updateState(prop: string | 'isSelected' | 'isDeleted', value?: boolean) {
+    get _label() {
+        return this.Setting._label
+    }
+
+    updateState(prop: AllStateProp, value?: boolean) {
         value || (value = !this.State[prop]);
         Vue.set(this.State, prop, value);
     }
@@ -848,7 +851,7 @@ export class GraphConf extends SettingPart {
 
     static emptyGraphSetting(_id: id, parent: GraphSelfPart | null) {
         let setting = graphSettingTemplate(_id);
-        let state = graphStateTemplate("isSelf", "isAdd");
+        let state = graphStateTemplate("isSelf");
         return new GraphConf(setting, state, parent);
     }
 }
@@ -861,10 +864,7 @@ export class GraphSelfPart {
     // 草稿保存
     draftId: number;
     // 图形尺寸
-    rect: {
-        height: number,
-        width: number
-    };
+    rect: RectObject;
     protected _baseNode: NodeSettingPart;
     get baseNode() {
         return this._baseNode
@@ -886,64 +886,52 @@ export class GraphSelfPart {
         return this.rootList ? this.rootList[0] : null;
     }
 
-    constructor(
-        graph: Graph,
-        setting: GraphConf,
-        baseNode: NodeSetting
-    ) {
-        this.draftId = -1; // 自动保存id
-        this.Conf = setting;
+    constructor(graph: Graph, conf: GraphConf, baseNode?: NodeSetting, draftId?: number, rect?: RectObject) {
+        // 自动保存id
+        draftId || (draftId = -1);
+        this.draftId = draftId;
+        // 设置
+        this.Conf = conf;
+        // Graph
         this.Graph = graph;
-        this.rect = {width: 600, height: 400};
-        if (GraphSelfPart.list === undefined) {
-            GraphSelfPart.list = [this]
-        } else {
-            GraphSelfPart.list.push(this)
-        }
+        // rect默认值
+        rect || (rect = {width: 600, height: 400});
+        this.rect = rect;
+        // 记录所有实例
+        pushInList(GraphSelfPart.list, this);
+        // baseNode
+        baseNode || (baseNode = nodeSettingTemplate(conf._id, conf._type, conf._label, 'NewDocument' + conf._id, ''));
         let state = nodeStateTemplate();
         this._baseNode = new NodeSettingPart(baseNode, state, this);
-    }
-
-    updateBaseNode(node: NodeSettingPart) {
-        this._baseNode = node
     }
 
     static emptyGraphSelfPart(_id: id, parent: GraphSelfPart | null) {
         let graph = emptyGraph();
         let setting = GraphConf.emptyGraphSetting(_id, parent);
-        let baseNode = nodeSettingTemplate(_id, 'document', 'DocGraph', 'NewDocument' + _id, '');
-        let graphSelf = new GraphSelfPart(graph, setting, baseNode);
+        let graphSelf = new GraphSelfPart(graph, setting);
         graphSelf.addItems([graphSelf.baseNode]);
-        return graphSelf
+        let info = NodeInfoPart.emptyNodeInfoPart(_id, 'document', 'DocGraph');
+        return {graph: graphSelf, info}
     }
 
     static resolveFromBackEnd(
         baseData: BackendGraph,
         parent: GraphSelfPart | null
     ) {
-        GraphSelfPart.baseList.push(baseData);
+        pushInList(GraphSelfPart.baseList, baseData);
         let args = [];
         getIsSelf(baseData.Base.Ctrl) && args.push("isSelf");
         let state = graphStateTemplate(...args);
         let setting = new GraphConf(baseData.Conf, state, parent);
-        let graph = {
-            nodes: [],
-            links: [],
-            medias: [],
-            svgs: [],
-            texts: []
-        } as Graph;
+        let graph = emptyGraph();
+        let baseNodeSetting = baseData.Graph.nodes.filter(setting => setting._id === baseData.Conf._id)[0];
         let result = new GraphSelfPart(
             graph,
             setting,
-            baseData.Graph.nodes.filter(setting => setting._id === baseData.Conf._id)[0]
+            baseNodeSetting
         );
         result.Graph.nodes = baseData.Graph.nodes.map(
-            setting => {
-                let node = new NodeSettingPart(setting, nodeStateTemplate(), result);
-                setting._id === result.id && (result.updateBaseNode(node));
-                return node
-            }
+            setting => new NodeSettingPart(setting, nodeStateTemplate(), result)
         );
         result.Graph.medias = baseData.Graph.medias.map(
             setting =>
@@ -976,18 +964,18 @@ export class GraphSelfPart {
         return result
     }
 
-    getSubItemById(_id: id, _type: GraphType) {
+    getSubItemById(_id: id, _type: GraphItemType) {
         let list = this.getItemListByName(_type);
         return list.filter(item => item.Setting._id === _id)[0]
     }
 
-    allItems(): AllItemSettingPart[] {
+    allItems(): GraphItemSettingPart[] {
         let {nodes, links, medias, svgs} = this.Graph;
         // @ts-ignore
         return nodes.concat(links).concat(medias).concat(svgs)
     }
 
-    addItems(items: AllItemSettingPart[]) {
+    addItems(items: GraphItemSettingPart[]) {
         items.filter(item => !this.checkExistByItem(item)).map(
             item => {
                 this.pushItem(item)
@@ -995,7 +983,7 @@ export class GraphSelfPart {
         )
     }
 
-    getItemListByName(name: GraphTypeS | GraphType): AllItemSettingPart[] {
+    getItemListByName(name: GraphTypeS | GraphItemType): GraphItemSettingPart[] {
         let itemList;
         if (isGraphType(name)) {
             name === 'media'
@@ -1013,16 +1001,16 @@ export class GraphSelfPart {
         return itemList
     }
 
-    checkExist(_id: id, _type: GraphType) {
+    checkExist(_id: id, _type: GraphItemType) {
         let itemList = this.getItemListByName(_type);
         return findItem(itemList, _id, _type).length > 0
     }
 
-    checkExistByItem(item: AllItemSettingPart) {
+    checkExistByItem(item: GraphItemSettingPart) {
         return this.checkExist(item.Setting._id, item._type)
     }
 
-    protected pushItem(item: AllItemSettingPart) {
+    protected pushItem(item: GraphItemSettingPart) {
         item.parent = this;
         isMediaSetting(item)
             ? this.Graph.medias.push(item)
@@ -1033,7 +1021,7 @@ export class GraphSelfPart {
                 : isLinkSetting(item) && this.Graph.links.push(item)
     }
 
-    getItemByState(name: GraphTypeS | GraphType, state: BaseStateKey) {
+    getItemByState(name: GraphTypeS | GraphItemType, state: BaseStateKey) {
         let list = this.getItemListByName(name);
         return list.filter(item => item.State[state])
     }
@@ -1047,43 +1035,48 @@ export class GraphSelfPart {
             .map(item => Vue.set(item.State, state, value));
     }
 
-    addEmptyNode(_type: 'node' | 'document', _label: string) {
+    addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex?: boolean) {
+        _label || (_label = 'BaseNode');
+        commitToVuex || (commitToVuex = true);
         let id = getIndex();
         let info = NodeInfoPart.emptyNodeInfoPart(id, _type, _label);
-        commitInfoAdd({item: info});
-        let userConcern = userConcernTemplate();
-        commitUserConcernAdd({_id: id, _type, userConcern});
         let setting = NodeSettingPart.emptyNodeSetting(id, _type, _label, 'NewNode' + id, '', this);
         setting.State.isSelf = true;
         this.addItems([setting]);
-        return setting
+        let payload = {setting, info};
+        commitToVuex && this.commitToVuex(payload);
+        return payload
     }
 
-    addEmptyLink(_start: VisNodeSettingPart, _end: VisNodeSettingPart) {
+    addEmptyLink(_start: VisNodeSettingPart, _end: VisNodeSettingPart, _label?: string, commitToVuex?: boolean) {
+        _label || (_label = 'Default');
+        commitToVuex || (commitToVuex = true);
         let id = getIndex();
         // info
-        let info = LinkInfoPart.emptyLinkInfo(id, "Default", _start, _end);
-        commitInfoAdd({item: info, strict: true});
-        // userConcern
-        let userConcern = userConcernTemplate();
-        commitUserConcernAdd({_id: id, _type: 'link', userConcern});
+        let info = LinkInfoPart.emptyLinkInfo(id, _label, _start, _end);
         // setting
-        let setting = LinkSettingPart.emptyLinkSetting(id, "Default", _start, _end, this);
+        let setting = LinkSettingPart.emptyLinkSetting(id, _label, _start, _end, this);
         setting.State.isSelf = true;
         this.addItems([setting]);
-        return setting;
+        let payload = {setting, info};
+        commitToVuex && this.commitToVuex(payload);
+        return payload
     }
 
     addSubGraph() {
         let id = getIndex();
-        let graph = GraphSelfPart.emptyGraphSelfPart(id, this);
-        let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
+        let {graph, info} = GraphSelfPart.emptyGraphSelfPart(id, this);
         this.addItems([graph.baseNode.deepCloneSelf()]);
-        commitGraphAdd({graph, strict: true});
-        commitInfoAdd({item: info, strict: true});
+        return {graph, info}
+    }
+
+    protected commitToVuex(payload: { setting: GraphItemSettingPart, info: InfoPart }) {
+        // commit过程
+        let {setting, info} = payload;
+        commitInfoAdd({item: info, strict: false});
         let userConcern = userConcernTemplate();
-        commitUserConcernAdd({_id: id, _type: 'document', userConcern});
-        return graph
+        commitUserConcernAdd({_id: setting._id, _type: setting._type, userConcern});
+        return setting
     }
 }
 
@@ -1097,17 +1090,17 @@ export const getIndex = () => {
     return '$_' + globalIndex
 }; // 获取新内容索引
 
-export const itemEqual = (itemA: { _id: id, _type: GraphType }, itemB: { _id: id, _type: GraphType }) =>
+export const itemEqual = (itemA: { _id: id, _type: GraphItemType }, itemB: { _id: id, _type: GraphItemType }) =>
     itemA._id === itemB._id && itemA._type === itemB._type; // 两个Item是否一样
 
-export const findItem = (list: Array<SettingPart>, _id: id, _type: GraphType) =>
+export const findItem = (list: Array<SettingPart>, _id: id, _type: GraphItemType) =>
     list.filter(
         item => item.Setting._id === _id && item.Setting._type === _type // 在一个List里找Item
     );
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");
 
-export const InfoToSetting = (payload: { id: id; type: GraphType; PrimaryLabel: string; }) =>
+export const InfoToSetting = (payload: { id: id; type: GraphItemType; PrimaryLabel: string; }) =>
     ({_id: payload.id, _type: payload.type, _label: payload.PrimaryLabel} as Setting);
 
 export const findRoot = (item: SettingPart) => {

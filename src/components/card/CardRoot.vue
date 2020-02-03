@@ -106,7 +106,7 @@
             currentItem: function (): NodeInfoPart | LinkInfoPart {
                 return this.dataManager.currentItem
             },
-            currentItemType: function (): GraphType {
+            currentItemType: function (): GraphItemType {
                 let _type = this.currentItem.type;
                 _type === 'document' && (_type = 'node');
                 return _type
