@@ -63,12 +63,14 @@
         </svg>
 
         <rect-container
-            v-for="(metaData, index) in activeGraphRectList"
-            :key="metaData.self.id"
+            @update-size="updateGraphSize(arguments[0], arguments[1], index)"
             :container="getSubGraphByRect(metaData.rect)"
-            v-show="metaData.self.Conf.State.isExplode"
+            :key="metaData.self.id"
+            always-border
             render-as-border
-            always-border>
+            expand-able
+            v-for="(metaData, index) in activeGraphRectList"
+            v-show="metaData.self.Conf.State.isExplode">
 
         </rect-container>
 
@@ -291,6 +293,9 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
+            userDataManager: function(): UserDataManagerState {
+                return this.$store.state.userDataManager
+            },
             state: function (): GraphState {
                 return this.graph.Conf.State
             },
@@ -407,10 +412,6 @@
                 return this.nodes.map(node => node.Setting._id)
             },
 
-            nodeLength: function (): number {
-                return this.nodes.length
-            },
-
             links: function (): LinkSettingPart[] {
                 let result: LinkSettingPart[] = [];
                 this.activeGraphList.map(graph => {
@@ -432,7 +433,7 @@
             },
 
             notes: function (): NoteSettingPart[] {
-                return this.graph.Graph.notes.filter(item => !item.State.isDeleted)
+                return this.userDataManager.userNoteInDoc[this.graph.id].filter(item => !item.State.isDeleted)
             },
 
             labelDict: function () {
@@ -448,9 +449,8 @@
                     'node': getLabels(this.nodes),
                     'link': getLabels(this.links),
                     'media': getLabels(this.medias),
-                    'note': getLabels(this.notes),
                     'document': ['DocGraph', 'DocPaper']
-                } as Record<BaseType, string[]>;
+                } as Record<GraphType, string[]>;
                 return labelDict
             },
 
@@ -733,7 +733,7 @@
             //框选
             selectItem(itemList: AllSettingPart[]) {
                 //选择
-                itemList.map(item => this.$set(item.State, 'isSelected', true));
+                itemList.map(item => item.updateState("isSelected", true));
                 //如果是单选就切换内容
                 if (itemList.length === 1) {
                     let item = itemList[0];
@@ -751,7 +751,7 @@
                 }
             },
 
-            selectLabel(_type: BaseType, _label: string) {
+            selectLabel(_type: GraphType, _label: string) {
                 let result = this.nodes.filter(node => node.Setting._label === _label);
                 this.selectItem(result)
             },
@@ -899,6 +899,20 @@
 
             getGraphMetaData: function (_id: id) {
                 return this.activeGraphMetaDataList.filter(meta => meta.self.id === _id)[0]
+            },
+
+            updateGraphSize: function (start: PointMixed, end: PointMixed, index: number) {
+                let graph = this.activeGraphRectList[index].self;
+                // 视觉上的更新尺寸start, end
+                let setting = graph.baseNode.Setting;
+                let scale = this.realScale;
+                // 更新起始点
+                setting.Base.x += start.x / (this.containerRect.width * scale);
+                setting.Base.y += start.y / (this.containerRect.height * scale);
+                //更新长宽
+                let delta = getPoint(end).decrease(start).divide(this.realScale);
+                graph.rect.width += delta.x;
+                graph.rect.height += delta.y;
             }
         },
 

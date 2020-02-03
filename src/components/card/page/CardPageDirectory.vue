@@ -57,7 +57,7 @@
 
     interface DirectoryItem {
         id: id,
-        type: BaseType,
+        type: GraphType,
         label: string,
         name: string,
         icon: string,

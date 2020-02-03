@@ -48,7 +48,7 @@
                 required: true
             },
             compType: {
-                type: String as () => BaseType,
+                type: String as () => GraphType,
                 required: true
             }
         },

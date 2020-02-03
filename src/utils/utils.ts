@@ -170,7 +170,7 @@ export function fileCheck(file: File, size?: number, formats?: string[], filePoo
     return rules.map(rule => rule()).filter(result => result !== '')
 }
 
-export function getInfoPart(_id: id, _type: BaseType, dataManager: DataManagerState) {
+export function getInfoPart(_id: id, _type: GraphType, dataManager: DataManagerState) {
     let manager;
     _type === 'link'
         ? manager = dataManager.linkManager
@@ -272,4 +272,14 @@ export const sortByIsStar = (a: UserConcern, b: UserConcern) => {
 export const currentTime = () => {
     let time = new Date();
     return time.getTime();
+};
+
+export const emptyGraph = () => {
+    return {
+        nodes: [],
+        links: [],
+        medias: [],
+        texts: [],
+        svgs: []
+    } as Graph
 };

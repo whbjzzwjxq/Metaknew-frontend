@@ -1,13 +1,15 @@
 import {FragmentInfoPart} from "@/utils/userConcern";
 import {Commit} from "vuex";
 import Vue from 'vue';
+import {NoteSettingPart} from "@/utils/graphClass";
 
 declare global {
     interface UserDataManagerState {
-        userConcernDict: Record<BaseType, Record<id, UserConcern>>,
+        userConcernDict: Record<ItemType, Record<id, UserConcern>>,
         fragments: Array<FragmentInfoPart>,
         userSetting: Record<string, Record<string, any>>,
-        userNotes: NoteBook[]
+        userNoteBook: NoteBook[],
+        userNoteInDoc: Record<id, NoteSettingPart[]>
     }
 }
 
@@ -28,32 +30,41 @@ const state: UserDataManagerState = {
         node: {},
         link: {},
         media: {},
-        document: {},
-        note: {},
-        fragment: {} // 不使用
+        document: {}
     },
     fragments: [],
     userSetting: {
         fragmentCollect: {}
     },
-    userNotes: []
+    userNoteBook: [],
+    userNoteInDoc: {
+
+    }
 };
 
 const mutations = {
-    userConcernAdd(state: UserDataManagerState, payload: { _id: id, _type: BaseType, userConcern: UserConcern }) {
+    //todo 改写成为queue list
+    userConcernAdd(state: UserDataManagerState, payload: { _id: id, _type: ItemType, userConcern: UserConcern }) {
         let {_id, _type, userConcern} = payload;
         Vue.set(state.userConcernDict[_type], _id, userConcern)
     },
 
     noteBookAdd(state: UserDataManagerState, payload: { note: NoteBook }) {
         let {note} = payload;
-        state.userNotes.push(note)
+        state.userNoteBook.push(note)
     },
 
     noteBookRemove(state: UserDataManagerState, payload: { note: NoteBook }) {
         let {note} = payload;
-        let index = state.userNotes.indexOf(note);
-        state.userNotes.splice(index, 1);
+        let index = state.userNoteBook.indexOf(note);
+        state.userNoteBook.splice(index, 1);
+    },
+
+    noteInDocAdd(state: UserDataManagerState, payload: {_id: id, note: NoteSettingPart}) {
+        let {_id, note} = payload;
+        state.userNoteInDoc[_id]
+            ? state.userNoteInDoc[_id].push(note)
+            : state.userNoteInDoc[_id] = [note]
     }
 };
 

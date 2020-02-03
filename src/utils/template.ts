@@ -639,20 +639,64 @@ const noteSetting: SettingConf = {
     }
 };
 
-const pathSetting: SettingConf = {};
+const svgSetting: SettingConf = {
+    Base: {
+        size: {
+            type: 'Number',
+            default: 300,
+            range: [300, 600],
+            tips: '如果为0则会根据综合指标体现大小',
+            required: null,
+            explain: '节点可视化尺寸'
+        },
+        scaleX: {
+            type: 'Number',
+            default: 1,
+            range: [0.2, 5],
+            tips: '',
+            required: null,
+            explain: '宽度与高度之比'
+        },
+        x: {
+            type: 'Number',
+            default: 0.3,
+            range: [0, 1],
+            tips: '',
+            required: null,
+            explain: '节点横向坐标'
+        },
+        y: {
+            type: 'Number',
+            default: 0.3,
+            range: [0, 1],
+            tips: '',
+            required: null,
+            explain: '节点纵向坐标'
+        },
+    }
 
-const fragmentSetting: SettingConf = {};
+};
 
-export const typeSetting: Record<BaseType, SettingConf> = {
+const textSetting = {
+
+};
+
+const fragmentSetting = {
+
+};
+
+export const typeSetting: Record<SourceType, SettingConf> = {
     'node': nodeSetting,
     'link': linkSetting,
     'document': documentSetting,
     'media': mediaSetting,
+    'text': textSetting,
+    'svg': svgSetting,
     'note': noteSetting,
     'fragment': fragmentSetting
 };
 
-export function settingTemplate(_type: BaseType) {
+export function settingTemplate(_type: SourceType) {
     let settingConf = typeSetting[_type];
     const specialDict: { [prop: string]: any } = {
         'x': randomNumberInRange(0.3, 0.7),

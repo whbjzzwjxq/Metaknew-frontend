@@ -9,7 +9,7 @@ export interface SearchQueryObject {
 
 export interface IndexedInfo {
     id: id,
-    type: BaseType,
+    type: GraphType,
     PrimaryLabel: string,
     Language: string,
     CreateUser: number,
@@ -38,7 +38,7 @@ export interface IndexedInfo {
 
 export interface IndexedText {
     id: id,
-    type: BaseType,
+    type: GraphType,
     PrimaryLabel: string,
     Language: string,
     Name: string,

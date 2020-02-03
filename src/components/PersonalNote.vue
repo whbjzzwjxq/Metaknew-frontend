@@ -155,7 +155,7 @@
                 return this.$store.getters.noteBookMarkDown
             },
             noteBooks: function (): NoteBook[] {
-                return this.userDataManager.userNotes
+                return this.userDataManager.userNoteBook
             },
             reConcatNotes: function (): NoteBook[] {
                 return this.showedNotes.concat(this.moreNotes)

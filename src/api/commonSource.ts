@@ -4,7 +4,7 @@ import {FlatNodeInfo} from "@/utils/interfaceInComponent";
 
 export interface SourceQueryObject {
     _id: id;
-    _type: BaseType;
+    _type: GraphType;
     _label: string;
 } // 用于Query
 
@@ -37,7 +37,8 @@ export interface BackendGraph {
         nodes: Array<NodeSetting>;
         links: Array<compressLinkSetting>;
         medias: Array<MediaSetting>;
-        notes: Array<NoteSetting>;
+        texts: Array<TextSetting>;
+        svgs: Array<SvgSetting>;
     };
     Conf: GraphSetting;
     Path: Array<Object>;

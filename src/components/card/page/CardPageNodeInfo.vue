@@ -222,7 +222,7 @@
                 return this.$store.state.dataManager
             },
 
-            type: function (): BaseType {
+            type: function (): GraphType {
                 return this.info.type
             },
 

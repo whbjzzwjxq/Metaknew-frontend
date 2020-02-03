@@ -103,10 +103,10 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            currentItem: function (): NodeInfoPart | LinkInfoPart | MediaInfoPart {
+            currentItem: function (): NodeInfoPart | LinkInfoPart {
                 return this.dataManager.currentItem
             },
-            currentItemType: function (): BaseType {
+            currentItemType: function (): GraphType {
                 let _type = this.currentItem.type;
                 _type === 'document' && (_type = 'node');
                 return _type

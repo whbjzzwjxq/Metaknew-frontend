@@ -126,7 +126,11 @@
                     if (['w', 'e'].includes(this.borderType)) {
                         delta.y = 0
                     }
-                    this.$emit('update-size', delta, this.borderType);
+                    if (['e', 'ne', 'se', 's'].includes(this.borderType)) {
+                        this.$emit('update-size', {x: 0, y: 0}, delta);
+                    } else {
+                        this.$emit('update-size', delta, {x: 0, y: 0});
+                    }
                 }
             },
 
