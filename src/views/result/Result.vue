@@ -3,7 +3,6 @@
         v-if="!loading"
         fluid
         fill-height
-        v-resize="onResize"
         class="d-flex flex-row ma-0 pa-0">
         <card-root
             :document="graph">
@@ -45,11 +44,7 @@
                 return this.dataManager.currentGraph
             },
         },
-        methods: {
-            onResize() {
-                commitScreenResize()
-            }
-        },
+        methods: {},
         watch: {},
         created(): void {
             if (this.graph._id === '$_-1') {
@@ -62,9 +57,7 @@
                 this.loading = false
             }
         },
-        mounted() {
-            this.onResize()
-        },
+        mounted(): void {},
         record: {
             status: 'done',
             description: '结果页整体框架'

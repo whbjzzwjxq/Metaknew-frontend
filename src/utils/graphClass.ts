@@ -25,7 +25,6 @@ import {
     commitGraphAdd,
     commitInfoAdd,
     commitNoteInDocAdd,
-    commitNoteInDocInit,
     commitUserConcernAdd
 } from "@/store/modules/_mutations";
 
@@ -207,13 +206,18 @@ declare global {
         Base: BaseSize;
     }
 
+    type SvgLabel = ''
+
     interface SvgSetting extends GraphItemSetting {
         _type: 'svg';
-
+        _label: ''
     }
 
     interface TextSetting extends GraphItemSetting {
-        _type: 'text'
+        _type: 'text';
+        _label: 'text';
+        Base: BaseSize;
+        Text: Record<string, any>
     }
 
     type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
@@ -1077,7 +1081,7 @@ export class GraphSelfPart {
         commitToVuex === undefined && (commitToVuex = true);
         let _id = getIndex();
         let note = NoteSettingPart.emptyNoteSetting(_id, 'note', '', '', this);
-        commitToVuex && commitNoteInDocAdd({_id: this._id, note});
+        commitToVuex && commitNoteInDocAdd({note});
         return note
     }
 
@@ -1106,7 +1110,6 @@ export class GraphSelfPart {
         let {graph, info} = payload;
         this.commitItemToVuex({setting: graph.baseNode, info});
         commitGraphAdd({graph});
-        commitNoteInDocInit({_id: graph._id});
     }
 }
 

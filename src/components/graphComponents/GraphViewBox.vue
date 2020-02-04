@@ -107,10 +107,10 @@
         </graph-media>
 
         <graph-note
-            v-for="(note, index) in notes"
+            v-for="(note, index) in activeNotes"
             :note="note"
             :container="viewBox"
-            :key="note.Setting._id"
+            :key="note._id"
         >
 
         </graph-note>
@@ -433,7 +433,11 @@
             },
 
             notes: function (): NoteSettingPart[] {
-                return this.userDataManager.userNoteInDoc[this.graph._id].filter(item => !item.State.isDeleted)
+                return this.userDataManager.userNoteInDoc
+            },
+
+            activeNotes: function(): NoteSettingPart[] {
+                return this.notes.filter(item => !item.State.isDeleted && item.parent._id === this.graph._id)
             },
 
             labelDict: function () {

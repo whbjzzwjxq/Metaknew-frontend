@@ -116,14 +116,12 @@
     import {commitNoteBookAdd, commitNoteBookRemove} from "@/store/modules/_mutations";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import TimeRender from "@/components/TimeRender.vue";
-    import MarkdownViewer from "@/components/media/MarkdownViewer.vue";
     export default Vue.extend({
         name: "PersonalNote",
         components: {
             IconGroup,
             FieldTitle,
-            TimeRender,
-            MarkdownViewer
+            TimeRender
         },
         data: function () {
             return {
@@ -281,7 +279,7 @@
             },
 
             addNoteToDocument: function () {
-                this.$emit('add-note-to-graph')
+                this.$emit('add-empty-note')
             },
 
             save: function () {

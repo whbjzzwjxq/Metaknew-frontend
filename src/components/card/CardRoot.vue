@@ -1,5 +1,5 @@
 <template>
-    <div :style="totalCardStyle">
+    <v-card :style="totalCardStyle" tile elevation="2">
         <v-tabs v-model="rootTab" fixed-tabs>
             <v-tabs-slider color="todo"></v-tabs-slider>
             <v-tab v-for="value in rootTabList" :key="value.key" class="pa-0">
@@ -60,10 +60,10 @@
                 </v-tabs-items>
             </v-tab-item>
         </v-tabs-items>
-        <v-card :height="bottomHeight" flat tile outlined>
+        <v-card :height="bottomHeight" flat tile color="grey lighten-5">
             <item-sharer :item-info="documentInfo"></item-sharer>
         </v-card>
-    </div>
+    </v-card>
 </template>
 
 <script lang="ts">
@@ -77,6 +77,7 @@
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
     import CardPageLinkInfo from "@/components/card/page/CardPageLinkInfo.vue";
+    import {ToolBar} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
         name: "CardRoot",
@@ -117,15 +118,13 @@
             allComponentSize: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            toolBar: function (): ComponentSize {
+            toolBar: function (): ToolBar {
                 return this.allComponentSize.toolBar
             },
             totalCardStyle: function (): CSSProp {
                 return {
                     width: this.allComponentSize.leftCard.width + 'px',
                     height: this.allComponentSize.leftCard.height + 'px',
-                    backgroundColor: "white",
-                    zIndex: 1,
                     overflowY: "hidden",
                     overflowX: "hidden"
                 }

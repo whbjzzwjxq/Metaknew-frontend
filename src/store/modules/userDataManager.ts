@@ -9,7 +9,7 @@ declare global {
         fragments: Array<FragmentInfoPart>,
         userSetting: Record<string, Record<string, any>>,
         userNoteBook: NoteBook[],
-        userNoteInDoc: Record<id, NoteSettingPart[]>
+        userNoteInDoc: NoteSettingPart[]
     }
 }
 
@@ -37,9 +37,7 @@ const state: UserDataManagerState = {
         fragmentCollect: {}
     },
     userNoteBook: [],
-    userNoteInDoc: {
-
-    }
+    userNoteInDoc: []
 };
 
 const mutations = {
@@ -60,17 +58,10 @@ const mutations = {
         state.userNoteBook.splice(index, 1);
     },
 
-    noteInDocAdd(state: UserDataManagerState, payload: {_id: id, note: NoteSettingPart}) {
-        let {_id, note} = payload;
-        state.userNoteInDoc[_id]
-            ? state.userNoteInDoc[_id].push(note)
-            : state.userNoteInDoc[_id] = [note]
+    noteInDocAdd(state: UserDataManagerState, payload: {note: NoteSettingPart}) {
+        let {note} = payload;
+        state.userNoteInDoc.push(note)
     },
-
-    noteInDocInit(state: UserDataManagerState, payload: {_id: id}) {
-        let {_id} = payload;
-        state.userNoteInDoc[_id] = []
-    }
 };
 
 const actions = {

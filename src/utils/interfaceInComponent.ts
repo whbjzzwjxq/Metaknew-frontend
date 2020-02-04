@@ -1,5 +1,6 @@
 import {GraphSelfPart} from "@/utils/graphClass";
 import {Point, RectByPoint} from "@/utils/geoMetric";
+import {IndexedInfo, IndexedText} from "@/api/search";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -50,3 +51,30 @@ export interface FlatNodeInfo extends BaseInfo {
 }
 
 export type SortProp = 'UpdateTime' | 'isStar' | 'PrimaryLabel' // 排序方式
+
+// SearchBar
+
+export interface ListInfoItem extends IndexedInfo {
+    isTitle: boolean,
+    isInfo: boolean,
+    disabled: boolean
+}
+
+export interface ListTextItem extends IndexedText {
+    isTitle: boolean,
+    isInfo: boolean,
+    disabled: boolean
+}
+
+export interface ListTitle {
+    isTitle: boolean,
+    isInfo: boolean,
+    isCollapse: boolean,
+    length: number,
+    name: string,
+    disabled: boolean
+}
+
+export type ListItem = AvailableListItem | ListTitle
+export type AvailableListItem = ListInfoItem | ListTextItem
+export type ArrayListItem = ListItem[]

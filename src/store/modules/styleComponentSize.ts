@@ -42,7 +42,7 @@ interface BottomBar extends ComponentSize {
     height: number,
 }
 
-interface ToolBar extends ComponentSize {
+export interface ToolBar extends ComponentSize {
     width: string
     height: number,
 }

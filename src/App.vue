@@ -1,30 +1,30 @@
 <template>
-    <v-app id="page">
+    <v-app id="page" v-resize="screenResize">
         <v-content class="d-flex flex-nowrap">
-            <div style="width: 100%; position: absolute; left: 0; top: 0; z-index: 2">
-                <v-toolbar tile color="white" :height="toolBar.height + 'px'">
-                    <div :style="toolbarSpaceStyle">
-                        <p class="font-weight-bold" style="text-align: justify; text-justify: auto; font-size: x-large">
-                            META-KNEW</p>
+            <v-card :style="toolBarStyle">
+                <div :style="toolbarLeftStyle">
+                    <p class="font-weight-bold pl-4 ma-0">META-KNEW</p>
+                </div>
+                <div :style="toolbarMidStyle">
+                    <search-bar edit-mode v-if="toolBarSearch">
+
+                    </search-bar>
+                </div>
+                <div :style="toolbarRightStyle">
+                    <div class="pt-2">
+                    <v-btn text href="/index">Home</v-btn>
+                    <v-btn text href="/index/about">About</v-btn>
+                    <template v-if="isLogin">
+                        <v-btn text href="/index/userCenter">{{userName}}</v-btn>
+                        <v-btn text @click="logout">Sign Out</v-btn>
+                    </template>
+                    <template v-else>
+                        <v-btn text href="/index/login">Sign in</v-btn>
+                        <v-btn text href="/index/register">Sign up</v-btn>
+                    </template>
                     </div>
-                    <v-toolbar-items>
-                        <search-bar edit-mode class="mt-n2 pl-4" v-if="toolBarSearch"></search-bar>
-                    </v-toolbar-items>
-                    <v-spacer></v-spacer>
-                    <v-toolbar-items class="hidden-sm-and-down">
-                        <v-btn text href="/index">Home</v-btn>
-                        <v-btn text href="/index/about">About</v-btn>
-                        <template v-if="isLogin">
-                            <v-btn text href="/index/userCenter">{{userName}}</v-btn>
-                            <v-btn text @click="logout">Sign Out</v-btn>
-                        </template>
-                        <template v-else>
-                            <v-btn text href="/index/login">Sign in</v-btn>
-                            <v-btn text href="/index/register">Sign up</v-btn>
-                        </template>
-                    </v-toolbar-items>
-                </v-toolbar>
-            </div>
+                </div>
+            </v-card>
             <div :style="spaceStyle"></div>
             <v-container fluid
                          class="view-container flex-nowrap ma-0 pa-0"
@@ -44,13 +44,16 @@
     import SearchBar from '@/components/SearchBar.vue';
     import {delCookie, getCookie} from "@/utils/utils"
     import {commitLoginOut, commitScreenResize, commitUserLogin} from '@/store/modules/_mutations'
-    import {FileToken} from "@/api/user"
+    import {ToolBar} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
         name: "App",
         components: {GlobalSnackBar, SearchBar},
         data() {
-            return {}
+            return {
+                buttonNum: 5,
+                rightWidth: 480
+            }
         },
         props: {},
         computed: {
@@ -66,25 +69,59 @@
             allComponentSize: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            toolBar: function () {
+            toolBar: function (): ToolBar {
                 return this.allComponentSize.toolBar
             },
-            spaceStyle(): ComponentSize {
+            toolBarStyle: function(): CSSProp {
+                return {
+                    width: '100%',
+                    height: this.toolBar.height + 'px',
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    zIndex: 2,
+                }
+            },
+            spaceStyle: function(): CSSProp {
                 return {
                     height: this.toolBar.height + 'px',
                     width: '100%'
                 }
             },
-            contentStyle(): ComponentSize {
+            contentStyle: function(): CSSProp {
                 return {
-                    "width": "100%",
-                    "height": this.allComponentSize.screenY - this.toolBar.height + "px"
+                    width: "100%",
+                    height: this.allComponentSize.screenY - this.toolBar.height + "px"
                 }
             },
-            toolbarSpaceStyle(): ComponentSize {
+            toolbarLeftStyle: function(): CSSProp {
                 return {
                     height: this.toolBar.height + 'px',
-                    width: this.allComponentSize.leftCard.width + 'px'
+                    width: this.allComponentSize.leftCard.width + 'px',
+                    textAlign: "start",
+                    textJustify: "auto",
+                    display: "inline-block",
+                    verticalAlign: "top",
+                    fontSize: Math.floor(this.toolBar.height / 1.5) + 'px'
+                }
+            },
+
+            toolbarRightStyle: function(): CSSProp {
+                return {
+                    height: this.toolBar.height + 'px',
+                    width: this.rightWidth + 'px',
+                    display: "inline-block",
+                    verticalAlign: "top",
+                    textAlign: "right",
+                }
+            },
+
+            toolbarMidStyle: function(): CSSProp {
+                return {
+                    height: this.toolBar.height + 'px',
+                    width: (this.allComponentSize.screenX - this.rightWidth - this.allComponentSize.leftCard.width) + 'px',
+                    display: "inline-block",
+                    verticalAlign: "top"
                 }
             }
 

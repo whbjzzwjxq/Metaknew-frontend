@@ -95,10 +95,6 @@ export const commitNoteBookRemove = (payload: { note: NoteBook }) => {
     return store.commit('noteBookRemove', payload)
 };
 
-export const commitNoteInDocAdd = (payload: { _id: id, note: NoteSettingPart }) => {
+export const commitNoteInDocAdd = (payload: {note: NoteSettingPart }) => {
     return store.commit('noteInDocAdd', payload)
-};
-
-export const commitNoteInDocInit = (payload: { _id: id }) => {
-    return store.commit('noteInDocInit', payload)
 };

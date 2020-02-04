@@ -64,18 +64,10 @@
     import Vue from 'vue'
     import {RectByPoint} from "@/utils/geoMetric";
     import {
-        getIndex,
         GraphSelfPart,
-        NodeInfoPart,
-        MediaSettingPart, NoteSettingPart
+        MediaSettingPart,
     } from "@/utils/graphClass";
-    import {
-        commitBottomDynamicBarResize,
-        commitGraphAdd,
-        commitGraphChange,
-        commitInfoAdd, commitNoteInDocAdd,
-        commitRootGraph, commitUserConcernAdd
-    } from "@/store/modules/_mutations";
+    import {commitBottomDynamicBarResize} from "@/store/modules/_mutations";
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
     import PathDrawer from "@/components/path/PathDrawer.vue";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
@@ -84,7 +76,6 @@
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
-    import {userConcernTemplate} from "@/utils/template";
 
     export default Vue.extend({
         name: "ResultDocGraph",

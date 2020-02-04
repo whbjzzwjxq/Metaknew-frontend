@@ -4,21 +4,21 @@
             <v-container fluid class="d-flex flex-column pa-0 ma-0">
                 <div :style="toolBarStyle">
                     <v-toolbar
-                        @mousedown.stop="dragStart"
-                        @mousemove.stop="drag"
-                        @mouseup.stop="dragEnd"
-                        @mouseleave.stop="mouseLeave"
-                        @mouseenter.stop="mouseEnter"
-                        height="18px"
-                        flat
-                        :dark="!isDark"
-                        color="#EEEEEE"
-                        tile>
+                            @mousedown.stop="dragStart"
+                            @mousemove.stop="drag"
+                            @mouseup.stop="dragEnd"
+                            @mouseleave.stop="mouseLeave"
+                            @mouseenter.stop="mouseEnter"
+                            height="18px"
+                            flat
+                            :dark="!isDark"
+                            color="#EEEEEE"
+                            tile>
                         <v-toolbar-title></v-toolbar-title>
                         <div class="flex-grow-1"></div>
                         <icon-group
-                            x-small
-                            :icon-list="iconList">
+                                x-small
+                                :icon-list="iconList">
 
                         </icon-group>
                     </v-toolbar>
@@ -26,13 +26,13 @@
                 <div v-show="isCollapsed" :style="fieldStyle">
                     <v-container fluid class="d-flex pa-2">
                         <v-textarea
-                            v-model="content"
-                            :disabled="!isEditing"
-                            :placeholder="'tips: '+ currentTip"
-                            :dark="isDark"
-                            row-height="16px"
-                            class="pa-0 ma-0 unselected"
-                            auto-grow>
+                                v-model="content"
+                                :disabled="!isEditing"
+                                :placeholder="'tips: '+ currentTip"
+                                :dark="isDark"
+                                row-height="16px"
+                                class="pa-0 ma-0 unselected"
+                                auto-grow>
 
                         </v-textarea>
                     </v-container>
@@ -163,12 +163,12 @@
                     {
                         name: getIcon('i-edit-able', !vm.isLock),
                         _func: vm.edit,
-                        color: vm.isEditing ? 'success' : 'default'
+                        color: vm.isEditing ? 'success' : undefined
                     },
                     {
                         name: getIcon('i-is-locked', !vm.isLock),
                         _func: vm.lock,
-                        color: vm.isLock ? 'red darken-1' : 'default'
+                        color: vm.isLock ? 'red darken-1' : undefined
                     },
                     {name: getIcon('i-delete-able', true), _func: vm.deleteNote},
                     {name: getIcon('i-is-dark', vm.isDark), _func: vm.dark},
@@ -185,17 +185,17 @@
                 this.isCollapsed = !this.isCollapsed
             },
 
-            dark: function () {
+            dark() {
                 this.note.updateState('isDark')
             },
 
-            lock: function () {
+            lock() {
                 this.note.updateState('isLock');
                 this.isDragging = false
             },
 
             edit() {
-                this.note.updateState('isEditing', !this.isEditing);
+                this.note.updateState('isEditing')
             },
 
             reloadTip() {
@@ -318,6 +318,5 @@
 </script>
 
 <style scoped>
-    @import '../../../src/style/css/unselected.css';
 
 </style>

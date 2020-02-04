@@ -44,7 +44,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         autoSave: '',
         close: 'mdi-close',
         share: 'mdi-share-variant',
-        search: 'mdi-magnify'
+        search: 'mdi-magnify',
+        add: 'mdi-plus'
     },
     'i-delete-able': {
         true: 'mdi-delete',
