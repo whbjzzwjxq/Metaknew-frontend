@@ -31,19 +31,19 @@
             getSnackBarState: function (): SnackBarState {
                 return this.$store.state.componentSnackBar
             },
-            snackBarOn: function () {
+            snackBarOn: function (): boolean {
                 return this.getSnackBarState.on
             },
-            snackText: function () {
+            snackText: function (): string {
                 return this.getSnackBarState.payload.content
             },
-            buttonText: function () {
+            buttonText: function (): string | undefined {
                 return this.getSnackBarState.payload.buttonText
             },
-            timeout: function () {
+            timeout: function (): number | undefined {
                 return this.getSnackBarState.payload.timeout
             },
-            snackColor: function () {
+            snackColor: function (): string {
                 return this.getSnackBarState.payload.color
             }
         },
