@@ -92,8 +92,8 @@
             addMediaToNode: function (mediaIdList: id[]) {
                 if (this.baseData.isRemote) {
                     let node = {
-                        '_id': this.baseData.Info.id,
-                        '_type': this.baseData.Info.type,
+                        '_id': this.baseData._id,
+                        '_type': this.baseData.type,
                         '_label': this.baseData.Info.PrimaryLabel,
                     } as SourceQueryObject;
                     mediaAppendToNode(node, mediaIdList).then(res => {

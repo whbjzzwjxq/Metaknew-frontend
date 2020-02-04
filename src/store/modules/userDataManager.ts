@@ -65,6 +65,11 @@ const mutations = {
         state.userNoteInDoc[_id]
             ? state.userNoteInDoc[_id].push(note)
             : state.userNoteInDoc[_id] = [note]
+    },
+
+    noteInDocInit(state: UserDataManagerState, payload: {_id: id}) {
+        let {_id} = payload;
+        state.userNoteInDoc[_id] = []
     }
 };
 

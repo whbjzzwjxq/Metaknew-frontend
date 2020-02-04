@@ -19,7 +19,7 @@
         <template v-if="editMode" v-slot:append="{ item }">
             <template>
                 <v-btn
-                    v-if="item.id === dataManager.currentGraph.id"
+                    v-if="item.id === dataManager.currentGraph._id"
                     style="font-weight: bolder;"
                     color="#42b983"
                     x-small
@@ -112,7 +112,7 @@
 
             // 控制buildStructure
             activeDocumentIdList: function (): id[] {
-                return this.activeDocumentList.map(document => document.id)
+                return this.activeDocumentList.map(document => document._id)
             },
 
             //包含自身
@@ -124,7 +124,7 @@
             allDocToItemDict: function (): Record<id, DirectoryItem[]> {
                 let result: Record<id, DirectoryItem[]> = {};
                 this.documents.map(document => {
-                    result[document.id] = this.getDocumentChildList(document)
+                    result[document._id] = this.getDocumentChildList(document)
                 });
                 return result
             },
@@ -184,7 +184,7 @@
                 let tree: DirectoryItemDocument[] = [];
                 let max = 0;
                 this.documents.map(document => {
-                    docItemDict[document.id] = this.documentToItem(document);
+                    docItemDict[document._id] = this.documentToItem(document);
                     let layer = document.rootList.length;
                     docLayerDict[layer] || (docLayerDict[layer] = []);
                     docLayerDict[layer].push(document);
@@ -194,9 +194,9 @@
                     let docList = docLayerDict[i];
                     if (docList) {
                         docList.map(doc => {
-                            let childItem = docItemDict[doc.id];
+                            let childItem = docItemDict[doc._id];
                             if (doc.Conf.parent) {
-                                let parentItem = docItemDict[doc.Conf.parent.id];
+                                let parentItem = docItemDict[doc.Conf.parent._id];
                                 parentItem.children.push(childItem);
                                 parentItem.childDoc.push(childItem)
                             } else {
@@ -228,8 +228,8 @@
                 icon: getIcon('i-item', 'node'),
                 deletable: node.parent.Conf.State.isSelf,
                 editable: node.State.isSelf,
-                parent: node.parent.id,
-                children: node.Setting._type === 'document' && node.Setting._id !== node.parent.id ? [] : undefined
+                parent: node.parent._id,
+                children: node.Setting._type === 'document' && node.Setting._id !== node.parent._id ? [] : undefined
             }) as DirectoryItem,
 
             linkToItem: (link: LinkSettingPart) => ({
@@ -240,7 +240,7 @@
                 name: link.Setting._start.Setting._name + ' --> ' + link.Setting._end.Setting._name,
                 deletable: link.parent.Conf.State.isSelf,
                 editable: link.State.isSelf,
-                parent: link.parent.id
+                parent: link.parent._id
             }) as DirectoryItem,
 
             mediaToItem: (media: MediaSettingPart) => ({
@@ -251,12 +251,12 @@
                 icon: getIcon("i-media-type", media.Setting._label),
                 deletable: media.parent.Conf.State.isSelf,
                 editable: false,
-                parent: media.parent.id
+                parent: media.parent._id
             }) as DirectoryItem,
 
             documentToItem: function (document: GraphSelfPart) {
                 return {
-                    id: document.id,
+                    id: document._id,
                     type: 'document',
                     label: document.baseNode.Setting._label,
                     name: document.baseNode.Setting._name,
@@ -264,7 +264,7 @@
                     deletable: false,
                     editable: document.Conf.State.isSelf,
                     children: [], // 注意这里的children是空的
-                    parent: document.Conf.parent ? document.Conf.parent.id : '$_-1', // 注意这里对rootGraph的parent进行了一个假设
+                    parent: document.Conf.parent ? document.Conf.parent._id : '$_-1', // 注意这里对rootGraph的parent进行了一个假设
                     childDoc: []
                 } as DirectoryItemDocument;
             },
@@ -363,7 +363,7 @@
             getDocumentChildList(document: GraphSelfPart): DirectoryItem[] {
                 let nodes = document.Graph.nodes.filter(item => !item.State.isDeleted)
                     .map(node => this.nodeToItem(node))
-                    .filter(item => item.id !== document.id);
+                    .filter(item => item.id !== document._id);
 
                 let links = document.Graph.links.filter(item => !item.State.isDeleted)
                     .map(link => this.linkToItem(link));

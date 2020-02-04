@@ -165,7 +165,7 @@
                     {name: getIcon('i-edit', 'search'), _func: this.search},
                     {name: getIcon('i-note-type', 'addNote'), _func: this.addNote},
                     {name: getIcon('i-edit', 'save'), _func: this.save},
-                    {name: getIcon('i-arrow-double', 'right'), _func: this.addNoteToGraph, toolTip: '添加一个便签到图形内'}
+                    {name: getIcon('i-arrow-double', 'right'), _func: this.addNoteToDocument, toolTip: '添加一个便签到图形内'}
                 ]
             },
             noteIconList: function (): IconItem[] {
@@ -280,7 +280,7 @@
                 this.currentNote.$IsMarkdown = !this.isMarkdown
             },
 
-            addNoteToGraph: function () {
+            addNoteToDocument: function () {
                 this.$emit('add-note-to-graph')
             },
 

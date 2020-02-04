@@ -46,7 +46,7 @@ export class FragmentInfoPart extends InfoPart {
             id,
             type: 'fragment',
             PrimaryLabel: isMediaInfoPart(itemInfo) ? 'image' : 'text',
-            Name: itemInfo.Info.Name === '' ? itemInfo.Info.Name : 'NewFragment From ' + itemInfo.type + itemInfo.id,
+            Name: itemInfo.Info.Name === '' ? itemInfo.Info.Name : 'NewFragment From ' + itemInfo.type + itemInfo._id,
             Labels: itemInfo.Info.Labels,
             Src: isMediaInfoPart(itemInfo) ? itemInfo.Ctrl.Thumb : '',
             Description: itemInfo.Info.Description
@@ -56,8 +56,8 @@ export class FragmentInfoPart extends InfoPart {
             $IsLinked: true,
             CreateType: 'System-' + method,
             CreateUser: getCookie('user_id'),
-            SourceId: itemInfo.Info.id,
-            SourceType: itemInfo.Info.type,
+            SourceId: itemInfo._id,
+            SourceType: itemInfo.type,
             SourceLabel: itemInfo.Info.PrimaryLabel,
         } as FragmentCtrl;
 

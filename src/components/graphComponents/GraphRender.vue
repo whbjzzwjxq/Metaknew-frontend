@@ -492,7 +492,7 @@
                 if (graph === undefined) {
                     this.$store.dispatch('graphQuery', {
                         _id,
-                        parent: this.document.id,
+                        parent: this.document._id,
                     }).then(() => {
                         let graph = this.dataManager.graphManager[_id];
                         this.$set(graph.Conf.State, 'isExplode', true)
@@ -506,7 +506,7 @@
                     } else {
                         let index = 0;
                         nodes.map(item => {
-                            if (item.Setting._id === graph.id) {
+                            if (item.Setting._id === graph._id) {
                                 index = nodes.indexOf(item)
                             }
                         });

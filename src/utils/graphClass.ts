@@ -21,7 +21,13 @@ import {isGraphType, isLinkSetting, isMediaSetting, isNodeSetting, isSvgSetting}
 import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
 import {BackendGraph} from "@/api/commonSource";
 import {PathLinkSettingPart, PathNodeSettingPart} from "@/utils/pathClass";
-import {commitInfoAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
+import {
+    commitGraphAdd,
+    commitInfoAdd,
+    commitNoteInDocAdd,
+    commitNoteInDocInit,
+    commitUserConcernAdd
+} from "@/store/modules/_mutations";
 
 declare global {
     type id = number | string;
@@ -194,14 +200,10 @@ declare global {
         Base: Record<string, any>
     }
 
-    interface NoteContent {
-        [prop: string]: any
-    }
-
     interface NoteSetting extends Setting {
         _type: 'note';
         _title: string;
-        _content: NoteContent;
+        _content: string;
         Base: BaseSize;
     }
 
@@ -294,11 +296,11 @@ export abstract class InfoPart {
     Ctrl: BaseCtrl;
     isEdit: boolean;
 
-    get id() {
+    get _id() {
         return this.Info.id
     }
 
-    set id(newId) {
+    set _id(newId) {
         this.changeId(newId)
     }
 
@@ -307,7 +309,7 @@ export abstract class InfoPart {
     }
 
     get isRemote() {
-        return !localIdRegex.test(this.id.toString());
+        return !localIdRegex.test(this._id.toString());
     }
 
     get isUserMade() {
@@ -329,7 +331,6 @@ export abstract class InfoPart {
     }
 
     changeId(newId: id) {
-        this.id = newId;
         Vue.set(this.Info, "id", newId);
         this.isEdit = false;
     }
@@ -379,7 +380,7 @@ export class NodeInfoPart extends InfoPart {
     }
 
     changeId(newId: id) {
-        this.id = newId;
+        this._id = newId;
         Vue.set(this.Info, "id", newId);
         this.isEdit = false;
         // node 重写
@@ -418,7 +419,7 @@ export class NodeInfoPart extends InfoPart {
     synchronizationSource(prop: string, value: any) {
         let nodeList = NodeSettingPart.list;
         crucialRegex.test(prop) &&
-        findItem(nodeList, this.id, this.Info.type).map(node =>
+        findItem(nodeList, this._id, this.Info.type).map(node =>
             node.updateCrucialProp(prop, value)
         );
     }
@@ -426,7 +427,7 @@ export class NodeInfoPart extends InfoPart {
     synchronizationAll() {
         // 同步所有属性到Setting
         let nodeList = NodeSettingPart.list;
-        findItem(nodeList, this.id, this.Info.type).map(node => {
+        findItem(nodeList, this._id, this.Info.type).map(node => {
             node.updateCrucialProp("_label", this.Info.PrimaryLabel);
             node.updateCrucialProp("_name", this.Info.Name);
             node.updateCrucialProp("_image", this.Info.MainPic);
@@ -465,8 +466,7 @@ export class LinkInfoPart extends InfoPart {
     }
 
     changeId(newId: id) {
-        this.id = newId;
-        this.updateValue("id", newId);
+        this.Info.id = newId;
         this.synchronizationSource("_id", newId);
         this.isEdit = false;
     }
@@ -507,14 +507,14 @@ export class LinkInfoPart extends InfoPart {
     synchronizationSource(prop: string, value: any) {
         let linkList = LinkSettingPart.list;
         crucialRegex.test(prop) &&
-        findItem(linkList, this.id, this.Info.type).map(link =>
+        findItem(linkList, this._id, this.Info.type).map(link =>
             link.updateCrucialProp(prop, value)
         );
     }
 
     synchronizationAll() {
         let linkList = LinkSettingPart.list;
-        findItem(linkList, this.id, this.Info.type).map(link => {
+        findItem(linkList, this._id, this.Info.type).map(link => {
             link.updateCrucialProp("_start", this.Ctrl.Start);
             link.updateCrucialProp("_end", this.Ctrl.End);
         });
@@ -568,8 +568,7 @@ export class MediaInfoPart extends InfoPart {
     }
 
     changeId(newId: id) {
-        this.id = newId;
-        Vue.set(this.Info, "id", newId);
+        this.Info.id = newId;
         this.synchronizationSource("_id", newId);
         this.isEdit = false;
     }
@@ -607,14 +606,14 @@ export class MediaInfoPart extends InfoPart {
     synchronizationSource(prop: string, value: any) {
         let mediaList = MediaSettingPart.list;
         crucialRegex.test(prop) &&
-        findItem(mediaList, this.id, this.Info.type).map(node =>
+        findItem(mediaList, this._id, this.Info.type).map(node =>
             node.updateCrucialProp(prop, value)
         );
     }
 
     synchronizationAll() {
         let nodeList = MediaSettingPart.list;
-        findItem(nodeList, this.id, this.Info.type).map(node => {
+        findItem(nodeList, this._id, this.Info.type).map(node => {
             node.updateCrucialProp("_src", this.Ctrl.FileName);
             node.updateCrucialProp("_name", this.Info.Name);
         });
@@ -638,6 +637,10 @@ export class SettingPart {
 
     get _id() {
         return this.Setting._id
+    }
+
+    set _id(value) {
+        this.Setting._id = value
     }
 
     get _type() {
@@ -735,7 +738,7 @@ export class MediaSettingPart extends SettingPart {
     }
 
     static emptyMediaSettingFromInfo(media: MediaInfoPart, parent: GraphSelfPart) {
-        return MediaSettingPart.emptyMediaSetting(media.id, media.Info.PrimaryLabel, media.Info.Name, media.Ctrl.FileName, parent)
+        return MediaSettingPart.emptyMediaSetting(media._id, media.Info.PrimaryLabel, media.Info.Name, media.Ctrl.FileName, parent)
     }
 }
 
@@ -787,9 +790,10 @@ export class NoteSettingPart extends SettingPart {
     static emptyNoteSetting(
         _id: id,
         _label: string,
-        _content: NoteContent,
+        _title: string,
+        _content: string,
         parent: GraphSelfPart) {
-        let setting = noteSettingTemplate(_id, _label, _content);
+        let setting = noteSettingTemplate(_id, _label, _title, _content);
         let state = noteStateTemplate('isAdd');
         return new NoteSettingPart(setting, state, parent)
     }
@@ -857,7 +861,7 @@ export class GraphConf extends SettingPart {
 }
 
 export class GraphSelfPart {
-    static list: Array<GraphSelfPart>;
+    static list: Array<GraphSelfPart> = [];
     static baseList: Array<BackendGraph>; // 原始数据
     Graph: Graph;
     Conf: GraphConf;
@@ -870,12 +874,12 @@ export class GraphSelfPart {
         return this._baseNode
     }
 
-    get id() {
-        return this.Conf.Setting._id
+    get _id() {
+        return this.Conf._id
     }
 
-    set id(newId) {
-        this.Conf.Setting._id = newId
+    set _id(newId) {
+        this.Conf._id = newId
     }
 
     get rootList() {
@@ -898,26 +902,28 @@ export class GraphSelfPart {
         rect || (rect = {width: 600, height: 400});
         this.rect = rect;
         // 记录所有实例
-        pushInList(GraphSelfPart.list, this);
+        GraphSelfPart.list.push(this);
         // baseNode
         baseNode || (baseNode = nodeSettingTemplate(conf._id, conf._type, conf._label, 'NewDocument' + conf._id, ''));
         let state = nodeStateTemplate();
         this._baseNode = new NodeSettingPart(baseNode, state, this);
     }
 
-    static emptyGraphSelfPart(_id: id, parent: GraphSelfPart | null) {
-        let graph = emptyGraph();
+    static emptyGraphSelfPart(_id: id, parent: GraphSelfPart | null, commitToVuex?: boolean) {
+        commitToVuex === undefined && (commitToVuex = true);
+        let graphContent = emptyGraph();
         let setting = GraphConf.emptyGraphSetting(_id, parent);
-        let graphSelf = new GraphSelfPart(graph, setting);
-        graphSelf.addItems([graphSelf.baseNode]);
+        let graph = new GraphSelfPart(graphContent, setting);
+        graph.addItems([graph.baseNode]);
         let info = NodeInfoPart.emptyNodeInfoPart(_id, 'document', 'DocGraph');
-        return {graph: graphSelf, info}
+        let payload = {graph, info};
+        if (commitToVuex) {
+            graph.commitGraphToVuex(payload);
+        }
+        return payload
     }
 
-    static resolveFromBackEnd(
-        baseData: BackendGraph,
-        parent: GraphSelfPart | null
-    ) {
+    static resolveFromBackEnd(baseData: BackendGraph, parent: GraphSelfPart | null) {
         pushInList(GraphSelfPart.baseList, baseData);
         let args = [];
         getIsSelf(baseData.Base.Ctrl) && args.push("isSelf");
@@ -957,7 +963,7 @@ export class GraphSelfPart {
         let result: GraphSelfPart[] = [];
         GraphSelfPart.list.map(graph => {
             let root = graph.rootList;
-            if (root && root.map(doc => doc.id).includes(this.id)) {
+            if (root && root.map(doc => doc._id).includes(this._id)) {
                 result.push(graph)
             }
         });
@@ -1027,7 +1033,7 @@ export class GraphSelfPart {
     }
 
     explode() {
-        Vue.set(this.Conf.State, 'isExplode', !this.Conf.State.isExplode)
+        this.Conf.updateState('isExplode')
     }
 
     selectAll(state: 'isSelected', value: boolean) {
@@ -1037,20 +1043,20 @@ export class GraphSelfPart {
 
     addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex?: boolean) {
         _label || (_label = 'BaseNode');
-        commitToVuex || (commitToVuex = true);
+        commitToVuex === undefined && (commitToVuex = true);
         let id = getIndex();
         let info = NodeInfoPart.emptyNodeInfoPart(id, _type, _label);
         let setting = NodeSettingPart.emptyNodeSetting(id, _type, _label, 'NewNode' + id, '', this);
         setting.State.isSelf = true;
         this.addItems([setting]);
         let payload = {setting, info};
-        commitToVuex && this.commitToVuex(payload);
+        commitToVuex && this.commitItemToVuex(payload);
         return payload
     }
 
     addEmptyLink(_start: VisNodeSettingPart, _end: VisNodeSettingPart, _label?: string, commitToVuex?: boolean) {
         _label || (_label = 'Default');
-        commitToVuex || (commitToVuex = true);
+        commitToVuex === undefined && (commitToVuex = true);
         let id = getIndex();
         // info
         let info = LinkInfoPart.emptyLinkInfo(id, _label, _start, _end);
@@ -1059,24 +1065,44 @@ export class GraphSelfPart {
         setting.State.isSelf = true;
         this.addItems([setting]);
         let payload = {setting, info};
-        commitToVuex && this.commitToVuex(payload);
+        commitToVuex && this.commitItemToVuex(payload);
         return payload
     }
 
-    addSubGraph() {
-        let id = getIndex();
-        let {graph, info} = GraphSelfPart.emptyGraphSelfPart(id, this);
-        this.addItems([graph.baseNode.deepCloneSelf()]);
-        return {graph, info}
+    addEmptyNote(commitToVuex?: boolean) {
+        commitToVuex === undefined && (commitToVuex = true);
+        let _id = getIndex();
+        let note = NoteSettingPart.emptyNoteSetting(_id, 'note', '', '', this);
+        commitToVuex && commitNoteInDocAdd({_id: this._id, note});
+        return note
     }
 
-    protected commitToVuex(payload: { setting: GraphItemSettingPart, info: InfoPart }) {
+    addSubGraph(commitToVuex?: boolean) {
+        commitToVuex === undefined && (commitToVuex = true);
+        let id = getIndex();
+        let {graph, info} = GraphSelfPart.emptyGraphSelfPart(id, this);
+        let payload = {graph, info};
+        this.addItems([graph.baseNode.deepCloneSelf()]);
+        if (commitToVuex) {
+            this.commitGraphToVuex(payload)
+        }
+        return payload
+    }
+
+    protected commitItemToVuex(payload: { setting: GraphItemSettingPart, info: InfoPart }) {
         // commit过程
         let {setting, info} = payload;
         commitInfoAdd({item: info, strict: false});
         let userConcern = userConcernTemplate();
         commitUserConcernAdd({_id: setting._id, _type: setting._type, userConcern});
         return setting
+    }
+
+    protected commitGraphToVuex(payload: { graph: GraphSelfPart, info: NodeInfoPart }) {
+        let {graph, info} = payload;
+        this.commitItemToVuex({setting: graph.baseNode, info});
+        commitGraphAdd({graph});
+        commitNoteInDocInit({_id: graph._id});
     }
 }
 

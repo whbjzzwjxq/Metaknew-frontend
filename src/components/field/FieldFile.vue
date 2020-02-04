@@ -27,7 +27,7 @@
                     </tr>
                     <tr v-for="(file, index) in currentRealFiles" :key="index">
                         <td>
-                            {{file.Info.id}}
+                            {{file._id}}
                         </td>
                         <td>
                             {{ file.Info.Name }}
@@ -66,7 +66,7 @@
                     <tr v-if="newFiles.length === 0">
                         <td colspan="12"></td>
                     </tr>
-                    <tr v-for="(file, index) in newFiles" :key="file.Info.id">
+                    <tr v-for="(file, index) in newFiles" :key="file._id">
                         <td>
                             {{file.Info.id}}
                         </td>

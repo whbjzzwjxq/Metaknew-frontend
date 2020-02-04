@@ -55,12 +55,8 @@
             if (this.graph.id === '$_-1') {
                 let id = getIndex();
                 let {graph, info} = GraphSelfPart.emptyGraphSelfPart(id, null);
-                commitGraphAdd({graph, strict: true});
-                commitInfoAdd({item: info, strict: true});
                 commitGraphChange({graph});
                 commitRootGraph({graph});
-                let userConcern = userConcernTemplate();
-                commitUserConcernAdd({_id: id, _type: 'document', userConcern});
                 this.loading = false
             } else {
                 this.loading = false

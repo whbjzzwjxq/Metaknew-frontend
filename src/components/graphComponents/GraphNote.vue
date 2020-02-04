@@ -121,10 +121,10 @@
             },
             content: {
                 get: function (): string {
-                    return this.setting._content.text
+                    return this.setting._content
                 },
                 set: function (value: string) {
-                    this.$set(this.setting._content, 'text', value)
+                    this.setting._content = value
                 }
             },
             isDark: function (): boolean {

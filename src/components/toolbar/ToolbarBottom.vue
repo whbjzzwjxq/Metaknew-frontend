@@ -8,7 +8,7 @@
                             <v-icon color="#111111"> {{ noteIcon }}</v-icon>
                         </v-btn>
                     </template>
-                    <personal-note @add-note-to-graph="addNoteToGraph"></personal-note>
+                    <personal-note @add-note-to-graph="addNoteToDocument"></personal-note>
                 </v-menu>
             </div>
             <div class="button-normal pb-4">
@@ -89,8 +89,8 @@
                 this.toolbarOn = !this.toolbarOn
             },
 
-            addNoteToGraph() {
-                this.$emit('add-note-to-graph')
+            addNoteToDocument() {
+                this.$emit('add-empty-note')
             }
         },
         watch: {},

@@ -287,7 +287,7 @@ export const emptyGraph = () => {
 };
 
 export function pushInList<T>(list: undefined | T[], item: T) {
-    list
+    list !== undefined
         ? list.push(item)
         : (list = [item]);
     return list

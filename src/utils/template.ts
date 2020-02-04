@@ -790,13 +790,14 @@ export function graphSettingTemplate(_id: id) {
     return setting;
 }
 
-export function noteSettingTemplate(_id: id, _label: string, _content: NoteContent) {
-    let setting = <NoteSetting>{
+export function noteSettingTemplate(_id: id, _label: string, _title: string, _content: string) {
+    let setting = {
         _id,
         _type: 'note',
         _label,
+        _title,
         _content
-    };
+    } as NoteSetting;
     Object.assign(setting, settingTemplate('note'));
     return setting
 }

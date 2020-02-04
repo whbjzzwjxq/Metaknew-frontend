@@ -52,9 +52,9 @@ declare global {
 }
 
 const state: DataManagerState = {
-    currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null).graph,
-    currentItem: GraphSelfPart.emptyGraphSelfPart('$_-1', null).info,
-    rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null).graph,
+    currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
+    currentItem: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).info,
+    rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
     graphManager: {},
     nodeManager: {},
     linkManager: {},
@@ -70,7 +70,7 @@ const state: DataManagerState = {
 };
 const getters = {
     currentGraphInfo: (state: DataManagerState) => {
-        return state.nodeManager[state.currentGraph.id]
+        return state.nodeManager[state.currentGraph._id]
     }
 };
 const mutations = {
@@ -78,7 +78,7 @@ const mutations = {
     // ------------单纯的操作------------
     currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
-        let id = graph.id; // 这里payload是document
+        let id = graph._id; // 这里payload是document
         Vue.set(graph.Conf.State, 'isExplode', true);
         state.currentGraph = graph;
         commitItemChange(state.nodeManager[id]);
@@ -99,8 +99,8 @@ const mutations = {
         let {graph, strict} = payload;
         strict || (strict = true);
         strict
-            ? Vue.set(state.graphManager, graph.id, graph)
-            : !state.graphManager[graph.id] && Vue.set(state.graphManager, graph.id, graph)
+            ? Vue.set(state.graphManager, graph._id, graph)
+            : !state.graphManager[graph._id] && Vue.set(state.graphManager, graph._id, graph)
     },
 
     graphRemove(state: DataManagerState, payload: id) {
@@ -111,7 +111,7 @@ const mutations = {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
         if (oldGraph) {
-            oldGraph.id = newId;
+            oldGraph._id = newId;
             commitGraphAdd({graph: oldGraph});
             commitGraphRemove(oldId);
         }
@@ -120,8 +120,8 @@ const mutations = {
     // ------------以下是Info部分的内容------------
     infoAdd(state: DataManagerState, payload: { item: InfoPart, strict?: boolean }) {
         let {item, strict} = payload;
-        let _id = item.Info.id;
-        let manager = getManager(item.Info.type);
+        let _id = item._id;
+        let manager = getManager(item.type);
         strict || (strict = true);
         strict
             ? Vue.set(manager, _id, item)

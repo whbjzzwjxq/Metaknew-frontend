@@ -10,7 +10,7 @@
 
             </graph-view-box>
         </div>
-        <toolbar-bottom @add-note-to-graph="newNote">
+        <toolbar-bottom @add-empty-note="newNote">
             <template v-slot:subTool>
                 <div style="width: 100%; height: 100%" class="d-flex flex-row">
                     <div style="width: 80px; height: 100%">
@@ -67,13 +67,13 @@
         getIndex,
         GraphSelfPart,
         NodeInfoPart,
-        MediaSettingPart
+        MediaSettingPart, NoteSettingPart
     } from "@/utils/graphClass";
     import {
         commitBottomDynamicBarResize,
         commitGraphAdd,
         commitGraphChange,
-        commitInfoAdd,
+        commitInfoAdd, commitNoteInDocAdd,
         commitRootGraph, commitUserConcernAdd
     } from "@/store/modules/_mutations";
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
@@ -153,7 +153,7 @@
 
             newNote: function (graph?: GraphSelfPart) {
                 graph || (graph = this.graph);
-                return graph.addEmptyNote();
+                graph?.addEmptyNote()
             },
 
             addMedia: function (mediaIdList: id[], graph?: GraphSelfPart) {
