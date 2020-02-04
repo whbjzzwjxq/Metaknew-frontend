@@ -66,6 +66,7 @@
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
     import DocumentAdder from "@/components/DocumentAdder.vue";
+    import {GraphSelfPart} from "@/utils/graphClass";
 
     export default Vue.extend({
         name: "SubToolNewItem",
@@ -84,27 +85,32 @@
                 return {
                     'node': {
                         icon: getIcon('i-item', 'node'),
-                        title: 'New Node'
+                        title: 'New Node',
+                        toolTip: ''
                     },
                     'media': {
                         icon: getIcon('i-item', 'media'),
-                        title: 'New Media'
+                        title: 'New Media',
+                        toolTip: ''
                     },
                     'link': {
                         icon: getIcon('i-item', 'link'),
-                        title: 'New Link'
+                        title: 'New Link',
+                        toolTip: ''
                     },
                     'document': {
                         icon: getIcon('i-item', 'document'),
-                        title: 'New Document'
+                        title: 'New Document',
+                        toolTip: ''
                     },
                     'note': {
-                        icon: getIcon('i-item', 'note'),
-                        title: 'New note'
+                        icon: getIcon('i-item', 'text'),
+                        title: 'New note',
+                        toolTip: ''
                     }
                 }
             },
-            document: function () {
+            document: function (): GraphSelfPart {
                 return this.$store.state.dataManager.currentGraph
             }
         },

@@ -182,7 +182,7 @@
             },
 
             userConcern: function (): UserConcern {
-                return this.userDataManager.userConcernDict['media'][this.media.id]
+                return this.userDataManager.userConcernDict['media'][this.media._id]
             },
             isSelf: function () {
                 return this.media.isSelf

@@ -57,9 +57,6 @@
                     height: itemSize * row
                 }
             },
-            nodes: function (): PathNode[] {
-                return this.path.Content.subNodes
-            }
         },
         methods: {},
         record: {

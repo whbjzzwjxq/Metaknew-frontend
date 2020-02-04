@@ -1,5 +1,5 @@
 <template>
-    <v-card tile flat outlined :style="toolbarStyle">
+    <v-card tile :style="toolbarStyle" elevation="2">
         <div :style="buttonStyle" class="floatButton">
             <div class="button-normal pb-4">
                 <v-menu top offset-x :close-on-content-click="false" nudge-bottom="100" nudge-right="12">
@@ -8,7 +8,7 @@
                             <v-icon color="#111111"> {{ noteIcon }}</v-icon>
                         </v-btn>
                     </template>
-                    <personal-note @add-note-to-graph="addNoteToGraph"></personal-note>
+                    <personal-note @add-empty-note="addNoteToDocument"></personal-note>
                 </v-menu>
             </div>
             <div class="button-normal pb-4">
@@ -57,7 +57,7 @@
             toolbarStyle: function (): CSSProp {
                 return {
                     position: "absolute",
-                    left: this.styleManager.leftCard.width + 'px',
+                    left: this.styleManager.leftCard.width + 4 + 'px',
                     bottom: 0,
                     height: this.styleManager.bottomBar.height + 'px',
                     width: this.styleManager.bottomBar.width,
@@ -89,8 +89,8 @@
                 this.toolbarOn = !this.toolbarOn
             },
 
-            addNoteToGraph() {
-                this.$emit('add-note-to-graph')
+            addNoteToDocument() {
+                this.$emit('add-empty-note')
             }
         },
         watch: {},

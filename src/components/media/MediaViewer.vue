@@ -5,7 +5,7 @@
         flat
         tile>
         <div v-if="media.Info.PrimaryLabel === 'image'">
-            <img :src="realSrc" :width="width" :max-height="height" id="image">
+            <v-img :src="realSrc" :width="width" :max-height="height" id="image"></v-img>
 
             <slot name="button-group">
 
@@ -81,7 +81,7 @@
         },
         methods: {
             init() {
-                let realSrc = getSrc(this.media.Ctrl.FileName);
+                let realSrc = this.realSrc;
                 if (this.media.PrimaryLabel === 'markdown') {
                     axios.get(realSrc).then(response => {
                         this.mdText = response.data
@@ -89,9 +89,9 @@
                 }
             },
             bigPic() {
-                let vm = this;
+                let realSrc = this.realSrc;
                 let viewer = new Viewer(document.getElementById('image'), {
-                    url: getSrc(vm.media.Ctrl.FileName),
+                    url: realSrc,
                     title: false,
                     navbar: false,
                     toolbar: {
@@ -122,8 +122,7 @@
 </script>
 
 <style scoped>
-    @import '../../style/css/unselected.css';
-    @import '../../style/css/card.css';
+
 </style>
 
 /**

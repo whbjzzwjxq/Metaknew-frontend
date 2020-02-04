@@ -10,7 +10,7 @@
 
             </graph-view-box>
         </div>
-        <toolbar-bottom @add-note-to-graph="newNote">
+        <toolbar-bottom @add-empty-note="newNote">
             <template v-slot:subTool>
                 <div style="width: 100%; height: 100%" class="d-flex flex-row">
                     <div style="width: 80px; height: 100%">
@@ -64,18 +64,10 @@
     import Vue from 'vue'
     import {RectByPoint} from "@/utils/geoMetric";
     import {
-        getIndex,
         GraphSelfPart,
-        NodeInfoPart,
-        MediaSettingPart
+        MediaSettingPart,
     } from "@/utils/graphClass";
-    import {
-        commitBottomDynamicBarResize,
-        commitGraphAdd,
-        commitGraphChange,
-        commitInfoAdd,
-        commitRootGraph, commitUserConcernAdd
-    } from "@/store/modules/_mutations";
+    import {commitBottomDynamicBarResize} from "@/store/modules/_mutations";
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
     import PathDrawer from "@/components/path/PathDrawer.vue";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
@@ -84,7 +76,6 @@
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
-    import {userConcernTemplate} from "@/utils/template";
 
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -153,13 +144,13 @@
 
             newNote: function (graph?: GraphSelfPart) {
                 graph || (graph = this.graph);
-                return graph.addEmptyNote();
+                graph.addEmptyNote()
             },
 
             addMedia: function (mediaIdList: id[], graph?: GraphSelfPart) {
                 let defaultDoc = this.graph;
                 graph || (graph = defaultDoc);
-                let mediaSettingList = mediaIdList.map(id => this.dataManager.mediaManager[id])
+                let mediaSettingList = mediaIdList.map(_id => this.dataManager.mediaManager[_id])
                     .map(info => {
                         graph || (graph = defaultDoc);
                         return MediaSettingPart.emptyMediaSettingFromInfo(info, graph)

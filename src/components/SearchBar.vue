@@ -1,109 +1,88 @@
 <template>
-    <div class="d-flex flex-row" style="width: 720px; height: 64px">
-        <v-row style="height: 64px">
-            <v-col cols="10" class="pa-0 pt-3">
-                <v-autocomplete
-                    :dense="editMode"
-                    :items="activeItems()"
-                    :loading="isLoading"
-                    @input="updateSelection"
-                    @update:search-input="keywordChange"
-                    background-color="white"
-                    chips
-                    color="grey"
-                    flat
-                    height="32px"
-                    hide-selected
-                    item-text="Name_auto"
-                    multiple
-                    no-filter
-                    outlined
-                    return-object
-                    three-line
-                    v-model="selection"
-                >
-                    <template v-slot:item="{ item }">
-                        <template v-if="item.isTitle">
-                            <v-list-item-content
-                                v-html="getHeaderNameHtml(item.name, item.length)"></v-list-item-content>
-                            <v-btn icon @click="collapse(item)">
-                                <v-icon>
-                                    {{ getArrow(item)}}
-                                </v-icon>
-                            </v-btn>
-                        </template>
-
-                        <template v-else-if="item.isInfo">
-                            <v-list-item-avatar>
-                                <v-img :src="getSrc(item.MainPic)"></v-img>
-                            </v-list-item-avatar>
-                            <v-list-item-content>
-                                <v-list-item-title
-                                    v-html="getItemTitle(item.Name_auto, item.PrimaryLabel)"></v-list-item-title>
-                                <v-list-item-subtitle v-html="getItemSubTitle(item.Tags.Topic)"></v-list-item-subtitle>
-                            </v-list-item-content>
-                            <v-divider vertical light></v-divider>
-                            <v-chip outlined label>
-                                {{ item.UpdateTime }}
-                            </v-chip>
-                            <v-chip outlined label>
-                                <v-icon color="yellow">mdi-star</v-icon>
-                                <span class="font-weight-border">{{'\xa0\xa0\xa0' + item.Level.Star}}</span>
-                            </v-chip>
-                        </template>
-
+    <div class="d-flex flex-row" style="width: 100%; height: 100%">
+        <v-col cols="11" class="pa-0 pt-1 pl-4 pr-2">
+            <v-autocomplete
+                :dense="editMode"
+                :items="activeItems()"
+                :loading="isLoading"
+                @input="updateSelection"
+                @update:search-input="keywordChange"
+                background-color="white"
+                chips
+                color="grey"
+                flat
+                height="32px"
+                hide-selected
+                item-text="Name_auto"
+                multiple
+                no-filter
+                outlined
+                return-object
+                three-line
+                v-model="selection"
+            >
+                <template v-slot:item="{ item }">
+                    <template v-if="item.isTitle">
+                        <v-list-item-content
+                            v-html="getHeaderNameHtml(item.name, item.length)"></v-list-item-content>
+                        <v-btn icon @click="collapse(item)">
+                            <v-icon>
+                                {{ getArrow(item)}}
+                            </v-icon>
+                        </v-btn>
                     </template>
-                </v-autocomplete>
-            </v-col>
-            <v-col class="pa-0 pt-4 pl-1">
-                <div>
-                    <v-btn :small="editMode" icon @click="addItemToGraph">
-                        <v-icon>{{editMode ? 'mdi-plus' : 'mdi-magnify'}}</v-icon>
-                    </v-btn>
-                    <v-btn :small="editMode" icon @click="clear">
-                        <v-icon>mdi-close</v-icon>
-                    </v-btn>
-                </div>
-            </v-col>
-        </v-row>
+
+                    <template v-else-if="item.isInfo">
+                        <v-list-item-avatar>
+                            <v-img :src="getSrc(item.MainPic)"></v-img>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                            <v-list-item-title
+                                v-html="getItemTitle(item.Name_auto, item.PrimaryLabel)"></v-list-item-title>
+                            <v-list-item-subtitle v-html="getItemSubTitle(item.Tags.Topic)"></v-list-item-subtitle>
+                        </v-list-item-content>
+                        <v-divider vertical light></v-divider>
+                        <v-chip outlined label>
+                            {{ item.UpdateTime }}
+                        </v-chip>
+                        <v-chip outlined label>
+                            <v-icon color="yellow">mdi-star</v-icon>
+                            <span class="font-weight-border">{{'\xa0\xa0\xa0' + item.Level.Star}}</span>
+                        </v-chip>
+                    </template>
+
+                </template>
+            </v-autocomplete>
+        </v-col>
+        <v-col class="pl-2 pr-2">
+            <icon-group :icon-list="appendIconList" :small="editMode">
+
+            </icon-group>
+        </v-col>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {IndexedInfo, IndexedText, queryHomePage, HomePageSearchResponse, SearchQueryObject} from '@/api/search'
+    import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search'
     import {GraphSelfPart, InfoToSetting, MediaSettingPart, NodeSettingPart} from '@/utils/graphClass'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
-
-    interface ListInfoItem extends IndexedInfo {
-        isTitle: boolean,
-        isInfo: boolean,
-        disabled: boolean
-    }
-
-    interface ListTextItem extends IndexedText {
-        isTitle: boolean,
-        isInfo: boolean,
-        disabled: boolean
-    }
-
-    interface ListTitle {
-        isTitle: boolean,
-        isInfo: boolean,
-        isCollapse: boolean,
-        length: number,
-        name: string,
-        disabled: boolean
-    }
-
-    type ListItem = AvailableListItem | ListTitle
-    type AvailableListItem = ListInfoItem | ListTextItem
-    type ArrayListItem = Array<ListItem>
+    import IconGroup from "@/components/IconGroup.vue";
+    import {
+        ArrayListItem,
+        AvailableListItem,
+        ListInfoItem,
+        ListItem,
+        ListTextItem,
+        ListTitle
+    } from "@/utils/interfaceInComponent";
 
     export default Vue.extend({
         name: "SearchBar",
-        components: {},
+        components: {
+            IconGroup
+        },
         data() {
             return {
                 keyword: '',
@@ -130,16 +109,23 @@
             singleSelect: {
                 type: Boolean,
                 default: false
+            },
+            rect: {
+                type: Object as () => RectObject,
+                default: () => ({
+                    width: 720,
+                    height: 48
+                })
             }
         },
         computed: {
-            dataManager: function(): DataManagerState {
+            dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            currentGraph: function(): GraphSelfPart {
+            currentGraph: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
-            buildQueryObject: function(): SearchQueryObject {
+            buildQueryObject: function (): SearchQueryObject {
                 let index = this.keyword.search(this.regexSymbol);
                 let append;
                 let words: Array<string>;
@@ -164,7 +150,7 @@
                 };
             },
 
-            recentList: function(): ListInfoItem[] {
+            recentList: function (): ListInfoItem[] {
                 return this.searchResult.recent.map(item => {
                         let info = Object.assign({} as ListInfoItem, item);
                         info.isTitle = false;
@@ -175,7 +161,7 @@
                 )
             },
 
-            textList: function(): ListTextItem[] {
+            textList: function (): ListTextItem[] {
                 return this.searchResult.text.map(item => {
                         let info = Object.assign({MainPic: ''} as ListTextItem, item);
                         info.isTitle = false;
@@ -187,7 +173,7 @@
                 )
             },
 
-            infoList: function(): ListInfoItem[] {
+            infoList: function (): ListInfoItem[] {
                 return this.searchResult.info.map(item => {
                         let info = Object.assign({} as ListInfoItem, item);
                         info.isTitle = false;
@@ -197,6 +183,13 @@
                     }
                 )
             },
+
+            appendIconList: function (): IconItem[] {
+                return [
+                    {name: getIcon('i-edit', this.editMode ? 'add' : 'search'), _func: this.addItemToGraph},
+                    {name: getIcon('i-edit', 'close'), _func: this.clear}
+                ]
+            }
         },
         methods: {
             activeItems(): ArrayListItem {
@@ -249,15 +242,15 @@
             },
 
             addItemToGraph() {
-                let unDuplicateItems = this.selection.filter(item => this.currentGraph.checkExist(item.id, item.type));
+                let unDuplicateItems = this.selection.filter(item => this.currentGraph.checkExist(item._id, item.type));
                 let nodes = unDuplicateItems.filter(item => item.type !== 'media');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let queryObjectList = this.selection.filter(item => !this.dataManager.nodeManager[item.id]);
+                let queryObjectList = this.selection.filter(item => !this.dataManager.nodeManager[item._id]);
                 this.$store.dispatch('nodeQuery', queryObjectList.filter(item => item.type !== 'media').map(
                     item => InfoToSetting(item))
                 );
                 this.$store.dispatch('mediaQuery', queryObjectList.filter(item => item.type === 'media').map(
-                    item => item.id)
+                    item => item._id)
                 );
                 let nodeSettingList = nodes.map(node => {
                     let {_id, _type, _label} = InfoToSetting(node);
@@ -319,7 +312,7 @@
                             this.$router.push({
                                 name: "graph",
                                 path: "graph/id=:id/mode=:mode",
-                                params: {id: this.selection[0].id.toString(), mode: 'normal'}
+                                params: {id: this.selection[0]._id.toString(), mode: 'normal'}
                             })
                         }
                     }

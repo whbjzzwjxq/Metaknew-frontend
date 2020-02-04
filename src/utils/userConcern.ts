@@ -19,7 +19,7 @@ declare global {
 
     interface FragmentCtrl extends BaseCtrl {
         SourceId: id,
-        SourceType: BaseType,
+        SourceType: GraphItemType,
         SourceLabel: string,
         $IsLinked: boolean
     }
@@ -35,18 +35,22 @@ export class FragmentInfoPart extends InfoPart {
     Info: FragmentInfo;
     Ctrl: FragmentCtrl;
 
+    get _id() {
+        return this.Info._id
+    }
+
     constructor(info: FragmentInfo, ctrl: FragmentCtrl) {
         super(info, ctrl);
         this.Info = info;
         this.Ctrl = ctrl
     }
 
-    static fragmentFromItem(itemInfo: NodeInfoPart | MediaInfoPart | LinkInfoPart, id: id, method: string) {
+    static fragmentFromItem(itemInfo: NodeInfoPart | MediaInfoPart | LinkInfoPart, _id: id, method: string) {
         let info = {
-            id,
+            _id,
             type: 'fragment',
             PrimaryLabel: isMediaInfoPart(itemInfo) ? 'image' : 'text',
-            Name: itemInfo.Info.Name === '' ? itemInfo.Info.Name : 'NewFragment From ' + itemInfo.type + itemInfo.id,
+            Name: itemInfo.Info.Name === '' ? itemInfo.Info.Name : 'NewFragment From ' + itemInfo.type + itemInfo._id,
             Labels: itemInfo.Info.Labels,
             Src: isMediaInfoPart(itemInfo) ? itemInfo.Ctrl.Thumb : '',
             Description: itemInfo.Info.Description
@@ -56,8 +60,8 @@ export class FragmentInfoPart extends InfoPart {
             $IsLinked: true,
             CreateType: 'System-' + method,
             CreateUser: getCookie('user_id'),
-            SourceId: itemInfo.Info.id,
-            SourceType: itemInfo.Info.type,
+            SourceId: itemInfo._id,
+            SourceType: itemInfo.type,
             SourceLabel: itemInfo.Info.PrimaryLabel,
         } as FragmentCtrl;
 

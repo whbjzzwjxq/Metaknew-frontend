@@ -215,14 +215,14 @@
                 return this.baseData.Ctrl
             },
             userConcern: function (): UserConcern {
-                return this.$store.state.userConcernManager[this.baseData.type][this.baseData.id]
+                return this.$store.state.userConcernManager[this.baseData.type][this.baseData._id]
             },
 
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
 
-            type: function (): BaseType {
+            type: function (): GraphItemType {
                 return this.info.type
             },
 
@@ -346,8 +346,8 @@
                 if (this.isSimplify) {
                     result = [];
                 } else {
-                    this.info.IncludedMedia.map(id => {
-                        let media = this.dataManager.mediaManager[id];
+                    this.info.IncludedMedia.map(_id => {
+                        let media = this.dataManager.mediaManager[_id];
                         if (media && media.Info.PrimaryLabel === 'image') {
                             result.push(media)
                         }

@@ -3,7 +3,7 @@
         :container="container"
         :is-selected="setting.State.isSelected"
         expand-able
-        @update-size="updateSizeByBorder"
+        @update-size="updateSize"
         class="media"
     >
         <template v-slot:content>
@@ -81,7 +81,7 @@
                 }
             },
             mediaInfo: function (): MediaInfoPart {
-                return this.$store.state.dataManager.mediaManager[this.setting.Setting._id]
+                return this.$store.state.dataManager.mediaManager[this.setting._id]
             }
         },
         methods: {
@@ -100,14 +100,6 @@
                 height += delta.y;
                 setting.Base.scaleX = height / width;
                 setting.Base.size = width;
-            },
-
-            updateSizeByBorder(delta: Point, resizeType: string) {
-                if (['e', 'ne', 'se', 's'].includes(resizeType)) {
-                    this.updateSize({x: 0, y: 0}, delta)
-                } else {
-                    this.updateSize(delta, {x: 0, y: 0})
-                }
             },
 
             updateSizeByNumber(newWidth: number): void {

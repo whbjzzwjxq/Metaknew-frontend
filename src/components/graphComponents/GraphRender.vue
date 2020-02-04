@@ -434,7 +434,7 @@
                 this.$emit('move-end', $event);
                 this.selecting($event);
                 this.$set(this, 'isSelecting', false);
-                let nodes: (AllItemSettingPart)[] = this.nodes.filter((node, index) =>
+                let nodes: (GraphItemSettingPart)[] = this.nodes.filter((node, index) =>
                     this.selectRect.checkInRect(this.nodeLocation[index])
                 );
                 let links = this.links.filter((link, index) =>
@@ -445,7 +445,7 @@
                 this.selectItem(result)
             },
 
-            selectItem(itemList: AllItemSettingPart[]) {
+            selectItem(itemList: GraphItemSettingPart[]) {
                 //选择
                 itemList.map(item => this.$set(item.State, 'isSelected', true));
                 //如果是单选就切换内容
@@ -492,7 +492,7 @@
                 if (graph === undefined) {
                     this.$store.dispatch('graphQuery', {
                         _id,
-                        parent: this.document.id,
+                        parent: this.document._id,
                     }).then(() => {
                         let graph = this.dataManager.graphManager[_id];
                         this.$set(graph.Conf.State, 'isExplode', true)
@@ -506,7 +506,7 @@
                     } else {
                         let index = 0;
                         nodes.map(item => {
-                            if (item.Setting._id === graph.id) {
+                            if (item.Setting._id === graph._id) {
                                 index = nodes.indexOf(item)
                             }
                         });

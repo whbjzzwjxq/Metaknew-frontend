@@ -4,7 +4,7 @@ import {FlatNodeInfo} from "@/utils/interfaceInComponent";
 
 export interface SourceQueryObject {
     _id: id;
-    _type: BaseType;
+    _type: GraphItemType;
     _label: string;
 } // 用于Query
 
@@ -37,10 +37,10 @@ export interface BackendGraph {
         nodes: Array<NodeSetting>;
         links: Array<compressLinkSetting>;
         medias: Array<MediaSetting>;
-        notes: Array<NoteSetting>;
+        texts: Array<TextSetting>;
+        svgs: Array<SvgSetting>;
     };
     Conf: GraphSetting;
-    Path: Array<Object>;
 }
 
 export function mediaCreate(data: { name: string, Info: BaseMediaInfo }) {
@@ -123,12 +123,12 @@ export function nodeQuery(payload: SourceQueryObject) {
     })
 }
 
-export function documentQuery(id: id) {
+export function documentQuery(_id: id) {
     return instance.request<BackendGraph>({
         url: '/document/query/graph',
         method: 'get',
         params: {
-            _id: id
+            _id
         }
     })
 }

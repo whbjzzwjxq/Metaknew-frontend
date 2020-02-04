@@ -76,7 +76,7 @@
                 return this.$store.state.dataManager
             },
             mediaList: function (): MediaInfoPart[] {
-                return this.mediaIdList.map(id => this.dataManager.mediaManager[id]).filter(media => media)
+                return this.mediaIdList.map(_id => this.dataManager.mediaManager[_id]).filter(media => media)
             },
             fileToken: function (): FileToken {
                 return this.dataManager.fileToken
@@ -92,8 +92,8 @@
             addMediaToNode: function (mediaIdList: id[]) {
                 if (this.baseData.isRemote) {
                     let node = {
-                        '_id': this.baseData.Info.id,
-                        '_type': this.baseData.Info.type,
+                        '_id': this.baseData._id,
+                        '_type': this.baseData.type,
                         '_label': this.baseData.Info.PrimaryLabel,
                     } as SourceQueryObject;
                     mediaAppendToNode(node, mediaIdList).then(res => {

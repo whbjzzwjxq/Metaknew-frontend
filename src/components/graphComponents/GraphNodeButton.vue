@@ -87,7 +87,7 @@
                 // 是否可以爆炸
                 let explodeAble =
                     this.boundGraph
-                        ? this.boundGraph.id === this.dataManager.currentGraph.id
+                        ? this.boundGraph._id === this.dataManager.currentGraph._id
                         : false;
                 let explodeIcon;
                 !this.boundGraph

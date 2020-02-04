@@ -4,7 +4,7 @@
             Your Fragment
         </v-card-title>
         <v-card-text>
-            <card-page-fragment v-for="fragment in fragments" :key="fragment.id" :base-fragment="fragment">
+            <card-page-fragment v-for="fragment in fragments" :key="fragment._id" :base-fragment="fragment">
 
             </card-page-fragment>
         </v-card-text>

@@ -60,12 +60,12 @@
         },
         computed: {},
         methods: {
-            closeLabel(_type: BaseType, _label: string) {
+            closeLabel(_type: GraphItemType, _label: string) {
                 this.$set(this.labelViewDict[_type], _label, false)
             },
 
             resetLabel() {
-                const typeList: BaseType[] = ['node', 'link', 'media', 'document', 'note'];
+                const typeList: GraphItemType[] = ['node', 'link', 'media', 'document', "svg", "text"];
                 typeList.map((_type) => {
                     Object.entries(this.labelViewDict[_type]).map(([key, value]) => {
                         this.$set(this.labelViewDict[_type], key, true)
@@ -73,7 +73,7 @@
                 })
             },
 
-            selectLabel(_type: BaseType, _label: string) {
+            selectLabel(_type: GraphItemType, _label: string) {
                 this.$emit('select-label', _type, _label)
             }
         },

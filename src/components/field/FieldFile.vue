@@ -27,7 +27,7 @@
                     </tr>
                     <tr v-for="(file, index) in currentRealFiles" :key="index">
                         <td>
-                            {{file.Info.id}}
+                            {{file._id}}
                         </td>
                         <td>
                             {{ file.Info.Name }}
@@ -66,9 +66,9 @@
                     <tr v-if="newFiles.length === 0">
                         <td colspan="12"></td>
                     </tr>
-                    <tr v-for="(file, index) in newFiles" :key="file.Info.id">
+                    <tr v-for="(file, index) in newFiles" :key="file._id">
                         <td>
-                            {{file.Info.id}}
+                            {{file._id}}
                         </td>
                         <td>
                             {{ file.Info.Name }}
@@ -126,8 +126,8 @@
         components: {CardPageMediaInfo, MediaResolver},
         data() {
             return {
-                newFiles: [] as Array<MediaInfoPart>,
-                currentFiles: this.baseFiles as Array<id>,
+                newFiles: [] as MediaInfoPart[],
+                currentFiles: this.baseFiles as id[],
                 fileInput: [],
                 statusIcon: {},
                 statusColor: {
@@ -191,7 +191,7 @@
             },
             // 现有的真的MediaInfoPart
             currentRealFiles: function () {
-                return this.baseFiles.map((id: id) => this.$store.state.dataManager.mediaManager[id])
+                return this.baseFiles.map((_id: id) => this.$store.state.dataManager.mediaManager[_id])
             },
         },
         methods: {
@@ -212,9 +212,9 @@
             addFile: function (files: MediaInfoPart[], isExist: boolean) {
                 isExist
                     ? this.currentFiles = this.currentFiles.concat(files.map(file => {
-                        let id = file.Info.id;
+                        let _id = file.Info._id;
                         commitInfoAdd({item: file});
-                        return id
+                        return _id
                     }))
                     : this.newFiles = this.newFiles.concat(files)
             },
@@ -229,12 +229,12 @@
                     uploadType: 'normal',
                     realFile: file.file
                 }).then(res => {
-                    let id = res.data;
-                    file.changeId(id);
+                    let _id = res.data;
+                    file.changeId(_id);
                     file.changeSource(URL.createObjectURL(file.file));
                     file.changeStatus('success');
                     commitInfoAdd({item: file});
-                    this.currentFiles.push(id);
+                    this.currentFiles.push(_id);
                     this.newFiles.splice(index, 1);
                     this.saveMedia()
                 }).catch((res) => {

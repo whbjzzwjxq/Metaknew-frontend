@@ -4,7 +4,7 @@ import {
     MediaSettingPart,
     NodeSettingPart,
     NoteSettingPart,
-    SettingPart,
+    SettingPart, SvgSettingPart, TextSettingPart,
 } from "@/utils/graphClass";
 import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
 
@@ -18,28 +18,37 @@ export function isNodeInfoPart(item: BaseNodeInfo | BaseMediaInfo | BaseLinkInfo
         (item as BaseNodeInfo).type === 'document'
 }
 
-export function isBaseType(str: string): str is BaseType {
-    return (str as BaseType) === 'node' ||
-        (str as BaseType) === 'link' ||
-        (str as BaseType) === 'media' ||
-        (str as BaseType) === 'document' ||
-        (str as BaseType) === 'note'
+export function isGraphType(str: string): str is GraphItemType {
+    return (str as GraphItemType) === 'node' ||
+        (str as GraphItemType) === 'link' ||
+        (str as GraphItemType) === 'media' ||
+        (str as GraphItemType) === 'document' ||
+        (str as GraphItemType) === 'svg' ||
+        (str as GraphItemType) === 'text'
 }
 
 export function isLinkSetting(item: SettingPart): item is LinkSettingPart {
-    return (item as LinkSettingPart).Setting._type === 'link'
+    return (item as LinkSettingPart)._type === 'link'
 }
 
 export function isMediaSetting(item: SettingPart): item is MediaSettingPart {
-    return (item as MediaSettingPart).Setting._type === 'media'
+    return (item as MediaSettingPart)._type === 'media'
 }
 
 export function isNodeSetting(item: SettingPart): item is NodeSettingPart {
-    return (item as NodeSettingPart).Setting._type === 'node' || (item as NodeSettingPart).Setting._type === 'document'
+    return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
+}
+
+export function isSvgSetting(item: SettingPart): item is SvgSettingPart {
+    return (item as SvgSettingPart)._type === 'svg'
+}
+
+export function isTextSetting(item: SettingPart): item is TextSettingPart {
+    return (item as TextSettingPart)._type === 'text'
 }
 
 export function isNoteSetting(item: SettingPart): item is NoteSettingPart {
-    return (item as NoteSettingPart).Setting._type === 'note'
+    return (item as NoteSettingPart)._type === 'note'
 }
 
 export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is BooleanConcern {

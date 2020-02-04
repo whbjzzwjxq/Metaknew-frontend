@@ -44,7 +44,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         autoSave: '',
         close: 'mdi-close',
         share: 'mdi-share-variant',
-        search: 'mdi-magnify'
+        search: 'mdi-magnify',
+        add: 'mdi-plus'
     },
     'i-delete-able': {
         true: 'mdi-delete',
@@ -113,7 +114,9 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         DocGraph: 'mdi-graph-outline',
         DocPaper: 'mdi-notebook',
         path: 'mdi-map-marker-path',
-        fragment: 'mdi-cube-unfolded'
+        fragment: 'mdi-cube-unfolded',
+        text: 'mdi-format-text',
+        svg: 'mdi-shape-plus'
     },
     'i-add-media-method': {
         upload: 'mdi-upload',

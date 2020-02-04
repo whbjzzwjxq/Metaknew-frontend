@@ -1,6 +1,6 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {GraphSelfPart, InfoPart, LinkInfoPart, NodeInfoPart} from "@/utils/graphClass";
+import {GraphSelfPart, InfoPart, LinkInfoPart, NodeInfoPart, NoteSettingPart} from "@/utils/graphClass";
 import {NoteBook} from "@/store/modules/userDataManager";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
@@ -75,7 +75,7 @@ export const commitGraphChangeId = (payload: idMap) => {
     return store.commit('graphChangeId', payload)
 };
 
-export const commitUserConcernAdd = (payload: { _id: id, _type: BaseType, userConcern: UserConcern }) => {
+export const commitUserConcernAdd = (payload: { _id: id, _type: GraphItemType, userConcern: UserConcern }) => {
     return store.commit('userConcernAdd', payload)
 };
 
@@ -93,4 +93,8 @@ export const commitNoteBookAdd = (payload: { note: NoteBook }) => {
 
 export const commitNoteBookRemove = (payload: { note: NoteBook }) => {
     return store.commit('noteBookRemove', payload)
+};
+
+export const commitNoteInDocAdd = (payload: {note: NoteSettingPart }) => {
+    return store.commit('noteInDocAdd', payload)
 };

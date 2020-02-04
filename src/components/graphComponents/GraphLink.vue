@@ -1,7 +1,7 @@
 <template>
     <g>
         <defs>
-            <marker :id="arrowSetting.id"
+            <marker :id="arrowSetting._id"
                     refX="0"
                     :refY="arrowSetting.refY"
                     :markerWidth="arrowSetting.length"
@@ -198,13 +198,13 @@
                 let refY = length * 0.2; // y方向上的变化量
                 let L1 = 'L0,' + 0.4 * length + ' ';
                 let L2 = 'L' + 0.7 * length + ',' + refY + ' ';
-                let id = 'arrow_' + this.setting._id;
+                let _id = 'arrow_' + this.setting._id;
                 return {
-                    id,
+                    _id,
                     length: length * this.scale,
                     container: '0 0 ' + length + ' ' + length,
                     pathD: 'M0,0 ' + L1 + L2 + 'z',
-                    show: setting.showArrow ? 'url(#' + id + ')' : '',
+                    show: setting.showArrow ? 'url(#' + _id + ')' : '',
                     refY
                 }
             },

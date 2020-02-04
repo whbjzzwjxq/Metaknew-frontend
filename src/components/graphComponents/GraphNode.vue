@@ -1,8 +1,5 @@
 <template>
-    <g
-        :id="getId"
-        :transform=transform
-    >
+    <g :id="getId" :transform=transform>
         <template v-if="geometryType === 'ellipse'">
             <defs>
                 <clipPath :id="getClipId">

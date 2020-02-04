@@ -1,5 +1,5 @@
 <template>
-    <v-card :width="width" :height="height" style="overflow: hidden">
+    <v-card :width="container.width" :height="container.height" style="overflow: hidden">
         <v-toolbar color="deep-purple accent-4" flat dense :extension-height="36">
             <v-icon> {{ noteIcon }}</v-icon>
             <v-toolbar-title style="font-weight: bolder" class="pl-2">NOTE BOOK</v-toolbar-title>
@@ -22,8 +22,8 @@
                     <v-tab
                         style="width: 100px"
                         v-for="note in showedNotes"
-                        :key="note.id"
-                        :href="'#tab-' + note.id"
+                        :key="note._id"
+                        :href="'#tab-' + note._id"
                     >
                         {{ getName(note.Name) }}
                     </v-tab>
@@ -44,7 +44,7 @@
                         <v-list class="grey lighten-3">
                             <v-list-item
                                 v-for="note in moreNotes"
-                                :key="note.id"
+                                :key="note._id"
                                 @click="chooseNote(note)"
                             >
                                 {{ note.Name }}
@@ -59,8 +59,8 @@
             <v-tabs-items v-model="currentItem">
                 <v-tab-item
                     v-for="note in reConcatNotes"
-                    :key="note.id"
-                    :value="'tab-' + note.id"
+                    :key="note._id"
+                    :value="'tab-' + note._id"
                 >
                     <v-card flat>
                         <v-card-title>
@@ -116,7 +116,6 @@
     import {commitNoteBookAdd, commitNoteBookRemove} from "@/store/modules/_mutations";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import TimeRender from "@/components/TimeRender.vue";
-
     export default Vue.extend({
         name: "PersonalNote",
         components: {
@@ -126,8 +125,6 @@
         },
         data: function () {
             return {
-                width: 520,
-                height: 720,
                 noteIcon: getIcon('i-note-type', 'notebook'),
                 deleteIcon: getIcon('i-edit', 'delete'),
                 menuIcon: getIcon('i-arrow', false),
@@ -146,8 +143,17 @@
             userDataManager: function (): UserDataManagerState {
                 return this.$store.state.userDataManager
             },
+            styleManager: function (): StyleManagerState {
+                return this.$store.state.styleComponentSize
+            },
+            container: function (): ComponentSize {
+                return this.styleManager.noteBook
+            },
+            markdownContainer: function () : AreaRect {
+                return this.$store.getters.noteBookMarkDown
+            },
             noteBooks: function (): NoteBook[] {
-                return this.userDataManager.userNotes
+                return this.userDataManager.userNoteBook
             },
             reConcatNotes: function (): NoteBook[] {
                 return this.showedNotes.concat(this.moreNotes)
@@ -157,7 +163,7 @@
                     {name: getIcon('i-edit', 'search'), _func: this.search},
                     {name: getIcon('i-note-type', 'addNote'), _func: this.addNote},
                     {name: getIcon('i-edit', 'save'), _func: this.save},
-                    {name: getIcon('i-arrow-double', 'right'), _func: this.addNoteToGraph, toolTip: '添加一个便签到图形内'}
+                    {name: getIcon('i-arrow-double', 'right'), _func: this.addNoteToDocument, toolTip: '添加一个便签到图形内'}
                 ]
             },
             noteIconList: function (): IconItem[] {
@@ -173,8 +179,8 @@
                 ]
             },
             currentNote: function (): NoteBook {
-                let id = this.currentItem.substring(4);
-                let note = this.reConcatNotes.filter(note => note.id.toString() === id)[0];
+                let _id = this.currentItem.substring(4);
+                let note = this.reConcatNotes.filter(note => note._id.toString() === _id)[0];
                 return note || this.noteBooks[0]
             },
             isEditing: function (): boolean {
@@ -187,7 +193,7 @@
                 return this.currentNote
                     ? this.currentNote.$IsMarkdown
                     : false
-            }
+            },
         },
         methods: {
             pushNoteInShowed: function (note: NoteBook) {
@@ -198,7 +204,7 @@
                 } else {
                     this.showedNotes.push(note);
                 }
-                this.currentItem = 'tab-' + note.id;
+                this.currentItem = 'tab-' + note._id;
                 return removed
             },
             pushNoteInMore: function (note: NoteBook[]) {
@@ -235,9 +241,9 @@
             },
 
             addNote: function () {
-                let id = getIndex();
+                let _id = getIndex();
                 let note = {
-                    id,
+                    _id,
                     CreateUser: getCookie('user_id'),
                     CreateType: 'User',
                     Labels: [],
@@ -272,8 +278,8 @@
                 this.currentNote.$IsMarkdown = !this.isMarkdown
             },
 
-            addNoteToGraph: function () {
-                this.$emit('add-note-to-graph')
+            addNoteToDocument: function () {
+                this.$emit('add-empty-note')
             },
 
             save: function () {

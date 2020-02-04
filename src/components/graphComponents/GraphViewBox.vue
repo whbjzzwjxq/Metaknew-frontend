@@ -63,12 +63,14 @@
         </svg>
 
         <rect-container
-            v-for="(metaData, index) in activeGraphRectList"
-            :key="metaData.self.id"
+            @update-size="updateGraphSize(arguments[0], arguments[1], index)"
             :container="getSubGraphByRect(metaData.rect)"
-            v-show="metaData.self.Conf.State.isExplode"
+            :key="metaData.self._id"
+            always-border
             render-as-border
-            always-border>
+            expand-able
+            v-for="(metaData, index) in activeGraphRectList"
+            v-show="metaData.self.Conf.State.isExplode">
 
         </rect-container>
 
@@ -105,10 +107,10 @@
         </graph-media>
 
         <graph-note
-            v-for="(note, index) in notes"
+            v-for="(note, index) in activeNotes"
             :note="note"
             :container="viewBox"
-            :key="note.Setting._id"
+            :key="note._id"
         >
 
         </graph-note>
@@ -143,7 +145,7 @@
     import Vue from 'vue'
     import {
         GraphSelfPart,
-        GraphSettingPart,
+        GraphConf,
         LinkSettingPart,
         MediaSettingPart,
         NodeInfoPart,
@@ -291,10 +293,13 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
+            userDataManager: function(): UserDataManagerState {
+                return this.$store.state.userDataManager
+            },
             state: function (): GraphState {
                 return this.graph.Conf.State
             },
-            setting: function (): GraphSettingPart {
+            setting: function (): GraphConf {
                 return this.graph.Conf
             },
             containerRect: function (): AreaRect {
@@ -317,7 +322,7 @@
             },
 
             activeGraphIdList: function (): id[] {
-                return this.activeGraphList.map(graph => graph.id)
+                return this.activeGraphList.map(graph => graph._id)
             },
 
             //graph的元数据List 就是计算各个SubGraph的绝对坐标
@@ -364,7 +369,7 @@
                     graph.nodes.map(node => {
                         let {_type, _id, Base} = node.Setting;
                         let index = vm.activeGraphIdList.indexOf(_id);
-                        if (_type === 'document' && index > -1 && _id !== graphMeta.self.id) {
+                        if (_type === 'document' && index > -1 && _id !== graphMeta.self._id) {
                             // 如果这个Graph被激活了，就计算元数据
                             let doc = vm.activeGraphList[index];
                             let absPoint = getAbsPointFromParent(node, graphMeta);
@@ -388,16 +393,16 @@
 
             // 除了Root以外的Rect
             activeGraphRectList: function (): GraphMetaData[] {
-                return this.activeGraphMetaDataList.filter(meta => meta.self.id !== this.graph.id)
+                return this.activeGraphMetaDataList.filter(meta => meta.self._id !== this.graph._id)
             },
 
             // 包含所有的Nodes Links
             nodes: function (): NodeSettingPart[] {
                 let result = this.graph.Graph.nodes
-                    .filter(node => node.Setting._id === this.graph.id) as NodeSettingPart[];
+                    .filter(node => node.Setting._id === this.graph._id) as NodeSettingPart[];
                 // root Graph的节点显示
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Graph.nodes.filter(node => node.Setting._id !== graph.id))
+                    result = result.concat(graph.Graph.nodes.filter(node => node.Setting._id !== graph._id))
                     // Graph底下的节点由父亲Graph中的Nodes代替
                 });
                 return result
@@ -405,10 +410,6 @@
 
             nodeIdList: function (): id[] {
                 return this.nodes.map(node => node.Setting._id)
-            },
-
-            nodeLength: function (): number {
-                return this.nodes.length
             },
 
             links: function (): LinkSettingPart[] {
@@ -432,7 +433,11 @@
             },
 
             notes: function (): NoteSettingPart[] {
-                return this.graph.Graph.notes.filter(item => !item.State.isDeleted)
+                return this.userDataManager.userNoteInDoc
+            },
+
+            activeNotes: function(): NoteSettingPart[] {
+                return this.notes.filter(item => !item.State.isDeleted && item.parent._id === this.graph._id)
             },
 
             labelDict: function () {
@@ -448,9 +453,8 @@
                     'node': getLabels(this.nodes),
                     'link': getLabels(this.links),
                     'media': getLabels(this.medias),
-                    'note': getLabels(this.notes),
                     'document': ['DocGraph', 'DocPaper']
-                } as Record<BaseType, string[]>;
+                } as Record<GraphItemType, string[]>;
                 return labelDict
             },
 
@@ -580,7 +584,7 @@
                         this.labelViewDict[node.Setting._type][node.Setting._label] &&
                         !node.State.isDeleted &&
                         node.Setting.Show.showAll) ||
-                    node.Setting._id === this.graph.id
+                    node.Setting._id === this.graph._id
                 )
             },
 
@@ -633,7 +637,7 @@
             getRectByPoint(width: number, height: number, setting: VisNodeSettingPart) {
                 // 将绝对的坐标点转化为矩形
                 //width,height: 从源点引申的尺寸，源点在左上角
-                let graphMeta = this.getGraphMetaData(setting.parent.id);
+                let graphMeta = this.getGraphMetaData(setting.parent._id);
                 const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
                     let delta = getPoint(node.Setting.Base)
                         .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
@@ -670,7 +674,7 @@
                     let {x, y} = $event;
                     let delta = getPoint($event);
                     let rect;
-                    target.parent.id === this.graph.id
+                    target.parent._id === this.graph._id
                         ? (rect = this.containerRect) // 如果是根节点就用containerRect 因为this.graph.rect !== containerRect
                         : (rect = target.parent.rect); // 否则用父亲Rect
                     delta.decrease(this.dragStartPoint).divideRect(rect).divide(this.realScale);
@@ -711,7 +715,7 @@
                 this.selectItem([node]);
                 commitChangeSubTab('info');
                 if (this.isLinking && node && this.startNode) {
-                    if (node.parent.id === this.startNode.parent.id) {
+                    if (node.parent._id === this.startNode.parent._id) {
                         // 如果是同一张图里的
                         let document = node.parent;
                         document.addEmptyLink(this.startNode, node);
@@ -733,7 +737,7 @@
             //框选
             selectItem(itemList: AllSettingPart[]) {
                 //选择
-                itemList.map(item => this.$set(item.State, 'isSelected', true));
+                itemList.map(item => item.updateState("isSelected", true));
                 //如果是单选就切换内容
                 if (itemList.length === 1) {
                     let item = itemList[0];
@@ -751,7 +755,7 @@
                 }
             },
 
-            selectLabel(_type: BaseType, _label: string) {
+            selectLabel(_type: GraphItemType, _label: string) {
                 let result = this.nodes.filter(node => node.Setting._label === _label);
                 this.selectItem(result)
             },
@@ -898,7 +902,21 @@
             },
 
             getGraphMetaData: function (_id: id) {
-                return this.activeGraphMetaDataList.filter(meta => meta.self.id === _id)[0]
+                return this.activeGraphMetaDataList.filter(meta => meta.self._id === _id)[0]
+            },
+
+            updateGraphSize: function (start: PointMixed, end: PointMixed, index: number) {
+                let graph = this.activeGraphRectList[index].self;
+                // 视觉上的更新尺寸start, end
+                let setting = graph.baseNode.Setting;
+                let scale = this.realScale;
+                // 更新起始点
+                setting.Base.x += start.x / (this.containerRect.width * scale);
+                setting.Base.y += start.y / (this.containerRect.height * scale);
+                //更新长宽
+                let delta = getPoint(end).decrease(start).divide(this.realScale);
+                graph.rect.width += delta.x;
+                graph.rect.height += delta.y;
             }
         },
 

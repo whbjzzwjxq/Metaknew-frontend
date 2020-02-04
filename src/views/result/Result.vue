@@ -3,7 +3,6 @@
         v-if="!loading"
         fluid
         fill-height
-        v-resize="onResize"
         class="d-flex flex-row ma-0 pa-0">
         <card-root
             :document="graph">
@@ -45,35 +44,20 @@
                 return this.dataManager.currentGraph
             },
         },
-        methods: {
-            onResize() {
-                commitScreenResize()
-            }
-        },
+        methods: {},
         watch: {},
         created(): void {
-            if (this.graph.id === '$_-1') {
-                let id = getIndex();
-                let graph = GraphSelfPart.emptyGraphSelfPart(id, null);
-                let info = NodeInfoPart.emptyNodeInfoPart(id, 'document', 'DocGraph');
-                commitGraphAdd({graph, strict: true});
-                commitInfoAdd({item: info, strict: true});
+            if (this.graph._id === '$_-1') {
+                let _id = getIndex();
+                let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, null);
                 commitGraphChange({graph});
                 commitRootGraph({graph});
-                let userConcern = userConcernTemplate();
-                commitUserConcernAdd({_id: id, _type: 'document', userConcern});
                 this.loading = false
             } else {
                 this.loading = false
             }
-            let newGraph = this.graph.addSubGraph();
-            newGraph.addEmptyNode("node", "BaseNode");
-            newGraph.addEmptyNode("node", "None");
-            // path test
         },
-        mounted() {
-            this.onResize()
-        },
+        mounted(): void {},
         record: {
             status: 'done',
             description: '结果页整体框架'

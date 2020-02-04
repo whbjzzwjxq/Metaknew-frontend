@@ -5,9 +5,15 @@
                 :text="fragment.Info.Name"
                 :edit-mode="editMode"
                 :font-css="fontCSS"
+                :div-css="divStyle"
                 @update-text="updateValue('Name', $event)">
 
             </field-title>
+
+            <v-spacer></v-spacer>
+            <icon-group :icon-list="iconList" small>
+
+            </icon-group>
         </v-card-title>
         <v-card-text class="pa-2" style="">
             <field-text
@@ -23,11 +29,6 @@
 
             </v-img>
         </v-card-text>
-        <v-card-actions>
-            <icon-group :icon-list="iconList" small>
-
-            </icon-group>
-        </v-card-actions>
     </v-card>
 </template>
 
@@ -76,6 +77,12 @@
                     {name: getIcon('i-arrow-double', 'right'), _func: this.exportFragment},
                     {name: getIcon('i-edit', 'save'), _func: this.saveFragment}
                 ]
+            },
+
+            divStyle: function (): CSSProp {
+                return {
+                    width: '120px'
+                }
             }
         },
         methods: {

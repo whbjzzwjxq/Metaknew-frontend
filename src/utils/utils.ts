@@ -1,5 +1,7 @@
-import {InfoPart, localIdRegex} from "@/utils/graphClass";
+import {getIndex, GraphSelfPart, InfoPart, localIdRegex, NodeSettingPart} from "@/utils/graphClass";
 import {SortProp} from "@/utils/interfaceInComponent";
+import {commitInfoAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
+import {userConcernTemplate} from "@/utils/template";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -170,7 +172,7 @@ export function fileCheck(file: File, size?: number, formats?: string[], filePoo
     return rules.map(rule => rule()).filter(result => result !== '')
 }
 
-export function getInfoPart(_id: id, _type: BaseType, dataManager: DataManagerState) {
+export function getInfoPart(_id: id, _type: GraphItemType, dataManager: DataManagerState) {
     let manager;
     _type === 'link'
         ? manager = dataManager.linkManager
@@ -204,13 +206,13 @@ export function mergeList<T>(list: Array<T[]>) {
 export function idSort(idList: id[]): id[] {
     let remoteId: number[] = [];
     let localId: string[] = [];
-    idList.map(id => {
-        if (typeof id === 'number') {
-            remoteId.push(id)
+    idList.map(_id => {
+        if (typeof _id === 'number') {
+            remoteId.push(_id)
         } else {
-            localIdRegex.test(id)
-                ? localId.push(id)
-                : remoteId.push(parseInt(id))
+            localIdRegex.test(_id)
+                ? localId.push(_id)
+                : remoteId.push(parseInt(_id))
         }
     });
 
@@ -273,3 +275,20 @@ export const currentTime = () => {
     let time = new Date();
     return time.getTime();
 };
+
+export const emptyGraph = () => {
+    return {
+        nodes: [],
+        links: [],
+        medias: [],
+        texts: [],
+        svgs: []
+    } as Graph
+};
+
+export function pushInList<T>(list: undefined | T[], item: T) {
+    list !== undefined
+        ? list.push(item)
+        : (list = [item]);
+    return list
+}

@@ -43,7 +43,7 @@
     interface NodeAsSelectorItem {
         text: string,
         _id: id,
-        _type: BaseType
+        _type: GraphItemType
     }
 
     export default Vue.extend({
