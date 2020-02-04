@@ -36,8 +36,8 @@
         computed: {},
         methods: {
             resolveFile(file: File) {
-                let id = getIndex();
-                let fileObj = MediaInfoPart.emptyMediaInfo(id, file); // todo thumb缩略图
+                let _id = getIndex();
+                let fileObj = MediaInfoPart.emptyMediaInfo(_id, file); // todo thumb缩略图
                 commitInfoAdd({item: fileObj});
                 return fileObj
             },

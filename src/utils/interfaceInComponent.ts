@@ -33,7 +33,7 @@ export type GraphMetaData = {
 
 //DataTable使用
 export interface FlatNodeInfo extends BaseInfo {
-    id: string;
+    _id: string;
     Name: string;
     Alias: Array<string>;
     BaseImp: number;

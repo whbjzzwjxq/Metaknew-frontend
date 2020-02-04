@@ -153,13 +153,13 @@
 
             newNote: function (graph?: GraphSelfPart) {
                 graph || (graph = this.graph);
-                graph?.addEmptyNote()
+                graph.addEmptyNote()
             },
 
             addMedia: function (mediaIdList: id[], graph?: GraphSelfPart) {
                 let defaultDoc = this.graph;
                 graph || (graph = defaultDoc);
-                let mediaSettingList = mediaIdList.map(id => this.dataManager.mediaManager[id])
+                let mediaSettingList = mediaIdList.map(_id => this.dataManager.mediaManager[_id])
                     .map(info => {
                         graph || (graph = defaultDoc);
                         return MediaSettingPart.emptyMediaSettingFromInfo(info, graph)

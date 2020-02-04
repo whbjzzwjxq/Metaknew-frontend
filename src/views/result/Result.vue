@@ -52,9 +52,9 @@
         },
         watch: {},
         created(): void {
-            if (this.graph.id === '$_-1') {
-                let id = getIndex();
-                let {graph, info} = GraphSelfPart.emptyGraphSelfPart(id, null);
+            if (this.graph._id === '$_-1') {
+                let _id = getIndex();
+                let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, null);
                 commitGraphChange({graph});
                 commitRootGraph({graph});
                 this.loading = false

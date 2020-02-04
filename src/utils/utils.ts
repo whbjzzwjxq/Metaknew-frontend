@@ -206,13 +206,13 @@ export function mergeList<T>(list: Array<T[]>) {
 export function idSort(idList: id[]): id[] {
     let remoteId: number[] = [];
     let localId: string[] = [];
-    idList.map(id => {
-        if (typeof id === 'number') {
-            remoteId.push(id)
+    idList.map(_id => {
+        if (typeof _id === 'number') {
+            remoteId.push(_id)
         } else {
-            localIdRegex.test(id)
-                ? localId.push(id)
-                : remoteId.push(parseInt(id))
+            localIdRegex.test(_id)
+                ? localId.push(_id)
+                : remoteId.push(parseInt(_id))
         }
     });
 

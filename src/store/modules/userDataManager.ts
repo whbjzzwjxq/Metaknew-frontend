@@ -20,7 +20,7 @@ export interface NoteBook extends BaseCtrl {
     Name: string,
     Text: string,
     Svg: any,
-    id: id,
+    _id: id,
     State: NoteBookState,
     $IsMarkdown: boolean
 }

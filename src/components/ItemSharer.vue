@@ -46,7 +46,7 @@
             },
 
             userConcern: function (): UserConcern {
-                return this.userDataManager.userConcernDict[this.itemInfo.type][this.itemInfo.id]
+                return this.userDataManager.userConcernDict[this.itemInfo.type][this.itemInfo._id]
             },
 
             iconList: function (): IconItem[] {
@@ -111,14 +111,14 @@
             },
 
             addFragment: function (method: string) {
-                let id = getIndex();
-                if (!this.fragmentSourceIdList.includes(this.itemInfo.id)) {
+                let _id = getIndex();
+                if (!this.fragmentSourceIdList.includes(this.itemInfo._id)) {
                     if (this.itemInfo.isRemote) {
-                        let fragment = FragmentInfoPart.fragmentFromItem(this.itemInfo, id, method);
+                        let fragment = FragmentInfoPart.fragmentFromItem(this.itemInfo, _id, method);
                         dispatchFragmentAdd(fragment)
                     } else {
                         // 非远端不生成 测试功能暂时使用
-                        let fragment = FragmentInfoPart.fragmentFromItem(this.itemInfo, id, method);
+                        let fragment = FragmentInfoPart.fragmentFromItem(this.itemInfo, _id, method);
                         dispatchFragmentAdd(fragment)
                     }
                 } else {

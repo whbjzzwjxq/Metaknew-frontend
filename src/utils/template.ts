@@ -865,7 +865,7 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
     let info = <BaseNodeInfo>{
-        id: _id,
+        _id: _id,
         type: _type,
         PrimaryLabel: _label,
         Name: 'NewNode' + _id,
@@ -927,7 +927,7 @@ export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
 
 export function mediaInfoTemplate(_id: id, file: File) {
     return <BaseMediaInfo>{
-        id: _id,
+        _id: _id,
         type: "media",
         PrimaryLabel: getMediaType(file),
         Name: file.name.split(".")[0],
@@ -967,7 +967,7 @@ export function linkInfoTemplate(_id: id, _label: string) {
         commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
     return <BaseLinkInfo>{
-        id: _id,
+        _id: _id,
         type: "link",
         PrimaryLabel: _label,
         $IsCommon: true,

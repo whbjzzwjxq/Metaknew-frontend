@@ -47,7 +47,7 @@
                     :items="nodes"
                     :headers="allHeader"
                     :footer-props="footSetting"
-                    item-key="id"
+                    item-key="_id"
                     show-select
                     calculate-widths>
 
@@ -56,8 +56,8 @@
                         <v-icon class="mr-2" small @click="deleteItem(item)">{{ editIcon['delete'] }}</v-icon>
                     </template>
 
-                    <template v-slot:item.id="{item}">
-                        <span>{{item.id}}</span>
+                    <template v-slot:item._id="{item}">
+                        <span>{{item._id}}</span>
                     </template>
 
                     <template v-for="(setting, prop) in headerSlot" v-slot:[getName(prop)]="{ item }">
@@ -143,7 +143,7 @@
                 //被选中的节点
                 selected: [] as FlatNodeInfo[],
                 //不需要编辑值的属性
-                unShowProps: ["id", "type"],
+                unShowProps: ["_id", "type"],
                 //数据表底部插槽
                 footSetting: {
                     showFirstLastPage: true,
@@ -276,7 +276,7 @@
             },
             //现在的index
             idList: function (): id[] {
-                return this.nodes.map(node => node.id)
+                return this.nodes.map(node => node._id)
             }
         },
         methods: {
@@ -297,7 +297,7 @@
                 for (let i = 0; i < num; i++) {
                     let newObj = deepClone(this.nodeTemplate);
                     newObj.Name = "***" + (i + base).toString();
-                    newObj.id = this.getIndex();
+                    newObj._id = this.getIndex();
                     result.push(newObj)
                 }
                 this.addResolvedNode(result);
@@ -307,7 +307,7 @@
             copyItem(item: FlatNodeInfo) {
                 let index = this.nodes.indexOf(item);
                 let newItem = deepClone(item) as FlatNodeInfo;
-                newItem.id = this.getIndex();
+                newItem._id = this.getIndex();
                 this.nodes.splice(index + 1, 0, newItem);
             },
 
@@ -366,7 +366,7 @@
                         hasNeededProp || (node[i] = deepClone(this.nodeTemplate[i]));
                     }
                 });
-                node.id = this.getIndex();
+                node._id = this.getIndex();
                 // 合并Prop
                 this.mergeProp(node.Description, translate);
                 this.mergeProp(node.Text, text);
@@ -388,10 +388,9 @@
                 let _this = this;
                 nodeCreateMulti(this.pLabel, nodes).then(res => {
                     if (res.status === 200) {
-                        alert(res.data);
                         for (let i in nodes) {
-                            this.nodes.splice(_this.idList.indexOf(nodes[i].id), 1);
-                            this.selected.splice(_this.idList.indexOf(nodes[i].id), 1)
+                            this.nodes.splice(_this.idList.indexOf(nodes[i]._id), 1);
+                            this.selected.splice(_this.idList.indexOf(nodes[i]._id), 1)
                         }
                     }
                 })

@@ -45,7 +45,7 @@ declare global {
 
     //InfoPart相关
     interface BaseInfo {
-        id: id;
+        _id: id;
         type: SourceType;
         PrimaryLabel: string;
         Name: string,
@@ -297,7 +297,7 @@ export abstract class InfoPart {
     isEdit: boolean;
 
     get _id() {
-        return this.Info.id
+        return this.Info._id
     }
 
     set _id(newId) {
@@ -331,7 +331,7 @@ export abstract class InfoPart {
     }
 
     changeId(newId: id) {
-        Vue.set(this.Info, "id", newId);
+        Vue.set(this.Info, "_id", newId);
         this.isEdit = false;
     }
 
@@ -381,7 +381,7 @@ export class NodeInfoPart extends InfoPart {
 
     changeId(newId: id) {
         this._id = newId;
-        Vue.set(this.Info, "id", newId);
+        Vue.set(this.Info, "_id", newId);
         this.isEdit = false;
         // node 重写
         this.synchronizationSource("_id", newId);
@@ -466,7 +466,7 @@ export class LinkInfoPart extends InfoPart {
     }
 
     changeId(newId: id) {
-        this.Info.id = newId;
+        this.Info._id = newId;
         this.synchronizationSource("_id", newId);
         this.isEdit = false;
     }
@@ -528,6 +528,10 @@ export class MediaInfoPart extends InfoPart {
     Info: BaseMediaInfo;
     Ctrl: BaseMediaCtrl;
 
+    get type() {
+        return this.Info.type
+    }
+
     get statusColor() {
         return MediaInfoPart.statusDict[this.status]
     }
@@ -568,7 +572,7 @@ export class MediaInfoPart extends InfoPart {
     }
 
     changeId(newId: id) {
-        this.Info.id = newId;
+        this.Info._id = newId;
         this.synchronizationSource("_id", newId);
         this.isEdit = false;
     }
@@ -1044,9 +1048,9 @@ export class GraphSelfPart {
     addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex?: boolean) {
         _label || (_label = 'BaseNode');
         commitToVuex === undefined && (commitToVuex = true);
-        let id = getIndex();
-        let info = NodeInfoPart.emptyNodeInfoPart(id, _type, _label);
-        let setting = NodeSettingPart.emptyNodeSetting(id, _type, _label, 'NewNode' + id, '', this);
+        let _id = getIndex();
+        let info = NodeInfoPart.emptyNodeInfoPart(_id, _type, _label);
+        let setting = NodeSettingPart.emptyNodeSetting(_id, _type, _label, 'NewNode' + _id, '', this);
         setting.State.isSelf = true;
         this.addItems([setting]);
         let payload = {setting, info};
@@ -1057,11 +1061,11 @@ export class GraphSelfPart {
     addEmptyLink(_start: VisNodeSettingPart, _end: VisNodeSettingPart, _label?: string, commitToVuex?: boolean) {
         _label || (_label = 'Default');
         commitToVuex === undefined && (commitToVuex = true);
-        let id = getIndex();
+        let _id = getIndex();
         // info
-        let info = LinkInfoPart.emptyLinkInfo(id, _label, _start, _end);
+        let info = LinkInfoPart.emptyLinkInfo(_id, _label, _start, _end);
         // setting
-        let setting = LinkSettingPart.emptyLinkSetting(id, _label, _start, _end, this);
+        let setting = LinkSettingPart.emptyLinkSetting(_id, _label, _start, _end, this);
         setting.State.isSelf = true;
         this.addItems([setting]);
         let payload = {setting, info};
@@ -1079,8 +1083,8 @@ export class GraphSelfPart {
 
     addSubGraph(commitToVuex?: boolean) {
         commitToVuex === undefined && (commitToVuex = true);
-        let id = getIndex();
-        let {graph, info} = GraphSelfPart.emptyGraphSelfPart(id, this);
+        let _id = getIndex();
+        let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, this);
         let payload = {graph, info};
         this.addItems([graph.baseNode.deepCloneSelf()]);
         if (commitToVuex) {
@@ -1126,8 +1130,8 @@ export const findItem = (list: Array<SettingPart>, _id: id, _type: GraphItemType
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");
 
-export const InfoToSetting = (payload: { id: id; type: GraphItemType; PrimaryLabel: string; }) =>
-    ({_id: payload.id, _type: payload.type, _label: payload.PrimaryLabel} as Setting);
+export const InfoToSetting = (payload: { _id: id; type: GraphItemType; PrimaryLabel: string; }) =>
+    ({_id: payload._id, _type: payload.type, _label: payload.PrimaryLabel} as Setting);
 
 export const findRoot = (item: SettingPart) => {
     if (!item.parent) {

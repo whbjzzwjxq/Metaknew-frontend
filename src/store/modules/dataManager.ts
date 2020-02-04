@@ -78,10 +78,10 @@ const mutations = {
     // ------------单纯的操作------------
     currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
-        let id = graph._id; // 这里payload是document
+        let _id = graph._id; // 这里payload是document
         Vue.set(graph.Conf.State, 'isExplode', true);
         state.currentGraph = graph;
-        commitItemChange(state.nodeManager[id]);
+        commitItemChange(state.nodeManager[_id]);
     },
 
     rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
@@ -214,7 +214,7 @@ const actions = {
                 const {data} = res;
                 data.map(link => {
                     if (!isNodeBackend(link)) {
-                        let linkSetting = noCacheLink.filter(setting => setting._id === link.Info.id)[0];
+                        let linkSetting = noCacheLink.filter(setting => setting._id === link.Info._id)[0];
                         let linkInfo = new LinkInfoPart(link.Info,
                             Object.assign(link.Ctrl, {
                                 Start: linkSetting._start,
@@ -232,14 +232,14 @@ const actions = {
     // 请求Media
     mediaQuery(context: Context, payload: Array<id>) {
         payload || (payload = []);
-        let noCacheMedia = payload.filter(id => !state.nodeManager[id]);
+        let noCacheMedia = payload.filter(_id => !state.nodeManager[_id]);
 
         if (noCacheMedia.length > 0) {
             let defaultImage = require('@/assets/defaultImage.jpg');
-            noCacheMedia.map(id => {
-                commitInfoAdd({item: MediaInfoPart.emptyMediaInfo(id, defaultImage)});
+            noCacheMedia.map(_id => {
+                commitInfoAdd({item: MediaInfoPart.emptyMediaInfo(_id, defaultImage)});
                 return <SourceQueryObject>{
-                    _id: id,
+                    _id,
                     _type: 'media',
                     _label: 'unknown'
                 }

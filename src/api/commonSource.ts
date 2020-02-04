@@ -123,12 +123,12 @@ export function nodeQuery(payload: SourceQueryObject) {
     })
 }
 
-export function documentQuery(id: id) {
+export function documentQuery(_id: id) {
     return instance.request<BackendGraph>({
         url: '/document/query/graph',
         method: 'get',
         params: {
-            _id: id
+            _id
         }
     })
 }

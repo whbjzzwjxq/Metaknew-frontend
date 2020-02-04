@@ -249,15 +249,15 @@
             },
 
             addItemToGraph() {
-                let unDuplicateItems = this.selection.filter(item => this.currentGraph.checkExist(item.id, item.type));
+                let unDuplicateItems = this.selection.filter(item => this.currentGraph.checkExist(item._id, item.type));
                 let nodes = unDuplicateItems.filter(item => item.type !== 'media');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let queryObjectList = this.selection.filter(item => !this.dataManager.nodeManager[item.id]);
+                let queryObjectList = this.selection.filter(item => !this.dataManager.nodeManager[item._id]);
                 this.$store.dispatch('nodeQuery', queryObjectList.filter(item => item.type !== 'media').map(
                     item => InfoToSetting(item))
                 );
                 this.$store.dispatch('mediaQuery', queryObjectList.filter(item => item.type === 'media').map(
-                    item => item.id)
+                    item => item._id)
                 );
                 let nodeSettingList = nodes.map(node => {
                     let {_id, _type, _label} = InfoToSetting(node);
@@ -319,7 +319,7 @@
                             this.$router.push({
                                 name: "graph",
                                 path: "graph/id=:id/mode=:mode",
-                                params: {id: this.selection[0].id.toString(), mode: 'normal'}
+                                params: {id: this.selection[0]._id.toString(), mode: 'normal'}
                             })
                         }
                     }

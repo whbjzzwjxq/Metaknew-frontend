@@ -1,12 +1,10 @@
 import {NodeInfoPart} from "@/utils/graphClass";
 
 export class PathSelfPart {
-    id: id;
     Content: Path;
     Conf: PathSetting;
 
-    constructor(id: id, conf: PathSetting, content: Path) {
-        this.id = id;
+    constructor(_id: id, conf: PathSetting, content: Path) {
         this.Conf = conf;
         this.Content = content
     }

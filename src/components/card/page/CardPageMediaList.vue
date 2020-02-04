@@ -76,7 +76,7 @@
                 return this.$store.state.dataManager
             },
             mediaList: function (): MediaInfoPart[] {
-                return this.mediaIdList.map(id => this.dataManager.mediaManager[id]).filter(media => media)
+                return this.mediaIdList.map(_id => this.dataManager.mediaManager[_id]).filter(media => media)
             },
             fileToken: function (): FileToken {
                 return this.dataManager.fileToken

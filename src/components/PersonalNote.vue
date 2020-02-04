@@ -22,8 +22,8 @@
                     <v-tab
                         style="width: 100px"
                         v-for="note in showedNotes"
-                        :key="note.id"
-                        :href="'#tab-' + note.id"
+                        :key="note._id"
+                        :href="'#tab-' + note._id"
                     >
                         {{ getName(note.Name) }}
                     </v-tab>
@@ -44,7 +44,7 @@
                         <v-list class="grey lighten-3">
                             <v-list-item
                                 v-for="note in moreNotes"
-                                :key="note.id"
+                                :key="note._id"
                                 @click="chooseNote(note)"
                             >
                                 {{ note.Name }}
@@ -59,8 +59,8 @@
             <v-tabs-items v-model="currentItem">
                 <v-tab-item
                     v-for="note in reConcatNotes"
-                    :key="note.id"
-                    :value="'tab-' + note.id"
+                    :key="note._id"
+                    :value="'tab-' + note._id"
                 >
                     <v-card flat>
                         <v-card-title>
@@ -181,8 +181,8 @@
                 ]
             },
             currentNote: function (): NoteBook {
-                let id = this.currentItem.substring(4);
-                let note = this.reConcatNotes.filter(note => note.id.toString() === id)[0];
+                let _id = this.currentItem.substring(4);
+                let note = this.reConcatNotes.filter(note => note._id.toString() === _id)[0];
                 return note || this.noteBooks[0]
             },
             isEditing: function (): boolean {
@@ -206,7 +206,7 @@
                 } else {
                     this.showedNotes.push(note);
                 }
-                this.currentItem = 'tab-' + note.id;
+                this.currentItem = 'tab-' + note._id;
                 return removed
             },
             pushNoteInMore: function (note: NoteBook[]) {
@@ -243,9 +243,9 @@
             },
 
             addNote: function () {
-                let id = getIndex();
+                let _id = getIndex();
                 let note = {
-                    id,
+                    _id,
                     CreateUser: getCookie('user_id'),
                     CreateType: 'User',
                     Labels: [],

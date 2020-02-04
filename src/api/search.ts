@@ -8,7 +8,7 @@ export interface SearchQueryObject {
 }
 
 export interface IndexedInfo {
-    id: id,
+    _id: id,
     type: GraphItemType,
     PrimaryLabel: string,
     Language: string,
@@ -37,7 +37,7 @@ export interface IndexedInfo {
 }
 
 export interface IndexedText {
-    id: id,
+    _id: id,
     type: GraphItemType,
     PrimaryLabel: string,
     Language: string,

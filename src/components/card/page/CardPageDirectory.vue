@@ -19,7 +19,7 @@
         <template v-if="editMode" v-slot:append="{ item }">
             <template>
                 <v-btn
-                    v-if="item.id === dataManager.currentGraph._id"
+                    v-if="item._id === dataManager.currentGraph._id"
                     style="font-weight: bolder;"
                     color="#42b983"
                     x-small
@@ -55,7 +55,7 @@
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
 
     interface DirectoryItem {
-        id: id,
+        _id: id,
         type: GraphItemType,
         label: string,
         name: string,
@@ -143,26 +143,26 @@
                 get(): DirectoryItem[] {
                     // 逃生舱式写法 获取根节点级别的选择集
                     let root = this.tree.filter(root => {
-                        let node = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
+                        let node = this.document.Graph.nodes.filter(item => item._id === root._id)[0];
                         return node.State.isSelected
                     }) as DirectoryItem[];
                     return root.concat(this.baseItemList.filter(item => this.getOriginItem(item).State.isSelected))
                 },
                 set(value: DirectoryItem[]) {
-                    let newIdList = value.map(item => item.id);
-                    let oldIdList = this.selection.map(item => item.id);
-                    let selectedItems = value.filter(item => !oldIdList.includes(item.id));
-                    let unselectedItems = this.selection.filter(item => !newIdList.includes(item.id));
+                    let newIdList = value.map(item => item._id);
+                    let oldIdList = this.selection.map(item => item._id);
+                    let selectedItems = value.filter(item => !oldIdList.includes(item._id));
+                    let unselectedItems = this.selection.filter(item => !newIdList.includes(item._id));
                     let select = (list: DirectoryItem[], state: boolean) => {
                         list.map(item => {
                             let origin = this.getOriginItem(item);
                             origin.updateState('isSelected', state);
                             if (item.type === 'document') {
-                                let subNode = origin.parent.getSubItemById(item.id, item.type);
+                                let subNode = origin.parent.getSubItemById(item._id, item.type);
                                 subNode.updateState('isSelected', state);
                                 // 如果是新选中的Document
                                 if (state) {
-                                    this.dataManager.graphManager[item.id].selectAll('isSelected', true)
+                                    this.dataManager.graphManager[item._id].selectAll('isSelected', true)
                                 }
                             }
                         })
@@ -171,8 +171,8 @@
                     select(unselectedItems, false);
                     // 把root级别的subNode也找到
                     this.tree.map(root => {
-                        let origin = this.document.Graph.nodes.filter(item => item.Setting._id === root.id)[0];
-                        origin.updateState('isSelected', newIdList.includes(root.id));
+                        let origin = this.document.Graph.nodes.filter(item => item.Setting._id === root._id)[0];
+                        origin.updateState('isSelected', newIdList.includes(root._id));
                     })
                 }
             }
@@ -221,7 +221,7 @@
             },
 
             nodeToItem: (node: NodeSettingPart) => ({
-                id: node.Setting._id,
+                _id: node.Setting._id,
                 type: 'node', //这里是目录意义上的节点
                 label: node.Setting._label,
                 name: node.Setting._name,
@@ -233,7 +233,7 @@
             }) as DirectoryItem,
 
             linkToItem: (link: LinkSettingPart) => ({
-                id: link.Setting._id,
+                _id: link.Setting._id,
                 type: link.Setting._type,
                 label: link.Setting._label,
                 icon: getIcon('i-item', 'link'),
@@ -244,7 +244,7 @@
             }) as DirectoryItem,
 
             mediaToItem: (media: MediaSettingPart) => ({
-                id: media.Setting._id,
+                _id: media.Setting._id,
                 type: media.Setting._type,
                 label: media.Setting._label,
                 name: media.Setting._name,
@@ -256,7 +256,7 @@
 
             documentToItem: function (document: GraphSelfPart) {
                 return {
-                    id: document._id,
+                    _id: document._id,
                     type: 'document',
                     label: document.baseNode.Setting._label,
                     name: document.baseNode.Setting._name,
@@ -271,12 +271,12 @@
 
             updateItemsToParent: function (documentItem: DirectoryItemDocument) {
                 let currentDocument = documentItem.children.filter(item => isDocument(item));
-                let currentDocumentId = currentDocument.map(item => item.id);
-                let newItemList = this.allDocToItemDict[documentItem.id];
+                let currentDocumentId = currentDocument.map(item => item._id);
+                let newItemList = this.allDocToItemDict[documentItem._id];
                 let newChildren = currentDocument;
                 newItemList.map(item => {
-                    let id = item.id;
-                    if (currentDocumentId.includes(id)) {
+                    let _id = item._id;
+                    if (currentDocumentId.includes(_id)) {
                         //do Nothing 节点被抛弃 因为已经替换成了DocumentItem
                     } else {
                         newChildren.push(item)
@@ -306,10 +306,10 @@
 
             editItem(item: DirectoryItem) {
                 if (item.type === 'node') {
-                    let info = this.dataManager.nodeManager[item.id];
+                    let info = this.dataManager.nodeManager[item._id];
                     commitItemChange(info)
                 } else if (item.type === 'link') {
-                    let info = this.dataManager.linkManager[item.id];
+                    let info = this.dataManager.linkManager[item._id];
                     commitItemChange(info)
                 } else if (item.type === 'media') {
                     // media编辑
@@ -317,7 +317,7 @@
                     let note = this.getOriginItem(item);
                     note.updateState('isEditing')
                 } else if (item.type === 'document') {
-                    let graph = this.dataManager.graphManager[item.id];
+                    let graph = this.dataManager.graphManager[item._id];
                     graph && commitGraphChange({graph: graph})
                 }
             },
@@ -327,7 +327,7 @@
                 item.parent !== '$_-1'
                     ? document = this.dataManager.graphManager[item.parent]
                     : document = this.document;
-                return document.getSubItemById(item.id, item.type)
+                return document.getSubItemById(item._id, item.type)
             },
 
             async getDocument(nodeItem: DirectoryItem) {
@@ -337,33 +337,13 @@
             },
 
             open(itemList: DirectoryItem[]) {
-                // let closeItems = this.lastOpenList.filter(item => !itemList.includes(item));
-                // let openItems = itemList.filter(item => !this.lastOpenList.includes(item));
-                // closeItems.map(item => {
-                //     let targetDocument = this.documents.filter(doc => doc.id === item.id)[0];
-                //     if (targetDocument && targetDocument.Conf.State.isExplode) {
-                //         // 如果是打开的就关闭
-                //         targetDocument.explode()
-                //     } else {
-                //         // todo open合理化
-                //     }
-                // });
-                // openItems.map(item => {
-                //     let targetDocument = this.documents.filter(doc => doc.id === item.id)[0];
-                //     if (targetDocument && !targetDocument.Conf.State.isExplode) {
-                //         // 如果是关闭的就打开
-                //         targetDocument.explode()
-                //     } else {
-                //         //
-                //     }
-                // });
-                // this.lastOpenList = itemList;
+
             },
 
             getDocumentChildList(document: GraphSelfPart): DirectoryItem[] {
                 let nodes = document.Graph.nodes.filter(item => !item.State.isDeleted)
                     .map(node => this.nodeToItem(node))
-                    .filter(item => item.id !== document._id);
+                    .filter(item => item._id !== document._id);
 
                 let links = document.Graph.links.filter(item => !item.State.isDeleted)
                     .map(link => this.linkToItem(link));

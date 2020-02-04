@@ -35,15 +35,19 @@ export class FragmentInfoPart extends InfoPart {
     Info: FragmentInfo;
     Ctrl: FragmentCtrl;
 
+    get _id() {
+        return this.Info._id
+    }
+
     constructor(info: FragmentInfo, ctrl: FragmentCtrl) {
         super(info, ctrl);
         this.Info = info;
         this.Ctrl = ctrl
     }
 
-    static fragmentFromItem(itemInfo: NodeInfoPart | MediaInfoPart | LinkInfoPart, id: id, method: string) {
+    static fragmentFromItem(itemInfo: NodeInfoPart | MediaInfoPart | LinkInfoPart, _id: id, method: string) {
         let info = {
-            id,
+            _id,
             type: 'fragment',
             PrimaryLabel: isMediaInfoPart(itemInfo) ? 'image' : 'text',
             Name: itemInfo.Info.Name === '' ? itemInfo.Info.Name : 'NewFragment From ' + itemInfo.type + itemInfo._id,
