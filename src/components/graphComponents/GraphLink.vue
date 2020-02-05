@@ -66,7 +66,7 @@
 
             scale: {
                 type: Number as () => number,
-                required: true
+                default: 1
             },
 
             midLocation: {

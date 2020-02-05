@@ -1,17 +1,17 @@
-export const nodeTemplateTheme: Record<string, Record<string, Record<string, any>>> = {
-    'inPath': {
+export const nodeTemplateTheme: Record<string, () => Record<string, Record<string, any>>> = {
+    inPath: () => ({
         Base: {
-            size: 12,
+            size: 0,
             scaleX: 1,
             x: 0,
             y: 0,
-            color: '#3d85ad',
-            opacity: 1,
+            color: '#eaecee',
+            opacity: 0.5,
             type: 'ellipse',
             isMain: false
         },
         Border: {
-            width: 2,
+            width: 1,
             color: '#95b3ff',
             isDash: true
         },
@@ -32,6 +32,5 @@ export const nodeTemplateTheme: Record<string, Record<string, Record<string, any
             textColor: '#000000',
             twoLine: false
         },
-    },
-
+    }),
 };

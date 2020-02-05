@@ -44,7 +44,7 @@
             </template>
         </toolbar-bottom>
         <v-card :style="bottomSheetStyle" v-show="bottomSheet" class="unselected">
-            <v-card-title>
+            <v-card-title class="pa-2">
                 <template v-if="bottomSheetKey === 'path'">
                     Current Path
                 </template>
@@ -52,7 +52,10 @@
                 <icon-group :icon-list="bottomSheetIconList"></icon-group>
             </v-card-title>
             <v-card-text class="pa-0 ma-0">
-                <path-drawer :container="bottomSheetRect">
+                <div :style="pathLeftDivStyle">
+
+                </div>
+                <path-drawer :container="pathSvgRect" :path="path">
 
                 </path-drawer>
             </v-card-text>
@@ -64,6 +67,7 @@
     import Vue from 'vue'
     import {RectByPoint} from "@/utils/geoMetric";
     import {
+        getIndex,
         GraphSelfPart,
         MediaSettingPart,
     } from "@/utils/graphClass";
@@ -76,6 +80,8 @@
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
+    import {PathSelfPart} from "@/utils/pathClass";
+    import {settingTemplate} from "@/utils/template";
 
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -92,7 +98,9 @@
             return {
                 editPageRegex: new RegExp('edit-.*'),
                 bottomSheet: false,
-                bottomSheetKey: 'path'
+                bottomSheetKey: 'path', // 指定渲染内容,
+                pathLeftDivWidth: 240,
+                path: PathSelfPart.emptyPathSelfPart()
             }
         },
         props: {},
@@ -119,6 +127,9 @@
             bottomSheetRect: function (): RectByPoint {
                 return this.allComponentsStyle.bottomDynamicBar
             },
+            bottomSheetArea: function (): AreaRect {
+                return this.bottomSheetRect.positiveRect()
+            },
             bottomSheetStyle: function (): CSSProp {
                 return this.bottomSheetRect.getDivCSS({zIndex: 5}, true)
             },
@@ -128,6 +139,21 @@
                     {name: getIcon('i-arrow-double', false), _func: this.bottomSheetDecrease},
                     {name: getIcon('i-edit', 'close'), _func: this.bottomSheetOff},
                 ]
+            },
+
+            pathLeftDivStyle: function (): CSSProp {
+                return {
+                    width: this.pathLeftDivWidth + 'px',
+                    height: (this.bottomSheetArea.height - 48) + 'px',
+                    display: 'inline-block'
+                }
+            },
+
+            pathSvgRect: function (): RectObject {
+                return {
+                    width: (this.bottomSheetArea.width - this.pathLeftDivWidth),
+                    height: (this.bottomSheetArea.height - 48)
+                }
             }
         },
         methods: {
