@@ -1,27 +1,99 @@
-import {NodeInfoPart} from "@/utils/graphClass";
+import {getIndex, NodeInfoPart} from "@/utils/graphClass";
+import {
+    nodeCtrlTemplate,
+    nodeInfoTemplate,
+    nodeStateTemplate,
+    pathSettingTemplate,
+} from "@/utils/template";
+import {nodeTemplateTheme} from "@/utils/templateStandard";
 
 export class PathSelfPart {
-    Content: Path;
-    Conf: PathSetting;
+    Conf: PathConf;
+    InfoPart: PathInfoPart;
+    protected _array: PathArray;
 
-    constructor(_id: id, conf: PathSetting, content: Path) {
+    get depth() {
+        let max = 0;
+        this.array.map(array => {
+            array.length > max && (max = array.length)
+        });
+        return max
+    }
+
+    get breadth() {
+        return this.array.length
+    }
+
+    get array () {
+        return this._array
+    }
+
+    get _id() {
+        return this.Conf._id
+    }
+
+    get root() {
+        return this.array[0][0]
+    }
+
+    constructor(conf: PathConf, _array: PathArray, info: PathInfoPart) {
+        this.InfoPart = info;
         this.Conf = conf;
-        this.Content = content
+        this._array = _array;
     }
 
     static emptyPathSelfPart() {
+        let _id = getIndex();
+        let conf = pathSettingTemplate(_id);
+        let subArray = [] as (PathNodeSettingPart | null)[];
+        subArray.length = 12;
+        subArray.fill(null);
+        let _array = [] as PathArray;
+        _array.length = 4;
+        _array.fill(subArray);
+        let info = PathInfoPart.emptyPathInfoPart();
+        return new PathSelfPart(conf, _array, info)
+    }
 
+    depthFirstSearch() {
+        let array = [] as PathNodeSettingPart[];
+        let search = function (node: PathNodeSettingPart | null) {
+            node !== null &&
+            node.children.map((node, index) => {
+                array.push(node);
+                search(node);
+            })
+        };
+        search(this.root);
+        return array
+    }
+
+    addLayer() {
+        this.array.push([])
+    }
+
+    decreaseLayer(index: number) {
+        let array = this.array[index];
+        let nodeList = array.filter(item => item !== null);
+        nodeList.length === 0 && this.array.splice(index, 1);
     }
 }
 
 export class PathInfoPart extends NodeInfoPart {
     Info: BasePathInfo;
-    Ctrl: BasePathCtrl;
+    Ctrl: BaseNodeCtrl;
 
-    constructor(info: BasePathInfo, ctrl: BasePathCtrl) {
+    constructor(info: BasePathInfo, ctrl: BaseNodeCtrl) {
         super(info, ctrl);
         this.Info = info;
         this.Ctrl = ctrl;
+    }
+
+    static emptyPathInfoPart() {
+        let _id = getIndex();
+        let info = nodeInfoTemplate(_id, "document", "path") as BasePathInfo;
+        let ctrl = nodeCtrlTemplate("document", "path");
+        return new PathInfoPart(info, ctrl)
     }
 }
 
@@ -29,28 +101,63 @@ export class PathLinkSettingPart {
     State: LinkState;
     start: PathNodeSettingPart;
     end: PathNodeSettingPart;
+    time: number;
+    animate: object;
 
-    constructor(state: LinkState, start: PathNodeSettingPart, end: PathNodeSettingPart) {
+    constructor(state: LinkState, start: PathNodeSettingPart, end: PathNodeSettingPart, time: number, animate: object) {
         this.start = start;
         this.end = end;
         this.State = state;
+        this.time = time;
+        this.animate = animate
     }
 }
 
 export class PathNodeSettingPart {
     State: NodeState;
     Setting: NodeSetting;
-    depth: number;
-    index: number;
     children: PathNodeSettingPart[];
-    parent: PathNodeSettingPart;
+    parent: PathNodeSettingPart | null;
 
-    constructor(state: NodeState, setting: NodeSetting, depth: number, index: number, parent: PathNodeSettingPart) {
+    get _id() {
+        return this.Setting._id
+    }
+
+    constructor(state: NodeState, setting: NodeSetting, parent: PathNodeSettingPart | null, children?:PathNodeSettingPart[]) {
         this.State = state;
         this.Setting = setting;
-        this.depth = depth;
-        this.index = index;
-        this.children = [];
+        children
+            ? this.children = children
+            : this.children = [];
         this.parent = parent;
     }
+
+    static emptyPathNodeSSettingPart() {
+        let _id = getIndex();
+        let state = nodeStateTemplate();
+        let setting = {
+            _id,
+            _type: 'node',
+            _label: 'pathNode',
+            _name: '',
+            _image: ''
+        } as NodeSetting;
+        Object.assign(setting, nodeTemplateTheme.inPath());
+        return new PathNodeSettingPart(state, setting, null)
+    }
 }
+
+export interface IndexDouble {
+    depth: number;
+    breadth: number;
+}
+
+export interface PathNodeEmpty extends IndexDouble {
+    node: null
+}
+
+export interface PathNodeExist extends IndexDouble {
+    node: PathNodeSettingPart
+}
+
+export type PathNode = PathNodeEmpty | PathNodeExist;

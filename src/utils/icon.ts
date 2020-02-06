@@ -89,6 +89,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     'i-arrow-double': {
         true: 'mdi-chevron-double-up',
         false: 'mdi-chevron-double-down',
+        up: 'mdi-chevron-double-up',
+        down: 'mdi-chevron-double-down',
         left: 'mdi-chevron-double-left',
         right: 'mdi-chevron-double-right'
     },

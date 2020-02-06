@@ -15,24 +15,20 @@ import {
     nodeSettingTemplate,
     nodeStateTemplate,
     noteSettingTemplate,
-    noteStateTemplate, userConcernTemplate,
+    noteStateTemplate,
+    userConcernTemplate,
 } from "@/utils/template";
 import {isGraphType, isLinkSetting, isMediaSetting, isNodeSetting, isSvgSetting} from "@/utils/typeCheck";
 import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
 import {BackendGraph} from "@/api/commonSource";
-import {PathLinkSettingPart, PathNodeSettingPart} from "@/utils/pathClass";
-import {
-    commitGraphAdd,
-    commitInfoAdd,
-    commitNoteInDocAdd,
-    commitUserConcernAdd
-} from "@/store/modules/_mutations";
+import {PathNodeSettingPart} from "@/utils/pathClass";
+import {commitGraphAdd, commitInfoAdd, commitNoteInDocAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
 
 declare global {
     type id = number | string;
     type ItemType = "node" | "link" | "media" | "document" // 基础的type
     type GraphItemType = ItemType | "text" | "svg"; // Graph里使用的type
-    type SourceType = GraphItemType | "fragment" | "note";
+    type SourceType = GraphItemType | "fragment" | "note" | "path";
     type GraphTypeS = 'nodes' | 'medias' | 'links' | "texts" | "svgs";
     type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
     type idMap = Record<id, id>; // 新旧id的Map
@@ -272,13 +268,7 @@ declare global {
         texts: Array<TextSettingPart>;
     }
 
-    interface Path {
-        subNodes: Array<PathNodeSettingPart>,
-        subLinks: Array<PathLinkSettingPart>,
-        root: PathNodeSettingPart
-    }
-
-    interface PathSetting extends Setting {
+    interface PathConf extends Setting {
         _type: 'document',
         _label: 'path'
     }
@@ -288,11 +278,7 @@ declare global {
         PrimaryLabel: 'path',
     }
 
-    interface BasePathCtrl extends BaseNodeCtrl {
-        Size: number;
-        MainNodes: Array<id>;
-        Complete: number
-    }
+    type PathArray = (PathNodeSettingPart | null)[][];
 }
 
 export abstract class InfoPart {

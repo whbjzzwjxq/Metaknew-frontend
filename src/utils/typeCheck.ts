@@ -7,6 +7,7 @@ import {
     SettingPart, SvgSettingPart, TextSettingPart,
 } from "@/utils/graphClass";
 import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
+import {PathNode, PathNodeExist} from "@/utils/pathClass";
 
 export function isNodeBackend(item: BackendNodeInfoPart | BackendLinkInfoPart): item is BackendNodeInfoPart {
     let type = (item as BackendNodeInfoPart).Info.type;
@@ -63,4 +64,8 @@ export function isLevelConcern(prop: LevelConcern | BooleanConcern | "Labels"): 
 
 export function isMediaInfoPart(info: InfoPart): info is MediaInfoPart {
     return info.Info.type === 'media'
+}
+
+export function isPathNodeExist(item: PathNode): item is PathNodeExist {
+    return (item as PathNodeExist).node !== null
 }

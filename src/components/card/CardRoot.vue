@@ -77,7 +77,7 @@
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
     import CardPageLinkInfo from "@/components/card/page/CardPageLinkInfo.vue";
-    import {ToolBar} from "@/store/modules/styleComponentSize";
+    import {leftCardPadding, ToolBar} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
         name: "CardRoot",
@@ -123,7 +123,7 @@
             },
             totalCardStyle: function (): CSSProp {
                 return {
-                    width: this.allComponentSize.leftCard.width + 'px',
+                    width: (this.allComponentSize.leftCard.width - leftCardPadding) + 'px',
                     height: this.allComponentSize.leftCard.height + 'px',
                     overflowY: "hidden",
                     overflowX: "hidden"

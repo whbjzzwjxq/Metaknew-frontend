@@ -641,6 +641,8 @@ const textSetting = {
     }
 } as SettingConf;
 const fragmentSetting = {};
+const pathSetting = {};
+
 export const typeSetting: Record<SourceType, SettingConf> = {
     'node': nodeSetting,
     'link': linkSetting,
@@ -649,7 +651,8 @@ export const typeSetting: Record<SourceType, SettingConf> = {
     'text': textSetting,
     'svg': svgSetting,
     'note': noteSetting,
-    'fragment': fragmentSetting
+    'fragment': fragmentSetting,
+    'path': pathSetting
 };
 
 export function settingTemplate(_type: SourceType) {
@@ -744,6 +747,16 @@ export function graphSettingTemplate(_id: id) {
     };
     Object.assign(setting, settingTemplate("document"));
     return setting;
+}
+
+export function pathSettingTemplate(_id: id) {
+    let setting = <PathConf>{
+        _id,
+        _type: 'document',
+        _label: "path"
+    };
+    Object.assign(setting, settingTemplate('path'))
+    return setting
 }
 
 export function noteSettingTemplate(_id: id, _label: string, _title: string, _content: string) {
