@@ -57,7 +57,7 @@
             toolbarStyle: function (): CSSProp {
                 return {
                     position: "absolute",
-                    left: this.styleManager.leftCard.width + 4 + 'px',
+                    left: this.styleManager.leftCard.width + 'px',
                     bottom: 0,
                     height: this.styleManager.bottomBar.height + 'px',
                     width: this.styleManager.bottomBar.width,

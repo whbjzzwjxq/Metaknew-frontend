@@ -44,18 +44,15 @@
             </template>
         </toolbar-bottom>
         <v-card :style="bottomSheetStyle" v-show="bottomSheet" class="unselected">
-            <v-card-title class="pa-2">
+            <v-card-title class="px-2 py-1" style="background-color: coral; color: white">
                 <template v-if="bottomSheetKey === 'path'">
                     Current Path
                 </template>
                 <v-spacer></v-spacer>
-                <icon-group :icon-list="bottomSheetIconList"></icon-group>
+                <icon-group :icon-list="bottomSheetIconList" color="white"></icon-group>
             </v-card-title>
             <v-card-text class="pa-0 ma-0">
-                <div :style="pathLeftDivStyle">
-
-                </div>
-                <path-drawer :container="pathSvgRect" :path="path">
+                <path-drawer :container="pathContentRect" :path="path">
 
                 </path-drawer>
             </v-card-text>
@@ -141,18 +138,10 @@
                 ]
             },
 
-            pathLeftDivStyle: function (): CSSProp {
+            pathContentRect: function (): RectObject {
                 return {
-                    width: this.pathLeftDivWidth + 'px',
-                    height: (this.bottomSheetArea.height - 48) + 'px',
-                    display: 'inline-block'
-                }
-            },
-
-            pathSvgRect: function (): RectObject {
-                return {
-                    width: (this.bottomSheetArea.width - this.pathLeftDivWidth),
-                    height: (this.bottomSheetArea.height - 48)
+                    width: (this.bottomSheetArea.width),
+                    height: (this.bottomSheetArea.height - 44)
                 }
             }
         },
