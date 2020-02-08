@@ -1,8 +1,7 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {GraphSelfPart, InfoPart, LinkInfoPart, NodeInfoPart} from "@/class/graphItem";
+import {GraphSelfPart, InfoPart, LinkInfoPart, NodeInfoPart, NoteSettingPart} from "@/class/graphItem";
 import {NoteBook} from "@/store/modules/userDataManager";
-import {NoteSettingPart} from "@/class/userConcern";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)

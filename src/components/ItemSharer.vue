@@ -21,8 +21,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
-    import {FragmentInfoPart} from "@/class/userConcern";
+    import {LinkInfoPart, MediaInfoPart, NodeInfoPart, FragmentInfoPart} from "@/class/graphItem";
     import {dispatchFragmentAdd} from "@/store/modules/_dispatch";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIndex} from "@/utils/utils";

@@ -9,7 +9,6 @@ import {
 } from "@/class/graphItem";
 import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
 import {PathNode, PathNodeExist} from "@/class/path";
-import {NoteSettingPart} from "@/class/userConcern";
 
 export function isNodeBackend(item: BackendNodeInfoPart | BackendLinkInfoPart): item is BackendNodeInfoPart {
     let type = (item as BackendNodeInfoPart).Info.type;
@@ -43,10 +42,6 @@ export function isNodeSetting(item: GraphItemSettingPart): item is NodeSettingPa
 
 export function isSvgSetting(item: GraphItemSettingPart): item is SvgSettingPart {
     return (item as SvgSettingPart)._type === 'svg'
-}
-
-export function isNoteSetting(item: GraphItemSettingPart): item is NoteSettingPart {
-    return (item as NoteSettingPart)._type === 'note'
 }
 
 export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is BooleanConcern {

@@ -1,5 +1,5 @@
-import {GraphSelfPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
 import {instance} from './main'
+import {GraphSelfPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
 import {FlatNodeInfo} from "@/interface/interfaceInComponent";
 
 export interface SourceQueryObject {

@@ -80,9 +80,10 @@
                         <v-card-text class="pa-1">
                             <field-text-render
                                 :div-style="textAreaStyle"
-                                :edit-mode="isEditing"
+                                :editing="isEditing"
                                 :prop-name="'Text'"
                                 :value="currentNote.Text"
+                                render-as-markdown
                                 @update-text="updateValue"
                             >
                             </field-text-render>

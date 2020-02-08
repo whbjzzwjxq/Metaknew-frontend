@@ -1,11 +1,6 @@
 import {ValueWithType, ExtraProps} from "@/utils/fieldResolve";
+import {LinkSettingPart, MediaSettingPart, NodeSettingPart, SvgSettingPart} from "@/class/graphItem";
 import {PathNodeSettingPart} from "@/class/path";
-import {
-    LinkSettingPart,
-    MediaSettingPart,
-    NodeSettingPart,
-    SvgSettingPart
-} from "@/class/graphItem";
 
 declare global {
     type id = number | string;

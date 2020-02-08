@@ -58,7 +58,7 @@
     import {getIcon} from "@/utils/icon";
     import {randomIntegerInRange} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
-    import {NoteSettingPart} from "@/class/userConcern";
+    import {NoteSettingPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: 'GraphNote',

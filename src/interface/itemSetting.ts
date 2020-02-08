@@ -1,5 +1,4 @@
-import {GraphConf, LinkSettingPart, MediaSettingPart, NodeSettingPart, SvgSettingPart} from "@/class/graphItem";
-import {NoteSettingPart} from "@/class/userConcern";
+import {GraphConf, LinkSettingPart, MediaSettingPart, NodeSettingPart, SvgSettingPart, NoteSettingPart} from "@/class/graphItem";
 
 export type SettingGroup = Record<string, BaseSettingConf>
 export type SettingAll = Record<string, SettingGroup>

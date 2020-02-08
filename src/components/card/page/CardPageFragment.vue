@@ -34,7 +34,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {FragmentInfoPart} from "@/class/userConcern";
+    import {FragmentInfoPart} from "@/class/graphItem";
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
     import FieldText from "@/components/field/FieldText.vue";

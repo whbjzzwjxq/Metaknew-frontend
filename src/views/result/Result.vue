@@ -19,8 +19,8 @@
         commitGraphChange,
         commitRootGraph,
     } from "@/store/modules/_mutations";
-    import {GraphSelfPart} from "@/class/graphItem";
     import {getIndex} from "@/utils/utils";
+    import {GraphSelfPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: "Result",

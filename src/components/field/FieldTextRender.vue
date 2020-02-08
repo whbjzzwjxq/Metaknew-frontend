@@ -1,7 +1,7 @@
 <template>
     <div :style="divStyle" class="cardItem">
         <v-textarea
-            :disabled="disabled"
+            :disabled="!editing"
             :label="label"
             :placeholder="placeholder"
             :row-height="rowHeight"
@@ -16,7 +16,9 @@
             v-show="showArea">
 
         </v-textarea>
-        <vue-markdown> {{ value }} </vue-markdown>
+        <vue-markdown v-show="!showArea" :source="value">
+
+        </vue-markdown>
     </div>
 </template>
 
@@ -46,11 +48,7 @@
                 type: String,
                 default: ''
             },
-            disabled: {
-                type: Boolean,
-                default: false
-            },
-            editMode: {
+            editing: {
                 type: Boolean,
                 default: false
             },
@@ -82,7 +80,7 @@
         },
         computed: {
             showArea: function (): boolean {
-                return !this.renderAsMarkdown || !this.editMode
+                return !this.renderAsMarkdown || this.editing
             }
         },
         methods: {

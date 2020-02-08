@@ -151,6 +151,7 @@
         NodeInfoPart,
         NodeSettingPart,
         GraphItemSettingPart,
+        NoteSettingPart
     } from '@/class/graphItem'
     import {maxN, minN} from "@/utils/utils"
     import {getPoint, Point, RectByPoint} from '@/class/geometric'
@@ -165,7 +166,6 @@
     import {commitChangeSubTab, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
-    import {NoteSettingPart} from "@/class/userConcern";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 

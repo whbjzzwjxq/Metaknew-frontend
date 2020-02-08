@@ -1,4 +1,4 @@
-import {FragmentInfoPart, NoteSettingPart} from "@/class/userConcern";
+import {FragmentInfoPart, NoteSettingPart} from "@/class/graphItem";
 import {Commit} from "vuex";
 import Vue from 'vue';
 
