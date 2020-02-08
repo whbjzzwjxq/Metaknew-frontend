@@ -63,7 +63,7 @@
                     :value="'tab-' + note._id"
                 >
                     <v-card flat>
-                        <v-card-title>
+                        <v-card-title class="pa-2">
                             <field-title
                                 :edit-mode="isEditing"
                                 :text="currentNote.Name"
@@ -78,18 +78,14 @@
                             </icon-group>
                         </v-card-title>
                         <v-card-text class="pa-1">
-                            <div style="height: 572px; width: 100%" class="cardItem">
-                                <v-textarea
-                                    :disabled="!isEditing"
-                                    :value="currentNote.Text"
-                                    :rows="22"
-                                    auto-grow
-                                    filled
-                                    @input="updateValue('Text', arguments[0])"
-                                    counter>
-
-                                </v-textarea>
-                            </div>
+                            <field-text-render
+                                :div-style="textAreaStyle"
+                                :edit-mode="isEditing"
+                                :prop-name="'Text'"
+                                :value="currentNote.Text"
+                                @update-text="updateValue"
+                            >
+                            </field-text-render>
                         </v-card-text>
                     </v-card>
                 </v-tab-item>
@@ -111,17 +107,18 @@
     import {getIcon} from "@/utils/icon";
     import {NoteBook} from "@/store/modules/userDataManager";
     import IconGroup from "@/components/IconGroup.vue";
-    import {getIndex} from "@/utils/graphClass";
-    import {currentTime, getCookie} from "@/utils/utils";
+    import {currentTime, getCookie, getIndex} from "@/utils/utils";
     import {commitNoteBookAdd, commitNoteBookRemove} from "@/store/modules/_mutations";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import TimeRender from "@/components/TimeRender.vue";
+    import FieldTextRender from "@/components/field/FieldTextRender.vue";
     export default Vue.extend({
         name: "PersonalNote",
         components: {
             IconGroup,
             FieldTitle,
-            TimeRender
+            TimeRender,
+            FieldTextRender
         },
         data: function () {
             return {
@@ -148,9 +145,6 @@
             },
             container: function (): ComponentSize {
                 return this.styleManager.noteBook
-            },
-            markdownContainer: function () : AreaRect {
-                return this.$store.getters.noteBookMarkDown
             },
             noteBooks: function (): NoteBook[] {
                 return this.userDataManager.userNoteBook
@@ -194,6 +188,12 @@
                     ? this.currentNote.$IsMarkdown
                     : false
             },
+            textAreaStyle: function (): CSSProp {
+                return {
+                    height: '572px',
+                    width: '100%'
+                }
+            }
         },
         methods: {
             pushNoteInShowed: function (note: NoteBook) {
@@ -297,6 +297,7 @@
             },
 
             updateValue: function (prop: string, value: string | string[] | Object) {
+                console.log(prop, value);
                 this.currentNote && (this.currentNote[prop] = value)
             }
 

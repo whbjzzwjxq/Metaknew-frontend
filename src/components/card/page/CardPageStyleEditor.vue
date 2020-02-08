@@ -27,8 +27,8 @@
     import CardSubRow from '@/components/card/subComp/CardSubRow.vue';
     import CardSubStyleRow from '@/components/card/subComp/CardSubStyleRow.vue';
     import SelectionTable from "@/components/SelectionTable.vue";
-    import {typeSetting} from '@/utils/template'
     import {ToPascalCase} from "@/utils/utils";
+    import {typeSetting} from "@/interface/itemSetting";
 
     export default Vue.extend({
         name: "CardPageStyleEditor",

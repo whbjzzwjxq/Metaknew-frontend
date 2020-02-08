@@ -66,7 +66,7 @@
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
     import DocumentAdder from "@/components/DocumentAdder.vue";
-    import {GraphSelfPart} from "@/utils/graphClass";
+    import {GraphSelfPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: "SubToolNewItem",

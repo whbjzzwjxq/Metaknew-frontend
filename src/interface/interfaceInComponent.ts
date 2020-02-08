@@ -1,7 +1,6 @@
-import {GraphSelfPart} from "@/utils/graphClass";
-import {Point, RectByPoint} from "@/utils/geoMetric";
+import {GraphSelfPart} from "@/class/graphItem";
+import {Point, RectByPoint} from "@/class/geometric";
 import {IndexedInfo, IndexedText} from "@/api/search";
-import {PathNodeSettingPart} from "@/utils/pathClass";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 

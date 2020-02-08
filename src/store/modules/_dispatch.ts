@@ -1,6 +1,6 @@
 import store from '../index';
-import {GraphSelfPart, MediaInfoPart, NodeSettingPart} from "@/utils/graphClass";
-import {FragmentInfoPart} from "@/utils/userConcern";
+import {GraphSelfPart, MediaInfoPart, NodeSettingPart} from "@/class/graphItem";
+import {FragmentInfoPart} from "@/class/userConcern";
 
 export function dispatchUploadFile(payload: {
     item?: MediaInfoPart,

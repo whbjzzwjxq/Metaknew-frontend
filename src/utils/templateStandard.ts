@@ -18,19 +18,19 @@ export const nodeTemplateTheme: Record<string, () => Record<string, Record<strin
         Show: {
             showAll: true,
             showName: true,
-            showPic: true,
+            showImage: true,
             showBorder: true,
-            showColor: true,
+            showFill: true,
             showInlineText: false
         },
         Text: {
             inlineText: '',
             inlineTextColor: '#FFFFFF',
             inlineTextSize: 8,
-            inlineTwoline: false,
+            inlineTextBreak: false,
             textSize: 8,
             textColor: '#000000',
-            twoLine: false
+            textBreak: false
         },
     }),
 };

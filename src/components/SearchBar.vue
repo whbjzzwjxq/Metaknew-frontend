@@ -65,9 +65,9 @@
 <script lang="ts">
     import Vue from 'vue'
     import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search'
-    import {GraphSelfPart, InfoToSetting, MediaSettingPart, NodeSettingPart} from '@/utils/graphClass'
+    import {GraphSelfPart, MediaSettingPart, NodeSettingPart} from '@/class/graphItem'
     import {getIcon} from "@/utils/icon";
-    import {getSrc} from "@/utils/utils";
+    import {getSrc, InfoToSetting} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
     import {
         ArrayListItem,
@@ -76,7 +76,7 @@
         ListItem,
         ListTextItem,
         ListTitle
-    } from "@/utils/interfaceInComponent";
+    } from "@/interface/interfaceInComponent";
 
     export default Vue.extend({
         name: "SearchBar",

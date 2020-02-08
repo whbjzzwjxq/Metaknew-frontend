@@ -1,10 +1,13 @@
 import {mainNationRegionEn} from '@/utils/nation';
 
+// 不同种类的属性
 export type FieldType = 'TextField' | 'ArrayField' | 'NumberField' | 'StringField' |
-    'JsonField' | 'FileField' | 'ImageField' | 'BooleanField' // 不同种类的属性
+    'JsonField' | 'FileField' | 'ImageField' | 'BooleanField'
 
-export type ResolveType = 'name' | 'time' | 'location' | 'normal' // 属性不同的resolve方式
+// 不同属性的resolve方式 名字 时间 地点 不resolve
+export type ResolveType = 'name' | 'time' | 'location' | 'normal'
 
+// 各种Field默认值
 export let fieldDefaultValue: Record<FieldType, string | number | Object | boolean> = {
     'TextField': {},
     'ArrayField': [],
@@ -14,32 +17,39 @@ export let fieldDefaultValue: Record<FieldType, string | number | Object | boole
     'FileField': [],
     'ImageField': '',
     'BooleanField': true
-}; // 默认值
+};
 
+// 描述属性的方式
 export interface PropDescription {
     type: FieldType,
     resolve: ResolveType,
-} // 描述属性的方式
+}
 
+// 将已有value转化为描述形式
 export interface ValueWithType<T> extends PropDescription {
     value: T,
-} // 将已有value转化为描述形式
+}
 
+//描述已有属性 e.g. Name: {value: 'XXX', type: 'StringField', resolve: 'Name'}
 export interface PLabelProps {
     [propName: string]: PropDescription
-} //描述已有属性
+}
 
-interface pLabelPropsDict {
+//描述一个标签对应的一组属性
+interface PLabelPropsDict {
     [pLabel: string]: PLabelProps
-} //描述一个标签对应的一组属性
+}
 
-export type ExtraProps = Record<string, ValueWithType<any>> // 额外的属性
+// 额外的属性
+export type ExtraProps = Record<string, ValueWithType<any>>
 
+// 一个Source的属性由两部分组成：一部分是标准属性 系统定义 一部分是额外属性 用户定义
 export type EditProps = {
     ExtraProps: ValueWithType<ExtraProps>,
     [prop: string]: ValueWithType<any>
-} // 一个Source的属性由两部分组成：一部分是标准属性 系统定义 一部分是额外属性 用户定义
+}
 
+// 每个node都有的属性
 export const baseNodeProp: () => PLabelProps = () => ({
     Name: {
         type: "StringField",
@@ -108,7 +118,7 @@ export const baseNodeProp: () => PLabelProps = () => ({
 });
 
 // node的属性
-export const nodePropType: pLabelPropsDict = {
+export const nodePropType: PLabelPropsDict = {
     DocGraph:
         {},
     ArchProject:
@@ -189,7 +199,7 @@ export const nodePropType: pLabelPropsDict = {
 };
 
 // link的属性
-export const linkPropType: pLabelPropsDict = {
+export const linkPropType: PLabelPropsDict = {
     Event: {
         Time: {
             type: "StringField",
@@ -202,7 +212,7 @@ export const linkPropType: pLabelPropsDict = {
     },
 };
 
-export const mediaPropType: pLabelPropsDict = {
+export const mediaPropType: PLabelPropsDict = {
     // todo 媒体属性获取
 };
 
@@ -226,6 +236,8 @@ export const labelItems = {
 };
 
 export type FieldSetting = Record<string, Record<string, any>>
+
+// 属性的Setting DataTable用
 export const fieldSetting: FieldSetting = {
     Name: {},
     Alias: {

@@ -16,14 +16,11 @@
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
     import {
-        commitGraphAdd,
         commitGraphChange,
-        commitInfoAdd,
         commitRootGraph,
-        commitScreenResize, commitUserConcernAdd
     } from "@/store/modules/_mutations";
-    import {getIndex, GraphSelfPart, NodeInfoPart} from "@/utils/graphClass";
-    import {userConcernTemplate} from "@/utils/template";
+    import {GraphSelfPart} from "@/class/graphItem";
+    import {getIndex} from "@/utils/utils";
 
     export default Vue.extend({
         name: "Result",

@@ -1,4 +1,14 @@
-import {deepClone, emptyGraph, getCookie, pushInList} from "@/utils/utils";
+import {
+    crucialRegex,
+    ctrlPropRegex,
+    deepClone,
+    emptyGraph,
+    findItem,
+    getIndex,
+    getIsSelf,
+    itemEqual,
+    localIdRegex,
+} from "@/utils/utils";
 import Vue from "vue";
 import {
     graphSettingTemplate,
@@ -14,272 +24,13 @@ import {
     nodeInfoTemplate,
     nodeSettingTemplate,
     nodeStateTemplate,
-    noteSettingTemplate,
-    noteStateTemplate,
     userConcernTemplate,
 } from "@/utils/template";
 import {isGraphType, isLinkSetting, isMediaSetting, isNodeSetting, isSvgSetting} from "@/utils/typeCheck";
-import {ExtraProps, fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/labelField";
+import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
 import {BackendGraph} from "@/api/commonSource";
-import {PathNodeSettingPart} from "@/utils/pathClass";
 import {commitGraphAdd, commitInfoAdd, commitNoteInDocAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
-
-declare global {
-    type id = number | string;
-    type ItemType = "node" | "link" | "media" | "document" // 基础的type
-    type GraphItemType = ItemType | "text" | "svg"; // Graph里使用的type
-    type SourceType = GraphItemType | "fragment" | "note" | "path";
-    type GraphTypeS = 'nodes' | 'medias' | 'links' | "texts" | "svgs";
-    type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
-    type idMap = Record<id, id>; // 新旧id的Map
-    type VisNodeSettingPart = NodeSettingPart | MediaSettingPart; // 从视觉上来说是Node的对象
-    type GraphItemSettingPart = VisNodeSettingPart | LinkSettingPart | SvgSettingPart | TextSettingPart; // 所有Item对象
-    type AllSettingPart = GraphItemSettingPart | NoteSettingPart | GraphConf // 所有Setting对象
-    //带有翻译的格式
-    type Translate = Record<string, string>
-
-    //InfoPart相关
-    interface BaseInfo {
-        _id: id;
-        type: SourceType;
-        PrimaryLabel: string;
-        Name: string,
-        Description: Translate,
-        Labels: string[], //统计后的标签
-        $IsCommon: boolean;
-        $IsFree: boolean;
-        $IsOpenSource: boolean;
-
-        [prop: string]: any;
-    }
-
-    interface BaseCtrl {
-        CreateUser: id; // 用户新建
-        CreateType: string; // 用户新建或者自动或者之类的
-        UpdateTime: number; // 时间戳
-        Labels: Array<string>; // 用户自己的标签
-        [prop: string]: any;
-    }
-
-    interface CommonCtrl extends BaseCtrl {
-        isStar: number;
-        isShared: number;
-        isGood: number;
-        isBad: number;
-        // 向外发布的内容才有统计数据
-    }
-
-    interface BaseNodeInfo extends BaseInfo {
-        type: "node" | "document";
-        Alias: Array<string>;
-        BaseImp: number;
-        BaseHardLevel: number;
-        BaseUseful: number;
-        Language: string;
-        Topic: Array<string>;
-        ExtraProps: ExtraProps;
-        CommonProps: Record<string, ValueWithType<any>>;
-        Text: Translate; // 名字的翻译
-        IncludedMedia: Array<string | number>;
-        MainPic: string;
-    }
-
-    interface BaseNodeCtrl extends CommonCtrl {
-        Imp: number;
-        HardLevel: number;
-        Useful: number;
-        Contributor: Object;
-        TotalTime: number;
-    }
-
-    //GraphInfo 和 NodeInfo一样
-    interface BaseGraphCtrl extends BaseNodeCtrl {
-        Size: number;
-        MainNodes: Array<id>;
-        Complete: number
-    }
-
-    interface BaseMediaInfo extends BaseInfo {
-        type: "media";
-        ExtraProps: ExtraProps;
-
-        [propName: string]: any;
-    }
-
-    interface BaseMediaCtrl extends CommonCtrl {
-        FileName: string; // URL
-        Format: string; // 格式
-        Thumb: string; // 缩略图
-    }
-
-    interface BaseLinkInfo extends BaseInfo {
-        type: "link";
-        Name: string;
-        Labels: Array<string>;
-        CommonProps: Record<string, ValueWithType<any>>;
-        ExtraProps: ExtraProps;
-        Confidence: number;
-
-        [propName: string]: any;
-    }
-
-    interface BaseLinkCtrl extends CommonCtrl {
-        Start: NodeSettingPart;
-        End: NodeSettingPart;
-    }
-
-    //SettingPart相关
-
-    interface Setting {
-        _id: id;
-        _type: SourceType;
-        _label: string;
-
-        [propName: string]: any;
-    }
-
-    interface GraphItemSetting extends Setting {
-        _type: GraphItemType
-    }
-
-    type BaseStateKey = 'isSelected' | 'isDeleted' | 'isSelf'
-
-    interface BaseSize {
-        x: number,
-        y: number,
-        size: number,
-        scaleX: number,
-
-        [prop: string]: any
-    }
-
-    interface NodeSetting extends GraphItemSetting {
-        _type: 'node' | 'document';
-        _name: string;
-        _image: string;
-        Base: BaseSize;
-        Border: Record<string, any>;
-        Show: Record<string, any>;
-        Text: Record<string, any>;
-    }
-
-    interface LinkSetting extends GraphItemSetting {
-        _type: 'link';
-        _start: VisNodeSettingPart;
-        _end: VisNodeSettingPart;
-        Base: Record<string, any>;
-        Arrow: Record<string, any>;
-        Text: Record<string, any>
-    }
-
-    interface MediaSetting extends GraphItemSetting {
-        _type: 'media';
-        _name: string;
-        _src: string; // url字符串或者 URL.createObjectUrl返回值
-        Base: BaseSize;
-        Border: Record<string, any>;
-        Show: Record<string, any>;
-        Text: Record<string, any>;
-    }
-
-    interface compressLinkSetting extends Setting {
-        _start: GraphItemSetting;
-        _end: GraphItemSetting;
-        Base: Record<string, any>;
-        Arrow: Record<string, any>;
-        Text: Record<string, any>;
-    }
-
-    interface GraphSetting extends GraphItemSetting {
-        _type: 'document';
-        Base: Record<string, any>
-    }
-
-    interface NoteSetting extends Setting {
-        _type: 'note';
-        _title: string;
-        _content: string;
-        Base: BaseSize;
-    }
-
-    type SvgLabel = ''
-
-    interface SvgSetting extends GraphItemSetting {
-        _type: 'svg';
-        _label: ''
-    }
-
-    interface TextSetting extends GraphItemSetting {
-        _type: 'text';
-        _label: 'text';
-        Base: BaseSize;
-        Text: Record<string, any>
-    }
-
-    type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
-    type AllStateProp = 'isLock' | 'isDark' | 'isLoading' | 'isChanged' | 'isExplode' | 'isSavedIn5min' | GraphStateProp
-
-    interface BaseState {
-        isDeleted: boolean; // 是否被删除;
-        isSelf: boolean; // 是否是自己的内容
-        [prop: string]: boolean;
-    }
-
-    interface GraphItemState extends BaseState {
-        isAdd: boolean; // 是否是新建的
-        isSelected: boolean; // 是否被选中
-        isMouseOn: boolean; // 是否鼠标放置在上面
-    }
-
-    interface NodeState extends GraphItemState {
-
-    }
-
-    interface LinkState extends GraphItemState {
-        // 暂时和Node一样
-    }
-
-    interface NoteState extends GraphItemState {
-        isLock: boolean; //是否锁定
-        isDark: boolean; //是否暗化
-        isEditing: boolean; // 是否正在编辑
-    }
-
-    interface SvgState extends GraphItemState {
-        isEditing: boolean;
-    }
-
-    interface TextState extends GraphItemState {
-
-    }
-
-    interface GraphState extends BaseState {
-        isChanged: boolean; // 是否变化
-        isSavedIn5min: boolean; // 5分钟内是否保存
-        isExplode: boolean; // 是否爆炸
-    }
-
-    //Graph
-    interface Graph {
-        nodes: Array<NodeSettingPart>;
-        links: Array<LinkSettingPart>;
-        medias: Array<MediaSettingPart>;
-        svgs: Array<SvgSettingPart>;
-        texts: Array<TextSettingPart>;
-    }
-
-    interface PathConf extends Setting {
-        _type: 'document',
-        _label: 'path'
-    }
-
-    interface BasePathInfo extends BaseNodeInfo {
-        type: 'document',
-        PrimaryLabel: 'path',
-    }
-
-    type PathArray = (PathNodeSettingPart | null)[][];
-}
+import {NoteSettingPart} from "@/class/userConcern";
 
 export abstract class InfoPart {
     Info: BaseInfo;
@@ -614,13 +365,13 @@ export class MediaInfoPart extends InfoPart {
     }
 }
 
-export class SettingPart {
-    Setting: Setting;
+export class GraphItemSettingPart {
+    Setting: GraphItemSetting;
     State: BaseState;
     parent: GraphSelfPart | null;
 
     constructor(
-        Setting: Setting,
+        Setting: GraphItemSetting,
         State: BaseState,
         parent: GraphSelfPart | null
     ) {
@@ -657,9 +408,21 @@ export class SettingPart {
     updateCrucialProp(prop: string, value: any) {
         crucialRegex.test(prop) && Vue.set(this.Setting, prop, value);
     }
+
+    findRoot() {
+        if (!this.parent) {
+            return [];
+        } else {
+            let result: Array<GraphSelfPart>;
+            this.parent
+                ? (result = this.parent.rootList.concat(this.parent))
+                : (result = [this.parent]);
+            return result;
+        }
+    }
 }
 
-export class NodeSettingPart extends SettingPart {
+export class NodeSettingPart extends GraphItemSettingPart {
     Setting: NodeSetting;
     State: NodeState;
     parent: GraphSelfPart;
@@ -697,7 +460,7 @@ export class NodeSettingPart extends SettingPart {
     }
 }
 
-export class MediaSettingPart extends SettingPart {
+export class MediaSettingPart extends GraphItemSettingPart {
     Setting: MediaSetting;
     State: NodeState;
     parent: GraphSelfPart;
@@ -736,7 +499,7 @@ export class MediaSettingPart extends SettingPart {
     }
 }
 
-export class LinkSettingPart extends SettingPart {
+export class LinkSettingPart extends GraphItemSettingPart {
     Setting: LinkSetting;
     State: LinkState;
     parent: GraphSelfPart;
@@ -767,33 +530,7 @@ export class LinkSettingPart extends SettingPart {
     }
 }
 
-export class NoteSettingPart extends SettingPart {
-    Setting: NoteSetting;
-    State: NoteState;
-    parent: GraphSelfPart;
-    static list: Array<NoteSettingPart> = [];
-
-    constructor(Setting: NoteSetting, State: NoteState, parent: GraphSelfPart) {
-        super(Setting, State, parent);
-        this.Setting = Setting;
-        this.State = State;
-        this.parent = parent;
-        NoteSettingPart.list.push(this)
-    }
-
-    static emptyNoteSetting(
-        _id: id,
-        _label: string,
-        _title: string,
-        _content: string,
-        parent: GraphSelfPart) {
-        let setting = noteSettingTemplate(_id, _label, _title, _content);
-        let state = noteStateTemplate('isAdd');
-        return new NoteSettingPart(setting, state, parent)
-    }
-}
-
-export class SvgSettingPart extends SettingPart {
+export class SvgSettingPart extends GraphItemSettingPart {
     Setting: SvgSetting;
     State: SvgState;
     parent: GraphSelfPart;
@@ -812,26 +549,7 @@ export class SvgSettingPart extends SettingPart {
     }
 }
 
-export class TextSettingPart extends SettingPart {
-    Setting: TextSetting;
-    State: TextState;
-    parent: GraphSelfPart;
-    static list: Array<TextSettingPart> = [];
-
-    get _type() {
-        return this.Setting._type
-    }
-
-    constructor(Setting: TextSetting, State: TextState, parent: GraphSelfPart) {
-        super(Setting, State, parent);
-        this.Setting = Setting;
-        this.State = State;
-        this.parent = parent;
-        TextSettingPart.list.push(this)
-    }
-}
-
-export class GraphConf extends SettingPart {
+export class GraphConf extends GraphItemSettingPart {
     Setting: GraphSetting;
     State: GraphState;
     parent: GraphSelfPart | null;
@@ -856,7 +574,7 @@ export class GraphConf extends SettingPart {
 
 export class GraphSelfPart {
     static list: Array<GraphSelfPart> = [];
-    static baseList: Array<BackendGraph>; // 原始数据
+    static baseList: Array<BackendGraph> = []; // 原始数据
     Graph: Graph;
     Conf: GraphConf;
     // 草稿保存
@@ -877,7 +595,7 @@ export class GraphSelfPart {
     }
 
     get rootList() {
-        return findRoot(this.Conf)
+        return this.Conf.findRoot()
     }
 
     get root() {
@@ -918,7 +636,7 @@ export class GraphSelfPart {
     }
 
     static resolveFromBackEnd(baseData: BackendGraph, parent: GraphSelfPart | null) {
-        pushInList(GraphSelfPart.baseList, baseData);
+        GraphSelfPart.baseList.push(baseData);
         let args = [];
         getIsSelf(baseData.Base.Ctrl) && args.push("isSelf");
         let state = graphStateTemplate(...args);
@@ -969,7 +687,7 @@ export class GraphSelfPart {
         return list.filter(item => item.Setting._id === _id)[0]
     }
 
-    allItems(): GraphItemSettingPart[] {
+    allItems(): GraphSubItemSettingPart[] {
         let {nodes, links, medias, svgs} = this.Graph;
         // @ts-ignore
         return nodes.concat(links).concat(medias).concat(svgs)
@@ -983,18 +701,16 @@ export class GraphSelfPart {
         )
     }
 
-    getItemListByName(name: GraphTypeS | GraphItemType): GraphItemSettingPart[] {
+    getItemListByName(name: GraphTypeS | GraphItemType): GraphSubItemSettingPart[] {
         let itemList;
         if (isGraphType(name)) {
             name === 'media'
                 ? itemList = this.Graph.medias
                 : name === 'link'
                 ? itemList = this.Graph.links
-                : name === 'text'
-                    ? itemList = this.Graph.texts
-                    : name === 'svg'
-                        ? itemList = this.Graph.svgs
-                        : itemList = this.Graph.nodes //  name === 'document | 'node
+                : name === 'svg'
+                    ? itemList = this.Graph.svgs
+                    : itemList = this.Graph.nodes //  name === 'document | 'node
         } else {
             itemList = this.Graph[name]
         }
@@ -1098,38 +814,3 @@ export class GraphSelfPart {
         commitGraphAdd({graph});
     }
 }
-
-let globalIndex = 0;
-export let localIdRegex = new RegExp("\\$_[0-9]*");
-let ctrlPropRegex = new RegExp("\\$.*");
-let crucialRegex = new RegExp("_.*");
-
-export const getIndex = () => {
-    globalIndex += 1;
-    return '$_' + globalIndex
-}; // 获取新内容索引
-
-export const itemEqual = (itemA: { _id: id, _type: GraphItemType }, itemB: { _id: id, _type: GraphItemType }) =>
-    itemA._id === itemB._id && itemA._type === itemB._type; // 两个Item是否一样
-
-export const findItem = (list: Array<SettingPart>, _id: id, _type: GraphItemType) =>
-    list.filter(
-        item => item.Setting._id === _id && item.Setting._type === _type // 在一个List里找Item
-    );
-export const getIsSelf = (ctrl: BaseCtrl) =>
-    ctrl.CreateUser.toString() === getCookie("user_id");
-
-export const InfoToSetting = (payload: { _id: id; type: GraphItemType; PrimaryLabel: string; }) =>
-    ({_id: payload._id, _type: payload.type, _label: payload.PrimaryLabel} as Setting);
-
-export const findRoot = (item: SettingPart) => {
-    if (!item.parent) {
-        return [];
-    } else {
-        let result: Array<GraphSelfPart>;
-        item.parent
-            ? (result = item.parent.rootList.concat(item.parent))
-            : (result = [item.parent]);
-        return result;
-    }
-};

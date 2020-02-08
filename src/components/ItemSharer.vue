@@ -21,10 +21,11 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import {getIndex, LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
-    import {FragmentInfoPart} from "@/utils/userConcern";
+    import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
+    import {FragmentInfoPart} from "@/class/userConcern";
     import {dispatchFragmentAdd} from "@/store/modules/_dispatch";
     import IconGroup from "@/components/IconGroup.vue";
+    import {getIndex} from "@/utils/utils";
 
     export default Vue.extend({
         name: "ItemSharer",
@@ -79,7 +80,7 @@
                 ]
             },
 
-            ctrl: function (): CommonCtrl {
+            ctrl: function (): PublicCtrl {
                 return this.itemInfo.Ctrl
             },
 

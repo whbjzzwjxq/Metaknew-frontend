@@ -10,7 +10,7 @@
                     markerUnits="userSpaceOnUse"
                     :viewBox="arrowSetting.container">
                 <path :d="arrowSetting.pathD"
-                      :fill="setting.Base.color"
+                      :fill="setting.View.color"
                       :fill-opacity="0.8"
                 ></path>
             </marker>
@@ -42,8 +42,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {LinkSettingPart} from "@/utils/graphClass";
-    import {getPoint, getPointDistance, rectDiagonalDistance} from "@/utils/geoMetric";
+    import {LinkSettingPart} from "@/class/graphItem";
+    import {getPoint, getPointDistance, rectDiagonalDistance} from "@/class/geometric";
 
     export default Vue.extend({
         name: 'GraphLink',
@@ -81,7 +81,7 @@
 
             // 说的是线型 不是'link'
             type: function (): string {
-                return this.setting.Base.type
+                return this.setting.View.viewType
             },
 
             draw: function (): Record<string, number> {
@@ -122,8 +122,8 @@
                     return result
                 };
 
-                let start = locationDelta(this.setting.Base.startLoc, source, startDelta);
-                let end = locationDelta(this.setting.Base.endLoc, target, endDelta);
+                let start = locationDelta(this.setting.View.startLoc, source, startDelta);
+                let end = locationDelta(this.setting.View.endLoc, target, endDelta);
 
                 return {
                     'x1': start.x, 'y1': start.y, 'x2': end.x, 'y2': end.y
@@ -136,8 +136,8 @@
 
             drawStyle: function (): CSSProp {
                 return {
-                    'stroke': this.setting.Base.color,
-                    'strokeWidth': this.setting.Base.width,
+                    'stroke': this.setting.View.color,
+                    'strokeWidth': this.setting.View.width + 'px',
                     'strokeDasharray': this.strokeDash,
                     'markerEnd': this.arrowSetting.show,
                     'fill': 'none',
@@ -148,7 +148,7 @@
             hoverStyle: function (): CSSProp {
                 return {
                     'stroke': this.drawStyle.stroke,
-                    'strokeWidth': this.setting.Base.width + 12,
+                    'strokeWidth': this.setting.View.width + 12 + 'px',
                     'fill': 'none',
                     'strokeOpacity': this.isSelected ? 0.05 : 0
                 }
@@ -166,13 +166,13 @@
             },
 
             strokeDash: function (): string {
-                return this.setting.Base.isDash
+                return this.setting.View.isDash
                     ? '9, 2'
                     : ''
             },
 
             controlPoint: function (): PointMixed {
-                return this.setting.Base.direct === 'top'
+                return this.setting.View.direct === 'top'
                     ? {x: this.draw.x1, y: this.draw.y2}
                     : {x: this.draw.x2, y: this.draw.y1}
             },
@@ -204,7 +204,7 @@
                     length: length * this.scale,
                     container: '0 0 ' + length + ' ' + length,
                     pathD: 'M0,0 ' + L1 + L2 + 'z',
-                    show: setting.showArrow ? 'url(#' + _id + ')' : '',
+                    show: setting.arrowShow ? 'url(#' + _id + ')' : '',
                     refY
                 }
             },

@@ -9,7 +9,7 @@ declare global {
 
     interface IconItem {
         name: string,
-        _func: Function,
+        _func?: Function,
         color?: string,
         render?: boolean,
         disabled?: boolean,

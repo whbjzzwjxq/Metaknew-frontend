@@ -13,7 +13,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {FragmentInfoPart} from "@/utils/userConcern";
+    import {FragmentInfoPart} from "@/class/userConcern";
     import CardPageFragment from "@/components/card/page/CardPageFragment.vue";
 
     export default Vue.extend({

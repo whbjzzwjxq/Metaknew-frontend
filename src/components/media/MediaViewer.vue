@@ -41,7 +41,6 @@
     import axios from 'axios'
     import {mavonEditor} from "mavon-editor";
     import "mavon-editor/dist/css/index.css";
-    import {MediaInfoPart} from '@/utils/graphClass'
     import Viewer from 'viewerjs'
 
     export default {

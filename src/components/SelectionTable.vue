@@ -27,7 +27,6 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {AllSettingPart} from "@/utils/graphClass";
 
     interface setting {
         index: number,
@@ -50,7 +49,7 @@
         },
         computed: {
             settingItem: function(): setting[] {
-                return this.settingList.map((setting, index) => {
+                return this.settingList.map((setting: AllSettingPart, index: number) => {
                     let name: string;
                     let type = setting.Setting._type;
                     if (type === 'link') {
@@ -66,7 +65,7 @@
                     }
                 })
             },
-            length: function () {
+            length: function (): number {
                 return this.settingList.length
             },
         },

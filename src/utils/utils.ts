@@ -1,7 +1,5 @@
-import {getIndex, GraphSelfPart, InfoPart, localIdRegex, NodeSettingPart} from "@/utils/graphClass";
-import {SortProp} from "@/utils/interfaceInComponent";
-import {commitInfoAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
-import {userConcernTemplate} from "@/utils/template";
+import {GraphItemSettingPart, InfoPart} from "@/class/graphItem";
+import {SortProp} from "@/interface/interfaceInComponent";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -202,6 +200,28 @@ export function mergeList<T>(list: Array<T[]>) {
     return output
 }
 
+let globalIndex = 0;
+export let localIdRegex = new RegExp("\\$_[0-9]*");
+export let ctrlPropRegex = new RegExp("\\$.*");
+export let crucialRegex = new RegExp("_.*");
+
+// 获取新内容id
+export const getIndex = () => {
+    globalIndex += 1;
+    return '$_' + globalIndex as id
+};
+// 两个Item是否一样
+export const itemEqual = (itemA: { _id: id, _type: GraphItemType }, itemB: { _id: id, _type: GraphItemType }) =>
+    itemA._id === itemB._id && itemA._type === itemB._type;
+export const findItem = (list: Array<GraphItemSettingPart>, _id: id, _type: GraphItemType) =>
+    list.filter(
+        item => item.Setting._id === _id && item.Setting._type === _type // 在一个List里找Item
+    );
+export const getIsSelf = (ctrl: BaseCtrl) =>
+    ctrl.CreateUser.toString() === getCookie("user_id");
+export const InfoToSetting = (payload: { _id: id; type: GraphItemType; PrimaryLabel: string; }) =>
+    ({_id: payload._id, _type: payload.type, _label: payload.PrimaryLabel} as Setting);
+
 // 区别远端id和客户端id
 export function idSort(idList: id[]): id[] {
     let remoteId: number[] = [];
@@ -285,10 +305,3 @@ export const emptyGraph = () => {
         svgs: []
     } as Graph
 };
-
-export function pushInList<T>(list: undefined | T[], item: T) {
-    list !== undefined
-        ? list.push(item)
-        : (list = [item]);
-    return list
-}

@@ -5,9 +5,8 @@ module.exports = {
     'runtimeCompiler': true,
     'outputDir': 'template/',
     'assetsDir': 'static/dist',
-    configureWebpack: config => {
-        if (process.env.NODE_ENV === 'development') {
-            config.devtool = 'source-map';
-        }
+    configureWebpack: {
+        devtool: process.env.NODE_ENV === 'development' ? 'source-map' : '',
+        module: {}
     }
-}
+};

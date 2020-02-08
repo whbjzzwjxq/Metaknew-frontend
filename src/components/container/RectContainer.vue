@@ -21,7 +21,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {transformBorderToRect, Point, getPoint, RectByPoint, BorderType} from "@/utils/geoMetric";
+    import {transformBorderToRect, Point, getPoint, RectByPoint, BorderType} from "@/class/geometric";
 
     export default Vue.extend({
         name: "RectContainer",

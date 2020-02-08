@@ -62,12 +62,11 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {RectByPoint} from "@/utils/geoMetric";
+    import {RectByPoint} from "@/class/geometric";
     import {
-        getIndex,
         GraphSelfPart,
         MediaSettingPart,
-    } from "@/utils/graphClass";
+    } from "@/class/graphItem";
     import {commitBottomDynamicBarResize} from "@/store/modules/_mutations";
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
     import PathDrawer from "@/components/path/PathDrawer.vue";
@@ -77,8 +76,7 @@
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
-    import {PathSelfPart} from "@/utils/pathClass";
-    import {settingTemplate} from "@/utils/template";
+    import {PathSelfPart} from "@/class/path";
 
     export default Vue.extend({
         name: "ResultDocGraph",

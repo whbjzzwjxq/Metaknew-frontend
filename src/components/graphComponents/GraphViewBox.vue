@@ -150,22 +150,22 @@
         MediaSettingPart,
         NodeInfoPart,
         NodeSettingPart,
-        NoteSettingPart,
-        SettingPart,
-    } from '@/utils/graphClass'
+        GraphItemSettingPart,
+    } from '@/class/graphItem'
     import {maxN, minN} from "@/utils/utils"
-    import {getPoint, Point, RectByPoint} from '@/utils/geoMetric'
+    import {getPoint, Point, RectByPoint} from '@/class/geometric'
     import GraphNode from './GraphNode.vue';
     import GraphLink from './GraphLink.vue';
     import GraphMedia from './GraphMedia.vue';
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
-    import {GraphMetaData, LabelViewDict} from '@/utils/interfaceInComponent'
+    import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitChangeSubTab, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
+    import {NoteSettingPart} from "@/class/userConcern";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
 
@@ -830,7 +830,7 @@
                 this.clearSelected('all')
             },
 
-            clearSelected(items: 'all' | SettingPart[]) {
+            clearSelected(items: 'all' | GraphItemSettingPart[]) {
                 if (items === 'all') {
                     Object.values(this.dataManager.graphManager).map(document => document.selectAll('isSelected', false));
                 } else {

@@ -25,28 +25,29 @@
             </v-tab>
 
             <v-tab-item v-for="(value, key) in text" :key="key" :value="'tab-'+ key">
-                <field-text-area-or-field
-                    :value="value"
+                <field-text-render
                     :prop-name="key"
                     :disabled="!setting.editable"
-                    :single-line="setting.singleLine"
-                    :label="label"
                     :placeholder="placeholder"
                     :width="width"
+                    :single-line="setting.singleLine"
+                    :label="label"
+                    :value="value"
                     @update-text="updateText">
 
-                </field-text-area-or-field>
+                </field-text-render>
             </v-tab-item>
 
             <v-tab-item :value="'tab-default'">
-                <field-text-area-or-field
+                <field-text-render
                     :single-line="setting.singleLine"
                     :label="label"
+                    value=""
                     prop-name="default"
                     placeholder="请在上方输入语言类型"
                     disabled>
 
-                </field-text-area-or-field>
+                </field-text-render>
             </v-tab-item>
         </v-tabs>
 
@@ -54,7 +55,7 @@
             <div style="height: 24px">
 
             </div>
-            <field-text-area-or-field
+            <field-text-render
                 :value="text[singleKey]"
                 :prop-name="singleKey"
                 :disabled="!setting.editable"
@@ -64,7 +65,7 @@
                 :width="width"
                 @update-text="updateText">
 
-            </field-text-area-or-field>
+            </field-text-render>
         </template>
 
         <v-card-actions v-if="setting.showSetter" class="pa-0" style="height: 24px">
@@ -83,11 +84,11 @@
 <script lang="ts">
     import Vue from 'vue'
     import {deepClone} from '@/utils/utils'
-    import FieldTextAreaOrField from './FieldTextAreaOrField.vue'
+    import FieldTextRender from "@/components/field/FieldTextRender.vue";
 
     export default Vue.extend({
-        name: 'fieldText',
-        components: {FieldTextAreaOrField},
+        name: 'FieldText',
+        components: {FieldTextRender},
         data() {
             return {
                 cacheText: '',

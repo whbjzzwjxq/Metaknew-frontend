@@ -49,7 +49,7 @@
         LinkSettingPart,
         MediaSettingPart,
         NodeSettingPart,
-    } from "@/utils/graphClass";
+    } from "@/class/graphItem";
     import {mergeList} from "@/utils/utils";
     import {getIcon} from "@/utils/icon";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
@@ -313,9 +313,9 @@
                     commitItemChange(info)
                 } else if (item.type === 'media') {
                     // media编辑
-                } else if (item.type === 'text') {
-                    let note = this.getOriginItem(item);
-                    note.updateState('isEditing')
+                } else if (item.type === 'svg') {
+                    let svg = this.getOriginItem(item);
+                    svg.updateState('isEditing')
                 } else if (item.type === 'document') {
                     let graph = this.dataManager.graphManager[item._id];
                     graph && commitGraphChange({graph: graph})

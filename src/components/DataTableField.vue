@@ -109,7 +109,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldSetting, FieldType} from "@/utils/labelField"
+    import {fieldSetting, FieldType} from "@/utils/fieldResolve"
     import FieldText from '@/components/field/FieldText.vue'
     import FieldString from '@/components/field/FieldString.vue'
     import FieldArray from '@/components/field/FieldArray.vue'

@@ -1,6 +1,14 @@
-import {InfoPart, LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
+import {
+    GraphItemSettingPart,
+    GraphSelfPart,
+    InfoPart,
+    LinkInfoPart,
+    MediaInfoPart,
+    NodeInfoPart
+} from "@/class/graphItem";
 import {isMediaInfoPart} from "@/utils/typeCheck";
 import {getCookie} from "@/utils/utils";
+import {noteSettingTemplate, noteStateTemplate} from "@/utils/template";
 
 declare global {
     type BooleanConcern = "isStar" | "isBad" | "isGood" | "isShared";
@@ -70,5 +78,31 @@ export class FragmentInfoPart extends InfoPart {
 
     static newFragment(_label: 'image' | 'text') {
 
+    }
+}
+
+export class NoteSettingPart extends GraphItemSettingPart {
+    Setting: NoteSetting;
+    State: NoteState;
+    parent: GraphSelfPart;
+    static list: Array<NoteSettingPart> = [];
+
+    constructor(Setting: NoteSetting, State: NoteState, parent: GraphSelfPart) {
+        super(Setting, State, parent);
+        this.Setting = Setting;
+        this.State = State;
+        this.parent = parent;
+        NoteSettingPart.list.push(this)
+    }
+
+    static emptyNoteSetting(
+        _id: id,
+        _label: string,
+        _title: string,
+        _content: string,
+        parent: GraphSelfPart) {
+        let setting = noteSettingTemplate(_id, _label, _title, _content);
+        let state = noteStateTemplate('isAdd');
+        return new NoteSettingPart(setting, state, parent)
     }
 }

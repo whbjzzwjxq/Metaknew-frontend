@@ -29,7 +29,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {LabelViewDict} from "@/utils/interfaceInComponent"
+    import {LabelViewDict} from "@/interface/interfaceInComponent"
     import GlobalChip from '@/components/global/GlobalChip.vue';
 
     export default Vue.extend({

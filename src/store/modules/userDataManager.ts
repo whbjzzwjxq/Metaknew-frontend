@@ -1,7 +1,6 @@
-import {FragmentInfoPart} from "@/utils/userConcern";
+import {FragmentInfoPart, NoteSettingPart} from "@/class/userConcern";
 import {Commit} from "vuex";
 import Vue from 'vue';
-import {NoteSettingPart} from "@/utils/graphClass";
 
 declare global {
     interface UserDataManagerState {

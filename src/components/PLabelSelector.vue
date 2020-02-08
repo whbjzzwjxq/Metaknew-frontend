@@ -12,7 +12,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {availableLabel} from "@/utils/labelField";
+    import {availableLabel} from "@/utils/fieldResolve";
 
     export default Vue.extend({
         name: "PLabelSelector",

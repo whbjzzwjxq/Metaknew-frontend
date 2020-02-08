@@ -53,7 +53,7 @@
     import GlobalChip from "@/components/global/GlobalChip.vue";
     import FieldArray from "@/components/field/FieldArray.vue";
     import {TagRecommendation} from "@/api/user";
-    import {LabelExistProp, LabelGroup} from "@/utils/interfaceInComponent";
+    import {LabelExistProp, LabelGroup} from "@/interface/interfaceInComponent";
 
     export default Vue.extend({
         name: "CardSubLabelGroup",

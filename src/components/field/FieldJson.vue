@@ -96,7 +96,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldSetting, fieldDefaultValue, FieldType, ResolveType} from '@/utils/labelField'
+    import {fieldSetting, fieldDefaultValue, FieldType, ResolveType} from '@/utils/fieldResolve'
     import {deepClone} from '@/utils/utils';
 
     export default Vue.extend({
@@ -160,16 +160,16 @@
         },
 
         computed: {
-            keys: function () {
+            keys: function (): string[] {
                 return Object.keys(this.dict)
             },
-            dict: function () {
+            dict: function (): Record<string, any> {
                 return deepClone(this.baseProps)
             },
-            propNum: function () {
+            propNum: function (): number {
                 return this.keys.length
             },
-            status: function () {
+            status: function (): 'default' | 'error' {
                 return this.keys.filter((key: string) => (key && key.length <= 20)).length === this.propNum
                     ? 'default'
                     : 'error'

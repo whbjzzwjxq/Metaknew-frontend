@@ -18,7 +18,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldDefaultValue} from '@/utils/labelField'
+    import {fieldDefaultValue} from '@/utils/fieldResolve'
 
     interface Range {
         min: number,
