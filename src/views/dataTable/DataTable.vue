@@ -91,15 +91,14 @@
         FieldType,
         nodeLabelToProp,
         PLabelProps,
-    } from "@/utils/labelField"
-    import {deepClone} from "@/utils/utils"
+    } from "@/utils/fieldResolve"
+    import {deepClone, getIndex} from "@/utils/utils"
     import DataTableImporter from '@/components/DataTableImporter.vue';
     import PLabelSelector from '@/components/PLabelSelector.vue';
     import DataTableButtonGroup from '@/components/DataTableButtonGroup.vue';
     import DataTableField from '@/components/DataTableField.vue';
-    import {getIndex} from '@/utils/graphClass'
     import {nodeCreateMulti} from "@/api/commonSource"
-    import {FlatNodeInfo} from "@/utils/interfaceInComponent";
+    import {FlatNodeInfo} from "@/interface/interfaceInComponent";
     import {getIcon} from "@/utils/icon";
 
     interface HeaderItem {

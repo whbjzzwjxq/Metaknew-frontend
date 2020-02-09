@@ -5,6 +5,7 @@ Vue.use(VueRouter);
 export const IndexUrl = '/index';
 export const ResultUrl = '/result';
 export const EditUrl = '/edit';
+export const TestUrl = '/test';
 
 const routes = [
     {
@@ -64,6 +65,12 @@ const routes = [
         path: EditUrl + '/dataTable',
         name: 'dataTable',
         component: () => import(/* webpackChunkName: "group-result" */ '@/views/dataTable/DataTable.vue')
+    },
+
+    {
+        path: TestUrl + '/markdown',
+        name: 'test',
+        component: () => import('@/views/test/TestMarkDown.vue')
     }
 ];
 

@@ -8,7 +8,7 @@
                     </ellipse>
                 </clipPath>
             </defs>
-            <ellipse :rx="width" :ry="height" :style="colorStyle" v-show="showColor">
+            <ellipse :rx="width" :ry="height" :style="colorStyle" v-show="showFill">
 
             </ellipse>
             <image :height="height * 2" :href="getMainPic" :style="imageStyle" :width="width * 2" :x="-width"
@@ -29,7 +29,7 @@
                 </clipPath>
             </defs>
             <rect :style="colorStyle" :height="height * 2" :width="width * 2" :x="-width" :y="-height"
-                  v-show="showColor">
+                  v-show="showFill">
 
             </rect>
             <image :height="height * 2" :href="getMainPic" :style="imageStyle" :width="width * 2" :x="-width"
@@ -50,7 +50,7 @@
                     </polygon>
                 </clipPath>
             </defs>
-            <polygon :style="colorStyle" :points="rhombusPath" v-show="showColor">
+            <polygon :style="colorStyle" :points="rhombusPath" v-show="showFill">
 
             </polygon>
             <image :height="height * 2" :href="getMainPic" :style="imageStyle" :width="width * 2" :x="-width"
@@ -87,7 +87,7 @@
     import {commitNewLabel} from '@/store/modules/_mutations'
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
-    import {GraphSelfPart, NodeSettingPart} from "@/utils/graphClass";
+    import {GraphSelfPart, NodeSettingPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: 'GraphNode',
@@ -161,7 +161,7 @@
             colorStyle: function (): CSSProp {
                 return {
                     'fill': this.fillColor,
-                    'fillOpacity': !this.showPicture ? this.setting.Base.opacity : 0,
+                    'fillOpacity': !this.showPicture ? this.setting.View.opacity : 0,
                     'stroke': this.borderSetting.color,
                     'strokeWidth': this.borderSetting.width,
                     'strokeOpacity': this.borderSetting.opacity,
@@ -171,8 +171,8 @@
 
             //填充的颜色
             fillColor: function (): string {
-                if (this.setting.Base.color !== '') {
-                    return this.setting.Base.color
+                if (this.setting.View.color !== '') {
+                    return this.setting.View.color
                 } else {
                     this.$store.state.styleLabelColor[this.setting._type] ||
                     commitNewLabel([this.setting._type]);
@@ -202,7 +202,7 @@
                         ? 0
                         : this.isSelected
                             ? 1
-                            : this.setting.Show.isMain
+                            : this.setting.View.isMain
                                 ? 0.7
                                 : 0.5
                 }
@@ -215,14 +215,14 @@
                 return this.setting.Show.showAll && this.setting.Show.showInlineText
             },
             showPicture: function (): boolean {
-                return this.setting._image &&
+                return this.setting._image !== '' &&
                     this.setting.Show.showAll &&
-                    this.setting.Show.showPic &&
+                    this.setting.Show.showImage &&
                     this.height >= 16
             },
-            showColor: function (): boolean {
+            showFill: function (): boolean {
                 return this.setting.Show.showAll &&
-                    this.setting.Show.showColor
+                    this.setting.Show.showFill
             },
 
             //是否显示边
@@ -240,7 +240,7 @@
                 }
             },
             hoverColor: function (): string {
-                return this.setting.Show.isMain
+                return this.setting.View.isMain
                     ? '#FFCA28'
                     : this.fillColor
             },
@@ -277,10 +277,10 @@
                 let size = this.setting.Text.textSize * this.scale >= 10
                     ? this.setting.Text.textSize * this.scale
                     : 10;
-                let width = this.setting.Text.twoLine
+                let width = this.setting.Text.textBreak
                     ? this.setting._name.length * 6 * this.scale
                     : this.setting._name.length * 12 * this.scale;
-                let height = this.setting.Text.twoLine
+                let height = this.setting.Text.textBreak
                     ? (size + 5) * 2
                     : (size + 5);
                 return {
@@ -305,10 +305,10 @@
             },
 
             inlineTextSetting: function (): Record<string, any> {
-                let width = this.setting.Text.inlineTwoline
+                let width = this.setting.Text.inlineTextBreak
                     ? this.setting.Text.inlineText.length * 12
                     : this.setting.Text.inlineText.length * 24;
-                let height = this.setting.Text.inlineTwoline
+                let height = this.setting.Text.inlineTextBreak
                     ? (this.setting.Text.inlineTextSize + 5) * 2
                     : (this.setting.Text.inlineTextSize + 5);
                 return {
@@ -339,8 +339,8 @@
                 let loc = [-this.hoverWidth + ',0', '0,' + -this.hoverHeight, this.hoverWidth + ',0', '0,' + this.hoverHeight];
                 return loc.join(' ')
             },
-            geometryType: function (): string {
-                return this.setting.Base.type
+            geometryType: function (): NodeViewType {
+                return this.setting.View.viewType
             },
 
             boundGraph: function (): GraphSelfPart {

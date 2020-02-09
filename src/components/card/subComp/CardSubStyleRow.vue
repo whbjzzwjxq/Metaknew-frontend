@@ -102,8 +102,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {BaseSettingConf} from "@/utils/template";
-    import {SettingPart} from "@/utils/graphClass";
+    import {GraphItemSettingPart} from "@/class/graphItem";
+    import {SettingGroup} from "@/interface/itemSetting";
 
     type settingType = 'Color' | 'Number' | 'Boolean' | 'String' | 'Text'
     export default Vue.extend({
@@ -122,7 +122,7 @@
         },
         props: {
             settingItem: {
-                type: Object as () => Record<string, BaseSettingConf>,
+                type: Object as () => SettingGroup,
                 required: true
             },
             propGroup: {
@@ -130,7 +130,7 @@
                 required: true
             },
             selection: {
-                type: Array as () => SettingPart[],
+                type: Array as () => GraphItemSettingPart[],
                 required: true
             }
         },

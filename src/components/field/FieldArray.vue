@@ -61,7 +61,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {indexToColor, checkDuplicate} from '@/utils/utils'
-    import {ResolveType} from '@/utils/labelField'
+    import {ResolveType} from '@/utils/fieldResolve'
     import {TagRecommendation} from "@/api/user";
 
     export default Vue.extend({

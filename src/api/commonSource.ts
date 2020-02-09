@@ -1,6 +1,6 @@
-import {GraphSelfPart, MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
 import {instance} from './main'
-import {FlatNodeInfo} from "@/utils/interfaceInComponent";
+import {GraphSelfPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
+import {FlatNodeInfo} from "@/interface/interfaceInComponent";
 
 export interface SourceQueryObject {
     _id: id;
@@ -18,7 +18,7 @@ export interface BackendMediaInfoPart {
     Ctrl: BaseMediaCtrl;
 }
 
-export interface BackendLinkCtrl extends CommonCtrl {
+export interface BackendLinkCtrl extends PublicCtrl {
     Start: SourceQueryObject;
     End: SourceQueryObject;
 }
@@ -37,7 +37,6 @@ export interface BackendGraph {
         nodes: Array<NodeSetting>;
         links: Array<compressLinkSetting>;
         medias: Array<MediaSetting>;
-        texts: Array<TextSetting>;
         svgs: Array<SvgSetting>;
     };
     Conf: GraphSetting;

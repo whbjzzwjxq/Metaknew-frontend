@@ -48,7 +48,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {IndexDouble, PathNode, PathNodeEmpty, PathNodeExist, PathSelfPart} from "@/utils/pathClass";
+    import {IndexDouble, PathNode, PathNodeEmpty, PathNodeExist, PathSelfPart} from "@/class/path";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import {isPathNodeExist} from "@/utils/typeCheck";

@@ -82,7 +82,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
     !important 5.vue事件和Html元素规范是HTML也就是中线规范 eg. vue-test
     
 ##### 基础数据类
-    1.基础数据类的查询在@/utils/graphClass下
+    1.
     2.Node, Link, Media分成Setting, Info两个大部分， 其中Setting可能有id相同的多个实例, Info则统一存在vuex中
     3.Graph 分成Graph, Setting, Info三大部分， Graph.nodes下有一个节点Setting实例就是Graph本身
     

@@ -68,9 +68,9 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {GraphSelfPart, LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
+    import {GraphSelfPart, LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
     import {getIcon} from "@/utils/icon";
-    import {TabContent} from "@/utils/interfaceInComponent";
+    import {TabContent} from "@/interface/interfaceInComponent";
     import {commitChangeRootTab, commitChangeSubTab} from "@/store/modules/_mutations";
     import ItemSharer from "@/components/ItemSharer.vue";
     import CardPageDirectory from "@/components/card/page/CardPageDirectory.vue";

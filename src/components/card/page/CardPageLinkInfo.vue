@@ -69,10 +69,10 @@
     import FieldJson from "@/components/field/FieldJson.vue";
     import CardSubLabelGroup from "@/components/card/subComp/CardSubLabelGroup.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
-    import {GraphSelfPart, LinkInfoPart} from "@/utils/graphClass";
-    import {FieldType, labelItems, ResolveType, EditProps} from "@/utils/labelField";
+    import {GraphSelfPart, LinkInfoPart} from "@/class/graphItem";
+    import {FieldType, labelItems, ResolveType, EditProps} from "@/utils/fieldResolve";
     import {deepClone} from "@/utils/utils";
-    import {LabelGroup} from "@/utils/interfaceInComponent";
+    import {LabelGroup} from "@/interface/interfaceInComponent";
 
     export default Vue.extend({
         name: "CardPageLinkInfo",

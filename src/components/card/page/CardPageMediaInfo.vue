@@ -82,9 +82,9 @@
     import FieldText from "@/components/field/FieldText.vue";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import CardSubLabelGroup from '@/components/card/subComp/CardSubLabelGroup.vue';
-    import {MediaInfoPart} from "@/utils/graphClass";
-    import {LabelGroup} from "@/utils/interfaceInComponent";
-    import {labelItems} from "@/utils/labelField";
+    import {MediaInfoPart} from "@/class/graphItem";
+    import {LabelGroup} from "@/interface/interfaceInComponent";
+    import {labelItems} from "@/utils/fieldResolve";
     import {mediaUpdate} from '@/api/commonSource';
     import {getIcon, iconMap} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";

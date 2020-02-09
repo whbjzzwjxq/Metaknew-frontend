@@ -15,7 +15,7 @@
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
-    import {GraphSelfPart, NodeSettingPart} from "@/utils/graphClass";
+    import {GraphSelfPart, NodeSettingPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: "GraphNodeButton",

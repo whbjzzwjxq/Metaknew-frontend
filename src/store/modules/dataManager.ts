@@ -8,9 +8,8 @@ import {
     MediaInfoPart,
     NodeInfoPart,
     NodeSettingPart
-} from "@/utils/graphClass";
+} from "@/class/graphItem";
 import {
-    commitChangeSubTab,
     commitFileToken,
     commitGraphAdd,
     commitGraphChangeId,
@@ -22,7 +21,7 @@ import {
 import {Commit, Dispatch} from "vuex";
 import {isNodeBackend} from "@/utils/typeCheck";
 import {dispatchGraphQuery} from "@/store/modules/_dispatch";
-import {PathSelfPart} from "@/utils/pathClass";
+import {PathSelfPart} from "@/class/path";
 
 const getManager = (_type: string) =>
     _type === 'link'

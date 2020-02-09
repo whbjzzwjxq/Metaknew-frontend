@@ -10,8 +10,9 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {getIndex, MediaInfoPart} from "@/utils/graphClass"
+    import {MediaInfoPart} from "@/class/graphItem"
     import {commitInfoAdd} from '@/store/modules/_mutations'
+    import {getIndex} from "@/utils/utils";
 
     export default Vue.extend({
         name: "MediaResolver",

@@ -1,7 +1,6 @@
-import {FragmentInfoPart} from "@/utils/userConcern";
+import {FragmentInfoPart, NoteSettingPart} from "@/class/graphItem";
 import {Commit} from "vuex";
 import Vue from 'vue';
-import {NoteSettingPart} from "@/utils/graphClass";
 
 declare global {
     interface UserDataManagerState {
@@ -21,8 +20,7 @@ export interface NoteBook extends BaseCtrl {
     Text: string,
     Svg: any,
     _id: id,
-    State: NoteBookState,
-    $IsMarkdown: boolean
+    State: NoteBookState
 }
 
 const state: UserDataManagerState = {

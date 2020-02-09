@@ -23,9 +23,9 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {MediaInfoPart, MediaSettingPart} from "@/utils/graphClass";
+    import {MediaInfoPart, MediaSettingPart} from "@/class/graphItem";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {getPoint, Point, RectByPoint} from "@/utils/geoMetric";
+    import {getPoint, Point, RectByPoint} from "@/class/geometric";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({

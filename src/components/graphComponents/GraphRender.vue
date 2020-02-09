@@ -61,10 +61,10 @@
         LinkSettingPart,
         MediaSettingPart, NodeInfoPart,
         NodeSettingPart,
-        SettingPart,
-    } from "@/utils/graphClass";
-    import {RectByPoint, getPoint, Point} from "@/utils/geoMetric";
-    import {LabelViewDict} from "@/utils/interfaceInComponent";
+        GraphItemSettingPart,
+    } from "@/class/graphItem";
+    import {RectByPoint, getPoint, Point} from "@/class/geometric";
+    import {LabelViewDict} from "@/interface/interfaceInComponent";
     import {isMediaSetting} from "@/utils/typeCheck";
     import {commitItemChange} from "@/store/modules/_mutations";
     import {getInfoPart, maxN, minN} from "@/utils/utils";
@@ -397,7 +397,7 @@
             clickSvg() {
                 this.clearSelected('all')
             },
-            clearSelected(items: 'all' | SettingPart[]) {
+            clearSelected(items: 'all' | GraphItemSettingPart[]) {
                 if (items === 'all') {
                     this.nodes.map(node => this.$set(node.State, 'isSelected', false));
                     this.links.map(link => this.$set(link.State, 'isSelected', false));

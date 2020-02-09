@@ -153,7 +153,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {MediaInfoPart, NodeInfoPart} from "@/utils/graphClass";
+    import {MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
     import FieldArray from "@/components/field/FieldArray.vue";
     import FieldJson from "@/components/field/FieldJson.vue";
     import FieldText from "@/components/field/FieldText.vue";
@@ -162,8 +162,8 @@
     import CardSubRating from "@/components/card/subComp/CardSubRating.vue";
     import NodeAvatar from "@/components/NodeAvatar.vue";
     import GlobalChip from "@/components/global/GlobalChip.vue";
-    import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/labelField";
-    import {LabelGroup} from "@/utils/interfaceInComponent"
+    import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/fieldResolve";
+    import {LabelGroup} from "@/interface/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
     import ItemSharer from "@/components/ItemSharer.vue";
     import ItemMarker from "@/components/ItemMarker.vue";

@@ -27,7 +27,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {MediaInfoPart} from '@/utils/graphClass'
+    import {MediaInfoPart} from '@/class/graphItem'
 
     export default Vue.extend({
         name: "MediaGrids",

@@ -1,0 +1,111 @@
+<template>
+    <div :style="divStyle" class="cardItem">
+        <v-textarea
+            :disabled="!editing"
+            :label="label"
+            :placeholder="placeholder"
+            :row-height="rowHeight"
+            :rows="rows"
+            :single-line="singleLine"
+            :value="value"
+            @blur="updateValue"
+            @input="cacheText = $event"
+            @onslect="select"
+            @select="select"
+            auto-grow
+            counter
+            filled
+            v-show="showArea">
+
+        </v-textarea>
+        <vue-markdown
+            v-show="!showArea"
+            :source="value"
+            @onselect="select"
+            @select="select">
+
+        </vue-markdown>
+    </div>
+</template>
+
+<script lang="ts">
+    import Vue from 'vue'
+    import vueMarkdown from "vue-markdown";
+    export default Vue.extend({
+        name: "FieldTextRender",
+        components: {
+            vueMarkdown
+        },
+        data: function () {
+            return {
+                cacheText: ''
+            }
+        },
+        props: {
+            singleLine: {
+                type: Boolean,
+                default: false
+            },
+            placeholder: {
+                type: String,
+                default: ''
+            },
+            label: {
+                type: String,
+                default: ''
+            },
+            editing: {
+                type: Boolean,
+                default: false
+            },
+            renderAsMarkdown: {
+                type: Boolean,
+                default: false
+            },
+            value: {
+                type: String,
+                required: true
+            },
+            divStyle: {
+                type: Object as () => CSSProp,
+                default: () => {}
+            },
+            rows: {
+                type: Number,
+                default: 20
+            },
+            rowHeight: {
+                type: Number,
+                default: 24
+            },
+            propName: {
+                type: String,
+                default: ''
+            }
+
+        },
+        computed: {
+            showArea: function (): boolean {
+                return !this.renderAsMarkdown || this.editing
+            }
+        },
+        methods: {
+            updateValue() {
+                this.cacheText !== '' &&
+                this.$emit('update-text', this.propName, this.cacheText)
+            },
+
+            select() {
+                console.log('select')
+            }
+        },
+        record: {
+            status: 'empty',
+            description: 'Markdown文本两用编辑器'
+        }
+    })
+</script>
+
+<style scoped>
+
+</style>

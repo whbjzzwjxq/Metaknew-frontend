@@ -54,11 +54,11 @@
 <script lang="ts">
     import {commitSnackbarOn} from '@/store/modules/_mutations'
     import Vue from 'vue'
-    import {NoteSettingPart} from "@/utils/graphClass";
-    import {getDivCSS, RectByPoint} from "@/utils/geoMetric";
+    import {getDivCSS, RectByPoint} from "@/class/geometric";
     import {getIcon} from "@/utils/icon";
     import {randomIntegerInRange} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
+    import {NoteSettingPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: 'GraphNote',

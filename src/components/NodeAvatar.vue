@@ -82,7 +82,7 @@
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import MediaGrids from "@/components/media/MediaGrids.vue";
     import {getSrc, guid} from "@/utils/utils";
-    import {MediaInfoPart} from '@/utils/graphClass'
+    import {MediaInfoPart} from '@/class/graphItem'
     import {dispatchUploadFile} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
 

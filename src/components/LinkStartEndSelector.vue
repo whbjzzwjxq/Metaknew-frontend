@@ -38,7 +38,8 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import {GraphSelfPart, itemEqual} from "@/utils/graphClass";
+    import {GraphSelfPart} from "@/class/graphItem";
+    import {itemEqual} from "@/utils/utils";
 
     interface NodeAsSelectorItem {
         text: string,
