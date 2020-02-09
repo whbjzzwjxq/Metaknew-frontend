@@ -20,8 +20,7 @@ export interface NoteBook extends BaseCtrl {
     Text: string,
     Svg: any,
     _id: id,
-    State: NoteBookState,
-    $IsMarkdown: boolean
+    State: NoteBookState
 }
 
 const state: UserDataManagerState = {

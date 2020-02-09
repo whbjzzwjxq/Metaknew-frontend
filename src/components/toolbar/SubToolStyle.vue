@@ -1,8 +1,10 @@
 <template>
     <v-card flat tile class="pa-0 ma-0">
-        <v-card-subtitle class="pa-0 ma-0" dense>
-            Style Edit
-            <v-icon small> {{ styleIcon }}</v-icon>
+        <v-card-subtitle class="pa-0 ma-0 mb-n2" dense>
+            <v-chip class="unselected pa-0" label pill color="white">
+                Style Editor
+                <v-icon small> {{ styleIcon }}</v-icon>
+            </v-chip>
         </v-card-subtitle>
         <v-menu
             top

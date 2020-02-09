@@ -2,7 +2,9 @@
     <v-card :width="container.width" :height="container.height" style="overflow: hidden">
         <v-toolbar color="deep-purple accent-4" flat dense :extension-height="36">
             <v-icon> {{ noteIcon }}</v-icon>
-            <v-toolbar-title style="font-weight: bolder" class="pl-2">NOTE BOOK</v-toolbar-title>
+            <v-toolbar-title style="font-weight: bolder" class="pl-2 unselected">
+               NOTE BOOK
+            </v-toolbar-title>
 
             <v-spacer></v-spacer>
 
@@ -63,7 +65,11 @@
                     :value="'tab-' + note._id"
                 >
                     <v-card flat>
-                        <v-card-title class="pa-2">
+                        <v-card-title class="px-4 py-2">
+                            <field-title
+                                text="Title:"
+                                style="width: 48px; font-size: 28px; font-weight: bold">
+                            </field-title>
                             <field-title
                                 :edit-mode="isEditing"
                                 :text="currentNote.Name"
@@ -77,7 +83,7 @@
 
                             </icon-group>
                         </v-card-title>
-                        <v-card-text class="pa-1">
+                        <v-card-text class="px-4 py-2">
                             <field-text-render
                                 :div-style="textAreaStyle"
                                 :editing="isEditing"
@@ -113,6 +119,7 @@
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import TimeRender from "@/components/TimeRender.vue";
     import FieldTextRender from "@/components/field/FieldTextRender.vue";
+
     export default Vue.extend({
         name: "PersonalNote",
         components: {
@@ -132,7 +139,9 @@
                 showedNotes: [] as NoteBook[],
                 moreNotes: [] as NoteBook[],
                 titleStyle: {
-                    width: '240px'
+                    width: '240px',
+                    fontSize: '28px',
+                    fontWeight: "bold"
                 } as CSSProp
             }
         },
@@ -165,9 +174,8 @@
                 return [
                     {
                         name: getIcon('i-media-type', 'markdown'),
-                        _func: this.markdownNote,
-                        color: this.isMarkdown ? 'blue' : 'black',
-                        toolTip: '是否按照Markdown解析'
+                        color: 'blue',
+                        toolTip: '支持Markdown解析'
                     },
                     {name: getIcon('i-edit-able', !this.isEditing), _func: this.editNote, color: 'black'},
                     {name: getIcon('i-edit', 'delete'), _func: this.deleteNote, color: 'black'}
@@ -184,11 +192,6 @@
                     : false
             },
 
-            isMarkdown: function (): boolean {
-                return this.currentNote
-                    ? this.currentNote.$IsMarkdown
-                    : false
-            },
             textAreaStyle: function (): CSSProp {
                 return {
                     height: '572px',
@@ -275,10 +278,6 @@
                 this.currentNote.State.isEditing = !this.isEditing
             },
 
-            markdownNote: function () {
-                this.currentNote.$IsMarkdown = !this.isMarkdown
-            },
-
             addNoteToDocument: function () {
                 this.$emit('add-empty-note')
             },
@@ -298,7 +297,6 @@
             },
 
             updateValue: function (prop: string, value: string | string[] | Object) {
-                console.log(prop, value);
                 this.currentNote && (this.currentNote[prop] = value)
             }
 

@@ -10,13 +10,19 @@
             :value="value"
             @blur="updateValue"
             @input="cacheText = $event"
+            @onslect="select"
+            @select="select"
             auto-grow
             counter
             filled
             v-show="showArea">
 
         </v-textarea>
-        <vue-markdown v-show="!showArea" :source="value">
+        <vue-markdown
+            v-show="!showArea"
+            :source="value"
+            @onselect="select"
+            @select="select">
 
         </vue-markdown>
     </div>
@@ -87,6 +93,10 @@
             updateValue() {
                 this.cacheText !== '' &&
                 this.$emit('update-text', this.propName, this.cacheText)
+            },
+
+            select() {
+                console.log('select')
             }
         },
         record: {

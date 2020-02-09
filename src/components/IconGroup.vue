@@ -10,7 +10,7 @@
                     :x-large="xLarge"
                     :color="icon.color ? icon.color : color"
                     :disabled="(icon.name === '' || icon.disabled) || hide"
-                    @click="icon._func"
+                    @click="doSomething(icon)"
                     v-on="on"
                 >
                     <v-icon>{{ icon.name }}</v-icon>
@@ -83,7 +83,15 @@
                 return Object.assign({opacity: this.hide ? 0 : 1}, this.containerStyle)
             }
         },
-        methods: {},
+        methods: {
+            doSomething: function (icon: IconItem) {
+                icon._func
+                    ? icon.payload
+                        ? icon._func(icon.payload)
+                        : icon._func()
+                    : console.log('doNothing')
+            }
+        },
         watch: {},
         record: {
             status: 'done',

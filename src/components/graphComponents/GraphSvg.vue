@@ -1,5 +1,7 @@
 <template>
-    <div></div>
+    <div>
+
+    </div>
 </template>
 
 <script lang="ts">
@@ -10,19 +12,23 @@
         name: "GraphSvg",
         components: {},
         data: function () {
-            return {
-                svg: {
-                    type: Object as () => SvgSettingPart,
-                    required: true
-                },
-                scale: {
-                    type: Object as () => number,
-                    default: 1
-                }
+            return {}
+        },
+        props: {
+            svg: {
+                type: Object as () => SvgSettingPart,
+                required: true
+            },
+            scale: {
+                type: Object as () => number,
+                default: 1
             }
         },
-        props: {},
-        computed: {},
+        computed: {
+            label: function (): string {
+                return this.svg.Setting._label
+            }
+        },
         methods: {},
         record: {
             status: 'empty',
