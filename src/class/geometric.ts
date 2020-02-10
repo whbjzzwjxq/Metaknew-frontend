@@ -192,6 +192,29 @@ export class RectByPoint {
     }
 }
 
+export class TriangleByPoint {
+    protected _first: Point;
+    get first() {
+        return this._first
+    }
+
+    protected _second: Point;
+    get second() {
+        return this._second
+    }
+
+    protected _third: Point;
+    get third() {
+        return this._third
+    }
+
+    constructor(...rest: Point[]) {
+        this._first = rest[0];
+        this._second = rest[1];
+        this._third = rest[2];
+    }
+}
+
 export const transformBorderToRect = (rect: RectByPoint, border: number, inner: number, width: number, baseCSS?: CSSProp) => {
     width < 1 && (width = 1);
     width > 12 && (width = 12);

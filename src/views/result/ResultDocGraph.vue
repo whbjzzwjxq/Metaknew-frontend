@@ -38,7 +38,9 @@
                         </sub-tool-path>
                     </v-col>
                     <v-col cols="2" class="pa-0 ma-0">
+                        <sub-tool-svg>
 
+                        </sub-tool-svg>
                     </v-col>
                 </div>
             </template>
@@ -74,6 +76,7 @@
     import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
     import SubToolStyle from "@/components/toolbar/SubToolStyle.vue";
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
+    import SubToolSvg from "@/components/toolbar/SubToolSvg.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
     import {PathSelfPart} from "@/class/path";
@@ -87,7 +90,8 @@
             SubToolStyle,
             SubToolPath,
             IconGroup,
-            PathDrawer
+            PathDrawer,
+            SubToolSvg
         },
         data() {
             return {

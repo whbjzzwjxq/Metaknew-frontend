@@ -43,10 +43,10 @@
             <rect
                 v-if="renderSelector"
                 :style="selectorStyle"
-                :x="selector.x"
-                :y="selector.y"
-                :width="selector.width"
-                :height="selector.height"
+                :x="selectorRect.x"
+                :y="selectorRect.y"
+                :width="selectorRect.width"
+                :height="selectorRect.height"
                 class="selectRect">
 
             </rect>
@@ -66,9 +66,9 @@
             @update-size="updateGraphSize(arguments[0], arguments[1], index)"
             :container="getSubGraphByRect(metaData.rect)"
             :key="metaData.self._id"
-            always-border
+            always-show-border
             render-as-border
-            expand-able
+            expand
             v-for="(metaData, index) in activeGraphRectList"
             v-show="metaData.self.Conf.State.isExplode">
 
@@ -102,12 +102,21 @@
             @mouseup.native="dragEnd(node, $event)"
             @dblclick.native.stop="dbClickNode(node)"
             @add-link="addLink(node)"
+            @update-size="updateSize"
         >
 
         </graph-media>
 
+        <graph-svg
+            v-for="(svg, index) in svgs"
+            :key="svg._id"
+            :svg="svg"
+            :container="svgLocation[index]">
+
+        </graph-svg>
+
         <graph-note
-            v-for="(note, index) in activeNotes"
+            v-for="note in notes"
             :note="note"
             :container="viewBox"
             :key="note._id"
@@ -144,14 +153,15 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        GraphSelfPart,
         GraphConf,
+        GraphItemSettingPart,
+        GraphSelfPart,
         LinkSettingPart,
         MediaSettingPart,
         NodeInfoPart,
         NodeSettingPart,
-        GraphItemSettingPart,
-        NoteSettingPart
+        NoteSettingPart,
+        SvgSettingPart
     } from '@/class/graphItem'
     import {maxN, minN} from "@/utils/utils"
     import {getPoint, Point, RectByPoint} from '@/class/geometric'
@@ -161,6 +171,7 @@
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
+    import GraphSvg from "@/components/graphComponents/GraphSvg.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
     import {commitChangeSubTab, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
@@ -179,6 +190,7 @@
             GraphLabelSelector,
             RectContainer,
             GraphNote,
+            GraphSvg
         },
         data() {
             return {
@@ -293,7 +305,7 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            userDataManager: function(): UserDataManagerState {
+            userDataManager: function (): UserDataManagerState {
                 return this.$store.state.userDataManager
             },
             state: function (): GraphState {
@@ -344,11 +356,11 @@
 
                 // 从父亲Graph算出点的绝对位置
                 const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
-                    let delta = getPoint(node.Setting.Base) // 自己的位置比例
+                    // 加上父亲GraphBaseNode的绝对位置
+                    return getPoint(node.Setting.Base) // 自己的位置比例
                         .decrease(node.parent.baseNode.Setting.Base) // 父亲GraphBaseNode的位置比例
                         .multiRect(parentMetaData.rect.positiveRect()) // 乘以父亲Graph的宽高
-                        .add(parentMetaData.absolute); // 加上父亲GraphBaseNode的绝对位置
-                    return delta
+                        .add(parentMetaData.absolute)
                 };
 
                 // 从父亲Graph里的节点位置推出自身的矩形的绝对位置
@@ -367,7 +379,7 @@
                 let searchGraph = function (graphMeta: GraphMetaData) {
                     let graph = graphMeta.self.Graph;
                     graph.nodes.map(node => {
-                        let {_type, _id, Base} = node.Setting;
+                        let {_type, _id} = node.Setting;
                         let index = vm.activeGraphIdList.indexOf(_id);
                         if (_type === 'document' && index > -1 && _id !== graphMeta.self._id) {
                             // 如果这个Graph被激活了，就计算元数据
@@ -396,7 +408,7 @@
                 return this.activeGraphMetaDataList.filter(meta => meta.self._id !== this.graph._id)
             },
 
-            // 包含所有的Nodes Links
+            // 包含所有的Nodes
             nodes: function (): NodeSettingPart[] {
                 let result = this.graph.Graph.nodes
                     .filter(node => node.Setting._id === this.graph._id) as NodeSettingPart[];
@@ -408,8 +420,13 @@
                 return result
             },
 
+            // nodesIdList
             nodeIdList: function (): id[] {
-                return this.nodes.map(node => node.Setting._id)
+                return this.nodes.map(node => node._id)
+            },
+
+            nodeInfoList: function (): NodeInfoPart[] {
+                return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id])
             },
 
             links: function (): LinkSettingPart[] {
@@ -433,11 +450,16 @@
             },
 
             notes: function (): NoteSettingPart[] {
-                return this.userDataManager.userNoteInDoc
+                return this.userDataManager.userNoteInDoc.filter(item => !item.State.isDeleted && item.Setting._parent === this.graph._id)
             },
 
-            activeNotes: function(): NoteSettingPart[] {
-                return this.notes.filter(item => !item.State.isDeleted && item.parent._id === this.graph._id)
+            // svg
+            svgs: function (): SvgSettingPart[] {
+                return this.graph.Graph.svgs.filter(svg => !svg.State.isDeleted)
+            },
+
+            selectedItem: function (): GraphSubItemSettingPart[] {
+                return this.graph.allItems().filter(item => item.State.isSelected)
             },
 
             labelDict: function () {
@@ -458,12 +480,8 @@
                 return labelDict
             },
 
-            selectedNodes: function (): NodeSettingPart[] {
+            selectedItems: function (): GraphItemSettingPart[] {
                 return this.nodes.filter(item => item.State.isSelected)
-            },
-
-            nodeInfoList: function (): NodeInfoPart[] {
-                return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id])
             },
 
             impList(): number[] {
@@ -511,6 +529,14 @@
                         : 50;
                     let height = width * media.Setting.Base.scaleX;
                     return this.getRectByPoint(width, height, media)
+                })
+            },
+
+            svgLocation: function (): RectByPoint[] {
+                return this.svgs.map(svg => {
+                    let width = svg.Setting.Base.size * this.realScale;
+                    let height = width * svg.Setting.Base.scaleX;
+                    return this.getRectByPoint(width, height, svg)
                 })
             },
 
@@ -580,11 +606,9 @@
             //显示节点
             showNode: function (): boolean[] {
                 return this.nodes.map(node =>
-                    (node.parent.Conf.State.isExplode && // 父组件要炸开
-                        this.labelViewDict[node.Setting._type][node.Setting._label] &&
-                        !node.State.isDeleted &&
-                        node.Setting.Show.showAll) ||
-                    node.Setting._id === this.graph._id
+                    // 父组件要炸开
+                    (node.isFatherExplode && this.labelViewDict[node._type][node._label] && !node.State.isDeleted) ||
+                    node._id === this.graph._id
                 )
             },
 
@@ -628,17 +652,17 @@
                 }
             },
 
-            selector: function (): AreaRect {
+            selectorRect: function (): AreaRect {
                 return this.selectRect.positiveRect()
             },
 
         },
         methods: {
-            getRectByPoint(width: number, height: number, setting: VisNodeSettingPart) {
+            getRectByPoint(width: number, height: number, setting: VisNodeSettingPart | SvgSettingPart) {
                 // 将绝对的坐标点转化为矩形
                 //width,height: 从源点引申的尺寸，源点在左上角
                 let graphMeta = this.getGraphMetaData(setting.parent._id);
-                const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
+                const getAbsPointFromParent = (node: VisNodeSettingPart | SvgSettingPart, parentMetaData: GraphMetaData) => {
                     let delta = getPoint(node.Setting.Base)
                         .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
                         .multiRect(parentMetaData.rect.positiveRect()); // 乘以矩形 e.g. -0.2 * 1000 = -200
@@ -679,13 +703,13 @@
                         : (rect = target.parent.rect); // 否则用父亲Rect
                     delta.decrease(this.dragStartPoint).divideRect(rect).divide(this.realScale);
                     this.dragStart($event);
-                    let moveFunc = (node: VisNodeSettingPart) => {
+                    let moveFunc = (node: VisNodeSettingPart | SvgSettingPart) => {
                         this.$set(node.Setting.Base, 'x', node.Setting.Base.x + delta.x);
                         this.$set(node.Setting.Base, 'y', node.Setting.Base.y + delta.y);
                     };
-                    if (this.selectedNodes.length > 0) {
-                        this.selectedNodes.map(node => {
-                            moveFunc(node)
+                    if (this.selectedItems.length > 0) {
+                        this.selectedItems.filter(item => {
+                            isNodeSetting(item);
                         });
                     } else {
                         moveFunc(target)
@@ -735,7 +759,7 @@
                 }
             },
             //框选
-            selectItem(itemList: AllSettingPart[]) {
+            selectItem(itemList: GraphItemSettingPart[]) {
                 //选择
                 itemList.map(item => item.updateState("isSelected", true));
                 //如果是单选就切换内容
@@ -798,7 +822,7 @@
                     this.isSelecting = false;
                     // 单击也会触发 没办法
                     this.clearSelected("all");
-                    let result: AllSettingPart[] = [];
+                    let result: GraphItemSettingPart[] = [];
                     // 基础的selection
                     let nodes = this.nodes.filter((node, index) =>
                         this.selectRect.checkInRect(this.nodeLocation[index].midPoint()) && this.showNode[index]
@@ -917,6 +941,22 @@
                 let delta = getPoint(end).decrease(start).divide(this.realScale);
                 graph.rect.width += delta.x;
                 graph.rect.height += delta.y;
+            },
+
+            updateSize: function (start: PointMixed, end: PointMixed, setting: Setting) {
+                // 视觉上的更新尺寸start, end
+                let scale = this.scale;
+                // 更新起始点
+                setting.Base.x += start.x / (this.containerRect.width * scale);
+                setting.Base.y += start.y / (this.containerRect.height * scale);
+                //更新长宽
+                let width = setting.Base.size;
+                let height = setting.Base.scaleX * width;
+                let delta = getPoint(end).decrease(start).divide(this.scale);
+                width += delta.x;
+                height += delta.y;
+                setting.Base.scaleX = height / width;
+                setting.Base.size = width;
             }
         },
 

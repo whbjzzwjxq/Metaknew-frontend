@@ -1,7 +1,15 @@
-import {GraphConf, LinkSettingPart, MediaSettingPart, NodeSettingPart, SvgSettingPart, NoteSettingPart} from "@/class/graphItem";
+import {
+    GraphConf,
+    LinkSettingPart,
+    MediaSettingPart,
+    NodeSettingPart,
+    NoteSettingPart,
+    SvgSettingPart
+} from "@/class/graphItem";
 
 export type SettingGroup = Record<string, BaseSettingConf>
 export type SettingAll = Record<string, SettingGroup>
+
 export interface BaseSettingConf {
     type: 'Number' | 'Boolean' | 'Text' | 'Color' | 'String',
     default: any,
@@ -9,6 +17,140 @@ export interface BaseSettingConf {
     tips: string,
     explain: string
 }
+
+const mergeSetting = (settingList: SettingGroup[]) => {
+    return Object.assign({}, ...settingList) as SettingGroup
+};
+
+const xSetting = () => {
+    return {
+        x: {
+            type: 'Number',
+            default: 0.3,
+            range: [0, 1],
+            tips: '',
+            explain: '节点横向坐标'
+        }
+    }
+};
+const ySetting = () => {
+    return {
+        y: {
+            type: 'Number',
+            default: 0.3,
+            range: [0, 1],
+            tips: '',
+            explain: '节点纵向坐标'
+        }
+    }
+};
+const size = () => {
+    return {
+        size: {
+            type: 'Number',
+            default: 18,
+            range: [6, 64],
+            tips: '不能为0',
+            explain: '节点可视化尺寸'
+        },
+    }
+};
+const scaleX = () => {
+    return {
+        scaleX: {
+            type: 'Number',
+            default: 1,
+            range: [0.2, 5],
+            tips: '',
+            explain: '宽度与高度之比'
+        },
+    }
+};
+const color = () => {
+    return {
+        color: {
+            type: 'Color',
+            default: '#000000',
+            range: '',
+            tips: '没有图片时才会呈现纯色',
+            explain: '节点颜色'
+        }
+    }
+};
+const opacity = () => {};
+const viewType = () => {};
+const isMain = () => {};
+const startLoc = () => {};
+const endLoc = () => {};
+const borderWidth = () => {
+    return {
+        width: {
+            type: 'Number',
+            default: 2,
+            range: [1, 8],
+            tips: '',
+            explain: '描边宽度'
+        },
+    }
+};
+const borderColor = () => {
+    return {
+        color: {
+            type: 'Color',
+            default: '',
+            range: '',
+            tips: '如果不设置颜色则颜色会根据节点类型产生',
+            explain: '描边颜色'
+        },
+    }
+};
+const borderIsDash = () => {
+    return {
+        isDash: {
+            type: 'Boolean',
+            default: false,
+            range: '',
+            tips: '',
+            explain: '描边是否是虚线'
+        }
+    }
+};
+const borderDashArray = () => {
+    return {
+        dashArray: {
+            type: 'String',
+            default: '9, 2',
+            range: '',
+            tips: '',
+            explain: '描边形状'
+        }
+    }
+};
+const borderOpacity = () => {
+    return {
+        opacity: {
+            type: "Number",
+            default: 1,
+            range: [0, 1],
+            tips: '',
+            explain: '边缘透明度'
+        },
+    }
+};
+const showAll = () => {};
+const showBorder = () => {};
+const showInlineText = () => {};
+const showName = () => {};
+const showBackground = () => {};
+const showImage = () => {};
+const inlineText = () => {};
+const inlineTextColor = () => {};
+const inlineTextSize = () => {};
+const inlineTextBreak = () => {};
+const text = () => {};
+const textSize = () => {};
+const textColor = () => {};
+const textBreak = () => {};
 
 const BaseSettingGroup = () => ({
     x: {
@@ -423,15 +565,86 @@ const noteSetting: SettingAll = {
 
 const svgSetting: SettingAll = {
     Base: BaseSettingGroup(),
-    Text: Object.assign(InlineTextSettingGroup(), {
-        InlineTextWeight: {
-            type: "String",
-            range: ["Black", "Bold", "Medium", "Normal", "Light", "Thin"],
-            default: "Normal",
-            explain: "字重",
-
+    Text: {
+        inlineText: {
+            type: 'Text',
+            default: '',
+            range: '',
+            tips: '',
+            explain: '显示在节点内的文字'
+        },
+    },
+    Border: Object.assign(BorderSettingGroup(), {
+        opacity: {
+            type: "Number",
+            default: 1,
+            range: [0, 1],
+            tips: '',
+            explain: '边缘透明度'
+        },
+        dashArray: {
+            type: "Text",
+            default: "9, 2",
+            range: '',
+            tips: '',
+            explain: "边缘是否是虚线"
         }
-    })
+    }),
+    Transition: {
+        rotate: {
+            type: 'Number',
+            default: 0,
+            range: [0, 359],
+            tips: '旋转的角度',
+            explain: '旋转的角度'
+        },
+    },
+    BackGround: {
+        color: {
+            type: "Color",
+            default: 'white',
+            range: "",
+            tips: "",
+            explain: "背景颜色"
+        },
+        opacity: {
+            type: "Number",
+            default: 1,
+            range: [0, 1],
+            tips: "",
+            explain: ""
+        }
+    },
+    Show: {
+        showAll: {
+            type: "Boolean",
+            default: true,
+            range: "",
+            tips: "",
+            explain: ""
+        },
+        showBorder: {
+            type: "Boolean",
+            default: true,
+            range: "",
+            tips: "",
+            explain: ""
+        },
+        showInlineText: {
+            type: "Boolean",
+            default: true,
+            range: "",
+            tips: "",
+            explain: ""
+        },
+        showBackGround: {
+            type: "Boolean",
+            default: true,
+            range: "",
+            tips: "",
+            explain: ""
+        }
+    }
 };
 
 const fragmentSetting = {};
@@ -522,7 +735,7 @@ declare global {
     }
 
     type LinkViewType = 'linear' | 'curve' | 'polyline'
-    type LinkPointLocation = 'top'| 'bottom'| 'left'| 'right'| 'center'
+    type LinkPointLocation = 'top' | 'bottom' | 'left' | 'right' | 'center'
 
     interface LinkStyleSetting {
         View: {
@@ -566,7 +779,7 @@ declare global {
             color: Color,
             isDash: boolean,
         },
-        Show:{
+        Show: {
             showAll: boolean,
             showName: boolean,
             showBorder: boolean,
@@ -608,28 +821,45 @@ declare global {
         _type: 'note';
         _title: string;
         _content: string;
+        _parent: id;
         Base: BaseSize;
     }
 
-    type SvgPolyGon = 'triangle' | 'rhombus' | 'pentagon' | 'hexagon' | 'octagon'
-    type SvgLine = 'line' | 'curve' | 'polyline'
-    type SvgStandard = 'rect' | 'ellipse'
-    type SvgLabel = SvgPolyGon | SvgLine | SvgStandard
+    type SvgLabel = 'polygon' | 'polyline' | 'rect' | 'ellipse'
 
     interface SvgStyleSetting {
         Base: BaseSize;
         Border: {
-
+            width: number,
+            color: Color,
+            isDash: boolean,
+            opacity: number,
+            dashArray: string
         };
         Text: {
+            inlineText: string,
+        };
+        Show: {
+            showAll: boolean,
+            showBorder: boolean,
+            showInlineText: boolean,
+            showBackground: boolean
+        };
+        BackGround: {
+            color: Color,
+            opacity: number,
+            // todo
+        };
+        Transition: {
+            rotate: number,
 
         }
     }
 
-    interface SvgSetting extends GraphItemSetting {
-        _type: 'svg';
-        _label: SvgLabel;
-        Base: {}
+    interface SvgSetting extends GraphItemSetting, SvgStyleSetting {
+        _type: 'svg',
+        _label: SvgLabel,
+        _points: PointObject[]
     }
 
     type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'

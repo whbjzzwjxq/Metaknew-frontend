@@ -1,10 +1,10 @@
 import {
+    GraphItemSettingPart,
     InfoPart,
     LinkSettingPart,
     MediaInfoPart,
     MediaSettingPart,
     NodeSettingPart,
-    GraphItemSettingPart,
     SvgSettingPart
 } from "@/class/graphItem";
 import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";

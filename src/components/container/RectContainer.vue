@@ -42,26 +42,26 @@
             },
 
             // 是否可以改变尺寸
-            expandAble: {
-                type: Boolean as () => boolean,
+            expand: {
+                type: Boolean,
                 default: false
             },
 
             //拖动事件监听的外延
             listenBorder: {
-                type: Number as () => number,
+                type: Number,
                 default: 8
             },
 
             //拖动事件监听的内展
             listenInner: {
-                type: Number as () => number,
+                type: Number,
                 default: 8
             },
 
             //是否被选中
             isSelected: {
-                type: Boolean as () => boolean,
+                type: Boolean,
                 default: false
             },
 
@@ -71,7 +71,8 @@
                 default: false
             },
 
-            alwaysBorder: {
+            //是否一直显示Border
+            alwaysShowBorder: {
                 type: Boolean,
                 default: false
             }
@@ -91,7 +92,7 @@
 
             showBorder: function (): boolean {
                 // 是否一直显示
-                return this.alwaysBorder || this.isSelected
+                return this.alwaysShowBorder || this.isSelected
             },
 
             // Border矩形的构成
@@ -109,7 +110,7 @@
         },
         methods: {
             startScale: function ($event: MouseEvent, name: string) {
-                if (this.expandAble) {
+                if (this.expand) {
                     this.isScaling = true;
                     this.borderType = name;
                     this.resizeStartPoint.update($event)
@@ -117,6 +118,7 @@
             },
 
             scaling: function ($event: MouseEvent) {
+                // 上传视觉的改变
                 if (this.isScaling) {
                     let delta = getPoint($event).decrease(this.resizeStartPoint);
                     this.resizeStartPoint.update($event);

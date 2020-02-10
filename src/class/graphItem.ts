@@ -3,7 +3,8 @@ import {
     ctrlPropRegex,
     deepClone,
     emptyGraph,
-    findItem, getCookie,
+    findItem,
+    getCookie,
     getIndex,
     getIsSelf,
     itemEqual,
@@ -23,7 +24,11 @@ import {
     nodeCtrlTemplate,
     nodeInfoTemplate,
     nodeSettingTemplate,
-    nodeStateTemplate, noteSettingTemplate, noteStateTemplate,
+    nodeStateTemplate,
+    noteSettingTemplate,
+    noteStateTemplate,
+    svgSettingTemplate,
+    svgStateTemplate,
     userConcernTemplate,
 } from "@/utils/template";
 import {
@@ -414,20 +419,9 @@ export class FragmentInfoPart extends InfoPart {
     }
 }
 
-export class GraphItemSettingPart {
-    Setting: GraphItemSetting;
+export abstract class SettingPart {
+    Setting: Setting;
     State: BaseState;
-    parent: GraphSelfPart | null;
-
-    constructor(
-        Setting: GraphItemSetting,
-        State: BaseState,
-        parent: GraphSelfPart | null
-    ) {
-        this.Setting = Setting;
-        this.State = State;
-        this.parent = parent;
-    }
 
     get _id() {
         return this.Setting._id
@@ -458,6 +452,28 @@ export class GraphItemSettingPart {
         crucialRegex.test(prop) && Vue.set(this.Setting, prop, value);
     }
 
+    protected constructor(Setting: Setting, State: BaseState) {
+        this.Setting = Setting;
+        this.State = State;
+    }
+}
+
+export class GraphItemSettingPart extends SettingPart {
+    Setting: GraphItemSetting;
+    State: BaseState;
+    parent: GraphSelfPart | null;
+
+    constructor(Setting: GraphItemSetting, State: BaseState, parent: GraphSelfPart | null) {
+        super(Setting, State);
+        this.Setting = Setting;
+        this.State = State;
+        this.parent = parent;
+    }
+
+    get _type() {
+        return this.Setting._type
+    }
+
     findRoot() {
         if (!this.parent) {
             return [];
@@ -479,6 +495,10 @@ export class NodeSettingPart extends GraphItemSettingPart {
 
     get _type() {
         return this.Setting._type
+    }
+
+    get isFatherExplode() {
+        return this.parent.isExplode
     }
 
     constructor(Setting: NodeSetting, State: NodeState, parent: GraphSelfPart) {
@@ -596,19 +616,24 @@ export class SvgSettingPart extends GraphItemSettingPart {
         this.parent = parent;
         SvgSettingPart.list.push(this)
     }
+
+    static emptyRect(_id: id, parent: GraphSelfPart) {
+        let _points = [] as PointObject[];
+        let setting = svgSettingTemplate(_id, 'rect', _points);
+        let state = svgStateTemplate();
+        return new SvgSettingPart(setting, state, parent)
+    }
 }
 
-export class NoteSettingPart extends GraphItemSettingPart {
+export class NoteSettingPart extends SettingPart {
     Setting: NoteSetting;
     State: NoteState;
-    parent: GraphSelfPart;
     static list: Array<NoteSettingPart> = [];
 
-    constructor(Setting: NoteSetting, State: NoteState, parent: GraphSelfPart) {
-        super(Setting, State, parent);
+    constructor(Setting: NoteSetting, State: NoteState) {
+        super(Setting, State);
         this.Setting = Setting;
         this.State = State;
-        this.parent = parent;
         NoteSettingPart.list.push(this)
     }
 
@@ -617,10 +642,10 @@ export class NoteSettingPart extends GraphItemSettingPart {
         _label: string,
         _title: string,
         _content: string,
-        parent: GraphSelfPart) {
-        let setting = noteSettingTemplate(_id, _label, _title, _content);
+        _parent: id) {
+        let setting = noteSettingTemplate(_id, _label, _title, _content, _parent);
         let state = noteStateTemplate('isAdd');
-        return new NoteSettingPart(setting, state, parent)
+        return new NoteSettingPart(setting, state)
     }
 }
 
@@ -675,6 +700,10 @@ export class GraphSelfPart {
 
     get root() {
         return this.rootList ? this.rootList[0] : null;
+    }
+
+    get isExplode() {
+        return this.Conf.State.isExplode
     }
 
     constructor(graph: Graph, conf: GraphConf, baseNode?: NodeSetting, draftId?: number, rect?: RectObject) {
@@ -769,11 +798,9 @@ export class GraphSelfPart {
     }
 
     addItems(items: GraphItemSettingPart[]) {
-        items.filter(item => !this.checkExistByItem(item)).map(
-            item => {
-                this.pushItem(item)
-            }
-        )
+        items.filter(item => !this.checkExistByItem(item)).map(item => {
+            this.pushItem(item)
+        })
     }
 
     getItemListByName(name: GraphTypeS | GraphItemType): GraphSubItemSettingPart[] {
@@ -857,7 +884,7 @@ export class GraphSelfPart {
     addEmptyNote(commitToVuex?: boolean) {
         commitToVuex === undefined && (commitToVuex = true);
         let _id = getIndex();
-        let note = NoteSettingPart.emptyNoteSetting(_id, 'note', '', '', this);
+        let note = NoteSettingPart.emptyNoteSetting(_id, 'note', '', '', this._id);
         commitToVuex && commitNoteInDocAdd({note});
         return note
     }
