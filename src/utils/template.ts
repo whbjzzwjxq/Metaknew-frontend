@@ -125,7 +125,8 @@ export function svgSettingTemplate (_id: id, _label: SvgLabel, _points: PointObj
         _id,
         _type: 'svg',
         _label,
-        _points
+        _points,
+        _text: ''
     } as SvgSetting;
     return Object.assign(setting, settingTemplate('svg'));
 }

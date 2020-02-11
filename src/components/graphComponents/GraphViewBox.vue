@@ -462,7 +462,7 @@
 
             // svg
             svgs: function (): SvgSettingPart[] {
-                return this.graph.Graph.svgs.filter(svg => !svg.State.isDeleted)
+                return this.graph.Graph.svgs
             },
 
             selectedItem: function (): GraphSubItemSettingPart[] {
@@ -636,6 +636,10 @@
                     !media.State.isDeleted &&
                     media.Setting.Show.showAll
                 )
+            },
+
+            showSvg: function (): boolean[] {
+                return this.svgs.map(svg => !svg.State.isDeleted && svg.Setting.Show.showAll)
             },
 
             //选择框的相关设置
@@ -828,7 +832,6 @@
                     this.isSelecting = false;
                     // 单击也会触发 没办法
                     this.clearSelected("all");
-                    let result: GraphSubItemSettingPart[] = [];
                     // 基础的selection
                     let nodes = this.nodes.filter((node, index) =>
                         this.selectRect.checkInRect(this.nodeLocation[index].midPoint()) && this.showNode[index]
@@ -840,6 +843,9 @@
                     let medias = this.medias.filter((media, index) =>
                         this.selectRect.checkInRect(this.mediaLocation[index].midPoint()) && this.showMedia[index]
                     );
+                    let svgs = this.svgs.filter((svg, index) =>
+                        this.selectRect.checkInRect(this.svgLocation[index].midPoint()) && this.showSvg[index]
+                    );
                     nodes.map(node => {
                             //如果选中了Document 对应的Node
                             let index = this.activeGraphIdList.indexOf(node.Setting._id);
@@ -848,9 +854,7 @@
                             }
                         }
                     );
-                    result = result.concat(nodes);
-                    result = result.concat(links);
-                    result = result.concat(medias);
+                    let result = [nodes, medias, links, svgs].flat(1) as GraphSubItemSettingPart[];
                     this.selectItem(result)
                 }
             },

@@ -1,43 +1,51 @@
 <template>
-    <rect-container :container="container" expand @update-size="updateSize" :is-selected="isSelected">
+    <rect-container
+        :container="container"
+        expand
+        @update-size="updateSize"
+        :is-selected="isSelected">
         <template v-slot:content>
-        <svg :width="inlineRect.width" :height="inlineRect.height">
-            <polyline
-                v-if="label === 'polyline'"
-                :points="setting.Point"
-            >
+            <svg :width="rect.width" :height="rect.height">
+                <polyline
+                    v-if="label === 'polyline'"
+                    :points="setting.Point"
+                >
 
-            </polyline>
-            <polygon
-                v-else-if="label === 'polygon'"
-                :points="setting.Point">
+                </polyline>
+                <polygon
+                    v-else-if="label === 'polygon'"
+                    :points="setting.Point">
 
-            </polygon>
-            <rect
-                v-else-if="label === 'rect'"
-                :width="inlineRect.width"
-                :height="inlineRect.height"
-                :style="activeStyle"
-            >
-            </rect>
-            <ellipse
-                v-else-if="label === 'ellipse'"
-                rx=""
-                ry="">
+                </polygon>
+                <rect
+                    v-else-if="label === 'rect'"
+                    :x="setting.Border.width"
+                    :y="setting.Border.width"
+                    :width="inlineRect.width"
+                    :height="inlineRect.height"
+                    :style="activeStyle"
+                >
+                </rect>
+                <ellipse
+                    v-else-if="label === 'ellipse'"
+                    rx=""
+                    ry="">
 
-            </ellipse>
-        </svg>
+                </ellipse>
+            </svg>
+            <div :style="divStyle">
+                <field-text-render
+                    :editing="isSelected"
+                    render-as-markdown
+                    :value="setting._text"
+                    :rows="4"
+                    :row-height="14"
+                    @update-text="updateText"
+                >
+
+                </field-text-render>
+            </div>
         </template>
-        <div>
-            <field-text-render
-                :editing="isSelected"
-                render-as-markdown
-                :value="'12345'"
-                @update-text="updateText"
-            >
-
-            </field-text-render>
-        </div>
     </rect-container>
 </template>
 
@@ -47,6 +55,7 @@
     import {RectByPoint} from "@/class/geometric";
     import RectContainer from "@/components/container/RectContainer.vue";
     import FieldTextRender from "@/components/field/FieldTextRender.vue";
+
     export default Vue.extend({
         name: "SvgBase",
         components: {
@@ -87,15 +96,30 @@
                 return this.container.positiveRect()
             },
 
+            borderWidth: function (): number {
+                return this.setting.Border.width
+            },
+
             inlineRect: function (): AreaRect {
                 let {x, y, width, height} = this.rect;
-                let borderWidth = this.setting.Border.width;
+                let borderWidth = this.borderWidth;
                 return {
-                    x: x - borderWidth,
-                    y: y - borderWidth,
+                    x: x + borderWidth,
+                    y: y + borderWidth,
                     height: height - 2 * borderWidth,
                     width: width - 2 * borderWidth
                 } as AreaRect
+            },
+
+            divStyle: function (): CSSProp {
+                let borderWidth = this.borderWidth;
+                return {
+                    position: "absolute",
+                    left: borderWidth + 'px',
+                    top: borderWidth + 'px',
+                    width: this.inlineRect.width + 'px',
+                    height: this.inlineRect.height + 'px'
+                }
             },
 
             borderStyle: function (): CSSProp {
@@ -135,7 +159,7 @@
             },
 
             updateText(propName: string, value: string) {
-                this.setting.Text.inlineText = value
+                this.setting._text = value
             }
         },
         record: {

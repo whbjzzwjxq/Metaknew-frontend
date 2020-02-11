@@ -140,17 +140,12 @@ export class RectByPoint {
         return this._end
     }
 
-    border: number;
-
     constructor(_start: PointMixed, _end: PointMixed, border?: number) {
         let {x, y} = _start;
         this._start = new Point(x, y);
         x = _end.x;
         y = _end.y;
         this._end = new Point(x, y);
-        border
-            ? this.border = border
-            : this.border = 2;
     }
 
     originRect() {
@@ -169,14 +164,8 @@ export class RectByPoint {
         return checkInRect(this.positiveRect(), point);
     }
 
-    getDivCSS(css?: CSSProp, noBorder?: boolean): CSSProp {
+    getDivCSS(css?: CSSProp): CSSProp {
         css || (css = {});
-        !noBorder &&
-        (css = Object.assign({
-            borderWidth: this.border + 'px',
-            borderColor: "black",
-            borderStyle: "solid"
-        }, css));
         return getDivCSS(this.positiveRect(), css);
     }
 
@@ -267,7 +256,7 @@ export const transformBorderToRect = (rect: RectByPoint, border: number, inner: 
                 borderStyle: 'solid',
                 cursor: borderType + '-resize',
                 // todo 半透明边框
-            } as CSSProp, baseCSS, rect.getDivCSS({}, true))
+            } as CSSProp, baseCSS, rect.getDivCSS({}))
         }
     });
     return result

@@ -1,5 +1,5 @@
 <template>
-    <div :style="startPointStyle">
+    <div :style="startPointStyle" class="rect-start-point">
         <div :style="contentStyle" v-if="!renderAsBorder">
             <slot name="content">
 
@@ -22,7 +22,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {transformBorderToRect, Point, getPoint, RectByPoint, BorderType} from "@/class/geometric";
+    import {getPoint, Point, RectByPoint, transformBorderToRect} from "@/class/geometric";
 
     export default Vue.extend({
         name: "RectContainer",
@@ -56,6 +56,11 @@
 
             //拖动事件监听的内展
             listenInner: {
+                type: Number,
+                default: 4
+            },
+
+            borderWidth: {
                 type: Number,
                 default: 4
             },
@@ -105,7 +110,7 @@
                     reGroupRect,
                     this.listenBorder,
                     this.listenInner,
-                    this.container.border,
+                    this.borderWidth,
                     {opacity: this.showBorder ? 0.3 : 0, backgroundColor: 'grey'})
             },
         },

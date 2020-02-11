@@ -199,7 +199,7 @@ const borderDashArray = () => {
     return {
         dashArray: {
             type: 'String',
-            default: '9, 2',
+            default: '2, 4',
             range: '',
             tips: '',
             explain: '描边形状'
@@ -513,7 +513,6 @@ const noteSetting: SettingAll = {
 const svgSetting = () => {
     let result = {
         Base: BaseSettingGroup(),
-        Text: mergeSetting(inlineText()),
         Border: BorderSettingGroup(),
         Transition: mergeSetting(rotate()),
         Background: mergeSetting(color(), opacity()),
@@ -536,7 +535,7 @@ const svgSetting = () => {
                 default: '#FFFFFF'
             },
             opacity: {
-                default: 1
+                default: 0
             }
         },
         Border: {
@@ -544,7 +543,7 @@ const svgSetting = () => {
                 default: '#000000'
             },
             width: {
-                default: 4
+                default: 2
             }
         }
     };
@@ -743,9 +742,6 @@ declare global {
             opacity: number,
             dashArray: string
         };
-        Text: {
-            inlineText: string,
-        };
         Show: {
             showAll: boolean,
             showBorder: boolean,
@@ -759,14 +755,14 @@ declare global {
         };
         Transition: {
             rotate: number,
-
         }
     }
 
     interface SvgSetting extends GraphItemSetting, SvgStyleSetting {
         _type: 'svg',
         _label: SvgLabel,
-        _points: PointObject[]
+        _points: PointObject[],
+        _text: string
     }
 
     type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
