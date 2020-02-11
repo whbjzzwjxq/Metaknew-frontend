@@ -9,6 +9,7 @@
             v-for="(border, name) in borderDict"
             :key="name"
             :style="border.css"
+            v-show="showBorder"
             @mousedown.stop="startScale(arguments[0], name)"
             @mousemove.stop="scaling"
             @mouseup.stop="endScale"
@@ -50,13 +51,13 @@
             //拖动事件监听的外延
             listenBorder: {
                 type: Number,
-                default: 8
+                default: 4
             },
 
             //拖动事件监听的内展
             listenInner: {
                 type: Number,
-                default: 8
+                default: 4
             },
 
             //是否被选中
@@ -97,7 +98,7 @@
 
             // Border矩形的构成
             borderDict: function (): Record<string, { css: CSSProp }> {
-                // 这里要把开始点置为0,0
+                // 这里要把开始点置为0,0 重画一个矩形
                 let reGroupRect = new RectByPoint({x: 0, y: 0},
                     this.container.end.copy().decrease(this.container.start), 0);
                 return transformBorderToRect(

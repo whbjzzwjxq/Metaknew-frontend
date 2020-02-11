@@ -6,6 +6,7 @@ import {
     NoteSettingPart,
     SvgSettingPart
 } from "@/class/graphItem";
+import {mergeObject} from "@/utils/utils";
 
 export type SettingGroup = Record<string, BaseSettingConf>
 export type SettingAll = Record<string, SettingGroup>
@@ -18,7 +19,7 @@ export interface BaseSettingConf {
     explain: string
 }
 
-const mergeSetting = (settingList: SettingGroup[]) => {
+const mergeSetting = (...settingList: SettingGroup[]) => {
     return Object.assign({}, ...settingList) as SettingGroup
 };
 
@@ -29,9 +30,9 @@ const xSetting = () => {
             default: 0.3,
             range: [0, 1],
             tips: '',
-            explain: '节点横向坐标'
+            explain: '横向坐标'
         }
-    }
+    } as SettingGroup
 };
 const ySetting = () => {
     return {
@@ -40,9 +41,20 @@ const ySetting = () => {
             default: 0.3,
             range: [0, 1],
             tips: '',
-            explain: '节点纵向坐标'
+            explain: '纵向坐标'
         }
-    }
+    } as SettingGroup
+};
+const width = () => {
+    return {
+        width: {
+            type: 'Number',
+            default: 2,
+            range: [1, 10],
+            tips: '',
+            explain: '线条宽度'
+        },
+    } as SettingGroup
 };
 const size = () => {
     return {
@@ -51,9 +63,9 @@ const size = () => {
             default: 18,
             range: [6, 64],
             tips: '不能为0',
-            explain: '节点可视化尺寸'
+            explain: '可视化尺寸'
         },
-    }
+    } as SettingGroup
 };
 const scaleX = () => {
     return {
@@ -64,7 +76,7 @@ const scaleX = () => {
             tips: '',
             explain: '宽度与高度之比'
         },
-    }
+    } as SettingGroup
 };
 const color = () => {
     return {
@@ -75,235 +87,10 @@ const color = () => {
             tips: '没有图片时才会呈现纯色',
             explain: '节点颜色'
         }
-    }
+    } as SettingGroup
 };
-const opacity = () => {};
-const viewType = () => {};
-const isMain = () => {};
-const startLoc = () => {};
-const endLoc = () => {};
-const borderWidth = () => {
+const opacity = () => {
     return {
-        width: {
-            type: 'Number',
-            default: 2,
-            range: [1, 8],
-            tips: '',
-            explain: '描边宽度'
-        },
-    }
-};
-const borderColor = () => {
-    return {
-        color: {
-            type: 'Color',
-            default: '',
-            range: '',
-            tips: '如果不设置颜色则颜色会根据节点类型产生',
-            explain: '描边颜色'
-        },
-    }
-};
-const borderIsDash = () => {
-    return {
-        isDash: {
-            type: 'Boolean',
-            default: false,
-            range: '',
-            tips: '',
-            explain: '描边是否是虚线'
-        }
-    }
-};
-const borderDashArray = () => {
-    return {
-        dashArray: {
-            type: 'String',
-            default: '9, 2',
-            range: '',
-            tips: '',
-            explain: '描边形状'
-        }
-    }
-};
-const borderOpacity = () => {
-    return {
-        opacity: {
-            type: "Number",
-            default: 1,
-            range: [0, 1],
-            tips: '',
-            explain: '边缘透明度'
-        },
-    }
-};
-const showAll = () => {};
-const showBorder = () => {};
-const showInlineText = () => {};
-const showName = () => {};
-const showBackground = () => {};
-const showImage = () => {};
-const inlineText = () => {};
-const inlineTextColor = () => {};
-const inlineTextSize = () => {};
-const inlineTextBreak = () => {};
-const text = () => {};
-const textSize = () => {};
-const textColor = () => {};
-const textBreak = () => {};
-
-const BaseSettingGroup = () => ({
-    x: {
-        type: 'Number',
-        default: 0.3,
-        range: [0, 1],
-        tips: '',
-        explain: '节点横向坐标'
-    },
-    y: {
-        type: 'Number',
-        default: 0.3,
-        range: [0, 1],
-        tips: '',
-        explain: '节点纵向坐标'
-    }
-}) as SettingGroup;
-
-const BorderSettingGroup = () => ({
-    width: {
-        type: 'Number',
-        default: 3,
-        range: [1, 8],
-        tips: '',
-        explain: '描边宽度'
-    },
-    color: {
-        type: 'Color',
-        default: '',
-        range: '',
-        tips: '如果不设置颜色则颜色会根据节点类型产生',
-        explain: '描边颜色'
-    },
-    isDash: {
-        type: 'Boolean',
-        default: false,
-        range: '',
-        tips: '',
-        explain: '描边是否是虚线'
-    }
-}) as SettingGroup;
-
-const InlineTextSettingGroup = () => ({
-    inlineText: {
-        type: 'Text',
-        default: '',
-        range: '',
-        tips: '',
-        explain: '显示在节点内的文字'
-    },
-    inlineTextColor: {
-        type: 'Color',
-        default: '#FFFFFF',
-        range: '',
-        tips: '',
-        explain: '节点内文字颜色'
-    },
-    inlineTextSize: {
-        type: 'Number',
-        default: 12,
-        range: [8, 20],
-        tips: '',
-        explain: '节点内文字尺寸'
-    },
-    inlineTextBreak: {
-        type: 'Boolean',
-        default: false,
-        range: '',
-        tips: '',
-        explain: '节点内文字是否换行显示'
-    },
-}) as SettingGroup;
-
-const TextSettingGroup = () => ({
-    textSize: {
-        type: 'Number',
-        default: 14,
-        range: [8, 20],
-        tips: '',
-        explain: '节点名字尺寸'
-    },
-    textColor: {
-        type: 'Color',
-        default: '#000000',
-        range: '',
-        tips: '',
-        explain: '节点名字颜色'
-    },
-    textBreak: {
-        type: 'Boolean',
-        default: false,
-        range: '',
-        tips: '',
-        explain: '名字是否换行显示'
-    }
-}) as SettingGroup;
-
-const ShowSettingGroup = () => ({
-    showAll: {
-        type: 'Boolean',
-        default: true,
-        range: '',
-        tips: '',
-        explain: '整体可视'
-    },
-    showName: {
-        type: 'Boolean',
-        default: true,
-        range: '',
-        tips: '',
-        explain: '名字是否可视'
-    },
-    showBorder: {
-        type: 'Boolean',
-        default: true,
-        range: '',
-        tips: '',
-        explain: '边框是否可视'
-    },
-    showInlineText: {
-        type: 'Boolean',
-        default: true,
-        range: '',
-        tips: '',
-        explain: '内部文字是否可视'
-    }
-}) as SettingGroup;
-
-const nodeSetting: SettingAll = {
-    Base: Object.assign({
-        size: {
-            type: 'Number',
-            default: 18,
-            range: [6, 64],
-            tips: '不能为0',
-            explain: '节点可视化尺寸'
-        },
-        scaleX: {
-            type: 'Number',
-            default: 1,
-            range: [0.2, 5],
-            tips: '',
-            explain: '宽度与高度之比'
-        },
-    }, BaseSettingGroup()),
-    View: {
-        color: {
-            type: 'Color',
-            default: '#000000',
-            range: '',
-            tips: '没有图片时才会呈现纯色',
-            explain: '节点颜色'
-        },
         opacity: {
             type: 'Number',
             default: 1,
@@ -311,6 +98,21 @@ const nodeSetting: SettingAll = {
             tips: '',
             explain: '节点透明度'
         },
+    } as SettingGroup
+};
+const rotate = () => {
+    return {
+        rotate: {
+            type: 'Number',
+            default: 0,
+            range: [0, 359],
+            tips: '旋转的角度',
+            explain: '旋转的角度'
+        },
+    } as SettingGroup
+};
+const nodeViewType = () => {
+    return {
         viewType: {
             type: 'String',
             default: 'rectangle',
@@ -318,6 +120,21 @@ const nodeSetting: SettingAll = {
             tips: '具体形状可以通过宽高比控制',
             explain: '节点形状'
         },
+    } as SettingGroup
+};
+const linkViewType = () => {
+    return {
+        viewType: {
+            type: 'String',
+            default: 'linear',
+            range: ['linear', 'curve', 'polyline'],
+            tips: '直线，曲线，折线',
+            explain: '线条样式'
+        },
+    } as SettingGroup
+};
+const isMain = () => {
+    return {
         isMain: {
             type: 'Boolean',
             default: true,
@@ -325,68 +142,10 @@ const nodeSetting: SettingAll = {
             tips: '合理地主要节点设置会提高内容可信度',
             explain: '是否是主要节点'
         }
-    },
-    Border: BorderSettingGroup(),
-    Show: Object.assign(
-        ShowSettingGroup(), {
-            showImage: {
-                type: 'Boolean',
-                default: true,
-                range: '',
-                tips: '',
-                explain: '图片是否可视'
-            },
-            showFill: {
-                type: 'Boolean',
-                default: true,
-                range: '',
-                tips: '如果关闭就以文字形式呈现',
-                explain: '颜色填充是否可视'
-            }
-        }),
-    Text: Object.assign(
-        TextSettingGroup(),
-        InlineTextSettingGroup()
-    )
+    } as SettingGroup
 };
-
-const linkSetting: SettingAll = {
-    View: {
-        width: {
-            type: 'Number',
-            default: 2,
-            range: [1, 10],
-            tips: '',
-            explain: '线条宽度'
-        },
-        color: {
-            type: 'Color',
-            default: '#000000',
-            range: '',
-            tips: '',
-            explain: '线条颜色'
-        },
-        type: {
-            type: 'String',
-            default: 'linear',
-            range: ['linear', 'curve', 'polyline'],
-            tips: '直线，曲线，折线',
-            explain: '线条样式'
-        },
-        direct: {
-            type: 'String',
-            default: 'top',
-            range: ['top', 'bottom'],
-            tips: '线条控制点方向',
-            explain: '线条方向'
-        },
-        isDash: {
-            type: 'Boolean',
-            default: false,
-            range: '',
-            tips: '',
-            explain: '是否是虚线'
-        },
+const linkLocation = () => {
+    return {
         startLoc: {
             type: 'String',
             default: 'center',
@@ -401,14 +160,250 @@ const linkSetting: SettingAll = {
             tips: '终点节点的位置',
             explain: '终点位置'
         },
-        isMain: {
+    } as SettingGroup
+};
+const linkDirect = () => {
+    return {
+        direct: {
+            type: 'String',
+            default: 'top',
+            range: ['top', 'bottom'],
+            tips: '线条控制点方向',
+            explain: '线条方向'
+        },
+    } as SettingGroup
+};
+const borderWidth = () => {
+    return {
+        width: {
+            type: 'Number',
+            default: 2,
+            range: [1, 8],
+            tips: '',
+            explain: '描边宽度'
+        },
+    } as SettingGroup
+};
+const borderColor = () => {
+    return {
+        color: {
+            type: 'Color',
+            default: '',
+            range: '',
+            tips: '如果不设置颜色则颜色会根据节点类型产生',
+            explain: '描边颜色'
+        },
+    } as SettingGroup
+};
+const borderDashArray = () => {
+    return {
+        dashArray: {
+            type: 'String',
+            default: '9, 2',
+            range: '',
+            tips: '',
+            explain: '描边形状'
+        }
+    } as SettingGroup
+};
+const borderOpacity = () => {
+    return {
+        opacity: {
+            type: "Number",
+            default: 1,
+            range: [0, 1],
+            tips: '',
+            explain: '边缘透明度'
+        },
+    } as SettingGroup
+};
+const showAll = () => {
+    return {
+        showAll: {
             type: 'Boolean',
             default: true,
             range: '',
-            tips: '合理地主要节点设置会提高内容可信度',
-            explain: '是否是主要节点'
+            tips: '',
+            explain: '整体可视'
         }
-    },
+    } as SettingGroup
+};
+const showBorder = () => {
+    return {
+        showBorder: {
+            type: 'Boolean',
+            default: true,
+            range: '',
+            tips: '',
+            explain: '边框是否可视'
+        }
+    } as SettingGroup
+};
+const showInlineText = () => {
+    return {
+        showInlineText: {
+            type: 'Boolean',
+            default: true,
+            range: '',
+            tips: '',
+            explain: '内部文字是否可视'
+        }
+    } as SettingGroup
+};
+const showName = () => {
+    return {
+        showName: {
+            type: 'Boolean',
+            default: true,
+            range: '',
+            tips: '',
+            explain: '名字是否可视'
+        },
+    } as SettingGroup
+};
+const showBackground = () => {
+    return {
+        showBackground: {
+            type: 'Boolean',
+            default: true,
+            range: '',
+            tips: '',
+            explain: '颜色填充是否可视'
+        }
+    } as SettingGroup
+};
+const showImage = () => {
+    return {
+        showImage: {
+            type: 'Boolean',
+            default: true,
+            range: '',
+            tips: '',
+            explain: '图片是否可视'
+        },
+    } as SettingGroup
+};
+const showAppendText = () => {
+    return {
+        showAppendText: {
+            type: 'Boolean',
+            default: true,
+            range: '',
+            tips: '',
+            explain: '附加文字是否可视'
+        }
+    } as SettingGroup
+};
+const inlineText = () => {
+    return {
+        inlineText: {
+            type: 'Text',
+            default: '',
+            range: '',
+            tips: '',
+            explain: '显示在节点内的文字'
+        },
+    } as SettingGroup
+};
+const inlineTextColor = () => {
+    return {
+        inlineTextColor: {
+            type: 'Color',
+            default: '#FFFFFF',
+            range: '',
+            tips: '',
+            explain: '节点内文字颜色'
+        }
+    } as SettingGroup
+};
+const inlineTextSize = () => {
+    return {
+        inlineTextSize: {
+            type: 'Number',
+            default: 12,
+            range: [8, 20],
+            tips: '',
+            explain: '节点内文字尺寸'
+        },
+    } as SettingGroup
+};
+const inlineTextBreak = () => {
+    return {
+        inlineTextBreak: {
+            type: 'Boolean',
+            default: false,
+            range: '',
+            tips: '',
+            explain: '节点内文字是否换行显示'
+        },
+    } as SettingGroup
+};
+const text = () => {
+    return {
+        text: {
+            type: 'Text',
+            default: '',
+            range: '',
+            tips: '',
+            explain: '显示在节点内的文字'
+        },
+    } as SettingGroup
+};
+const textSize = () => {
+    return {
+        textSize: {
+            type: 'Number',
+            default: 14,
+            range: [8, 20],
+            tips: '',
+            explain: '节点名字尺寸'
+        },
+    } as SettingGroup
+};
+const textColor = () => {
+    return {
+        textColor: {
+            type: 'Color',
+            default: '#000000',
+            range: '',
+            tips: '',
+            explain: '节点名字颜色'
+        },
+    } as SettingGroup
+};
+const textBreak = () => {
+    return {
+        textBreak: {
+            type: 'Boolean',
+            default: false,
+            range: '',
+            tips: '',
+            explain: '名字是否换行显示'
+        }
+    } as SettingGroup
+};
+
+const BaseSettingGroup = () => mergeSetting(xSetting(), ySetting(), size(), scaleX()) as SettingGroup;
+
+const BorderSettingGroup = () => mergeSetting(borderColor(), borderOpacity(), borderWidth(), borderDashArray()) as SettingGroup;
+
+const TextSettingGroup = () => mergeSetting(textSize(), textColor(), textBreak()) as SettingGroup;
+
+const InlineTextSettingGroup = () => mergeSetting(inlineTextSize(), inlineTextColor(), inlineTextBreak()) as SettingGroup;
+
+const nodeSetting = () => {
+    let result = {
+        Base: BaseSettingGroup(),
+        View: mergeSetting(color(), opacity(), nodeViewType(), isMain()),
+        Border: BorderSettingGroup(),
+        Show: mergeSetting(showAll(), showBorder(), showName(), showBackground(), showInlineText(), showImage()),
+        Text: mergeSetting(inlineText(), InlineTextSettingGroup(), text(), TextSettingGroup())
+    };
+    return result as SettingAll
+};
+
+const linkSetting: SettingAll = {
+    View: mergeSetting(width(), color(), linkViewType(), linkDirect(), linkLocation(), isMain(), borderDashArray()),
     Arrow: {
         arrowLength: {
             type: 'Number',
@@ -505,146 +500,56 @@ const documentSetting: SettingAll = {
 };
 
 const mediaSetting: SettingAll = {
-    Base: Object.assign({
-        size: {
-            type: 'Number',
-            default: 300,
-            range: [50, 400],
-            tips: '不能为0',
-            explain: '节点可视化尺寸'
-        },
-        scaleX: {
-            type: 'Number',
-            default: 0.6,
-            range: [0.2, 5],
-            tips: '',
-            explain: '宽度与高度之比'
-        },
-    }, BaseSettingGroup()),
+    Base: BaseSettingGroup(),
     Border: BorderSettingGroup(),
-    Show: Object.assign(ShowSettingGroup(), {
-        showAppendText: {
-            type: 'Boolean',
-            default: true,
-            range: '',
-            tips: '',
-            explain: '附加文字是否可视'
-        }
-    }),
-    Text: Object.assign(
-        TextSettingGroup(),
-        InlineTextSettingGroup(),
-        {
-            appendText: {
-                type: 'Text',
-                default: '',
-                range: '',
-                tips: '',
-                explain: '显示在媒体下的文字'
-            },
-            appendTextColor: {
-                type: 'Color',
-                default: '#FFFFFF',
-                range: '',
-                tips: '',
-                explain: '显示在媒体下的文字颜色'
-            },
-            appendTextSize: {
-                type: 'Number',
-                default: 12,
-                range: [8, 20],
-                tips: '',
-                explain: '显示在媒体下的文字尺寸'
-            },
-        })
+    Show: mergeSetting(showAll(), showBorder(), showAppendText()),
+    Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup())
 };
 
 const noteSetting: SettingAll = {
     Base: BaseSettingGroup()
 };
 
-const svgSetting: SettingAll = {
-    Base: BaseSettingGroup(),
-    Text: {
-        inlineText: {
-            type: 'Text',
-            default: '',
-            range: '',
-            tips: '',
-            explain: '显示在节点内的文字'
+const svgSetting = () => {
+    let result = {
+        Base: BaseSettingGroup(),
+        Text: mergeSetting(inlineText()),
+        Border: BorderSettingGroup(),
+        Transition: mergeSetting(rotate()),
+        Background: mergeSetting(color(), opacity()),
+        Show: mergeSetting(showAll(), showBorder(), showInlineText(), showBackground()),
+    };
+    let replace = {
+        Base: {
+            size: {
+                default: 100,
+                range: [12, 400]
+            },
         },
-    },
-    Border: Object.assign(BorderSettingGroup(), {
-        opacity: {
-            type: "Number",
-            default: 1,
-            range: [0, 1],
-            tips: '',
-            explain: '边缘透明度'
+        Text: {
+            inlineText: {
+                default: 'Input Here'
+            }
         },
-        dashArray: {
-            type: "Text",
-            default: "9, 2",
-            range: '',
-            tips: '',
-            explain: "边缘是否是虚线"
+        Background: {
+            color: {
+                default: '#FFFFFF'
+            },
+            opacity: {
+                default: 1
+            }
+        },
+        Border: {
+            color: {
+                default: '#000000'
+            },
+            width: {
+                default: 4
+            }
         }
-    }),
-    Transition: {
-        rotate: {
-            type: 'Number',
-            default: 0,
-            range: [0, 359],
-            tips: '旋转的角度',
-            explain: '旋转的角度'
-        },
-    },
-    BackGround: {
-        color: {
-            type: "Color",
-            default: 'white',
-            range: "",
-            tips: "",
-            explain: "背景颜色"
-        },
-        opacity: {
-            type: "Number",
-            default: 1,
-            range: [0, 1],
-            tips: "",
-            explain: ""
-        }
-    },
-    Show: {
-        showAll: {
-            type: "Boolean",
-            default: true,
-            range: "",
-            tips: "",
-            explain: ""
-        },
-        showBorder: {
-            type: "Boolean",
-            default: true,
-            range: "",
-            tips: "",
-            explain: ""
-        },
-        showInlineText: {
-            type: "Boolean",
-            default: true,
-            range: "",
-            tips: "",
-            explain: ""
-        },
-        showBackGround: {
-            type: "Boolean",
-            default: true,
-            range: "",
-            tips: "",
-            explain: ""
-        }
-    }
+    };
+    mergeObject(result, replace);
+    return result as SettingAll
 };
 
 const fragmentSetting = {};
@@ -652,11 +557,11 @@ const fragmentSetting = {};
 const pathSetting = {};
 
 export const typeSetting: Record<SourceType, SettingAll> = {
-    'node': nodeSetting,
+    'node': nodeSetting(),
     'link': linkSetting,
     'document': documentSetting,
     'media': mediaSetting,
-    'svg': svgSetting,
+    'svg': svgSetting(),
     'note': noteSetting,
     'fragment': fragmentSetting,
     'path': pathSetting
@@ -665,8 +570,10 @@ export const typeSetting: Record<SourceType, SettingAll> = {
 declare global {
     // 从视觉上来说是Node的对象
     type VisNodeSettingPart = NodeSettingPart | MediaSettingPart;
+    // 从视觉上是一个区域的对象
+    type VisAreaSettingPart = VisNodeSettingPart | SvgSettingPart;
     // 所有Item对象
-    type GraphSubItemSettingPart = VisNodeSettingPart | LinkSettingPart | SvgSettingPart;
+    type GraphSubItemSettingPart = VisAreaSettingPart | LinkSettingPart;
     // 所有Setting对象
     type AllSettingPart = GraphSubItemSettingPart | NoteSettingPart | GraphConf;
 
@@ -714,7 +621,7 @@ declare global {
             showName: boolean;
             showImage: boolean;
             showBorder: boolean;
-            showFill: boolean;
+            showBackground: boolean;
             showInlineText: boolean;
         };
         Text: {
@@ -845,7 +752,7 @@ declare global {
             showInlineText: boolean,
             showBackground: boolean
         };
-        BackGround: {
+        Background: {
             color: Color,
             opacity: number,
             // todo

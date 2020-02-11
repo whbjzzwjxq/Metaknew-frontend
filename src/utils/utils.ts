@@ -305,3 +305,26 @@ export const emptyGraph = () => {
         svgs: []
     } as Graph
 };
+const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];
+export function mergeObject<T extends Record<string, any>, K extends keyof T>(target: T, source: any, passive?: boolean) {
+    // 递归对象
+    // source里有target没有的值是否强制覆盖
+    passive || (passive = false);
+    Object.entries(source).map(([key, value]) => {
+        if (target[key] === undefined) {
+            //@ts-ignore
+            passive && (target[key] = value)
+        } else {
+            let typeInTarget = typeof target[key];
+            let typeValue = typeof value;
+            if (jsBaseType.includes(typeInTarget) && typeInTarget === typeValue) {
+                //@ts-ignore
+                target[key] = value;
+            } else if (typeInTarget !== typeValue) {
+                // doNothing
+            } else {
+                mergeObject(target[key], value, passive)
+            }
+        }
+    })
+}

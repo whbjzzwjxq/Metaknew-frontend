@@ -1,6 +1,7 @@
 <template>
-    <rect-container :container="container" expand @update-size="updateSize">
-        <svg :width="rect.width" :height="rect.height">
+    <rect-container :container="container" expand @update-size="updateSize" :is-selected="isSelected">
+        <template v-slot:content>
+        <svg :width="inlineRect.width" :height="inlineRect.height">
             <polyline
                 v-if="label === 'polyline'"
                 :points="setting.Point"
@@ -8,14 +9,15 @@
 
             </polyline>
             <polygon
-                v-else-if="label === 'polyGon'"
+                v-else-if="label === 'polygon'"
                 :points="setting.Point">
 
             </polygon>
             <rect
                 v-else-if="label === 'rect'"
-                width=""
-                height=""
+                :width="inlineRect.width"
+                :height="inlineRect.height"
+                :style="activeStyle"
             >
             </rect>
             <ellipse
@@ -25,11 +27,12 @@
 
             </ellipse>
         </svg>
+        </template>
         <div>
             <field-text-render
                 :editing="isSelected"
                 render-as-markdown
-                :value="setting.Text.inlineText"
+                :value="'12345'"
                 @update-text="updateText"
             >
 
@@ -84,6 +87,17 @@
                 return this.container.positiveRect()
             },
 
+            inlineRect: function (): AreaRect {
+                let {x, y, width, height} = this.rect;
+                let borderWidth = this.setting.Border.width;
+                return {
+                    x: x - borderWidth,
+                    y: y - borderWidth,
+                    height: height - 2 * borderWidth,
+                    width: width - 2 * borderWidth
+                } as AreaRect
+            },
+
             borderStyle: function (): CSSProp {
                 let {width, opacity, dashArray, color} = this.setting.Border;
                 let {showAll, showBorder} = this.setting.Show;
@@ -98,13 +112,17 @@
             },
 
             backGroundStyle: function (): CSSProp {
-                let {color, opacity} = this.setting.BackGround;
+                let {color, opacity} = this.setting.Background;
                 let {showAll, showBackground} = this.setting.Show;
                 return showAll && showBackground
                     ? {
                         fill: color,
                         fillOpacity: opacity
                     } : {}
+            },
+
+            activeStyle: function (): CSSProp {
+                return Object.assign(this.borderStyle, this.backGroundStyle)
             },
 
             isSelected: function (): boolean {

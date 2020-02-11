@@ -40,6 +40,10 @@ export function isNodeSetting(item: GraphItemSettingPart): item is NodeSettingPa
     return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
 }
 
+export function isVisNodeSetting(item: GraphItemSettingPart): item is VisNodeSettingPart {
+    return isNodeSetting(item) || isMediaSetting(item)
+}
+
 export function isSvgSetting(item: GraphItemSettingPart): item is SvgSettingPart {
     return (item as SvgSettingPart)._type === 'svg'
 }

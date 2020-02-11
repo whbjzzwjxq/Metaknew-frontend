@@ -222,7 +222,7 @@
             },
             showFill: function (): boolean {
                 return this.setting.Show.showAll &&
-                    this.setting.Show.showFill
+                    this.setting.Show.showBackground
             },
 
             //是否显示边

@@ -88,20 +88,20 @@
         </graph-node-button>
 
         <graph-media
-            v-for="(node, index) in medias"
-            :key="node.Setting._id"
-            :setting="node"
+            v-for="(media, index) in medias"
+            :key="media.Setting._id"
+            :setting="media"
             :container="mediaLocation[index]"
             :scale="realScale"
             :index="index"
             :view-box="containerRect"
-            @mouseenter.native="mouseEnter(node)"
-            @mouseleave.native="mouseLeave(node)"
+            @mouseenter.native="mouseEnter(media)"
+            @mouseleave.native="mouseLeave(media)"
             @mousedown.native="dragStart"
-            @mousemove.native="drag(node, $event)"
-            @mouseup.native="dragEnd(node, $event)"
-            @dblclick.native.stop="dbClickNode(node)"
-            @add-link="addLink(node)"
+            @mousemove.native="drag(media, $event)"
+            @mouseup.native="dragEnd(media, $event)"
+            @dblclick.native.stop="dbClickNode(media)"
+            @add-link="addLink(media)"
             @update-size="updateSize"
         >
 
@@ -111,7 +111,14 @@
             v-for="(svg, index) in svgs"
             :key="svg._id"
             :svg="svg"
-            :container="svgLocation[index]">
+            :container="svgLocation[index]"
+            @mouseenter.native="mouseEnter(svg)"
+            @mouseleave.native="mouseLeave(svg)"
+            @mousedown.native="dragStart"
+            @mousemove.native="drag(svg, $event)"
+            @mouseup.native="dragEnd(svg, $event)"
+            @dblclick.native.stop="dbClickNode(svg)"
+            @update-size="updateSize">
 
         </graph-svg>
 
@@ -173,7 +180,7 @@
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
     import GraphSvg from "@/components/graphComponents/GraphSvg.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
-    import {isLinkSetting, isMediaSetting, isNodeSetting} from "@/utils/typeCheck";
+    import {isLinkSetting, isMediaSetting, isNodeSetting, isVisNodeSetting} from "@/utils/typeCheck";
     import {commitChangeSubTab, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
@@ -658,11 +665,11 @@
 
         },
         methods: {
-            getRectByPoint(width: number, height: number, setting: VisNodeSettingPart | SvgSettingPart) {
+            getRectByPoint(width: number, height: number, setting: VisAreaSettingPart) {
                 // 将绝对的坐标点转化为矩形
                 //width,height: 从源点引申的尺寸，源点在左上角
                 let graphMeta = this.getGraphMetaData(setting.parent._id);
-                const getAbsPointFromParent = (node: VisNodeSettingPart | SvgSettingPart, parentMetaData: GraphMetaData) => {
+                const getAbsPointFromParent = (node: VisAreaSettingPart, parentMetaData: GraphMetaData) => {
                     let delta = getPoint(node.Setting.Base)
                         .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
                         .multiRect(parentMetaData.rect.positiveRect()); // 乘以矩形 e.g. -0.2 * 1000 = -200
@@ -693,17 +700,16 @@
                 }
             },
 
-            drag(target: VisNodeSettingPart, $event: MouseEvent) {
+            drag(target: VisAreaSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
-                    let {x, y} = $event;
                     let delta = getPoint($event);
                     let rect;
                     target.parent._id === this.graph._id
-                        ? (rect = this.containerRect) // 如果是根节点就用containerRect 因为this.graph.rect !== containerRect
+                        ? (rect = this.containerRect) // 如果是根节点就用containerRect 因为this.graph.rect !== containerRect 而是整个ViewBox
                         : (rect = target.parent.rect); // 否则用父亲Rect
                     delta.decrease(this.dragStartPoint).divideRect(rect).divide(this.realScale);
                     this.dragStart($event);
-                    let moveFunc = (node: VisNodeSettingPart | SvgSettingPart) => {
+                    let moveFunc = (node: VisAreaSettingPart) => {
                         this.$set(node.Setting.Base, 'x', node.Setting.Base.x + delta.x);
                         this.$set(node.Setting.Base, 'y', node.Setting.Base.y + delta.y);
                     };
@@ -725,20 +731,20 @@
             },
 
             //node的原生事件
-            mouseEnter(node: VisNodeSettingPart) {
+            mouseEnter(node: VisAreaSettingPart) {
                 this.$set(node.State, "isMouseOn", true);
             },
 
             //node的原生事件
-            mouseLeave(node: VisNodeSettingPart) {
+            mouseLeave(node: VisAreaSettingPart) {
                 this.$set(node.State, "isMouseOn", false);
                 this.isDragging = false;
             },
 
-            dbClickNode(node: VisNodeSettingPart) {
+            dbClickNode(node: VisAreaSettingPart) {
                 this.selectItem([node]);
-                commitChangeSubTab('info');
-                if (this.isLinking && node && this.startNode) {
+                if (this.isLinking && isVisNodeSetting(node) && this.startNode) {
+                    commitChangeSubTab('info');
                     if (node.parent._id === this.startNode.parent._id) {
                         // 如果是同一张图里的
                         let document = node.parent;
@@ -759,7 +765,7 @@
                 }
             },
             //框选
-            selectItem(itemList: GraphItemSettingPart[]) {
+            selectItem(itemList: GraphSubItemSettingPart[]) {
                 //选择
                 itemList.map(item => item.updateState("isSelected", true));
                 //如果是单选就切换内容
@@ -822,7 +828,7 @@
                     this.isSelecting = false;
                     // 单击也会触发 没办法
                     this.clearSelected("all");
-                    let result: GraphItemSettingPart[] = [];
+                    let result: GraphSubItemSettingPart[] = [];
                     // 基础的selection
                     let nodes = this.nodes.filter((node, index) =>
                         this.selectRect.checkInRect(this.nodeLocation[index].midPoint()) && this.showNode[index]
