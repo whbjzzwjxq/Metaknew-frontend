@@ -66,7 +66,6 @@
     import {RectByPoint, getPoint, Point} from "@/class/geometric";
     import {LabelViewDict} from "@/interface/interfaceInComponent";
     import {isMediaSetting} from "@/utils/typeCheck";
-    import {commitItemChange} from "@/store/modules/_mutations";
     import {getInfoPart, maxN, minN} from "@/utils/utils";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";

@@ -1,4 +1,4 @@
-<template>
+  <template>
     <v-container
         v-if="!loading"
         fluid
@@ -21,6 +21,7 @@
     } from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
     import {GraphSelfPart} from "@/class/graphItem";
+    import {PaperSelfPart} from "@/class/paperItem";
 
     export default Vue.extend({
         name: "Result",
@@ -29,7 +30,8 @@
         },
         data() {
             return {
-                loading: true
+                loading: true,
+                graphRouteRegex: new RegExp('graph.*')
             }
         },
         props: {},
@@ -40,6 +42,14 @@
             graph: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
+            paper: function (): PaperSelfPart {
+                return this.dataManager.currentPaper
+            },
+            currentDocument: function (): DocumentSelfPart {
+                return this.graphRouteRegex.test(String(this.$route.name))
+                    ? this.graph
+                    : this.paper
+            }
         },
         methods: {},
         watch: {},

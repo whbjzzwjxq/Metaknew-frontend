@@ -107,16 +107,37 @@ export function pathSettingTemplate(_id: id) {
     return setting
 }
 
-export function noteSettingTemplate(_id: id, _label: string, _title: string, _content: string) {
+export function noteSettingTemplate(_id: id, _label: string, _title: string, _content: string, _parent: id) {
     let setting = {
         _id,
         _type: 'note',
         _label,
         _title,
-        _content
+        _content,
+        _parent
     } as NoteSetting;
     Object.assign(setting, settingTemplate('note'));
     return setting
+}
+
+export function svgSettingTemplate (_id: id, _label: SvgLabel, _points: PointObject[]) {
+    let setting = {
+        _id,
+        _type: 'svg',
+        _label,
+        _points,
+        _text: ''
+    } as SvgSetting;
+    return Object.assign(setting, settingTemplate('svg'));
+}
+
+export function paperSettingTemplate(_id: id) {
+    let setting = {
+        _id,
+        _type: 'document',
+        _label: 'paper',
+    } as PaperSetting;
+    return Object.assign(setting, settingTemplate('document'))
 }
 
 export function nodeStateTemplate(...rest: Array<string>) {
@@ -160,6 +181,17 @@ export function graphStateTemplate(...rest: Array<string>) {
         isExplode: false,
         isSelf: rest.indexOf("isSelf") > -1,
     };
+}
+
+export function svgStateTemplate(...rest: Array<string>) {
+    return <SvgState>{
+        isDeleted: false,
+        isSelf: true,
+        isAdd: true,
+        isEditing: false,
+        isMouseOn: false,
+        isSelected: false
+    }
 }
 
 export function userConcernTemplate() {

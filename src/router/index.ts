@@ -57,6 +57,12 @@ const routes = [
                 name: 'paper',
                 component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocPaper.vue'),
                 props: true
+            },
+            {
+                path: 'paper/edit',
+                name: 'paper-edit',
+                component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocPaper.vue'),
+                props: true
             }
         ]
     },

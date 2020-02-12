@@ -3,7 +3,7 @@ declare global {
         'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
         'i-eye' | 'i-media-type' | 'i-collapse' | 'i-arrow' | 'i-knowledge-level' |
         'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
-        'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge'
+        'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge' | 'i-shape'
 
     type IconAlias = 'i-show'
 
@@ -163,6 +163,14 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         info: 'mdi-information-outline',
         medias: 'mdi-folder-multiple-image',
         relative: 'mdi-expand-all-outline'
+    },
+    'i-shape': {
+        rect: 'mdi-rectangle-outline',
+        square: 'mdi-crop-square',
+        circle: 'mdi-circle-outline',
+        ellipse: 'mdi-ellipse-outline',
+        triangle: 'mdi-triangle-outline',
+        polyline: 'mdi-vector-polyline',
     }
 };
 

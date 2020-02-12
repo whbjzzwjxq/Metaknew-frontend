@@ -1,6 +1,7 @@
 import {ValueWithType, ExtraProps} from "@/utils/fieldResolve";
-import {LinkSettingPart, MediaSettingPart, NodeSettingPart, SvgSettingPart} from "@/class/graphItem";
+import {GraphSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart, SvgSettingPart} from "@/class/graphItem";
 import {PathNodeSettingPart} from "@/class/path";
+import {PaperSelfPart} from "@/class/paperItem";
 
 declare global {
     type id = number | string;
@@ -122,4 +123,6 @@ declare global {
     }
 
     type PathArray = (PathNodeSettingPart | null)[][];
+
+    type DocumentSelfPart = GraphSelfPart | PaperSelfPart
 }

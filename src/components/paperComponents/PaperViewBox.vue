@@ -1,23 +1,17 @@
 <template>
-    <v-card flat tile class="ma-0 pa-0">
-        <v-card-title class="ma-0 pa-0" dense>
-            Fragment
-            <v-icon small></v-icon>
-        </v-card-title>
-    </v-card>
+    <div class="d-flex">
+
+    </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
-        name: "SubToolFragment",
+        name: "PaperViewBox",
         components: {},
         data: function () {
-            return {
-                fragmentIcon: getIcon('i-item', 'fragment')
-            }
+            return {}
         },
         props: {},
         computed: {},

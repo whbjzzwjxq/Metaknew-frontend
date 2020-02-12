@@ -1,10 +1,10 @@
 import {
+    GraphItemSettingPart,
     InfoPart,
     LinkSettingPart,
     MediaInfoPart,
     MediaSettingPart,
     NodeSettingPart,
-    GraphItemSettingPart,
     SvgSettingPart
 } from "@/class/graphItem";
 import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
@@ -38,6 +38,10 @@ export function isMediaSetting(item: GraphItemSettingPart): item is MediaSetting
 
 export function isNodeSetting(item: GraphItemSettingPart): item is NodeSettingPart {
     return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
+}
+
+export function isVisNodeSetting(item: GraphItemSettingPart): item is VisNodeSettingPart {
+    return isNodeSetting(item) || isMediaSetting(item)
 }
 
 export function isSvgSetting(item: GraphItemSettingPart): item is SvgSettingPart {

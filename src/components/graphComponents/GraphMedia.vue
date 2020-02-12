@@ -2,9 +2,9 @@
     <rect-container
         :container="container"
         :is-selected="setting.State.isSelected"
-        expand-able
         @update-size="updateSize"
         class="media"
+        expand
     >
         <template v-slot:content>
             <card-page-media-info
@@ -86,20 +86,7 @@
         },
         methods: {
             updateSize(start: PointMixed, end: PointMixed) {
-                // 视觉上的更新尺寸start, end
-                let setting = this.setting.Setting;
-                let scale = this.scale;
-                // 更新起始点
-                setting.Base.x += start.x / (this.viewBox.width * scale);
-                setting.Base.y += start.y / (this.viewBox.height * scale);
-                //更新长宽
-                let width = setting.Base.size;
-                let height = setting.Base.scaleX * width;
-                let delta = getPoint(end).decrease(start).divide(this.scale);
-                width += delta.x;
-                height += delta.y;
-                setting.Base.scaleX = height / width;
-                setting.Base.size = width;
+                this.$emit('update-size', start, end, this.setting)
             },
 
             updateSizeByNumber(newWidth: number): void {

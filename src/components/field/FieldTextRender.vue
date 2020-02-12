@@ -1,6 +1,8 @@
 <template>
     <div :style="divStyle" class="cardItem">
         <v-textarea
+            style="width: 100%"
+            class="unselected"
             :disabled="!editing"
             :label="label"
             :placeholder="placeholder"
@@ -10,8 +12,6 @@
             :value="value"
             @blur="updateValue"
             @input="cacheText = $event"
-            @onslect="select"
-            @select="select"
             auto-grow
             counter
             filled

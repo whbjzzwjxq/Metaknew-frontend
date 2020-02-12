@@ -1,5 +1,5 @@
 <template>
-    <div :style="startPointStyle">
+    <div :style="startPointStyle" class="rect-start-point">
         <div :style="contentStyle" v-if="!renderAsBorder">
             <slot name="content">
 
@@ -9,6 +9,7 @@
             v-for="(border, name) in borderDict"
             :key="name"
             :style="border.css"
+            v-show="showBorder"
             @mousedown.stop="startScale(arguments[0], name)"
             @mousemove.stop="scaling"
             @mouseup.stop="endScale"
@@ -21,7 +22,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {transformBorderToRect, Point, getPoint, RectByPoint, BorderType} from "@/class/geometric";
+    import {getPoint, Point, RectByPoint, transformBorderToRect} from "@/class/geometric";
 
     export default Vue.extend({
         name: "RectContainer",
@@ -42,26 +43,31 @@
             },
 
             // 是否可以改变尺寸
-            expandAble: {
-                type: Boolean as () => boolean,
+            expand: {
+                type: Boolean,
                 default: false
             },
 
             //拖动事件监听的外延
             listenBorder: {
-                type: Number as () => number,
-                default: 8
+                type: Number,
+                default: 4
             },
 
             //拖动事件监听的内展
             listenInner: {
-                type: Number as () => number,
-                default: 8
+                type: Number,
+                default: 4
+            },
+
+            borderWidth: {
+                type: Number,
+                default: 4
             },
 
             //是否被选中
             isSelected: {
-                type: Boolean as () => boolean,
+                type: Boolean,
                 default: false
             },
 
@@ -71,7 +77,8 @@
                 default: false
             },
 
-            alwaysBorder: {
+            //是否一直显示Border
+            alwaysShowBorder: {
                 type: Boolean,
                 default: false
             }
@@ -91,25 +98,25 @@
 
             showBorder: function (): boolean {
                 // 是否一直显示
-                return this.alwaysBorder || this.isSelected
+                return this.alwaysShowBorder || this.isSelected
             },
 
             // Border矩形的构成
             borderDict: function (): Record<string, { css: CSSProp }> {
-                // 这里要把开始点置为0,0
+                // 这里要把开始点置为0,0 重画一个矩形
                 let reGroupRect = new RectByPoint({x: 0, y: 0},
                     this.container.end.copy().decrease(this.container.start), 0);
                 return transformBorderToRect(
                     reGroupRect,
                     this.listenBorder,
                     this.listenInner,
-                    this.container.border,
+                    this.borderWidth,
                     {opacity: this.showBorder ? 0.3 : 0, backgroundColor: 'grey'})
             },
         },
         methods: {
             startScale: function ($event: MouseEvent, name: string) {
-                if (this.expandAble) {
+                if (this.expand) {
                     this.isScaling = true;
                     this.borderType = name;
                     this.resizeStartPoint.update($event)
@@ -117,6 +124,7 @@
             },
 
             scaling: function ($event: MouseEvent) {
+                // 上传视觉的改变
                 if (this.isScaling) {
                     let delta = getPoint($event).decrease(this.resizeStartPoint);
                     this.resizeStartPoint.update($event);

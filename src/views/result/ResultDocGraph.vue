@@ -38,7 +38,9 @@
                         </sub-tool-path>
                     </v-col>
                     <v-col cols="2" class="pa-0 ma-0">
+                        <sub-tool-svg>
 
+                        </sub-tool-svg>
                     </v-col>
                 </div>
             </template>
@@ -65,7 +67,7 @@
     import {RectByPoint} from "@/class/geometric";
     import {
         GraphSelfPart,
-        MediaSettingPart,
+        MediaSettingPart, NoteSettingPart,
     } from "@/class/graphItem";
     import {commitBottomDynamicBarResize} from "@/store/modules/_mutations";
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
@@ -74,9 +76,11 @@
     import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
     import SubToolStyle from "@/components/toolbar/SubToolStyle.vue";
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
+    import SubToolSvg from "@/components/toolbar/SubToolSvg.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
     import {PathSelfPart} from "@/class/path";
+    import {getIndex} from "@/utils/utils";
 
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -87,7 +91,8 @@
             SubToolStyle,
             SubToolPath,
             IconGroup,
-            PathDrawer
+            PathDrawer,
+            SubToolSvg
         },
         data() {
             return {
@@ -110,7 +115,7 @@
                 return this.allComponentsStyle.viewBox
             },
             viewBoxStyle: function (): CSSProp {
-                return this.viewBox.getDivCSS({overflow: "hidden"}, true)
+                return this.viewBox.getDivCSS({overflow: "hidden"})
             },
 
             graph: function (): GraphSelfPart {
@@ -126,7 +131,7 @@
                 return this.bottomSheetRect.positiveRect()
             },
             bottomSheetStyle: function (): CSSProp {
-                return this.bottomSheetRect.getDivCSS({zIndex: 5}, true)
+                return this.bottomSheetRect.getDivCSS({zIndex: 5})
             },
             bottomSheetIconList: function (): IconItem[] {
                 return [
@@ -157,7 +162,7 @@
 
             newNote: function (graph?: GraphSelfPart) {
                 graph || (graph = this.graph);
-                graph.addEmptyNote()
+                NoteSettingPart.emptyNoteSetting('note', '', '', graph._id, true)
             },
 
             addMedia: function (mediaIdList: id[], graph?: GraphSelfPart) {

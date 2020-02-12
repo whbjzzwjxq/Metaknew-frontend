@@ -22,6 +22,7 @@ import {Commit, Dispatch} from "vuex";
 import {isNodeBackend} from "@/utils/typeCheck";
 import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/path";
+import {PaperSelfPart} from "@/class/paperItem";
 
 const getManager = (_type: string) =>
     _type === 'link'
@@ -33,6 +34,7 @@ declare global {
     interface DataManagerState {
         currentGraph: GraphSelfPart,
         currentItem: NodeInfoPart | LinkInfoPart,
+        currentPaper: PaperSelfPart,
         graphManager: Record<id, GraphSelfPart>,
         nodeManager: Record<id, NodeInfoPart>,
         linkManager: Record<id, LinkInfoPart>,
@@ -52,6 +54,7 @@ declare global {
 
 const state: DataManagerState = {
     currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
+    currentPaper: PaperSelfPart.emptyPaperSelfPart('$_-1', false).paper,
     currentItem: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).info,
     rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
     graphManager: {},
@@ -90,6 +93,13 @@ const mutations = {
 
     currentItemChange(state: DataManagerState, payload: NodeInfoPart | LinkInfoPart) {
         state.currentItem = payload;
+    },
+
+    currentPaperChange(state: DataManagerState, payload: {paper: PaperSelfPart}) {
+        let {paper} = payload;
+        let _id = paper._id;
+        state.currentPaper = paper;
+        commitItemChange(state.nodeManager[_id]);
     },
 
     // ------------Graph------------
