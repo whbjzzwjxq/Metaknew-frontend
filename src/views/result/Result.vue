@@ -46,7 +46,9 @@
                 return this.dataManager.currentPaper
             },
             currentDocument: function (): DocumentSelfPart {
-
+                return this.graphRouteRegex.test(String(this.$route.name))
+                    ? this.graph
+                    : this.paper
             }
         },
         methods: {},
