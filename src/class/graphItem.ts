@@ -637,15 +637,18 @@ export class NoteSettingPart extends SettingPart {
         NoteSettingPart.list.push(this)
     }
 
-    static emptyNoteSetting(
-        _id: id,
-        _label: string,
-        _title: string,
-        _content: string,
-        _parent: id) {
+    static emptyNoteSetting(_label: string, _title: string, _content: string, _parent: id, commitToVuex?: boolean) {
+        let _id = getIndex();
+        commitToVuex === undefined && (commitToVuex = true);
         let setting = noteSettingTemplate(_id, _label, _title, _content, _parent);
         let state = noteStateTemplate('isAdd');
-        return new NoteSettingPart(setting, state)
+        let note = new NoteSettingPart(setting, state);
+        commitToVuex && commitNoteInDocAdd({note});
+        return note
+    }
+
+    commitNoteToVuex() {
+
     }
 }
 
@@ -879,14 +882,6 @@ export class GraphSelfPart {
         let payload = {setting, info};
         commitToVuex && this.commitItemToVuex(payload);
         return payload
-    }
-
-    addEmptyNote(commitToVuex?: boolean) {
-        commitToVuex === undefined && (commitToVuex = true);
-        let _id = getIndex();
-        let note = NoteSettingPart.emptyNoteSetting(_id, 'note', '', '', this._id);
-        commitToVuex && commitNoteInDocAdd({note});
-        return note
     }
 
     addSubGraph(commitToVuex?: boolean) {

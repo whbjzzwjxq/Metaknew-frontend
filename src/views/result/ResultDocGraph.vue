@@ -67,7 +67,7 @@
     import {RectByPoint} from "@/class/geometric";
     import {
         GraphSelfPart,
-        MediaSettingPart,
+        MediaSettingPart, NoteSettingPart,
     } from "@/class/graphItem";
     import {commitBottomDynamicBarResize} from "@/store/modules/_mutations";
     import GraphViewBox from '@/components/graphComponents/GraphViewBox.vue';
@@ -80,6 +80,7 @@
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
     import {PathSelfPart} from "@/class/path";
+    import {getIndex} from "@/utils/utils";
 
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -114,7 +115,7 @@
                 return this.allComponentsStyle.viewBox
             },
             viewBoxStyle: function (): CSSProp {
-                return this.viewBox.getDivCSS({overflow: "hidden"}, true)
+                return this.viewBox.getDivCSS({overflow: "hidden"})
             },
 
             graph: function (): GraphSelfPart {
@@ -130,7 +131,7 @@
                 return this.bottomSheetRect.positiveRect()
             },
             bottomSheetStyle: function (): CSSProp {
-                return this.bottomSheetRect.getDivCSS({zIndex: 5}, true)
+                return this.bottomSheetRect.getDivCSS({zIndex: 5})
             },
             bottomSheetIconList: function (): IconItem[] {
                 return [
@@ -161,7 +162,7 @@
 
             newNote: function (graph?: GraphSelfPart) {
                 graph || (graph = this.graph);
-                graph.addEmptyNote()
+                NoteSettingPart.emptyNoteSetting('note', '', '', graph._id, true)
             },
 
             addMedia: function (mediaIdList: id[], graph?: GraphSelfPart) {

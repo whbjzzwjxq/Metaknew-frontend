@@ -765,6 +765,10 @@ declare global {
         _text: string
     }
 
+    interface PaperSetting extends Setting {
+
+    }
+
     type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
     type AllStateProp = 'isLock' | 'isDark' | 'isLoading' | 'isChanged' | 'isExplode' | 'isSavedIn5min' | GraphStateProp
 
@@ -798,13 +802,13 @@ declare global {
         isEditing: boolean;
     }
 
-    interface TextState extends GraphItemState {
-
-    }
-
     interface GraphState extends BaseState {
         isChanged: boolean; // 是否变化
         isSavedIn5min: boolean; // 5分钟内是否保存
         isExplode: boolean; // 是否爆炸
+    }
+
+    interface PaperState extends BaseState {
+
     }
 }

@@ -305,6 +305,14 @@ export const emptyGraph = () => {
         svgs: []
     } as Graph
 };
+
+export const emptyPaper = () => {
+    return {
+        cards: [],
+        links: []
+    } as Paper
+};
+
 const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];
 export function mergeObject<T extends Record<string, any>, K extends keyof T>(target: T, source: any, passive?: boolean) {
     // 递归对象

@@ -131,6 +131,15 @@ export function svgSettingTemplate (_id: id, _label: SvgLabel, _points: PointObj
     return Object.assign(setting, settingTemplate('svg'));
 }
 
+export function paperSettingTemplate(_id: id) {
+    let setting = {
+        _id,
+        _type: 'document',
+        _label: 'paper',
+    } as PaperSetting;
+    return Object.assign(setting, settingTemplate('document'))
+}
+
 export function nodeStateTemplate(...rest: Array<string>) {
     return {
         isSelected: false,
