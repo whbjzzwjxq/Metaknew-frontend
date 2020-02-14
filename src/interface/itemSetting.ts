@@ -1,5 +1,5 @@
 import {
-    GraphConf,
+    GraphConf, GraphSelfPart,
     LinkSettingPart,
     MediaSettingPart,
     NodeSettingPart,
@@ -7,6 +7,7 @@ import {
     SvgSettingPart
 } from "@/class/graphItem";
 import {mergeObject} from "@/utils/utils";
+import {PaperSelfPart} from "@/class/paperItem";
 
 export type SettingGroup = Record<string, BaseSettingConf>
 export type SettingAll = Record<string, SettingGroup>
@@ -765,10 +766,6 @@ declare global {
         _text: string
     }
 
-    interface PaperSetting extends Setting {
-
-    }
-
     type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
     type AllStateProp = 'isLock' | 'isDark' | 'isLoading' | 'isChanged' | 'isExplode' | 'isSavedIn5min' | GraphStateProp
 
@@ -806,9 +803,5 @@ declare global {
         isChanged: boolean; // 是否变化
         isSavedIn5min: boolean; // 5分钟内是否保存
         isExplode: boolean; // 是否爆炸
-    }
-
-    interface PaperState extends BaseState {
-
     }
 }

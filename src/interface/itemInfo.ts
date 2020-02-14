@@ -1,5 +1,12 @@
 import {ValueWithType, ExtraProps} from "@/utils/fieldResolve";
-import {GraphSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart, SvgSettingPart} from "@/class/graphItem";
+import {
+    GraphSelfPart, LinkInfoPart,
+    LinkSettingPart, MediaInfoPart,
+    MediaSettingPart,
+    NodeInfoPart,
+    NodeSettingPart,
+    SvgSettingPart
+} from "@/class/graphItem";
 import {PathNodeSettingPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
 
@@ -105,7 +112,7 @@ declare global {
     }
 
     //Graph
-    interface Graph {
+    interface DocumentContent {
         nodes: Array<NodeSettingPart>;
         links: Array<LinkSettingPart>;
         medias: Array<MediaSettingPart>;
@@ -124,5 +131,5 @@ declare global {
 
     type PathArray = (PathNodeSettingPart | null)[][];
 
-    type DocumentSelfPart = GraphSelfPart | PaperSelfPart
+    type InfoPartInDataManager = NodeInfoPart | LinkInfoPart | MediaInfoPart
 }

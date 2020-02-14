@@ -6,6 +6,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
+    import {PaperSelfPart} from "@/class/paperItem";
 
     export default Vue.extend({
         name: "PaperViewBox",
@@ -13,8 +14,15 @@
         data: function () {
             return {}
         },
-        props: {},
-        computed: {},
+        props: {
+            paper: {
+                type: Object as () => PaperSelfPart,
+                required: true
+            }
+        },
+        computed: {
+
+        },
         methods: {},
         record: {
             status: 'empty',

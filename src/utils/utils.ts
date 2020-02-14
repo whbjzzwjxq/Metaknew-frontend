@@ -296,21 +296,13 @@ export const currentTime = () => {
     return time.getTime();
 };
 
-export const emptyGraph = () => {
+export const emptyContent = () => {
     return {
         nodes: [],
         links: [],
         medias: [],
-        texts: [],
         svgs: []
-    } as Graph
-};
-
-export const emptyPaper = () => {
-    return {
-        cards: [],
-        links: []
-    } as Paper
+    } as DocumentContent
 };
 
 const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];

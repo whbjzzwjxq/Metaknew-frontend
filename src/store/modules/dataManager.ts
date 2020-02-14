@@ -3,23 +3,24 @@ import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, SourceQue
 import {getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
-    GraphSelfPart, InfoPart,
+    DocumentSelfPart,
+    GraphSelfPart,
     LinkInfoPart,
     MediaInfoPart,
     NodeInfoPart,
     NodeSettingPart
 } from "@/class/graphItem";
 import {
+    commitDocumentAdd,
+    commitDocumentChangeId,
+    commitDocumentRemove,
     commitFileToken,
-    commitGraphAdd,
-    commitGraphChangeId,
-    commitGraphRemove,
     commitInfoAdd,
     commitInfoRemove,
     commitItemChange
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
-import {isNodeBackend} from "@/utils/typeCheck";
+import {isGraphSelfPart, isNodeBackend} from "@/utils/typeCheck";
 import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
@@ -30,12 +31,19 @@ const getManager = (_type: string) =>
         : _type === 'media'
         ? state.mediaManager
         : state.nodeManager;
+
+const getDocumentManager = (document: DocumentSelfPart) =>
+    isGraphSelfPart(document)
+        ? state.graphManager
+        : state.paperManager;
+
 declare global {
     interface DataManagerState {
         currentGraph: GraphSelfPart,
         currentItem: NodeInfoPart | LinkInfoPart,
         currentPaper: PaperSelfPart,
         graphManager: Record<id, GraphSelfPart>,
+        paperManager: Record<id, PaperSelfPart>,
         nodeManager: Record<id, NodeInfoPart>,
         linkManager: Record<id, LinkInfoPart>,
         mediaManager: Record<id, MediaInfoPart>,
@@ -54,10 +62,11 @@ declare global {
 
 const state: DataManagerState = {
     currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
-    currentPaper: PaperSelfPart.emptyPaperSelfPart('$_-1', false).paper,
+    currentPaper: PaperSelfPart.emptyPaperSelfPart('$_-1', null, false).paper,
     currentItem: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).info,
     rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
     graphManager: {},
+    paperManager: {},
     nodeManager: {},
     linkManager: {},
     mediaManager: {},
@@ -95,39 +104,40 @@ const mutations = {
         state.currentItem = payload;
     },
 
-    currentPaperChange(state: DataManagerState, payload: {paper: PaperSelfPart}) {
+    currentPaperChange(state: DataManagerState, payload: { paper: PaperSelfPart }) {
         let {paper} = payload;
         let _id = paper._id;
         state.currentPaper = paper;
         commitItemChange(state.nodeManager[_id]);
     },
 
-    // ------------Graph------------
+    // ------------Graph And Paper ------------
     // Push Graph
-    graphAdd(state: DataManagerState, payload: { graph: GraphSelfPart, strict?: boolean }) {
-        let {graph, strict} = payload;
+    documentAdd(state: DataManagerState, payload: { document: GraphSelfPart | PaperSelfPart, strict?: boolean }) {
+        let {document, strict} = payload;
+        let manager = getDocumentManager(document);
         strict || (strict = true);
         strict
-            ? Vue.set(state.graphManager, graph._id, graph)
-            : !state.graphManager[graph._id] && Vue.set(state.graphManager, graph._id, graph)
+            ? Vue.set(manager, document._id, document)
+            : !manager[document._id] && Vue.set(manager, document._id, document)
     },
 
-    graphRemove(state: DataManagerState, payload: id) {
+    documentRemove(state: DataManagerState, payload: id) {
         delete state.graphManager[payload]
     },
 
-    graphChangeId(state: DataManagerState, payload: idMap) {
+    documentChangeId(state: DataManagerState, payload: idMap) {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
         if (oldGraph) {
             oldGraph._id = newId;
-            commitGraphAdd({graph: oldGraph});
-            commitGraphRemove(oldId);
+            commitDocumentAdd({document: oldGraph});
+            commitDocumentRemove(oldId);
         }
     },
 
     // ------------以下是Info部分的内容------------
-    infoAdd(state: DataManagerState, payload: { item: InfoPart, strict?: boolean }) {
+    infoAdd(state: DataManagerState, payload: { item: InfoPartInDataManager, strict?: boolean }) {
         let {item, strict} = payload;
         let _id = item._id;
         let manager = getManager(item.type);
@@ -155,7 +165,7 @@ const mutations = {
             }
             // 额外检查一下Graph
             _type === 'document' &&
-            commitGraphChangeId({oldId: newId})
+            commitDocumentChangeId({oldId: newId})
         });
     },
 
@@ -172,7 +182,7 @@ const actions = {
             let graphSelf = GraphSelfPart.resolveFromBackEnd(data, parent);
             let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl);
             commitInfoAdd({item: graphInfo});
-            commitGraphAdd({graph: graphSelf});
+            commitDocumentAdd({document: graphSelf});
             // 请求节点
             let graph = graphSelf.Graph;
             context.dispatch('nodeQuery', graph.nodes.map(node => node.Setting));

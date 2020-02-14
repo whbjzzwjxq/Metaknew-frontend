@@ -5,7 +5,7 @@
         fill-height
         class="d-flex flex-row ma-0 pa-0">
         <card-root
-            :document="graph">
+            :document="currentDocument">
 
         </card-root>
         <router-view></router-view>
@@ -20,7 +20,7 @@
         commitRootGraph,
     } from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
-    import {GraphSelfPart} from "@/class/graphItem";
+    import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
     import {PaperSelfPart} from "@/class/paperItem";
 
     export default Vue.extend({

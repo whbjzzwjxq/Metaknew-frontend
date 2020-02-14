@@ -221,9 +221,9 @@
             },
 
             nodeToItem: (node: NodeSettingPart) => ({
-                _id: node.Setting._id,
+                _id: node._id,
                 type: 'node', //这里是目录意义上的节点
-                label: node.Setting._label,
+                label: node._label,
                 name: node.Setting._name,
                 icon: getIcon('i-item', 'node'),
                 deletable: node.parent.Conf.State.isSelf,

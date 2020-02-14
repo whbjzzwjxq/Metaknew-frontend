@@ -1,56 +1,61 @@
-import {NodeInfoPart, SettingPart} from "@/class/graphItem";
-import {emptyPaper} from "@/utils/utils";
+import {
+    DocumentSelfPart,
+    ItemSettingPart,
+    NodeInfoPart,
+} from "@/class/graphItem";
 import {paperSettingTemplate} from "@/utils/template";
+import {emptyContent} from "@/utils/utils";
+import {commitDocumentAdd} from "@/store/modules/_mutations";
 
-declare global {
-    interface Paper {
-        cards: [],
-        links: []
-    }
-}
-
-export class PaperConf extends SettingPart {
+export class PaperConf extends ItemSettingPart {
     State: PaperState;
     Setting: PaperSetting;
-
-    constructor(Setting: PaperSetting, State: PaperState) {
-        super(Setting, State);
+    parent: DocumentSelfPart | null;
+    constructor(Setting: PaperSetting, State: PaperState, parent: DocumentSelfPart | null) {
+        super(Setting, State, parent);
         this.Setting = Setting;
-        this.State = State
+        this.State = State;
+        this.parent = parent
     }
 
-    static emptyPaperConf(_id: id) {
+    static emptyPaperConf(_id: id, parent: DocumentSelfPart | null) {
         let state = {
             isSelf: true,
             isDeleted: false
         } as PaperState;
         let setting = paperSettingTemplate(_id);
-        return new PaperConf(setting, state)
+        return new PaperConf(setting, state, parent)
     }
 }
 
-export class PaperSelfPart {
+export class PaperSelfPart extends DocumentSelfPart {
     static list: PaperSelfPart[] = [];
-    Paper: Paper;
+    Content: DocumentContent;
     Conf: PaperConf;
 
-    get _id() {
-        return this.Conf._id
-    }
-
-    constructor(Paper: Paper, Conf: PaperConf) {
-        this.Paper = Paper;
-        this.Conf = Conf;
+    constructor(paper: DocumentContent, conf: PaperConf, draftId?: number) {
+        super(paper, conf, draftId);
+        this.Content = paper;
+        this.Conf = conf;
         PaperSelfPart.list.push(this)
     }
 
-    static emptyPaperSelfPart(_id: id, commitToVuex?: boolean) {
+    static emptyPaperSelfPart(_id: id, parent: DocumentSelfPart | null, commitToVuex?: boolean) {
         commitToVuex === undefined && (commitToVuex = true);
-        let paperContent = emptyPaper();
-        let setting = PaperConf.emptyPaperConf(_id);
+        let paperContent = emptyContent();
+        let setting = PaperConf.emptyPaperConf(_id, parent);
         let paper = new PaperSelfPart(paperContent, setting);
         let info = NodeInfoPart.emptyNodeInfoPart(_id, 'document', 'DocPaper');
         let payload = {paper, info};
+        if (commitToVuex) {
+            paper.commitPaperToVuex(payload)
+        }
         return payload
+    }
+
+    commitPaperToVuex(payload: { paper: PaperSelfPart, info: NodeInfoPart }) {
+        let {paper, info} = payload;
+        this.commitItemToVuex(info);
+        commitDocumentAdd({document: paper});
     }
 }
