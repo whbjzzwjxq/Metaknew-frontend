@@ -61,10 +61,10 @@ declare global {
         Language: string;
         Topic: Array<string>;
         ExtraProps: ExtraProps;
-        CommonProps: Record<string, ValueWithType<any>>;
-        Text: Translate; // 名字的翻译
+        StandardProps: Record<string, ValueWithType<any>>;
         IncludedMedia: Array<string | number>;
         MainPic: string;
+        Translate: Translate // 名字的翻译
     }
 
     interface BaseNodeCtrl extends PublicCtrl {
@@ -99,9 +99,7 @@ declare global {
         type: "link";
         Name: string;
         Labels: Array<string>;
-        CommonProps: Record<string, ValueWithType<any>>;
         ExtraProps: ExtraProps;
-        Confidence: number;
 
         [propName: string]: any;
     }

@@ -208,10 +208,10 @@ export function userConcernTemplate() {
 }
 
 export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: string) {
-    let commonProps: Record<string, ValueWithType<any>> = {};
+    let StandardProps: Record<string, ValueWithType<any>> = {};
     Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
         let {type, resolve} = value;
-        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
+        StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
     let info = <BaseNodeInfo>{
         _id: _id,
@@ -222,10 +222,10 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         Language: 'auto',
         Labels: [],
         Topic: [],
-        Text: {'auto': ''},
-        Description: {},
+        Translate: {'auto': ''},
+        Description: {'auto': ''},
         ExtraProps: {},
-        CommonProps: commonProps,
+        StandardProps: StandardProps,
         BaseImp: 0,
         BaseHardLevel: 0,
         BaseUseful: 0,
@@ -308,10 +308,10 @@ export function mediaCtrlTemplate(file: File) {
 }
 
 export function linkInfoTemplate(_id: id, _label: string) {
-    let commonProps: Record<string, ValueWithType<any>> = {};
+    let StandardProps: Record<string, ValueWithType<any>> = {};
     Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
         let {type, resolve} = value;
-        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
+        StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
     return <BaseLinkInfo>{
         _id: _id,
@@ -324,7 +324,7 @@ export function linkInfoTemplate(_id: id, _label: string) {
         Labels: [],
         ExtraProps: {},
         Confidence: 0.5,
-        CommonProps: commonProps,
+        StandardProps: StandardProps,
         Description: {}
     };
 }

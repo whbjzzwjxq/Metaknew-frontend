@@ -3,7 +3,6 @@ import store from '../index';
 import {
     DocumentSelfPart,
     GraphSelfPart,
-    InfoPart,
     LinkInfoPart,
     NodeInfoPart,
     NoteSettingPart

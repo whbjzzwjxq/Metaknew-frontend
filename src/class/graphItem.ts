@@ -149,14 +149,14 @@ export class NodeInfoPart extends InfoPart {
         if (this.isRemote) {
             console.log("如果是远端节点 那么PLabel不能修改");
         } else {
-            let commonProps = this.Info.CommonProps;
+            let StandardProps = this.Info.StandardProps;
             Object.entries(nodeLabelToProp(newLabel)).map(([prop, value]) => {
                 let {resolve, type} = value;
-                Object.keys(commonProps).indexOf(prop) === -1
-                    ? (commonProps[prop] = {resolve, type, value: fieldDefaultValue[type]})
-                    : (commonProps[prop] = deepClone(commonProps[prop]));
+                Object.keys(StandardProps).indexOf(prop) === -1
+                    ? (StandardProps[prop] = {resolve, type, value: fieldDefaultValue[type]})
+                    : (StandardProps[prop] = deepClone(StandardProps[prop]));
             });
-            Vue.set(this.Info, "CommonProps", commonProps);
+            Vue.set(this.Info, "StandardProps", StandardProps);
             Vue.set(this.Ctrl, "PrimaryLabel", newLabel);
             Vue.set(this.Info, "PrimaryLabel", newLabel);
             this.synchronizationSource("_label", newLabel);

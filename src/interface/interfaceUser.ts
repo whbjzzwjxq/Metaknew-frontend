@@ -23,5 +23,5 @@ export interface FragmentCtrl extends BaseCtrl {
 export interface FragmentInfo extends BaseInfo {
     type: 'fragment',
     PrimaryLabel: 'text' | 'image',
-    Src: string,
+    Src: id,
 }

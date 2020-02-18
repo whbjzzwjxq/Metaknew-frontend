@@ -130,14 +130,14 @@
                             type: "JsonField" as FieldType,
                             resolve: "normal" as ResolveType
                         }
-                    }, this.info.CommonProps)
+                    }, this.info.StandardProps)
                 },
                 set(value: EditProps) {
                     this.updateValue('ExtraProps', value.ExtraProps.value);
-                    let commonProps = deepClone(value);
+                    let StandardProps = deepClone(value);
                     // 删除掉ExtraProps
-                    delete commonProps.ExtraProps;
-                    this.updateValue('CommonProps', commonProps)
+                    delete StandardProps.ExtraProps;
+                    this.updateValue('StandardProps', StandardProps)
                 }
             },
             labelGroup: function (): LabelGroup[] {
