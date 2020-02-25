@@ -1,14 +1,14 @@
-import {ValueWithType, ExtraProps} from "@/utils/fieldResolve";
+import {ExtraProps, ValueWithType} from "@/utils/fieldResolve";
 import {
-    GraphSelfPart, LinkInfoPart,
-    LinkSettingPart, MediaInfoPart,
+    LinkInfoPart,
+    LinkSettingPart,
+    MediaInfoPart,
     MediaSettingPart,
     NodeInfoPart,
     NodeSettingPart,
     SvgSettingPart
 } from "@/class/graphItem";
 import {PathNodeSettingPart} from "@/class/path";
-import {PaperSelfPart} from "@/class/paperItem";
 
 declare global {
     type id = number | string;
@@ -29,9 +29,11 @@ declare global {
         Name: string,
         Description: Translate,
         Labels: string[], //统计后的标签
-        $IsCommon: boolean;
-        $IsFree: boolean;
-        $IsOpenSource: boolean;
+        ExtraProps: ExtraProps, //额外属性
+        StandardProps: ExtraProps, // 标准属性
+        IsCommon: boolean;
+        IsFree: boolean;
+        IsOpenSource: boolean;
 
         [prop: string]: any;
     }
@@ -55,16 +57,14 @@ declare global {
     interface BaseNodeInfo extends BaseInfo {
         type: "node" | "document";
         Alias: Array<string>;
+        Topic: Array<string>;
         BaseImp: number;
         BaseHardLevel: number;
         BaseUseful: number;
         Language: string;
-        Topic: Array<string>;
-        ExtraProps: ExtraProps;
-        StandardProps: Record<string, ValueWithType<any>>;
-        IncludedMedia: Array<string | number>;
-        MainPic: string;
         Translate: Translate // 名字的翻译
+        MainPic: string;
+        IncludedMedia: Array<id>;
     }
 
     interface BaseNodeCtrl extends PublicCtrl {
@@ -84,7 +84,6 @@ declare global {
 
     interface BaseMediaInfo extends BaseInfo {
         type: "media";
-        ExtraProps: ExtraProps;
 
         [propName: string]: any;
     }
@@ -97,9 +96,6 @@ declare global {
 
     interface BaseLinkInfo extends BaseInfo {
         type: "link";
-        Name: string;
-        Labels: Array<string>;
-        ExtraProps: ExtraProps;
 
         [propName: string]: any;
     }

@@ -1,5 +1,5 @@
 import {
-    GraphConf, GraphSelfPart,
+    GraphConf,
     LinkSettingPart,
     MediaSettingPart,
     NodeSettingPart,
@@ -7,7 +7,6 @@ import {
     SvgSettingPart
 } from "@/class/graphItem";
 import {mergeObject} from "@/utils/utils";
-import {PaperSelfPart} from "@/class/paperItem";
 
 export type SettingGroup = Record<string, BaseSettingConf>
 export type SettingAll = Record<string, SettingGroup>
@@ -61,7 +60,7 @@ const size = () => {
     return {
         size: {
             type: 'Number',
-            default: 18,
+            default: 0,
             range: [6, 64],
             tips: '不能为0',
             explain: '可视化尺寸'
@@ -507,8 +506,23 @@ const mediaSetting: SettingAll = {
     Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup())
 };
 
-const noteSetting: SettingAll = {
-    Base: BaseSettingGroup()
+const noteSetting = () => {
+    let result = {
+        Base: BaseSettingGroup()
+    };
+    let replace = {
+        Base: {
+            size: {
+                default: 300,
+                range: [100, 600]
+            },
+            scaleX: {
+                default: 1.5,
+            }
+        }
+    };
+    mergeObject(result, replace);
+    return result as SettingAll
 };
 
 const svgSetting = () => {
@@ -562,7 +576,7 @@ export const typeSetting: Record<SourceType, SettingAll> = {
     'document': documentSetting,
     'media': mediaSetting,
     'svg': svgSetting(),
-    'note': noteSetting,
+    'note': noteSetting(),
     'fragment': fragmentSetting,
     'path': pathSetting
 };

@@ -1,4 +1,4 @@
-import {currentTime, getCookie, randomNumberInRange} from '@/utils/utils';
+import {currentTime, getCookie, randomIntegerInRange, randomNumberInRange} from '@/utils/utils';
 import {fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/fieldResolve";
 import PDFJS from 'pdfjs-dist';
 import {typeSetting} from "@/interface/itemSetting";
@@ -178,7 +178,7 @@ export function graphStateTemplate(...rest: Array<string>) {
         isDeleted: false,
         isChanged: false,
         isSavedIn5min: false,
-        isExplode: false,
+        isExplode: true,
         isSelf: rest.indexOf("isSelf") > -1,
     };
 }
@@ -229,9 +229,9 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         BaseImp: 0,
         BaseHardLevel: 0,
         BaseUseful: 0,
-        $IsOpenSource: false,
-        $IsCommon: true,
-        $IsFree: true,
+        IsOpenSource: false,
+        IsCommon: true,
+        IsFree: true,
         IncludedMedia: [],
         MainPic: ''
     };
@@ -245,12 +245,11 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
 export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
     // Ctrl数据
     let ctrl = {
-        $IsUserMade: true,
         CreateUser: getCookie("user_id"),
         Source: 'User',
         UpdateTime: currentTime(),
         PrimaryLabel: _label,
-        Imp: 50,
+        Imp: randomIntegerInRange(0, 100),
         HardLevel: 50,
         Useful: 50,
         isStar: 0,
@@ -260,7 +259,7 @@ export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
         Contributor: {create: getCookie("user_name"), update: []},
         TotalTime: 50,
         Labels: [],
-        CreateType: 'User'
+        CreateType: 'USER'
     };
     if (_type === 'node') {
         return ctrl as BaseNodeCtrl
@@ -280,9 +279,10 @@ export function mediaInfoTemplate(_id: id, file: File) {
         PrimaryLabel: getMediaType(file),
         Name: file.name.split(".")[0],
         Labels: [],
-        $IsCommon: true,
-        $IsOpenSource: false,
-        $IsFree: true,
+        IsCommon: true,
+        IsOpenSource: false,
+        IsFree: true,
+        StandardProps: {},
         ExtraProps: {},
         Description: {}
     };
@@ -296,14 +296,13 @@ export function mediaCtrlTemplate(file: File) {
         Thumb: "",
         UpdateTime: currentTime(),
         CreateUser: getCookie("user_id"),
-        $IsUserMade: true,
         Source: 'User',
         isStar: 0,
         isGood: 0,
         isBad: 0,
         isShared: 0,
         Labels: [],
-        CreateType: 'User'
+        CreateType: 'USER'
     };
 }
 
@@ -317,9 +316,9 @@ export function linkInfoTemplate(_id: id, _label: string) {
         _id: _id,
         type: "link",
         PrimaryLabel: _label,
-        $IsCommon: true,
-        $IsFree: true,
-        $IsOpenSource: false,
+        IsCommon: true,
+        IsFree: true,
+        IsOpenSource: false,
         Name: '',
         Labels: [],
         ExtraProps: {},

@@ -86,7 +86,7 @@
                         <v-card-text class="px-4 py-2">
                             <field-text-render
                                 :div-style="textAreaStyle"
-                                :editing="isEditing"
+                                :disabled="!isEditing"
                                 :prop-name="'Text'"
                                 :value="currentNote.Text"
                                 render-as-markdown
@@ -255,7 +255,7 @@
                     Text: '',
                     Svg: {},
                     UpdateTime: currentTime(),
-                    $IsMarkdown: false,
+                    IsMarkdown: false,
                     State: {
                         isDeleted: false,
                         isSelf: true,

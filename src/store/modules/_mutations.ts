@@ -1,12 +1,6 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {
-    DocumentSelfPart,
-    GraphSelfPart,
-    LinkInfoPart,
-    NodeInfoPart,
-    NoteSettingPart
-} from "@/class/graphItem";
+import {DocumentSelfPart, GraphSelfPart, LinkInfoPart, NodeInfoPart, NoteSettingPart} from "@/class/graphItem";
 import {NoteBook} from "@/store/modules/userDataManager";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
@@ -101,6 +95,19 @@ export const commitNoteBookRemove = (payload: { note: NoteBook }) => {
     return store.commit('noteBookRemove', payload)
 };
 
-export const commitNoteInDocAdd = (payload: {note: NoteSettingPart }) => {
+export const commitNoteInDocAdd = (payload: { note: NoteSettingPart }) => {
     return store.commit('noteInDocAdd', payload)
+};
+
+export const commitGlobalIndexPlus = (payload: number) => {
+    return store.commit('userIndexPlus', payload)
+};
+
+export const commitLoginDialogChange = (payload: boolean) => {
+    return store.commit('loginDialogChange', payload)
+};
+
+export const commitLoginDialogOn = (payload: 0 | 1) => {
+    // 0 是登录 1是注册
+    return store.commit('loginDialogTab', payload)
 };

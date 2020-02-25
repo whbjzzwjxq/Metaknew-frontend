@@ -81,7 +81,7 @@
                 return this.$store.state.dataManager
             },
             nodes: function (): VisNodeSettingPart[] {
-                return this.document.Graph.nodes
+                return this.document.Content.nodes
             },
             nodeIdList: function (): id[] {
                 return this.nodes.map(node => node.Setting._id)

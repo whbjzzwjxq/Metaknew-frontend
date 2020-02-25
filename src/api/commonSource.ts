@@ -33,7 +33,7 @@ export interface BackendGraph {
         Info: BaseNodeInfo;
         Ctrl: BaseNodeCtrl;
     };
-    Graph: {
+    Content: {
         nodes: Array<NodeSetting>;
         links: Array<compressLinkSetting>;
         medias: Array<MediaSetting>;
@@ -44,7 +44,7 @@ export interface BackendGraph {
 
 export function mediaCreate(data: { name: string, Info: BaseMediaInfo }) {
     return instance.request<id>({
-        url: '/subgraph/create/media/normal',
+        url: '/subgraph/media/create',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
@@ -55,7 +55,7 @@ export function mediaCreate(data: { name: string, Info: BaseMediaInfo }) {
 
 export function mediaUpdate(data: MediaInfoPart) {
     return instance.request({
-        url: '/subgraph/update/media/normal',
+        url: '/subgraph/media/update',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
@@ -100,16 +100,16 @@ export function nodeUpdate(data: NodeInfoPart) {
     })
 }
 
-export function nodeCreateMulti(pLabel: string, nodes: FlatNodeInfo[]) {
+export function nodeCreateMulti(pLabel: string, nodes: BaseNodeInfo[]) {
     return instance.request({
-        url: '/subgraph/create/node/bulk_create',
+        url: '/item/node/bulk_create',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
         data: {
-            data: nodes,
-            pLabel: pLabel
+            Data: nodes,
+            CreateType: 'USER'
         }
     })
 }

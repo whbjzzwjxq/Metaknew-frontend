@@ -23,6 +23,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
+    import {doNothing} from "@/utils/utils";
 
     export default Vue.extend({
         name: "IconGroup",
@@ -89,7 +90,7 @@
                     ? icon.payload
                         ? icon._func(icon.payload)
                         : icon._func()
-                    : console.log('doNothing')
+                    : doNothing()
             }
         },
         watch: {},

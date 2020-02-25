@@ -22,6 +22,7 @@
                             @add-empty-link="newLink"
                             @add-media="addMedia"
                             @add-empty-note="newNote"
+                            @add-empty-document="addDocument"
                         >
                         </sub-tool-new-item>
                     </v-col>
@@ -180,10 +181,6 @@
             addDocument: function (_label: 'DocGraph' | 'DocPaper', graph?: GraphSelfPart) {
                 graph || (graph = this.graph);
                 return graph.addSubGraph();
-            },
-
-            saveDocument() {
-
             },
 
             bottomSheetOn: function (key: string) {

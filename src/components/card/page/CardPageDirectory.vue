@@ -102,7 +102,8 @@
             },
             // 不包含自身
             childDocumentList: function (): GraphSelfPart[] {
-                return this.document.getChildDocument()
+                let docList = this.$store.getters.documentList as GraphSelfPart[];
+                return docList.filter(doc => doc.root && doc.root._id === this.document._id)
             },
             // 不包含自身
             activeDocumentList: function (): GraphSelfPart[] {
@@ -143,37 +144,37 @@
                 get(): DirectoryItem[] {
                     // 逃生舱式写法 获取根节点级别的选择集
                     let root = this.tree.filter(root => {
-                        let node = this.document.Graph.nodes.filter(item => item._id === root._id)[0];
+                        let node = this.document.Content.nodes.filter(item => item._id === root._id)[0];
                         return node.State.isSelected
                     }) as DirectoryItem[];
                     return root.concat(this.baseItemList.filter(item => this.getOriginItem(item).State.isSelected))
                 },
                 set(value: DirectoryItem[]) {
-                    let newIdList = value.map(item => item._id);
-                    let oldIdList = this.selection.map(item => item._id);
-                    let selectedItems = value.filter(item => !oldIdList.includes(item._id));
-                    let unselectedItems = this.selection.filter(item => !newIdList.includes(item._id));
-                    let select = (list: DirectoryItem[], state: boolean) => {
-                        list.map(item => {
-                            let origin = this.getOriginItem(item);
-                            origin.updateState('isSelected', state);
-                            if (item.type === 'document') {
-                                let subNode = origin.parent.getSubItemById(item._id, item.type);
-                                subNode.updateState('isSelected', state);
-                                // 如果是新选中的Document
-                                if (state) {
-                                    this.dataManager.graphManager[item._id].selectAll('isSelected', true)
-                                }
-                            }
-                        })
-                    };
-                    select(selectedItems, true);
-                    select(unselectedItems, false);
-                    // 把root级别的subNode也找到
-                    this.tree.map(root => {
-                        let origin = this.document.Graph.nodes.filter(item => item.Setting._id === root._id)[0];
-                        origin.updateState('isSelected', newIdList.includes(root._id));
-                    })
+                    // let newIdList = value.map(item => item._id);
+                    // let oldIdList = this.selection.map(item => item._id);
+                    // let selectedItems = value.filter(item => !oldIdList.includes(item._id));
+                    // let unselectedItems = this.selection.filter(item => !newIdList.includes(item._id));
+                    // let select = (list: DirectoryItem[], state: boolean) => {
+                    //     list.map(item => {
+                    //         let origin = this.getOriginItem(item);
+                    //         origin.updateState('isSelected', state);
+                    //         if (item.type === 'document') {
+                    //             let subNode = origin.parent.getSubItemById(item._id, item.type);
+                    //             subNode.updateState('isSelected', state);
+                    //             // 如果是新选中的Document
+                    //             if (state) {
+                    //                 this.dataManager.graphManager[item._id].selectAll('isSelected', true)
+                    //             }
+                    //         }
+                    //     })
+                    // };
+                    // select(selectedItems, true);
+                    // select(unselectedItems, false);
+                    // // 把root级别的subNode也找到
+                    // this.tree.map(root => {
+                    //     let origin = this.document.Content.nodes.filter(item => item.Setting._id === root._id)[0];
+                    //     origin.updateState('isSelected', newIdList.includes(root._id));
+                    // })
                 }
             }
         },
@@ -341,14 +342,14 @@
             },
 
             getDocumentChildList(document: GraphSelfPart): DirectoryItem[] {
-                let nodes = document.Graph.nodes.filter(item => !item.State.isDeleted)
+                let nodes = document.Content.nodes.filter(item => !item.State.isDeleted)
                     .map(node => this.nodeToItem(node))
                     .filter(item => item._id !== document._id);
 
-                let links = document.Graph.links.filter(item => !item.State.isDeleted)
+                let links = document.Content.links.filter(item => !item.State.isDeleted)
                     .map(link => this.linkToItem(link));
 
-                let medias = document.Graph.medias.filter(item => !item.State.isDeleted)
+                let medias = document.Content.medias.filter(item => !item.State.isDeleted)
                     .map(media => this.mediaToItem(media));
 
                 return nodes.concat(links).concat(medias)

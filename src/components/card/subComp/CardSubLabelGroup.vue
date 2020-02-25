@@ -1,50 +1,48 @@
 <template>
     <div>
-        <template v-for="(group,index) in labelGroup">
-            <v-chip-group column :key="index" class="">
+        <v-chip-group column class="">
+            <v-chip
+                ripple
+                outlined
+                :small="small"
+                :x-small="xSmall"
+                :large="large"
+                :x-large="xLarge">
+                {{name + ':'}}
+            </v-chip>
+            <global-chip
+                :index="index"
+                :key="label"
+                :label="label"
+                :small="small"
+                :x-small="xSmall"
+                :large="large"
+                :x-large="xLarge"
+                :closeable="editable"
+                @close-chip="removeTag"
+                v-for="(label, index) in labelList">
+            </global-chip>
+            <v-edit-dialog v-if="editable">
                 <v-chip
-                    ripple
-                    outlined
                     :small="small"
                     :x-small="xSmall"
                     :large="large"
                     :x-large="xLarge">
-                    {{group.name + ':'}}
+                    <v-icon small>mdi-pencil</v-icon>
                 </v-chip>
-                <global-chip
-                    :index="index"
-                    :key="label"
-                    :label="label"
-                    :small="small"
-                    :x-small="xSmall"
-                    :large="large"
-                    :x-large="xLarge"
-                    :closeable="group.editable"
-                    @close-chip="removeTag(arguments[0], group.labels, group.prop)"
-                    v-for="(label, index) in group.labels">
-                </global-chip>
-                <v-edit-dialog v-if="group.editable">
-                    <v-chip
-                        :small="small"
-                        :x-small="xSmall"
-                        :large="large"
-                        :x-large="xLarge">
-                        <v-icon small>mdi-pencil</v-icon>
-                    </v-chip>
-                    <template v-slot:input>
-                        <field-array
-                            :available-tags="labelItems"
-                            :base-array="group.labels"
-                            :prop-name="'Labels'"
-                            :width="300"
-                            @update-value="addTag(arguments[1], group.prop)"
-                            v-if="group.editable">
+                <template v-slot:input>
+                    <field-array
+                        :available-tags="labelItems"
+                        :base-array="labelList"
+                        :prop-name="'Labels'"
+                        :width="300"
+                        @update-value="addTag"
+                        v-if="editable">
 
-                        </field-array>
-                    </template>
-                </v-edit-dialog>
-            </v-chip-group>
-        </template>
+                    </field-array>
+                </template>
+            </v-edit-dialog>
+        </v-chip-group>
     </div>
 </template>
 
@@ -52,8 +50,7 @@
     import Vue from 'vue'
     import GlobalChip from "@/components/global/GlobalChip.vue";
     import FieldArray from "@/components/field/FieldArray.vue";
-    import {TagRecommendation} from "@/api/user";
-    import {LabelExistProp, LabelGroup} from "@/interface/interfaceInComponent";
+    import {TagRecommendation} from "@/api/user/queryInfo";
 
     export default Vue.extend({
         name: "CardSubLabelGroup",
@@ -65,8 +62,8 @@
             return {}
         },
         props: {
-            labelGroup: {
-                type: Array as () => LabelGroup[],
+            labelList: {
+                type: Array as () => string[],
                 required: true
             },
             small: {
@@ -92,16 +89,24 @@
                         'recommend': []
                     }
                 }
+            },
+            editable: {
+                type: Boolean,
+                default: false
+            },
+            name: {
+                type: String,
+                default: ''
             }
         },
         computed: {},
         methods: {
-            removeTag(index: number, labels: string[], prop: LabelExistProp) {
-                let removeLabel = labels.splice(index, 1);
-                this.$emit('remove-label', removeLabel, prop)
+            removeTag(index: number) {
+                let removeLabel = this.labelList.splice(index, 1);
+                this.$emit('remove-label', removeLabel)
             },
-            addTag(value: string[], prop: LabelExistProp) {
-                this.$emit('add-label', value, prop)
+            addTag(propName: string, value: string[]) {
+                this.$emit('add-label', value)
             }
         },
         watch: {},

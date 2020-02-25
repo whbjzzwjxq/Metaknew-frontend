@@ -3,12 +3,11 @@
         <v-card-title style="font-size: 14px"> Current {{ propName }}</v-card-title>
         <v-card-text>
             <v-text-field
-                :value="number"
-                @input="newValue"
+                v-model="number"
                 hide-details
                 single-line
                 type="number"
-                :rules="activeRules">
+                :rules="rules">
 
             </v-text-field>
         </v-card-text>
@@ -18,7 +17,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldDefaultValue} from '@/utils/fieldResolve'
+    import {Rule} from "@/interface/interfaceInComponent";
+    import {outputRuleCheck, validGroup} from "@/utils/validation";
 
     interface Range {
         min: number,
@@ -33,7 +33,7 @@
         },
         props: {
             baseNum: {
-                type: Number as () => number,
+                type: Number,
                 required: true
             },
             propName: {
@@ -42,11 +42,11 @@
             },
             range: {
                 type: Object as () => Range,
-                default: {
+                default: () => ({
                     min: 0,
                     max: 100,
                     check: true
-                } as Range
+                }) as Range
             },
             width: {
                 type: Number,
@@ -58,37 +58,36 @@
             },
             defaultValue: {
                 type: Number,
-                default: fieldDefaultValue['NumberField']
+                default: 1
             }
         },
         computed: {
-            activeRules: function () {
+            number: {
+                get(): number {
+                    return this.baseNum
+                        ? Number(this.baseNum)
+                        : Number(this.defaultValue)
+                },
+                set(value: string | number): void {
+                    let num = Number(value);
+                    this.$emit('update-value', this.propName, num, this.status)
+                }
+            },
+            rules: function (): Rule<number>[] {
+                let {check, min, max} = this.range;
+                let validation = validGroup.Number;
                 let result = [];
-                this.range.check && result.push(this.rules.range);
-                this.intCheck && result.push(this.rules.int);
+                check && result.push(validation.minCheck(this.propName, min), validation.maxCheck(this.propName, max));
+                this.intCheck && result.push(validation.int());
                 return result
             },
-            number: function () {
-                return this.baseNum
-                    ? this.baseNum
-                    : this.defaultValue
-            },
-            rules: function (): Record<string, (value: number) => boolean | string> {
-                let range = this.range as Range;
-                return {
-                    range: (value: number) => (range.min <= value && value <= range.max) ||
-                        'Out of Range',
-                    int: (value: number) => value % 1 === 0 ||
-                        'Int required'
-                }
+            status: function (): string {
+                return outputRuleCheck(this.rules, Number(this.number)).length > 0
+                    ? 'error'
+                    : 'default'
             }
         },
-        methods: {
-            newValue($event: string) {
-                let value = Number($event);
-                this.$emit('update-value', this.propName, value, 'default')
-            }
-        },
+        methods: {},
         record: {
             status: 'done',
             description: '数字编辑器'

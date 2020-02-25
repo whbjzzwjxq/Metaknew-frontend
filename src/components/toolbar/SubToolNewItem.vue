@@ -45,7 +45,7 @@
                         edit-mode>
 
                     </link-start-end-selector>
-                    <document-adder v-else-if="key === 'document'">
+                    <document-adder v-else-if="key === 'document'" @add-document="addDocument">
 
                     </document-adder>
                     <v-btn
@@ -127,8 +127,8 @@
                 this.$emit('add-empty-link', start, end);
             },
 
-            addGraph() {
-
+            addDocument($event: 'DocGraph' | 'DocPaper') {
+                this.$emit('add-empty-document', $event)
             },
 
             addNote() {

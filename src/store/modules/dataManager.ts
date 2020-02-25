@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, SourceQueryObject} from '@/api/commonSource';
-import {getFileToken} from '@/api/user';
 import {filePutBlob} from '@/api/fileUpload';
 import {
     DocumentSelfPart,
@@ -24,6 +23,7 @@ import {isGraphSelfPart, isNodeBackend} from "@/utils/typeCheck";
 import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
+import {loginCookie} from "@/api/user/login";
 
 const getManager = (_type: string) =>
     _type === 'link'
@@ -82,6 +82,13 @@ const state: DataManagerState = {
 const getters = {
     currentGraphInfo: (state: DataManagerState) => {
         return state.nodeManager[state.currentGraph._id]
+    },
+
+    documentList: (state: DataManagerState) => {
+        let result = [] as DocumentSelfPart[];
+        result.push(...Object.values(state.graphManager));
+        result.push(...Object.values(state.paperManager));
+        return result
     }
 };
 const mutations = {
@@ -97,6 +104,7 @@ const mutations = {
 
     rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
+        Vue.set(graph.Conf.State, 'isExplode', true);
         state.rootGraph = graph
     },
 
@@ -184,7 +192,7 @@ const actions = {
             commitInfoAdd({item: graphInfo});
             commitDocumentAdd({document: graphSelf});
             // 请求节点
-            let graph = graphSelf.Graph;
+            let graph = graphSelf.Content;
             context.dispatch('nodeQuery', graph.nodes.map(node => node.Setting));
             context.dispatch('linkQuery', graph.links.map(link => link.Setting));
             context.dispatch('mediaQuery', graph.medias.map(media => media.Setting._id))
@@ -285,7 +293,7 @@ const actions = {
         let now = (new Date()).valueOf();
         // 先判断Token情况
         if ((fileToken.Expiration * 1000 - now <= 0) || !fileToken.AccessKeyId) {
-            await getFileToken().then(res => {
+            await loginCookie().then(res => {
                 commitFileToken(res.data.fileToken);
                 fileToken = res.data.fileToken;
             })

@@ -92,7 +92,7 @@ export abstract class InfoPart {
     updateValue(prop: string, newValue: any, doItPassive?: boolean) {
         if (!doItPassive) {
             if (ctrlPropRegex.test(prop) || prop === "PrimaryLabel") {
-                console.log("不要使用updateValue更新控制属性");
+                // "不要使用updateValue更新控制属性"
             } else {
                 this.isEdit = true;
                 Vue.set(this.Info, prop, newValue);
@@ -147,7 +147,7 @@ export class NodeInfoPart extends InfoPart {
 
     changePrimaryLabel(newLabel: string) {
         if (this.isRemote) {
-            console.log("如果是远端节点 那么PLabel不能修改");
+            // "如果是远端节点 那么PLabel不能修改"
         } else {
             let StandardProps = this.Info.StandardProps;
             Object.entries(nodeLabelToProp(newLabel)).map(([prop, value]) => {
@@ -252,13 +252,13 @@ export class LinkInfoPart extends InfoPart {
                 this.synchronizationSource("_end", end);
             }
         } else {
-            console.log("远端关系不能改变了");
+            // "远端关系不能改变了"
         }
     }
 
     updateValue(prop: string, newValue: any) {
         if (ctrlPropRegex.test(prop)) {
-            console.log("不要使用updateValue更新控制属性");
+            // "不要使用updateValue更新控制属性"
         } else {
             this.isEdit = true;
             Vue.set(this.Info, prop, newValue);
@@ -360,7 +360,7 @@ export class MediaInfoPart extends InfoPart {
     updateValue(prop: string, newValue: any, doItPassive?: boolean) {
         if (!doItPassive) {
             if (ctrlPropRegex.test(prop) || prop === "PrimaryLabel") {
-                console.log("不要使用updateValue更新控制属性");
+                // "不要使用updateValue更新控制属性"
             } else {
                 this.isEdit = true;
                 Vue.set(this.Info, prop, newValue);
@@ -412,7 +412,7 @@ export class FragmentInfoPart extends InfoPart {
         } as FragmentInfo;
 
         let ctrl = {
-            $IsLinked: true,
+            IsLinked: true,
             CreateType: 'System-' + method,
             CreateUser: getCookie('user_id'),
             SourceId: itemInfo._id,
@@ -708,6 +708,10 @@ export abstract class DocumentSelfPart {
         return this.Conf._id
     }
 
+    get _name() {
+        return this.Conf.Setting._name
+    }
+
     set _id(newId) {
         this.Conf._id = newId
     }
@@ -738,7 +742,7 @@ export abstract class DocumentSelfPart {
 export class GraphSelfPart extends DocumentSelfPart {
     static list: Array<GraphSelfPart> = [];
     static baseList: Array<BackendGraph> = []; // 原始数据
-    Graph: DocumentContent;
+    Content: DocumentContent;
     Conf: GraphConf;
     // 草稿保存
     draftId: number;
@@ -769,7 +773,7 @@ export class GraphSelfPart extends DocumentSelfPart {
         // 设置
         this.Conf = conf;
         // Graph
-        this.Graph = graph;
+        this.Content = graph;
         // rect默认值
         rect || (rect = {width: 600, height: 400});
         this.rect = rect;
@@ -802,25 +806,25 @@ export class GraphSelfPart extends DocumentSelfPart {
         let state = graphStateTemplate(...args);
         let setting = new GraphConf(baseData.Conf, state, parent);
         let graph = emptyContent();
-        let baseNodeSetting = baseData.Graph.nodes.filter(setting => setting._id === baseData.Conf._id)[0];
+        let baseNodeSetting = baseData.Content.nodes.filter(setting => setting._id === baseData.Conf._id)[0];
         let result = new GraphSelfPart(
             graph,
             setting,
             baseNodeSetting
         );
-        result.Graph.nodes = baseData.Graph.nodes.map(
+        result.Content.nodes = baseData.Content.nodes.map(
             setting => new NodeSettingPart(setting, nodeStateTemplate(), result)
         );
-        result.Graph.medias = baseData.Graph.medias.map(
+        result.Content.medias = baseData.Content.medias.map(
             setting =>
                 new MediaSettingPart(setting, nodeStateTemplate(), result)
         );
-        result.Graph.links = baseData.Graph.links.map(setting => {
+        result.Content.links = baseData.Content.links.map(setting => {
             let linkNode = {
-                _start: result.Graph.nodes.filter(node =>
+                _start: result.Content.nodes.filter(node =>
                     itemEqual(setting._start, node.Setting)
                 )[0],
-                _end: result.Graph.nodes.filter(node =>
+                _end: result.Content.nodes.filter(node =>
                     itemEqual(setting._end, node.Setting)
                 )[0]
             };
@@ -848,7 +852,7 @@ export class GraphSelfPart extends DocumentSelfPart {
     }
 
     allItems(): GraphSubItemSettingPart[] {
-        let {nodes, links, medias, svgs} = this.Graph;
+        let {nodes, links, medias, svgs} = this.Content;
         // @ts-ignore
         return nodes.concat(links).concat(medias).concat(svgs)
     }
@@ -863,14 +867,14 @@ export class GraphSelfPart extends DocumentSelfPart {
         let itemList;
         if (isGraphType(name)) {
             name === 'media'
-                ? itemList = this.Graph.medias
+                ? itemList = this.Content.medias
                 : name === 'link'
-                ? itemList = this.Graph.links
+                ? itemList = this.Content.links
                 : name === 'svg'
-                    ? itemList = this.Graph.svgs
-                    : itemList = this.Graph.nodes //  name === 'document | 'node
+                    ? itemList = this.Content.svgs
+                    : itemList = this.Content.nodes //  name === 'document | 'node
         } else {
-            itemList = this.Graph[name]
+            itemList = this.Content[name]
         }
         return itemList
     }
@@ -887,12 +891,12 @@ export class GraphSelfPart extends DocumentSelfPart {
     protected pushItem(item: GraphItemSettingPart) {
         item.parent = this;
         isMediaSetting(item)
-            ? this.Graph.medias.push(item)
+            ? this.Content.medias.push(item)
             : isNodeSetting(item)
-            ? this.Graph.nodes.push(item)
+            ? this.Content.nodes.push(item)
             : isSvgSetting(item)
-                ? this.Graph.svgs.push(item)
-                : isLinkSetting(item) && this.Graph.links.push(item)
+                ? this.Content.svgs.push(item)
+                : isLinkSetting(item) && this.Content.links.push(item)
     }
 
     getItemByState(name: GraphTypeS | GraphItemType, state: BaseStateKey) {
@@ -901,6 +905,7 @@ export class GraphSelfPart extends DocumentSelfPart {
     }
 
     explode() {
+        console.log('explode')
         this.Conf.updateState('isExplode')
     }
 

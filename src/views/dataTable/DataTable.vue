@@ -52,8 +52,10 @@
                     calculate-widths>
 
                     <template v-slot:item.$_action="{ item }">
-                        <v-icon class="mr-2" small @click="copyItem(item)"> {{ editIcon['copy'] }}</v-icon>
-                        <v-icon class="mr-2" small @click="deleteItem(item)">{{ editIcon['delete'] }}</v-icon>
+                        <div>
+                            <v-icon class="mr-2" small @click="copyItem(item)" style="display: inline-block"> {{ editIcon['copy'] }}</v-icon>
+                            <v-icon class="mr-2" small @click="deleteItem(item)" style="display: inline-block">{{ editIcon['delete'] }}</v-icon>
+                        </div>
                     </template>
 
                     <template v-slot:item._id="{item}">
@@ -84,7 +86,8 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        baseNodeProp, ExtraProps,
+        baseNodeProp,
+        ExtraProps,
         fieldDefaultValue,
         FieldSetting,
         fieldSetting,
@@ -98,8 +101,8 @@
     import DataTableButtonGroup from '@/components/DataTableButtonGroup.vue';
     import DataTableField from '@/components/DataTableField.vue';
     import {nodeCreateMulti} from "@/api/commonSource"
-    import {FlatNodeInfo} from "@/interface/interfaceInComponent";
     import {getIcon} from "@/utils/icon";
+    import {nodeInfoTemplate} from "@/utils/template";
 
     interface HeaderItem {
         text: string,
@@ -127,22 +130,22 @@
                 //每页的行数
                 rowNum: 10,
                 //选中的标签
-                pLabel: "",
+                pLabel: "BaseNode",
                 //属性简写
                 propSimply: {
                     'IncludedMedia': "Medias",
                     'BaseImp': "Imp",
                     "BaseHardLevel": "Hard",
-                    "$IsCommon": "Common",
-                    "$IsFree": "Free",
-                    "$IsOpenSource": "OpenSource"
+                    "BaseUseful": "Useful",
+                    "IsCommon": "Common",
+                    "IsOpenSource": "OpenSource"
                 } as Record<string, string>,
                 //全部的节点
-                nodes: [] as FlatNodeInfo[],
+                nodes: [] as BaseNodeInfo[],
                 //被选中的节点
-                selected: [] as FlatNodeInfo[],
+                selected: [] as BaseNodeInfo[],
                 //不需要编辑值的属性
-                unShowProps: ["_id", "type"],
+                unShowProps: ["_id", "type", "PrimaryLabel"],
                 //数据表底部插槽
                 footSetting: {
                     showFirstLastPage: true,
@@ -230,14 +233,9 @@
             },
 
             //节点的模板
-            nodeTemplate: function (): FlatNodeInfo {
-                let object: Record<string, any> = {};
-                Object.entries(this.labelDict).map(([key, value]) => {
-                    let type: FieldType = value.type;
-                    object[key] = this.defaultValue[type];
-                });
-                //@ts-ignore
-                return object
+            nodeTemplate: function (): BaseNodeInfo {
+                // id不是实际调用的
+                return nodeInfoTemplate('$_-1', 'node', this.pLabel)
             },
 
             //是否窄行距
@@ -285,7 +283,7 @@
             },
 
             //添加已经解析好的节点 也可以是后端导入
-            addResolvedNode(nodeList: FlatNodeInfo[]) {
+            addResolvedNode(nodeList: BaseNodeInfo[]) {
                 this.nodes = this.nodes.concat(nodeList);
             },
 
@@ -303,9 +301,9 @@
             },
 
             //复制行元素
-            copyItem(item: FlatNodeInfo) {
+            copyItem(item: BaseNodeInfo) {
                 let index = this.nodes.indexOf(item);
-                let newItem = deepClone(item) as FlatNodeInfo;
+                let newItem = deepClone(item) as BaseNodeInfo;
                 newItem._id = this.getIndex();
                 this.nodes.splice(index + 1, 0, newItem);
             },
@@ -322,7 +320,7 @@
             },
 
             //删除行元素
-            deleteItem(item: FlatNodeInfo) {
+            deleteItem(item: BaseNodeInfo) {
                 if (confirm('确定要删除此项吗?')) {
                     let index = this.nodes.indexOf(item);
                     this.nodes.splice(index, 1);
@@ -332,12 +330,12 @@
             },
 
             //解析属性
-            resolveProp(item: Record<string, string>): FlatNodeInfo {
+            resolveProp(item: Record<string, string>): BaseNodeInfo {
                 //注意这里resolve了item的所有属性
                 let translate = {} as Record<string, string>;
                 let text = {} as Record<string, string>;
                 let extraProps = {} as ExtraProps;
-                let node = {} as FlatNodeInfo;
+                let node = {} as BaseNodeInfo;
                 Object.entries(item).map(([key, value]) => {
                     if (this.propList.indexOf(key) >= 0) {
                         // 如果是已有属性
@@ -383,7 +381,7 @@
                 return getIndex()
             },
 
-            saveNodes(nodes: FlatNodeInfo[]) {
+            saveNodes(nodes: BaseNodeInfo[]) {
                 let _this = this;
                 nodeCreateMulti(this.pLabel, nodes).then(res => {
                     if (res.status === 200) {
@@ -396,12 +394,12 @@
             },
 
             //更新值
-            updateProp(item: FlatNodeInfo, prop: string, value: any) {
+            updateProp(item: BaseNodeInfo, prop: string, value: any) {
                 this.$set(item, prop, value)
             },
 
             //更新节点
-            updateNode(node: FlatNodeInfo, oldLabel: string, newLabel: string) {
+            updateNode(node: BaseNodeInfo, oldLabel: string, newLabel: string) {
                 //参数解构使用for of
                 for (let [prop, setting] of Object.entries(nodeLabelToProp(newLabel))) {
                     Object.prototype.hasOwnProperty.call(node, prop) ||

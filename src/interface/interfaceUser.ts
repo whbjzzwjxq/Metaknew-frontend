@@ -17,7 +17,7 @@ export interface FragmentCtrl extends BaseCtrl {
     SourceId: id,
     SourceType: GraphItemType,
     SourceLabel: string,
-    $IsLinked: boolean
+    IsLinked: boolean
 }
 
 export interface FragmentInfo extends BaseInfo {

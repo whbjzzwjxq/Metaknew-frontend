@@ -131,6 +131,14 @@
 
         </graph-note>
 
+        <div :style="topNavigationStyle">
+            <v-breadcrumbs
+                :divider="'->'"
+                :items="navigationList"
+                large>
+
+            </v-breadcrumbs>
+        </div>
         <div :style="viewBoxToolStyle" class="d-flex flex-row">
             <graph-label-selector
                 v-if="renderLabelSelector"
@@ -160,6 +168,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
+        DocumentSelfPart,
         GraphConf,
         GraphItemSettingPart,
         GraphSelfPart,
@@ -186,6 +195,13 @@
     import RectContainer from "@/components/container/RectContainer.vue";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
+
+    interface NavigationItem {
+        disabled: boolean;
+        exact: boolean;
+        to: object;
+        text: string
+    }
 
     export default Vue.extend({
         name: "GraphViewBox",
@@ -331,8 +347,19 @@
                 )
             },
             // 所有的孩子Document
-            childDocumentList: function () {
-                return this.graph.getChildDocument()
+            childDocumentList: function (): GraphSelfPart[] {
+                let docList = this.$store.getters.documentList as GraphSelfPart[];
+                return docList.filter(doc => doc.root && doc.root._id === this.graph._id)
+            },
+            navigationList: function (): NavigationItem[] {
+                //@ts-ignore
+                let result: DocumentSelfPart[] = (this.graph.rootList).concat([this.graph]);
+                return result.map(doc => ({
+                    disabled: true,
+                    exact: false,
+                    to: {name: this.$route.name, params: {id: doc._id}},
+                    text: this.dataManager.nodeManager[doc._id].Info.Name
+                }) as NavigationItem)
             },
             // 未被删除的Graph
             activeGraphList: function (): GraphSelfPart[] {
@@ -384,7 +411,7 @@
 
                 let result = [root];
                 let searchGraph = function (graphMeta: GraphMetaData) {
-                    let graph = graphMeta.self.Graph;
+                    let graph = graphMeta.self.Content;
                     graph.nodes.map(node => {
                         let {_type, _id} = node.Setting;
                         let index = vm.activeGraphIdList.indexOf(_id);
@@ -417,11 +444,11 @@
 
             // 包含所有的Nodes
             nodes: function (): NodeSettingPart[] {
-                let result = this.graph.Graph.nodes
+                let result = this.graph.Content.nodes
                     .filter(node => node.Setting._id === this.graph._id) as NodeSettingPart[];
                 // root Graph的节点显示
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Graph.nodes.filter(node => node.Setting._id !== graph._id))
+                    result = result.concat(graph.Content.nodes.filter(node => node.Setting._id !== graph._id))
                     // Graph底下的节点由父亲Graph中的Nodes代替
                 });
                 return result
@@ -439,7 +466,7 @@
             links: function (): LinkSettingPart[] {
                 let result: LinkSettingPart[] = [];
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Graph.links.filter(link => {
+                    result = result.concat(graph.Content.links.filter(link => {
                         return this.nodeIdList.includes(link.Setting._start.Setting._id) &&
                             this.nodeIdList.includes(link.Setting._end.Setting._id)
                     }))
@@ -449,7 +476,7 @@
 
             // 只有自身的medias
             medias: function (): MediaSettingPart[] {
-                return this.graph.Graph.medias
+                return this.graph.Content.medias
             },
 
             mediaIdList: function (): id[] {
@@ -462,14 +489,14 @@
 
             // svg
             svgs: function (): SvgSettingPart[] {
-                return this.graph.Graph.svgs
+                return this.graph.Content.svgs
             },
 
             selectedItem: function (): GraphSubItemSettingPart[] {
                 return this.graph.allItems().filter(item => item.State.isSelected)
             },
 
-            labelDict: function () {
+            labelDict: function (): Record<GraphItemType, string[]> {
                 let getLabels = (list: AllSettingPart[]) => {
                     let result: string[] = [];
                     list.map((item: AllSettingPart) => {
@@ -478,13 +505,14 @@
                     });
                     return result
                 };
-                let labelDict = {
-                    'node': getLabels(this.nodes),
+                let docLabel = ['DocGraph', 'DocPaper'];
+                let normalNodes = this.nodes.filter(item => !docLabel.includes(item._label));
+                return {
+                    'node': getLabels(normalNodes),
                     'link': getLabels(this.links),
                     'media': getLabels(this.medias),
-                    'document': ['DocGraph', 'DocPaper']
-                } as Record<GraphItemType, string[]>;
-                return labelDict
+                    'document': docLabel
+                } as Record<GraphItemType, string[]>
             },
 
             selectedItems: function (): GraphItemSettingPart[] {
@@ -555,14 +583,14 @@
                     let y1 = this.getTargetInfo(link.Setting._start).y;
                     let x2 = this.getTargetInfo(link.Setting._end).x;
                     let y2 = this.getTargetInfo(link.Setting._end).y;
-                    switch (link.Setting.Base.type) {
+                    switch (link.Setting.View.viewType) {
                         case "curve":
-                            link.Setting.Base.direct === 'top'
+                            link.Setting.View.direct === 'top'
                                 ? result = {"x": (x1 + x2) / 2, "y": y2}
                                 : result = {"x": (x1 + x2) / 2, "y": y1};
                             break;
                         case "polyline":
-                            link.Setting.Base.direct === 'top'
+                            link.Setting.View.direct === 'top'
                                 ? result = {"x": (x1 + x2) / 2, "y": y2}
                                 : result = {"x": (x1 + x2) / 2, "y": y1};
                             break;
@@ -660,6 +688,14 @@
                     position: 'absolute',
                     left: this.containerRect.width * 0.85 + 'px',
                     top: this.containerRect.height * 0.65 + 'px',
+                }
+            },
+
+            topNavigationStyle: function (): CSSProp {
+                return {
+                    position: 'absolute',
+                    left: '12px',
+                    top: '12px'
                 }
             },
 

@@ -138,20 +138,20 @@
                 return this.state.isSelf
             },
             nodes(): NodeSettingPart[] {
-                return this.document.Graph.nodes
+                return this.document.Content.nodes
             },
             links(): LinkSettingPart[] {
                 let result;
                 this.renderMedia
-                    ? result = this.document.Graph.links
-                    : result = this.document.Graph.links.filter(link => link.Setting._start.Setting._type !== 'media' &&
+                    ? result = this.document.Content.links
+                    : result = this.document.Content.links.filter(link => link.Setting._start.Setting._type !== 'media' &&
                     link.Setting._end.Setting._type !== 'media');
                 return result
             },
             medias(): MediaSettingPart[] {
                 let result: MediaSettingPart[];
                 this.renderMedia
-                    ? result = this.document.Graph.medias
+                    ? result = this.document.Content.medias
                     : result = [];
                 return result
             },
@@ -498,7 +498,7 @@
                     });
                 } else {
                     let value = graph.Conf.State.isExplode;
-                    let nodes = graph.Graph.nodes;
+                    let nodes = graph.Content.nodes;
                     if (value) {
                         nodes.splice(0, 0, graph.baseNode);
                         this.$set(graph.Conf.State, 'isExplode', false)

@@ -5,7 +5,7 @@ declare global {
         'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
         'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge' | 'i-shape'
 
-    type IconAlias = 'i-show'
+    type IconAlias = 'i-show' | 'i-normal'
 
     interface IconItem {
         name: string,
@@ -176,6 +176,7 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
 
 const iconAlias: Record<IconAlias, IconGroup> = {
     'i-show': 'i-eye',
+    'i-normal': 'i-edit'
 };
 
 export function isIconGroup(name: IconAlias | IconGroup): name is IconGroup {

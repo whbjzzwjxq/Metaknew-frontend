@@ -68,7 +68,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {GraphSelfPart, LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
+    import {GraphSelfPart, LinkInfoPart, NodeInfoPart} from "@/class/graphItem";
     import {getIcon} from "@/utils/icon";
     import {TabContent} from "@/interface/interfaceInComponent";
     import {commitChangeRootTab, commitChangeSubTab} from "@/store/modules/_mutations";
@@ -103,6 +103,9 @@
         computed: {
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
+            },
+            componentState: function (): ComponentState {
+                return this.$store.state.componentState
             },
             currentItem: function (): NodeInfoPart | LinkInfoPart {
                 return this.dataManager.currentItem
@@ -213,7 +216,7 @@
 
             rootTab: {
                 get: function (): number {
-                    return this.allComponentSize.leftCardTab.root
+                    return this.componentState.leftCardTab.root
                 },
                 set: function (value: number) {
                     commitChangeRootTab(value)
@@ -222,7 +225,7 @@
 
             subTab: {
                 get: function (): number {
-                    return this.allComponentSize.leftCardTab.sub
+                    return this.componentState.leftCardTab.sub
                 },
                 set: function (value: SubTabName) {
                     commitChangeSubTab(value)

@@ -3,7 +3,7 @@
         <v-textarea
             style="width: 100%"
             class="unselected"
-            :disabled="!editing"
+            :disabled="disabled"
             :label="label"
             :placeholder="placeholder"
             :row-height="rowHeight"
@@ -54,7 +54,7 @@
                 type: String,
                 default: ''
             },
-            editing: {
+            disabled: {
                 type: Boolean,
                 default: false
             },
@@ -85,8 +85,9 @@
 
         },
         computed: {
+            // 解析方式
             showArea: function (): boolean {
-                return !this.renderAsMarkdown || this.editing
+                return !this.renderAsMarkdown || !this.disabled
             }
         },
         methods: {
@@ -96,7 +97,7 @@
             },
 
             select() {
-                console.log('select')
+
             }
         },
         record: {

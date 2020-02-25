@@ -92,7 +92,7 @@
                 let explodeIcon;
                 !this.boundGraph
                     ? explodeIcon = 'unload'
-                    : explodeIcon = !this.boundGraph.Conf.State.isExplode;
+                    : explodeIcon = !this.boundGraph.isExplode;
                 return [
                     {name: getIcon("i-delete-able", deleteIcon), _func: this.deleteItem, disabled: !deleteIcon},
                     {name: 'mdi-arrow-top-right', _func: this.addLink},

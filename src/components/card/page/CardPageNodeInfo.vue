@@ -50,6 +50,7 @@
                         :small="simplifySetting.chipSize === 'small'"
                         :x-small="simplifySetting.chipSize === 'xSmall'"
                         :index="index"
+                        :closeable="baseData.isSelf"
                         @close-chip="removeTopic">
 
                     </global-chip>
@@ -95,11 +96,15 @@
         <card-sub-row :text="nameTrans[type] + '有关的标签'">
             <template v-slot:content>
                 <card-sub-label-group
-                    @remove-item="removeItem"
-                    @add-item="addItem"
-                    :label-group="labelGroup"
+                    :editable="group.editable"
+                    :key="index"
                     :label-items="labelItems"
-                    small>
+                    :label-list="group.labels"
+                    :name="group.name"
+                    @add-label="addItem(arguments[0], group.prop)"
+                    @remove-label="removeItem"
+                    small
+                    v-for="(group, index) in labelGroup">
 
                 </card-sub-label-group>
             </template>
@@ -148,6 +153,9 @@
             </template>
         </card-sub-row>
 
+        <card-sub-row :text="nameTrans[type] + '保存'">
+
+        </card-sub-row>
     </div>
 </template>
 
@@ -164,9 +172,10 @@
     import GlobalChip from "@/components/global/GlobalChip.vue";
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/fieldResolve";
     import {LabelGroup} from "@/interface/interfaceInComponent"
-    import {deepClone} from "@/utils/utils";
+    import {deepClone, doNothing} from "@/utils/utils";
     import ItemSharer from "@/components/ItemSharer.vue";
     import ItemMarker from "@/components/ItemMarker.vue";
+
     export default Vue.extend({
         name: "CardPageNodeInfo",
         components: {
@@ -383,11 +392,15 @@
             addItem(value: string[], prop: string) {
                 prop === 'Info'
                     ? this.baseData.updateValue('Labels', value)
-                    : console.log('todo')// todo
+                    : doNothing() // todo
             },
 
             updateRating(prop: LevelConcern, rating: number) {
                 // todo
+            },
+
+            saveItem() {
+
             }
         },
         watch: {},

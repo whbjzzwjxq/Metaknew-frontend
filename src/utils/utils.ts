@@ -1,5 +1,13 @@
 import {GraphItemSettingPart, InfoPart} from "@/class/graphItem";
 import {SortProp} from "@/interface/interfaceInComponent";
+import {
+    commitFileToken,
+    commitGlobalIndexPlus,
+    commitLoginDialogChange, commitLoginOut,
+    commitUserLogin
+} from "@/store/modules/_mutations";
+import store from '@/store/index';
+import {AxiosResponse} from "axios";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -207,9 +215,11 @@ export let crucialRegex = new RegExp("_.*");
 
 // 获取新内容id
 export const getIndex = () => {
-    globalIndex += 1;
-    return '$_' + globalIndex as id
+    let index = store.state.userIndex + 1;
+    commitGlobalIndexPlus(index);
+    return '$_' + index as id
 };
+
 // 两个Item是否一样
 export const itemEqual = (itemA: { _id: id, _type: GraphItemType }, itemB: { _id: id, _type: GraphItemType }) =>
     itemA._id === itemB._id && itemA._type === itemB._type;
@@ -306,6 +316,7 @@ export const emptyContent = () => {
 };
 
 const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];
+
 export function mergeObject<T extends Record<string, any>, K extends keyof T>(target: T, source: any, passive?: boolean) {
     // 递归对象
     // source里有target没有的值是否强制覆盖
@@ -328,3 +339,29 @@ export function mergeObject<T extends Record<string, any>, K extends keyof T>(ta
         }
     })
 }
+
+export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays?: boolean) => {
+    const {data} = res;
+    let day;
+    loginSevenDays
+        ? day = 7
+        : day = 1;
+    setCookie('user_name', data.userName, day);
+    setCookie('token', data.token, day);
+    commitUserLogin(data);
+    commitFileToken(data.fileToken);
+    commitGlobalIndexPlus(data.personalId);
+    commitLoginDialogChange(false);
+};
+
+export const setLoginOut = () => {
+    delCookie("user_name");
+    delCookie("token");
+    commitLoginOut();
+};
+
+export const badResponse = (res: AxiosResponse) => {
+
+};
+
+export const doNothing = () => {};

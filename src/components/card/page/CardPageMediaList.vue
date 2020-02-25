@@ -36,11 +36,11 @@
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
     import {mediaAppendToNode, SourceQueryObject} from "@/api/commonSource";
     import {NodeInfoPart, MediaInfoPart, MediaSettingPart} from "@/class/graphItem";
-    import {getFileToken} from '@/api/user'
     import {commitFileToken} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import {SortProp} from "@/interface/interfaceInComponent";
     import {sortCtrl} from "@/utils/utils";
+    import {loginCookie} from "@/api/user/login";
 
     export default Vue.extend({
         name: "CardPageMediaList",
@@ -128,7 +128,7 @@
             let now = (new Date()).valueOf();
             //先判断Token情况
             if ((fileToken.Expiration * 1000 - now <= 0) || !fileToken.AccessKeyId) {
-                getFileToken().then(res => {
+                loginCookie().then(res => {
                     if (res.status === 200) {
                         commitFileToken(res.data.fileToken);
                     } else {

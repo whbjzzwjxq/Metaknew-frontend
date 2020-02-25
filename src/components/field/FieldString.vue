@@ -13,10 +13,8 @@
 
             <v-text-field
                 v-else
-                :value="text"
-                :rules="[rules.empty, rules.errorChar, rules.duplicate]"
-                @blur="saveText"
-                @input="inputText"
+                v-model="text"
+                :rules="rules"
                 label="EditText"
                 single-line
                 counter>
@@ -35,7 +33,7 @@
                     outlined
                     tile>
                     {{ item }}
-                    <v-icon @click="restoreText(index)" right>restore</v-icon>
+                    <v-icon @click="restoreText(index)" right small>mdi-restore</v-icon>
                 </v-chip>
             </v-chip-group>
         </v-card-text>
@@ -44,25 +42,14 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {checkDuplicate, checkExist} from '@/utils/utils'
+    import {validGroup} from "@/utils/validation";
+    import {Rule} from "@/interface/interfaceInComponent";
 
     export default Vue.extend({
         name: 'fieldString',
         data() {
             return {
                 editHistory: [] as string[],
-                cacheText: this.select ? 'auto' : '',
-                rules: {
-                    empty: (value: string) => value === ''
-                        ? '字符串不能为空！'
-                        : false,
-                    errorChar: (value: string) => new RegExp('[\\\\:*?"<>|]').test(value)
-                        ? '含有异常字符!'
-                        : false,
-                    duplicate: (value: string) => this.checkDuplicate && checkExist(this.textPool, value)
-                        ? '重复的' + this.propName + '!'
-                        : false
-                }
             }
         },
         props: {
@@ -80,93 +67,89 @@
 
             // 字段池 用于检测重复
             textPool: {
-                type: Array,
+                type: Array as () => string[],
                 default: function () {
                     return []
                 }
             },
 
-            // 是否使用selection
+            // 是否是选择型字段
             select: {
                 type: Boolean,
                 default: false
             },
 
-            // 选择内容
+            // 可供选择的内容
             selection: {
-                type: Array,
+                type: Array as () => string[],
                 default: function () {
                     return []
                 }
             },
 
+            //宽度
             width: {
                 type: Number,
                 default: 200
             },
 
+            //是否可编辑
             editable: {
                 type: Boolean,
                 default: true
             },
 
+            // 默认值
             defaultValue: {
                 type: String,
-                default: function () {
-                    return ''
-                }
-            },
-
-            checkDuplicate: {
-                type: Boolean,
-                default: false
+                default: ''
             }
 
         },
         computed: {
-
-            renderHistory: function () {
+            //是否渲染历史
+            renderHistory: function (): boolean {
                 return !this.select && this.editable
             },
-            text: function () {
-                return this.baseText
-                    ? this.baseText.toString()
-                    : this.defaultValue.toString()
-            }
-        },
-        methods: {
-            inputText($event: string) {
-                this.cacheText = $event
-            },
 
-            saveText() {
-                let text = this.text;
-                if (this.cacheText !== '') {
-                    this.editHistory.push(text);
-                    this.update(this.cacheText);
-                    this.cacheText = ''
+            text: {
+                get(): string {
+                    return this.baseText
+                        ? this.baseText.toString()
+                        : this.defaultValue.toString()
+                },
+                set(value: string): void {
+                    if (this.editHistory.includes(value)) {
+                        this.editHistory.push(value);
+                        if (this.editHistory.length > 5) {
+                            this.editHistory.splice(0, 1)
+                        }
+                    }
+                    this.update(value);
                 }
             },
 
+            rules: function (): Rule<string>[] {
+                return [
+                    validGroup.String.notNone(this.propName),
+                    validGroup.String.duplicate(this.textPool),
+                    validGroup.String.badChar()
+                ]
+            },
+
+            status: function(): string {
+                return this.rules.map(rule => rule(this.text)).filter(check => check !== true).length > 0
+                    ? 'error'
+                    : 'default'
+            }
+        },
+        methods: {
             restoreText(index: number) {
-                index > 0
-                    ? this.$set(this.editHistory, index, this.text)
-                    : this.$set(this.editHistory, 1, this.text);
-                this.update(this.editHistory[index])
+                this.text = this.editHistory[index]
             },
 
             update($event: string) {
-                this.$emit('update-value', this.propName, $event, this.status(this.cacheText))
-            },
-
-            status(text: string) {
-                let result;
-                this.rules.empty(text) || // 是否为空
-                this.rules.errorChar(text) || // 是否异常字符串
-                (this.checkDuplicate && checkDuplicate(this.textPool, text)) // 是否重复
-                    ? result = 'error'
-                    : result = 'default';
-                return result
+                this.$emit('update-value', this.propName, $event, this.status)
             }
         },
         watch: {},

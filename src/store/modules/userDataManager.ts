@@ -8,13 +8,14 @@ declare global {
         fragments: Array<FragmentInfoPart>,
         userSetting: Record<string, Record<string, any>>,
         userNoteBook: NoteBook[],
-        userNoteInDoc: NoteSettingPart[]
+        userNoteInDoc: NoteSettingPart[],
     }
 }
 
 interface NoteBookState extends BaseState {
     isEditing: boolean
 }
+
 export interface NoteBook extends BaseCtrl {
     Name: string,
     Text: string,
@@ -35,7 +36,7 @@ const state: UserDataManagerState = {
         fragmentCollect: {}
     },
     userNoteBook: [],
-    userNoteInDoc: []
+    userNoteInDoc: [],
 };
 
 const mutations = {
@@ -56,15 +57,14 @@ const mutations = {
         state.userNoteBook.splice(index, 1);
     },
 
-    noteInDocAdd(state: UserDataManagerState, payload: {note: NoteSettingPart}) {
+    noteInDocAdd(state: UserDataManagerState, payload: { note: NoteSettingPart }) {
         let {note} = payload;
         state.userNoteInDoc.push(note)
-    },
+    }
 };
 
 const actions = {
     fragmentAdd(context: { commit: Commit, state: UserDataManagerState }, payload: FragmentInfoPart) {
-        console.log(payload);
         state.fragments.push(payload)
         // todo
     }
