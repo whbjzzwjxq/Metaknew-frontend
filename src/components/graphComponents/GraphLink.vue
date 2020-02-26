@@ -196,7 +196,7 @@
                 let refY = length * 0.2; // y方向上的变化量
                 let L1 = 'L0,' + 0.4 * length + ' ';
                 let L2 = 'L' + 0.7 * length + ',' + refY + ' ';
-                let _id = 'arrow_' + this.setting._id;
+                let _id = 'arrow_' + this.link._id;
                 return {
                     _id,
                     length: length * this.scale,
@@ -209,7 +209,7 @@
 
             textSetting: function (): Record<string, any> {
                 return {
-                    width: this.setting._label.length * 12,
+                    width: this.link._label.length * 12,
                     height: 20
                 }
             },

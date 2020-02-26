@@ -288,7 +288,7 @@
 
             label: {
                 get(): string {
-                    return this.info.PrimaryLabel
+                    return this.PrimaryLabel
                 },
                 set(value: string) {
                     this.baseData.changePrimaryLabel(value)
@@ -370,7 +370,7 @@
                 } else {
                     this.info.IncludedMedia.map(_id => {
                         let media = this.dataManager.mediaManager[_id];
-                        if (media && media.Info.PrimaryLabel === 'image') {
+                        if (media && media.PrimaryLabel === 'image') {
                             result.push(media)
                         }
                     })

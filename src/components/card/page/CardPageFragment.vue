@@ -68,7 +68,7 @@
                 return this.baseFragment
             },
             label: function (): string {
-                return this.fragment.Info.PrimaryLabel
+                return this.fragment.PrimaryLabel
             },
             iconList: function (): IconItem[] {
                 return [

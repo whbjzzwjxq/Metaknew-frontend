@@ -188,7 +188,7 @@ export class NodeInfoPart extends InfoPart {
     synchronizationAll() {
         // 同步所有属性到Setting
         this.allSettingItem.map(node => {
-            node.updateCrucialProp("_label", this.Info.PrimaryLabel);
+            node.updateCrucialProp("_label", this.PrimaryLabel);
             node.updateCrucialProp("_name", this.Info.Name);
             node.updateCrucialProp("_image", this.Info.MainPic);
         });
@@ -409,7 +409,7 @@ export class FragmentInfoPart extends InfoPart {
             CreateUser: getCookie('user_id'),
             SourceId: baseData._id,
             SourceType: baseData.type,
-            SourceLabel: baseData.Info.PrimaryLabel,
+            SourceLabel: baseData.PrimaryLabel,
         } as FragmentCtrl;
 
         return new FragmentInfoPart(info, ctrl)
@@ -578,7 +578,7 @@ export class MediaSettingPart extends GraphItemSettingPart {
     }
 
     static emptyMediaSettingFromInfo(media: MediaInfoPart, parent: GraphSelfPart) {
-        return MediaSettingPart.emptyMediaSetting(media._id, media.Info.PrimaryLabel, media.Info.Name, media.Ctrl.FileName, parent)
+        return MediaSettingPart.emptyMediaSetting(media._id, media.PrimaryLabel, media.Info.Name, media.Ctrl.FileName, parent)
     }
 }
 
@@ -840,7 +840,7 @@ export class GraphSelfPart extends DocumentSelfPart {
 
     getSubItemById(_id: id, _type: GraphItemType) {
         let list = this.getItemListByName(_type);
-        return list.filter(item => item.Setting._id === _id)[0]
+        return list.filter(item => item._id === _id)[0]
     }
 
     allItems(): GraphSubItemSettingPart[] {
@@ -877,7 +877,7 @@ export class GraphSelfPart extends DocumentSelfPart {
     }
 
     checkExistByItem(item: GraphItemSettingPart) {
-        return this.checkExist(item.Setting._id, item._type)
+        return this.checkExist(item._id, item._type)
     }
 
     protected pushItem(item: GraphItemSettingPart) {

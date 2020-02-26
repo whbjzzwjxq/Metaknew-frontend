@@ -14,7 +14,7 @@
             <graph-link
                 v-for="(link, index) in links"
                 v-show="showLink[index]"
-                :key="link.Setting._id"
+                :key="link._id"
                 :link="link"
                 :scale="realScale"
                 :source="getTargetInfo(link.Setting._start)"
@@ -25,7 +25,7 @@
             <graph-node
                 v-for="(node, index) in nodes"
                 v-show="showNode[index]"
-                :key="node.Setting._id"
+                :key="node._id"
                 :setting="node.Setting"
                 :state="node.State"
                 :size="impScaleRadius[index]"
@@ -89,7 +89,7 @@
 
         <graph-media
             v-for="(media, index) in medias"
-            :key="media.Setting._id"
+            :key="media._id"
             :setting="media"
             :container="mediaLocation[index]"
             :scale="realScale"
@@ -455,10 +455,10 @@
             // 包含所有的Nodes
             nodes: function (): NodeSettingPart[] {
                 let result = this.graph.Content.nodes
-                    .filter(node => node.Setting._id === this.graph._id) as NodeSettingPart[];
+                    .filter(node => node._id === this.graph._id) as NodeSettingPart[];
                 // root Graph的节点显示
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Content.nodes.filter(node => node.Setting._id !== graph._id))
+                    result = result.concat(graph.Content.nodes.filter(node => node._id !== graph._id))
                     // Graph底下的节点由父亲Graph中的Nodes代替
                 });
                 return result
@@ -470,15 +470,15 @@
             },
 
             nodeInfoList: function (): NodeInfoPart[] {
-                return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id])
+                return this.nodes.map(node => this.dataManager.nodeManager[node._id])
             },
 
             links: function (): LinkSettingPart[] {
                 let result: LinkSettingPart[] = [];
                 this.activeGraphList.map(graph => {
                     result = result.concat(graph.Content.links.filter(link => {
-                        return this.nodeIdList.includes(link.Setting._start.Setting._id) &&
-                            this.nodeIdList.includes(link.Setting._end.Setting._id)
+                        return this.nodeIdList.includes(link.Setting._start._id) &&
+                            this.nodeIdList.includes(link.Setting._end._id)
                     }))
                 });
                 return result
@@ -490,7 +490,7 @@
             },
 
             mediaIdList: function (): id[] {
-                return this.medias.map(media => media.Setting._id)
+                return this.medias.map(media => media._id)
             },
 
             notes: function (): NoteSettingPart[] {
@@ -510,8 +510,8 @@
                 let getLabels = (list: AllSettingPart[]) => {
                     let result: string[] = [];
                     list.map((item: AllSettingPart) => {
-                        result.indexOf(item.Setting._label) === -1 &&
-                        result.push(item.Setting._label)
+                        result.indexOf(item._label) === -1 &&
+                        result.push(item._label)
                     });
                     return result
                 };
@@ -661,7 +661,7 @@
             showLink: function (): boolean[] {
                 return this.links.map(link =>
                     link.parent.Conf.State.isExplode && // 父组件要炸开
-                    this.labelViewDict.link[link.Setting._label] &&
+                    this.labelViewDict.link[link._label] &&
                     !link.State.isDeleted &&
                     this.getTargetInfo(link.Setting._start).show &&
                     this.getTargetInfo(link.Setting._end).show
@@ -670,7 +670,7 @@
 
             showMedia: function (): boolean[] {
                 return this.medias.map(media =>
-                    this.labelViewDict.media[media.Setting._label] &&
+                    this.labelViewDict.media[media._label] &&
                     !media.State.isDeleted &&
                     media.Setting.Show.showAll
                 )
@@ -825,9 +825,9 @@
                     let item = itemList[0];
                     let info;
                     isLinkSetting(item)
-                        ? info = this.dataManager.linkManager[item.Setting._id]
+                        ? info = this.dataManager.linkManager[item._id]
                         : isNodeSetting(item)
-                        ? info = this.dataManager.nodeManager[item.Setting._id]
+                        ? info = this.dataManager.nodeManager[item._id]
                         : info = undefined;
                     if (info) {
                         commitItemChange(info);
@@ -838,7 +838,7 @@
             },
 
             selectLabel(_type: GraphItemType, _label: string) {
-                let result = this.nodes.filter(node => node.Setting._label === _label);
+                let result = this.nodes.filter(node => node._label === _label);
                 this.selectItem(result)
             },
 
@@ -896,8 +896,8 @@
                     );
                     nodes.map(node => {
                             //如果选中了Document 对应的Node
-                            let index = this.activeGraphIdList.indexOf(node.Setting._id);
-                            if (node.Setting._type === 'document' && index > -1) {
+                            let index = this.activeGraphIdList.indexOf(node._id);
+                            if (node._type === 'document' && index > -1) {
                                 this.activeGraphList[index].selectAll('isSelected', true)
                             }
                         }
@@ -942,8 +942,8 @@
                 let result;
                 item
                     ? isMediaSetting(item)
-                    ? result = this.mediaSettingList[this.mediaIdList.indexOf(item.Setting._id)]
-                    : result = this.nodeSettingList[this.nodeIdList.indexOf(item.Setting._id)]
+                    ? result = this.mediaSettingList[this.mediaIdList.indexOf(item._id)]
+                    : result = this.nodeSettingList[this.nodeIdList.indexOf(item._id)]
                     : result = {x: 0, y: 0, show: true};
                 return result
             },

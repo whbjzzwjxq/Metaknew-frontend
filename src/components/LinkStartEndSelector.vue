@@ -84,13 +84,13 @@
                 return this.document.Content.nodes
             },
             nodeIdList: function (): id[] {
-                return this.nodes.map(node => node.Setting._id)
+                return this.nodes.map(node => node._id)
             },
             nodeToLinkItems: function (): NodeAsSelectorItem[] {
                 return this.nodes.map(node => ({
                     "text": node.Setting._name,
-                    "_id": node.Setting._id,
-                    "_type": node.Setting._type
+                    "_id": node._id,
+                    "_type": node._type
                 }))
             },
 
@@ -104,11 +104,11 @@
             addLinkStartModel: {
                 get(): NodeAsSelectorItem | undefined {
                     return (!this.startCache && this.currentStart) // startCache 不存在而且有current
-                        ? this.nodeToLinkItems[this.nodeIdList.indexOf(this.currentStart.Setting._id)]
+                        ? this.nodeToLinkItems[this.nodeIdList.indexOf(this.currentStart._id)]
                         : this.startCache;
                 },
                 set(value: NodeAsSelectorItem): void {
-                    let start = this.nodes.filter(node => node.Setting._id === value._id)[0];
+                    let start = this.nodes.filter(node => node._id === value._id)[0];
                     this.startCache = value;
                     this.$emit('select-item-link', start, undefined)
                 }
@@ -121,7 +121,7 @@
                         : this.endCache;
                 },
                 set(value: NodeAsSelectorItem): void {
-                    let end = this.nodes.filter(node => node.Setting._id === value._id)[0];
+                    let end = this.nodes.filter(node => node._id === value._id)[0];
                     this.endCache = value;
                     this.$emit('select-item-link', undefined, end)
                 }
@@ -138,11 +138,11 @@
                 let end;
                 if (this.addLinkStartModel !== undefined) {
                     let value = this.addLinkStartModel._id;
-                    start = this.nodes.filter(node => node.Setting._id === value)[0];
+                    start = this.nodes.filter(node => node._id === value)[0];
                 }
                 if (this.addLinkEndModel !== undefined) {
                     let value = this.addLinkEndModel._id;
-                    end = this.nodes.filter(node => node.Setting._id === value)[0];
+                    end = this.nodes.filter(node => node._id === value)[0];
                 }
                 if (start && end) {
                     return [start, end]

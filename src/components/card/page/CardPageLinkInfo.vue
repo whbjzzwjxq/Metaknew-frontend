@@ -119,7 +119,7 @@
             },
             pLabel: {
                 get(): string {
-                    return this.info.PrimaryLabel
+                    return this.baseData.PrimaryLabel
                 },
                 set(value: string): void {
                     this.baseData.changeLabel(value)

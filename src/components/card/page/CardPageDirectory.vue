@@ -172,7 +172,7 @@
                     // select(unselectedItems, false);
                     // // 把root级别的subNode也找到
                     // this.tree.map(root => {
-                    //     let origin = this.document.Content.nodes.filter(item => item.Setting._id === root._id)[0];
+                    //     let origin = this.document.Content.nodes.filter(item => item._id === root._id)[0];
                     //     origin.updateState('isSelected', newIdList.includes(root._id));
                     // })
                 }
@@ -230,13 +230,13 @@
                 deletable: node.parent.Conf.State.isSelf,
                 editable: node.State.isSelf,
                 parent: node.parent._id,
-                children: node.Setting._type === 'document' && node.Setting._id !== node.parent._id ? [] : undefined
+                children: node._type === 'document' && node._id !== node.parent._id ? [] : undefined
             }) as DirectoryItem,
 
             linkToItem: (link: LinkSettingPart) => ({
-                _id: link.Setting._id,
-                type: link.Setting._type,
-                label: link.Setting._label,
+                _id: link._id,
+                type: link._type,
+                label: link._label,
                 icon: getIcon('i-item', 'link'),
                 name: link.Setting._start.Setting._name + ' --> ' + link.Setting._end.Setting._name,
                 deletable: link.parent.Conf.State.isSelf,
@@ -245,11 +245,11 @@
             }) as DirectoryItem,
 
             mediaToItem: (media: MediaSettingPart) => ({
-                _id: media.Setting._id,
-                type: media.Setting._type,
-                label: media.Setting._label,
+                _id: media._id,
+                type: media._type,
+                label: media._label,
                 name: media.Setting._name,
-                icon: getIcon("i-media-type", media.Setting._label),
+                icon: getIcon("i-media-type", media._label),
                 deletable: media.parent.Conf.State.isSelf,
                 editable: false,
                 parent: media.parent._id
@@ -259,9 +259,9 @@
                 return {
                     _id: document._id,
                     type: 'document',
-                    label: document.baseNode.Setting._label,
+                    label: document.baseNode._label,
                     name: document.baseNode.Setting._name,
-                    icon: getIcon('i-item', document.baseNode.Setting._label),
+                    icon: getIcon('i-item', document.baseNode._label),
                     deletable: false,
                     editable: document.Conf.State.isSelf,
                     children: [], // 注意这里的children是空的

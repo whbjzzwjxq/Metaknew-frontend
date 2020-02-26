@@ -14,7 +14,7 @@
                 <graph-link
                     v-for="(link, index) in links"
                     v-show="showLink[index]"
-                    :key="link.Setting._id"
+                    :key="link._id"
                     :link="link"
                     :scale="realScale"
                     :source="getTargetInfo(link.Setting._start)"
@@ -25,7 +25,7 @@
                 <graph-node
                     v-for="(node, index) in nodes"
                     v-show="showNode[index]"
-                    :key="node.Setting._id"
+                    :key="node._id"
                     :node="node"
                     :container="container"
                     :size="impScaleRadius[index]"
@@ -144,8 +144,8 @@
                 let result;
                 this.renderMedia
                     ? result = this.document.Content.links
-                    : result = this.document.Content.links.filter(link => link.Setting._start.Setting._type !== 'media' &&
-                    link.Setting._end.Setting._type !== 'media');
+                    : result = this.document.Content.links.filter(link => link.Setting._start._type !== 'media' &&
+                    link.Setting._end._type !== 'media');
                 return result
             },
             medias(): MediaSettingPart[] {
@@ -194,7 +194,7 @@
             //显示媒体
             showMedia(): boolean[] {
                 return this.medias.map(media =>
-                    this.labelViewDict.media[media.Setting._label] &&
+                    this.labelViewDict.media[media._label] &&
                     !media.State.isDeleted &&
                     media.Setting.Show.showAll
                 )
@@ -203,7 +203,7 @@
             //显示边
             showLink(): boolean[] {
                 return this.links.map(link =>
-                    this.labelViewDict.link[link.Setting._label] &&
+                    this.labelViewDict.link[link._label] &&
                     !link.State.isDeleted &&
                     this.getTargetInfo(link.Setting._start).show &&
                     this.getTargetInfo(link.Setting._end).show
@@ -275,7 +275,7 @@
             },
 
             nodeInfoList(): NodeInfoPart[] {
-                return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id])
+                return this.nodes.map(node => this.dataManager.nodeManager[node._id])
             },
 
             selectedNodes(): NodeSettingPart[] {
@@ -450,7 +450,7 @@
                 //如果是单选就切换内容
                 if (itemList.length === 1) {
                     let item = itemList[0];
-                    let info = getInfoPart(item.Setting._id, item.Setting._type, this.dataManager);
+                    let info = getInfoPart(item._id, item._type, this.dataManager);
                     // info && commitItemChange(info);
                 }
             },
@@ -486,7 +486,7 @@
             },
 
             explode(node: NodeSettingPart) {
-                let _id = node.Setting._id;
+                let _id = node._id;
                 let graph = this.dataManager.graphManager[_id];
                 if (graph === undefined) {
                     this.$store.dispatch('graphQuery', {
@@ -505,7 +505,7 @@
                     } else {
                         let index = 0;
                         nodes.map(item => {
-                            if (item.Setting._id === graph._id) {
+                            if (item._id === graph._id) {
                                 index = nodes.indexOf(item)
                             }
                         });

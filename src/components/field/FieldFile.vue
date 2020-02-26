@@ -33,7 +33,7 @@
                             {{ file.Info.Name }}
                         </td>
                         <td>
-                            {{file.Info.PrimaryLabel}}
+                            {{file.PrimaryLabel}}
                         </td>
                         <td>
                             <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}
@@ -74,7 +74,7 @@
                             {{ file.Info.Name }}
                         </td>
                         <td>
-                            {{file.Info.PrimaryLabel}}
+                            {{file.PrimaryLabel}}
                         </td>
                         <td>
                             <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}
@@ -212,7 +212,7 @@
             addFile: function (files: MediaInfoPart[], isExist: boolean) {
                 isExist
                     ? this.currentFiles = this.currentFiles.concat(files.map(file => {
-                        let _id = file.Info._id;
+                        let _id = file._id;
                         commitInfoAdd({item: file});
                         return _id
                     }))

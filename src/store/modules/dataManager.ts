@@ -203,7 +203,7 @@ const actions = {
             let graph = graphSelf.Content;
             context.dispatch('nodeQuery', graph.nodes.map(node => node.Setting));
             context.dispatch('linkQuery', graph.links.map(link => link.Setting));
-            context.dispatch('mediaQuery', graph.medias.map(media => media.Setting._id))
+            context.dispatch('mediaQuery', graph.medias.map(media => media._id))
         })
     },
 
@@ -330,7 +330,7 @@ const actions = {
 
     async nodeExplode(context: Context, payload: { node: NodeSettingPart, document: GraphSelfPart }) {
         let {node, document} = payload;
-        let _id = node.Setting._id;
+        let _id = node._id;
         let subGraph = state.graphManager[_id];
         if (subGraph === undefined) {
             dispatchGraphQuery({

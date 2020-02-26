@@ -224,7 +224,7 @@
             },
 
             title: function (): string {
-                return this.info.PrimaryLabel + " --> " + this.info.Name;
+                return this.PrimaryLabel + " --> " + this.info.Name;
             },
             buttonGroupStyle: function (): CSSProp {
                 return {

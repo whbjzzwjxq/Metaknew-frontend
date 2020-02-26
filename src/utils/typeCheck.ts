@@ -69,7 +69,7 @@ export function isLevelConcern(prop: LevelConcern | BooleanConcern | "Labels"): 
 }
 
 export function isMediaInfoPart(info: InfoPart): info is MediaInfoPart {
-    return info.Info.type === 'media'
+    return info.type === 'media'
 }
 
 export function isPathNodeExist(item: PathNode): item is PathNodeExist {

@@ -81,7 +81,7 @@
                 }
             },
             mediaInfo: function (): MediaInfoPart {
-                return this.$store.state.dataManager.mediaManager[this.setting._id]
+                return this.$store.state.dataManager.mediaManager[this._id]
             }
         },
         methods: {

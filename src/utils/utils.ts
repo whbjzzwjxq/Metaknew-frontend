@@ -225,7 +225,7 @@ export const itemEqual = (itemA: { _id: id, _type: GraphItemType }, itemB: { _id
     itemA._id === itemB._id && itemA._type === itemB._type;
 export const findItem = (list: Array<GraphItemSettingPart>, _id: id, _type: GraphItemType) =>
     list.filter(
-        item => item.Setting._id === _id && item.Setting._type === _type // 在一个List里找Item
+        item => item._id === _id && item._type === _type // 在一个List里找Item
     );
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");

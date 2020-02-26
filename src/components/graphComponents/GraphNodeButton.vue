@@ -73,12 +73,12 @@
                 return this.$store.state.dataManager
             },
             boundGraph: function (): GraphSelfPart {
-                return this.dataManager.graphManager[this.node.Setting._id]
+                return this.dataManager.graphManager[this.node._id]
             },
             buttonGroup: function (): IconItem[] {
                 // 是否可以删除
                 let deleteIcon;
-                this.node.Setting._type === 'document'
+                this.node._type === 'document'
                     ? deleteIcon = false
                     : this.node.State.isDeleted
                     ? deleteIcon = 'rollback'
@@ -98,7 +98,7 @@
                     {name: 'mdi-arrow-top-right', _func: this.addLink},
                     {name: getIcon('i-eye', this.node.Setting.Show.showAll), _func: this.unShow},
                     {name: 'mdi-content-copy', _func: this.copyItem},
-                    {name: getIcon("i-explode", explodeIcon), _func: this.explode, render: this.node.Setting._type === 'document', disabled: explodeAble}
+                    {name: getIcon("i-explode", explodeIcon), _func: this.explode, render: this.node._type === 'document', disabled: explodeAble}
                 ]
             }
         },
