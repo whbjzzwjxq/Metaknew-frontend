@@ -14,17 +14,17 @@ declare global {
     type id = number | string;
     type ItemType = "node" | "link" | "media" | "document" // 基础的type
     type GraphItemType = ItemType | "svg" | "note"; // Graph里使用的type
-    type SourceType = GraphItemType | "fragment" | "path";
+    type AllType = GraphItemType | "fragment" | "path";
     type GraphTypeS = 'nodes' | 'medias' | 'links' | "svgs";
     type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
-    type idMap = Record<id, id>; // 新旧id的Map
+    type IdMap = Record<id, id>; // 新旧id的Map
     //带有翻译的格式
     type Translate = Record<string, string>
 
     //InfoPart相关
     interface BaseInfo {
         _id: id;
-        type: SourceType;
+        type: AllType;
         PrimaryLabel: string;
         Name: string,
         Description: Translate,

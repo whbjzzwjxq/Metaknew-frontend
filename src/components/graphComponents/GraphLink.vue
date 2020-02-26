@@ -166,9 +166,7 @@
             },
 
             strokeDash: function (): string {
-                return this.setting.View.isDash
-                    ? '9, 2'
-                    : ''
+                return this.setting.View.dashArray
             },
 
             controlPoint: function (): PointMixed {

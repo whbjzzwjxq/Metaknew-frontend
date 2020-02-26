@@ -285,7 +285,7 @@
                     : (size + 5);
                 return {
                     offsetX: -width * 0.5,
-                    offsetY: height + this.borderSetting.width + 5,
+                    offsetY: this.height + (this.borderSetting.width + 5) * this.scale,
                     width,
                     height,
                     size

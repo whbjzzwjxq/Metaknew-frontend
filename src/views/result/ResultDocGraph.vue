@@ -104,7 +104,12 @@
                 path: PathSelfPart.emptyPathSelfPart()
             }
         },
-        props: {},
+        props: {
+            editMode: {
+                type: Boolean,
+                default: false
+            }
+        },
         computed: {
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
@@ -121,9 +126,6 @@
 
             graph: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
-            },
-            editMode: function (): boolean {
-                return this.editPageRegex.test(String(this.$route.name))
             },
             bottomSheetRect: function (): RectByPoint {
                 return this.allComponentsStyle.bottomDynamicBar

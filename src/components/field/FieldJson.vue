@@ -17,7 +17,7 @@
                     <td>
                         <v-text-field
                             :value="key"
-                            :rules="[rules.empty, rules.tooLong]"
+                            :rules="rules"
                             @input="inputKey"
                             @blur="updateKey(key, item)"
                             :disabled="!changeType"
@@ -98,16 +98,19 @@
     import Vue from 'vue'
     import {fieldSetting, fieldDefaultValue, FieldType, ResolveType} from '@/utils/fieldResolve'
     import {deepClone} from '@/utils/utils';
+    import {validGroup} from "@/utils/validation";
+    import {Rule} from "@/interface/interfaceInComponent";
 
     export default Vue.extend({
         name: 'fieldJson',
         data() {
             return {
                 cacheKey: '' as string,
-                rules: {
-                    empty: (key: string) => key === '' && 'Key is empty!!',
-                    tooLong: (key: string) => key.length >= 20 && 'Key is too long!!'
-                },
+                rules: [
+                    validGroup.String.badChar(),
+                    validGroup.String.maxCheck('key', 20),
+                    validGroup.String.notNone('key')
+                ] as Rule<string>[],
                 fieldSetting: fieldSetting,
                 types: ['TextField', 'ArrayField', 'NumberField', 'StringField',
                     'JsonField', 'FileField', 'ImageField', 'BooleanField'] as FieldType[],

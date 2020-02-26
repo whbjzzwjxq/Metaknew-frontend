@@ -60,7 +60,7 @@
                     return {
                         index: index,
                         name,
-                        isMain: setting.Setting.Base.isMain,
+                        isMain: setting.Setting.View.isMain,
                         label: setting.Setting._label
                     }
                 })

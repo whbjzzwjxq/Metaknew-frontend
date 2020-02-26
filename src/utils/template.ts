@@ -3,7 +3,7 @@ import {fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/fieldRe
 import PDFJS from 'pdfjs-dist';
 import {typeSetting} from "@/interface/itemSetting";
 
-export function settingTemplate(_type: SourceType) {
+export function settingTemplate(_type: AllType) {
     let settingConf = typeSetting[_type];
     const specialDict: { [prop: string]: any } = {
         'x': randomNumberInRange(0.3, 0.7),

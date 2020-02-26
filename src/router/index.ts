@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter, {Route} from 'vue-router'
+import {commitEditModeChange} from "@/store/modules/_mutations";
 
 Vue.use(VueRouter);
 export const IndexUrl = '/index';
@@ -44,11 +45,11 @@ const routes = [
             {
                 path: 'graph/edit',
                 name: 'graph-edit',
-                component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocGraph.vue'),
-                beforeEnter: (to: Route, from: Route, next: Function) => {
-                    console.log(to, from, next);
+                beforeRouteEnter(to: Route, from: Route, next: Function) {
+                    commitEditModeChange(true);
                     next()
                 },
+                component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocGraph.vue'),
             },
             {
                 path: 'paper/id=:id',

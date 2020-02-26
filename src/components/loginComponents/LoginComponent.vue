@@ -72,7 +72,7 @@
     import {TextFieldSetting} from "@/interface/interfaceInComponent";
     import {validGroup} from "@/utils/validation";
     import {getIcon} from "@/utils/icon";
-    import {LoginDataByPhoneCode, LoginDataByUserName, loginPhoneCode, loginUserName} from "@/api/user/login";
+    import {LoginDataByPhoneCode, LoginDataByUserName, loginPhoneCode, loginUserName} from "@/api/user/loginApi";
     import {doNothing, setLoginIn} from "@/utils/utils";
 
     export default Vue.extend({

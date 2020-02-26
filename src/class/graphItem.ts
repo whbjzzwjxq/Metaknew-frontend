@@ -40,8 +40,14 @@ import {
     isSvgSetting
 } from "@/utils/typeCheck";
 import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
-import {BackendGraph} from "@/api/commonSource";
-import {commitDocumentAdd, commitInfoAdd, commitNoteInDocAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
+import {BackendGraph, QueryObject} from "@/api/commonSource";
+import {
+    commitDocumentAdd,
+    commitInfoAdd,
+    commitInfoChangeId,
+    commitNoteInDocAdd,
+    commitUserConcernAdd
+} from "@/store/modules/_mutations";
 import {FragmentCtrl, FragmentInfo} from "@/interface/interfaceUser";
 
 export abstract class InfoPart {
@@ -51,10 +57,6 @@ export abstract class InfoPart {
 
     get _id() {
         return this.Info._id
-    }
-
-    set _id(newId) {
-        this.changeId(newId)
     }
 
     get type() {
@@ -84,10 +86,15 @@ export abstract class InfoPart {
     }
 
     changeId(newId: id) {
+        //先同步 再改info id
+        this.synchronizationSource("_id", newId);
         Vue.set(this.Info, "_id", newId);
         this.isEdit = false;
     }
 
+    synchronizationSource(prop: string, value: any) {
+        //
+    }
     // info修改值
     updateValue(prop: string, newValue: any, doItPassive?: boolean) {
         if (!doItPassive) {
@@ -105,6 +112,10 @@ export abstract class InfoPart {
                 //空载的更新
             }
         }
+    }
+
+    get queryObject(): QueryObject {
+        return {id: this._id, type: this.type, pLabel: this.PrimaryLabel}
     }
 }
 
@@ -137,14 +148,6 @@ export class NodeInfoPart extends InfoPart {
         );
     }
 
-    changeId(newId: id) {
-        this._id = newId;
-        Vue.set(this.Info, "_id", newId);
-        this.isEdit = false;
-        // node 重写
-        this.synchronizationSource("_id", newId);
-    }
-
     changePrimaryLabel(newLabel: string) {
         if (this.isRemote) {
             // "如果是远端节点 那么PLabel不能修改"
@@ -175,6 +178,7 @@ export class NodeInfoPart extends InfoPart {
     }
 
     synchronizationSource(prop: string, value: any) {
+        console.log('bound');
         crucialRegex.test(prop) &&
         this.allSettingItem.map(node =>
             node.updateCrucialProp(prop, value)
@@ -224,12 +228,6 @@ export class LinkInfoPart extends InfoPart {
             linkInfoTemplate(_id, _label),
             linkCtrlTemplate(_start, _end)
         );
-    }
-
-    changeId(newId: id) {
-        this.Info._id = newId;
-        this.synchronizationSource("_id", newId);
-        this.isEdit = false;
     }
 
     changeLabel(newLabel: string) {
@@ -335,12 +333,6 @@ export class MediaInfoPart extends InfoPart {
         );
     }
 
-    changeId(newId: id) {
-        this.Info._id = newId;
-        this.synchronizationSource("_id", newId);
-        this.isEdit = false;
-    }
-
     changeStatus(status: MediaStatus) {
         Vue.set(this, "status", status);
     }
@@ -400,24 +392,24 @@ export class FragmentInfoPart extends InfoPart {
         this.Ctrl = ctrl
     }
 
-    static fragmentFromItem(itemInfo: NodeInfoPart | MediaInfoPart | LinkInfoPart, _id: id, method: string) {
+    static fragmentFromItem(baseData: NodeInfoPart | MediaInfoPart | LinkInfoPart, _id: id, method: string) {
         let info = {
             _id,
             type: 'fragment',
-            PrimaryLabel: isMediaInfoPart(itemInfo) ? 'image' : 'text',
-            Name: itemInfo.Info.Name === '' ? itemInfo.Info.Name : 'NewFragment From ' + itemInfo.type + itemInfo._id,
-            Labels: itemInfo.Info.Labels,
-            Src: isMediaInfoPart(itemInfo) ? itemInfo.Ctrl.Thumb : '',
-            Description: itemInfo.Info.Description
+            PrimaryLabel: isMediaInfoPart(baseData) ? 'image' : 'text',
+            Name: baseData.Info.Name === '' ? baseData.Info.Name : 'NewFragment From ' + baseData.type + baseData._id,
+            Labels: baseData.Info.Labels,
+            Src: isMediaInfoPart(baseData) ? baseData.Ctrl.Thumb : '',
+            Description: baseData.Info.Description
         } as FragmentInfo;
 
         let ctrl = {
             IsLinked: true,
             CreateType: 'System-' + method,
             CreateUser: getCookie('user_id'),
-            SourceId: itemInfo._id,
-            SourceType: itemInfo.type,
-            SourceLabel: itemInfo.Info.PrimaryLabel,
+            SourceId: baseData._id,
+            SourceType: baseData.type,
+            SourceLabel: baseData.Info.PrimaryLabel,
         } as FragmentCtrl;
 
         return new FragmentInfoPart(info, ctrl)

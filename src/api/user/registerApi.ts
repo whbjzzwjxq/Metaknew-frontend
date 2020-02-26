@@ -1,8 +1,8 @@
 import {instance} from "@/api/main";
 import {FastRegisterData, RegisterData} from "@/interface/interfaceInComponent";
-import {LoginDataByPhoneCode} from "@/api/user/login";
+import {LoginDataByPhoneCode} from "@/api/user/loginApi";
 
-export const register = (data: RegisterData) =>
+export const registerApi = (data: RegisterData) =>
     instance.request<UserLoginResponse>({
         method: 'post',
         url: '/user/register/normal',

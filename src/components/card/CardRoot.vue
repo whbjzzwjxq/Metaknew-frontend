@@ -60,9 +60,6 @@
                 </v-tabs-items>
             </v-tab-item>
         </v-tabs-items>
-        <v-card :height="bottomHeight" flat tile color="grey lighten-5">
-            <item-sharer :item-info="documentInfo"></item-sharer>
-        </v-card>
     </v-card>
 </template>
 
@@ -72,7 +69,6 @@
     import {getIcon} from "@/utils/icon";
     import {TabContent} from "@/interface/interfaceInComponent";
     import {commitChangeRootTab, commitChangeSubTab} from "@/store/modules/_mutations";
-    import ItemSharer from "@/components/ItemSharer.vue";
     import CardPageDirectory from "@/components/card/page/CardPageDirectory.vue";
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
@@ -82,7 +78,6 @@
     export default Vue.extend({
         name: "CardRoot",
         components: {
-            ItemSharer,
             CardPageDirectory,
             CardPageNodeInfo,
             CardPageLinkInfo,
@@ -98,6 +93,10 @@
             document: {
                 type: Object as () => GraphSelfPart,
                 required: true
+            },
+            editMode: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -135,7 +134,7 @@
             subCardStyle: function (): CSSProp {
                 return {
                     width: this.allComponentSize.leftCard.width + 'px',
-                    height: (this.allComponentSize.leftCard.height - 96 - this.bottomHeight) + 'px',
+                    height: (this.allComponentSize.leftCard.height - 96) + 'px',
                     backgroundColor: 'white'
                 }
             },
@@ -208,10 +207,6 @@
                         ]
                     }
                 ]
-            },
-
-            editMode: function (): boolean {
-                return this.editPageRegex.test(String(this.$route.name))
             },
 
             rootTab: {

@@ -1,7 +1,7 @@
 <template>
-    <div :style="{width: activeWidth}">
+    <div :style="rowStyle">
         <hr class="cardHr"/>
-        <v-row class="px-6 pb-2 pt-0 justify-content-between">
+        <v-row class="px-4 pb-2 pt-0 ma-0 justify-content-between" :style="rowStyle">
             <v-col class="pa-0 ma-0" cols="11">
                 <v-subheader class="ml-n4 card-subheader" style="height: 36px">{{text}}</v-subheader>
             </v-col>
@@ -11,7 +11,7 @@
                 </v-btn>
             </v-col>
         </v-row>
-        <v-row class="px-6 pb-2 pt-0" v-show="!isCollapsed">
+        <v-row class="px-4 pb-2 pt-0 ma-0" v-show="!isCollapsed" :style="rowStyle">
             <slot name="content"></slot>
         </v-row>
     </div>
@@ -39,18 +39,23 @@
                 default: ''
             },
             width: {
-                type: String as () => string,
-                default: ''
+                type: Number,
+                default: 400
             }
         },
         computed: {
             collapsedIcon: function (): string {
                 return getIcon("i-collapse", !this.isCollapsed)
             },
-            activeWidth: function (): string {
-                return this.width !== ''
+            activeWidth: function (): number {
+                return this.width
                     ? this.width
-                    : this.$store.state.styleComponentSize.leftCard.width + 'px'
+                    : this.$store.state.styleComponentSize.leftCard.width
+            },
+            rowStyle: function (): CSSProp {
+                return {
+                    width: (this.activeWidth - 4) + 'px'
+                }
             }
 
         },

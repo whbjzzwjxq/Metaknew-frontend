@@ -1,4 +1,4 @@
-import {loginCookie} from '@/api/user/login'
+import {loginCookie} from '@/api/user/loginApi'
 import {setLoginIn} from '@/utils/utils'
 import {Commit, Dispatch} from "vuex";
 

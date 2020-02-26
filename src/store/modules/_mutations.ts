@@ -59,7 +59,7 @@ export const commitInfoRemove = (payload: { _id: id, _type: string }) => {
     return store.commit('infoRemove', payload)
 };
 
-export const commitInfoChangeId = (payload: { _type: string, idMap: idMap }) => {
+export const commitInfoChangeId = (payload: { _type: string, idMap: IdMap }) => {
     return store.commit('infoChangeId', payload)
 };
 
@@ -71,7 +71,7 @@ export const commitDocumentRemove = (payload: id) => {
     return store.commit('documentRemove', payload)
 };
 
-export const commitDocumentChangeId = (payload: idMap) => {
+export const commitDocumentChangeId = (payload: IdMap) => {
     return store.commit('documentChangeId', payload)
 };
 
@@ -110,4 +110,8 @@ export const commitLoginDialogChange = (payload: boolean) => {
 export const commitLoginDialogOn = (payload: 0 | 1) => {
     // 0 是登录 1是注册
     return store.commit('loginDialogTab', payload)
+};
+
+export const commitEditModeChange = (payload: boolean) => {
+    return store.commit('changeEditMode', payload)
 };

@@ -75,7 +75,7 @@
     import {FastRegisterData, RegisterData, TextFieldSetting} from "@/interface/interfaceInComponent";
     import {getIcon} from "@/utils/icon";
     import SendMessageButton from "@/components/loginComponents/SendMessageButton.vue";
-    import {registerFast} from "@/api/user/register";
+    import {registerFast} from "@/api/user/registerApi";
     import {doNothing, setLoginIn} from "@/utils/utils";
     import PhoneCodeGroup from "@/components/loginComponents/PhoneCodeGroup.vue";
     export default Vue.extend({

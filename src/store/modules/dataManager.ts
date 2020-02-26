@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, SourceQueryObject} from '@/api/commonSource';
+import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, QueryObject} from '@/api/commonSource';
 import {filePutBlob} from '@/api/fileUpload';
 import {
     DocumentSelfPart,
@@ -16,14 +16,15 @@ import {
     commitFileToken,
     commitInfoAdd,
     commitInfoRemove,
-    commitItemChange
+    commitItemChange,
+    commitSnackbarOn
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
 import {isGraphSelfPart, isNodeBackend} from "@/utils/typeCheck";
 import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
-import {loginCookie} from "@/api/user/login";
+import {loginCookie} from "@/api/user/loginApi";
 
 const getManager = (_type: string) =>
     _type === 'link'
@@ -99,7 +100,14 @@ const mutations = {
         let _id = graph._id; // 这里payload是document
         Vue.set(graph.Conf.State, 'isExplode', true);
         state.currentGraph = graph;
-        commitItemChange(state.nodeManager[_id]);
+        let node = state.nodeManager[_id];
+        commitItemChange(node);
+        commitSnackbarOn({
+            color: 'info',
+            once: false,
+            content: `切换到专题${node.Info.Name}`,
+            actionName: 'documentChange'
+        })
     },
 
     rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
@@ -134,13 +142,13 @@ const mutations = {
         delete state.graphManager[payload]
     },
 
-    documentChangeId(state: DataManagerState, payload: idMap) {
+    documentChangeId(state: DataManagerState, payload: IdMap) {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
         if (oldGraph) {
             oldGraph._id = newId;
             commitDocumentAdd({document: oldGraph});
-            commitDocumentRemove(oldId);
+            // commitDocumentRemove(oldId);
         }
     },
 
@@ -160,7 +168,7 @@ const mutations = {
         delete manager[payload._id]
     },
 
-    infoChangeId(state: DataManagerState, payload: { _type: string, idMap: idMap }) {
+    infoChangeId(state: DataManagerState, payload: { _type: string, idMap: IdMap }) {
         let {_type, idMap} = payload;
         let manager = getManager(_type);
         Object.keys(idMap).map(oldId => {
@@ -169,7 +177,7 @@ const mutations = {
             if (oldInfo) {
                 oldInfo.changeId(newId);
                 commitInfoAdd({item: oldInfo});
-                commitInfoRemove({_id: oldId, _type: _type});
+                // commitInfoRemove({_id: oldId, _type: _type});
             }
             // 额外检查一下Graph
             _type === 'document' &&
@@ -207,8 +215,9 @@ const actions = {
             // 请求体
             let nodeQuery = noCacheNode.map(node => {
                 // 先使用假数据 然后再请求
-                commitInfoAdd({item: NodeInfoPart.emptyNodeInfoPart(node._id, node._type, node._label), strict: false});
-                return <SourceQueryObject>node
+                let item = NodeInfoPart.emptyNodeInfoPart(node._id, node._type, node._label);
+                commitInfoAdd({item, strict: false});
+                return item.queryObject
             });
             // 请求节点
             sourceQueryMulti(nodeQuery).then(res => {
@@ -230,11 +239,12 @@ const actions = {
         let noCacheLink = payload.filter(link => !state.linkManager[link._id]);
         if (noCacheLink.length > 0) {
             let linkQuery = noCacheLink.map(link => {
+                let item = LinkInfoPart.emptyLinkInfo(link._id, link._label, link._start, link._end);
                 commitInfoAdd({
                     item: LinkInfoPart.emptyLinkInfo(link._id, link._label, link._start, link._end),
                     strict: false
                 });
-                return <SourceQueryObject>link
+                return item.queryObject
             });
             // 请求关系
             sourceQueryMulti(linkQuery).then(res => {
@@ -265,10 +275,10 @@ const actions = {
             let defaultImage = require('@/assets/defaultImage.jpg');
             noCacheMedia.map(_id => {
                 commitInfoAdd({item: MediaInfoPart.emptyMediaInfo(_id, defaultImage)});
-                return <SourceQueryObject>{
-                    _id,
-                    _type: 'media',
-                    _label: 'unknown'
+                return <QueryObject>{
+                    id: _id,
+                    type: 'media',
+                    pLabel: 'unknown'
                 }
             });
 

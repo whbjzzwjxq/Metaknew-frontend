@@ -5,10 +5,11 @@
         fill-height
         class="d-flex flex-row ma-0 pa-0">
         <card-root
-            :document="currentDocument">
+            :document="currentDocument"
+            :edit-mode="editMode">
 
         </card-root>
-        <router-view></router-view>
+        <router-view :edit-mode="editMode"></router-view>
     </v-container>
 </template>
 
@@ -49,6 +50,9 @@
                 return this.graphRouteRegex.test(String(this.$route.name))
                     ? this.graph
                     : this.paper
+            },
+            editMode: function (): boolean {
+                return true
             }
         },
         methods: {},

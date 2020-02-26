@@ -131,12 +131,19 @@
 
         </graph-note>
 
-        <div :style="topNavigationStyle">
+        <div :style="topNavigationStyle" class="unselected">
             <v-breadcrumbs
-                :divider="'->'"
                 :items="navigationList"
-                large>
-
+                :divider="'->'">
+                <template v-slot:item="{item}">
+                    <v-breadcrumbs-item
+                        :disabled="item.disabled"
+                        :style="{'color': item.color}"
+                        @click="gotoDocument(item.document)"
+                        large>
+                        {{ item.text }}
+                    </v-breadcrumbs-item>
+                </template>
             </v-breadcrumbs>
         </div>
         <div :style="viewBoxToolStyle" class="d-flex flex-row">
@@ -190,7 +197,12 @@
     import GraphSvg from "@/components/graphComponents/GraphSvg.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting, isVisNodeSetting} from "@/utils/typeCheck";
-    import {commitChangeSubTab, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {
+        commitChangeSubTab,
+        commitGraphChange,
+        commitItemChange,
+        commitSnackbarOn
+    } from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
 
@@ -198,9 +210,9 @@
 
     interface NavigationItem {
         disabled: boolean;
-        exact: boolean;
-        to: object;
-        text: string
+        document: DocumentSelfPart;
+        text: string;
+        color: string
     }
 
     export default Vue.extend({
@@ -257,7 +269,6 @@
                     "node": {},
                     "media": {},
                     "link": {},
-                    "note": {},
                     "document": {},
                 } as LabelViewDict,
 
@@ -352,13 +363,12 @@
                 return docList.filter(doc => doc.root && doc.root._id === this.graph._id)
             },
             navigationList: function (): NavigationItem[] {
-                //@ts-ignore
                 let result: DocumentSelfPart[] = (this.graph.rootList).concat([this.graph]);
                 return result.map(doc => ({
-                    disabled: true,
-                    exact: false,
-                    to: {name: this.$route.name, params: {id: doc._id}},
-                    text: this.dataManager.nodeManager[doc._id].Info.Name
+                    disabled: doc._id === this.graph._id,
+                    document: doc,
+                    text: this.dataManager.nodeManager[doc._id].Info.Name,
+                    color: doc._id === this.graph._id ? 'grey' : 'royalblue'
                 }) as NavigationItem)
             },
             // 未被删除的Graph
@@ -694,8 +704,10 @@
             topNavigationStyle: function (): CSSProp {
                 return {
                     position: 'absolute',
-                    left: '12px',
-                    top: '12px'
+                    left: '0px',
+                    top: '0px',
+                    width: '100%',
+                    height: '60px'
                 }
             },
 
@@ -1003,11 +1015,16 @@
                 height += delta.y;
                 setting.Base.scaleX = height / width;
                 setting.Base.size = width;
+            },
+
+            gotoDocument(graph: GraphSelfPart) {
+                commitGraphChange({graph})
             }
         },
 
         watch: {
             labelDict: function (): void {
+                console.log('watch');
                 this.getLabelViewDict()
             }
         },

@@ -44,10 +44,10 @@
     import GlobalSnackBar from '@/components/global/GlobalSnackBar.vue';
     import SearchBar from '@/components/SearchBar.vue';
     import GlobalLoginRegister from "@/components/global/GlobalLoginRegister.vue";
-    import {delCookie, getCookie, setLoginIn, setLoginOut} from "@/utils/utils"
-    import {commitLoginDialogOn, commitLoginOut, commitScreenResize} from '@/store/modules/_mutations'
+    import {getCookie, setLoginIn, setLoginOut} from "@/utils/utils"
+    import {commitLoginDialogOn, commitScreenResize} from '@/store/modules/_mutations'
     import {ToolBar} from "@/store/modules/styleComponentSize";
-    import {loginCookie} from "@/api/user/login";
+    import {loginCookie} from "@/api/user/loginApi";
 
     export default Vue.extend({
         name: "App",

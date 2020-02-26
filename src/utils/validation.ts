@@ -20,14 +20,14 @@ export const validGroup = {
             min === undefined
                 ? (activeMax = -Infinity)
                 : (activeMax = min);
-            return (v: string) => (v && activeMax < v.length) || `${slotName} should more than ${activeMax}`
+            return (v: string) => (activeMax < v.length) || `${slotName} should more than ${activeMax}`
         },
         'maxCheck': (slotName: string, max?: number) => {
             let activeMax: number;
             max === undefined
                 ? (activeMax = Infinity)
                 : (activeMax = Math.trunc(max));
-            return (v: string) => (v && activeMax > v.length) || `${slotName} should less than ${activeMax}`
+            return (v: string) => (activeMax > v.length) || `${slotName} should less than ${activeMax}`
         },
 
         'duplicate': (stringPool: string[]) => {

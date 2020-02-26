@@ -199,8 +199,8 @@ const borderDashArray = () => {
     return {
         dashArray: {
             type: 'String',
-            default: '2, 4',
-            range: '',
+            default: '0, 0',
+            range: ['0, 0', '2, 2', '2, 4', '4, 4', '8, 4', '12, 4'],
             tips: '',
             explain: '描边形状'
         }
@@ -570,7 +570,7 @@ const fragmentSetting = {};
 
 const pathSetting = {};
 
-export const typeSetting: Record<SourceType, SettingAll> = {
+export const typeSetting: Record<AllType, SettingAll> = {
     'node': nodeSetting(),
     'link': linkSetting,
     'document': documentSetting,
@@ -595,7 +595,7 @@ declare global {
 
     interface Setting {
         _id: id;
-        _type: SourceType;
+        _type: AllType;
         _label: string;
 
         [propName: string]: any;
@@ -666,7 +666,7 @@ declare global {
             direct: 'top' | 'bottom';
             startLoc: LinkPointLocation;
             endLoc: LinkPointLocation;
-            isDash: boolean;
+            dashArray: string;
             isMain: boolean;
         };
         Arrow: {

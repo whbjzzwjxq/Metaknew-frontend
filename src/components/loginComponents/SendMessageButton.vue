@@ -6,7 +6,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {sendCode} from "@/api/user/register";
+    import {sendCode} from "@/api/user/registerApi";
     import {commitSnackbarOn} from "@/store/modules/_mutations";
     import {validGroup} from "@/utils/validation";
 

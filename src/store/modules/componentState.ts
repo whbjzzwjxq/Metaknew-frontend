@@ -7,7 +7,8 @@ declare global {
         loginDialogOn: boolean,
         loginTab: {
             root: number
-        }
+        },
+        editMode: boolean
     }
 
     type RootTabName = 'ecoSystem' | 'document' | 'metaKnowledge';
@@ -45,7 +46,8 @@ const state = {
     loginDialogOn: false,
     loginTab: {
         root: 0
-    }
+    },
+    editMode: false
 } as ComponentState;
 
 const mutations = {
@@ -77,8 +79,11 @@ const mutations = {
     },
 
     loginDialogTab: (state: ComponentState, payload: 0 | 1) => {
-        state.loginTab.root = payload
+        state.loginTab.root = payload;
         state.loginDialogOn = true;
+    },
+    changeEditMode: (state: ComponentState, payload: boolean) => {
+        state.editMode = payload
     }
 };
 const actions = {};
