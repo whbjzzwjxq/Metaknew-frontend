@@ -71,7 +71,7 @@ export const commitDocumentRemove = (payload: id) => {
     return store.commit('documentRemove', payload)
 };
 
-export const commitDocumentChangeId = (payload: IdMap) => {
+export const commitDocumentChangeId = (payload: {oldId: id, newId: id}) => {
     return store.commit('documentChangeId', payload)
 };
 
@@ -114,4 +114,8 @@ export const commitLoginDialogOn = (payload: 0 | 1) => {
 
 export const commitEditModeChange = (payload: boolean) => {
     return store.commit('changeEditMode', payload)
+};
+
+export const commitUserConcernChangeId = (payload: {_type: ItemType, idMap: IdMap}) => {
+    return store.commit('userConcernChangeId', payload)
 };

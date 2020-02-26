@@ -46,6 +46,15 @@ const mutations = {
         Vue.set(state.userConcernDict[_type], _id, userConcern)
     },
 
+        userConcernChangeId(state: UserDataManagerState, payload: {_type: ItemType, idMap: IdMap}) {
+        let {_type, idMap} = payload;
+        let dict = state.userConcernDict[_type];
+        Object.entries(idMap).map(([key, value]) => {
+            dict[value] = dict[key];
+            delete dict[key]
+        })
+    },
+
     noteBookAdd(state: UserDataManagerState, payload: { note: NoteBook }) {
         let {note} = payload;
         state.userNoteBook.push(note)

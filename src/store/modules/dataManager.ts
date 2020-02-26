@@ -17,7 +17,7 @@ import {
     commitInfoAdd,
     commitInfoRemove,
     commitItemChange,
-    commitSnackbarOn
+    commitSnackbarOn, commitUserConcernChangeId
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
 import {isGraphSelfPart, isNodeBackend} from "@/utils/typeCheck";
@@ -142,9 +142,10 @@ const mutations = {
         delete state.graphManager[payload]
     },
 
-    documentChangeId(state: DataManagerState, payload: IdMap) {
+    documentChangeId(state: DataManagerState, payload: {oldId: id, newId: id}) {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
+        console.log(oldGraph, payload);
         if (oldGraph) {
             oldGraph._id = newId;
             commitDocumentAdd({document: oldGraph});
@@ -168,21 +169,23 @@ const mutations = {
         delete manager[payload._id]
     },
 
-    infoChangeId(state: DataManagerState, payload: { _type: string, idMap: IdMap }) {
+    infoChangeId(state: DataManagerState, payload: { _type: ItemType, idMap: IdMap }) {
         let {_type, idMap} = payload;
         let manager = getManager(_type);
+        console.log(idMap);
         Object.keys(idMap).map(oldId => {
             let newId = idMap[oldId];
             let oldInfo = manager[oldId];
             if (oldInfo) {
                 oldInfo.changeId(newId);
                 commitInfoAdd({item: oldInfo});
-                // commitInfoRemove({_id: oldId, _type: _type});
+                commitInfoRemove({_id: oldId, _type: _type});
             }
             // 额外检查一下Graph
             _type === 'document' &&
-            commitDocumentChangeId({oldId: newId})
+            commitDocumentChangeId({oldId, newId})
         });
+        commitUserConcernChangeId(payload);
     },
 
 };

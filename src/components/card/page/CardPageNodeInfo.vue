@@ -288,7 +288,7 @@
 
             label: {
                 get(): string {
-                    return this.PrimaryLabel
+                    return this.baseData.PrimaryLabel
                 },
                 set(value: string) {
                     this.baseData.changePrimaryLabel(value)

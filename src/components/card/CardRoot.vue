@@ -19,42 +19,40 @@
                 <v-tabs-items v-model="subTab">
                     <v-tab-item v-for="subValue in value.children" :key="subValue.key">
                         <div class="cardItem" :style="subCardStyle">
-                            <keep-alive>
-                                <template v-if="value.key === 'ecoSystem'">
+                            <template v-if="value.key === 'ecoSystem'">
 
-                                </template>
-                                <template v-else-if="value.key === 'document'">
-                                    <card-page-directory
-                                        v-if="subValue.key === 'directory'"
+                            </template>
+                            <template v-else-if="value.key === 'document'">
+                                <card-page-directory
+                                    v-if="subValue.key === 'directory'"
+                                    :edit-mode="editMode"
+                                >
+
+                                </card-page-directory>
+                            </template>
+                            <template v-else-if="value.key === 'metaKnowledge'">
+                                <template v-if="subValue.key === 'info'">
+                                    <card-page-node-info
+                                        v-if="currentItemType === 'node'"
                                         :edit-mode="editMode"
-                                    >
+                                        :base-data="currentItem">
 
-                                    </card-page-directory>
+                                    </card-page-node-info>
+                                    <card-page-link-info
+                                        v-else-if="currentItemType === 'link'"
+                                        :edit-mode="editMode"
+                                        :base-data="currentItem"
+                                        :document="document">
+
+                                    </card-page-link-info>
                                 </template>
-                                <template v-else-if="value.key === 'metaKnowledge'">
-                                    <template v-if="subValue.key === 'info'">
-                                        <card-page-node-info
-                                            v-if="currentItemType === 'node'"
-                                            :edit-mode="editMode"
-                                            :base-data="currentItem">
+                                <template v-else-if="subValue.key === 'mediaList' && currentItemType === 'node'">
+                                    <card-page-media-list
+                                        :base-data="currentItem">
 
-                                        </card-page-node-info>
-                                        <card-page-link-info
-                                            v-else-if="currentItemType === 'link'"
-                                            :edit-mode="editMode"
-                                            :base-data="currentItem"
-                                            :document="document">
-
-                                        </card-page-link-info>
-                                    </template>
-                                    <template v-else-if="subValue.key === 'mediaList' && currentItemType === 'node'">
-                                        <card-page-media-list
-                                            :base-data="currentItem">
-
-                                        </card-page-media-list>
-                                    </template>
+                                    </card-page-media-list>
                                 </template>
-                            </keep-alive>
+                            </template>
                         </div>
                     </v-tab-item>
                 </v-tabs-items>
