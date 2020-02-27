@@ -81,12 +81,12 @@
                 }
             },
             mediaInfo: function (): MediaInfoPart {
-                return this.$store.state.dataManager.mediaManager[this._id]
+                return this.$store.state.dataManager.mediaManager[this.setting._id]
             }
         },
         methods: {
             updateSize(start: PointMixed, end: PointMixed) {
-                this.$emit('update-size', start, end, this.setting)
+                this.$emit('update-size', start, end, this.setting.Setting)
             },
 
             updateSizeByNumber(newWidth: number): void {

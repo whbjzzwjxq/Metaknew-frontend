@@ -499,11 +499,26 @@ const documentSetting: SettingAll = {
     }
 };
 
-const mediaSetting: SettingAll = {
-    Base: BaseSettingGroup(),
-    Border: BorderSettingGroup(),
-    Show: mergeSetting(showAll(), showBorder(), showAppendText()),
-    Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup())
+const mediaSetting = () => {
+    let result = {
+        Base: BaseSettingGroup(),
+        Border: BorderSettingGroup(),
+        Show: mergeSetting(showAll(), showBorder(), showAppendText()),
+        Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup())
+    }
+    let replace = {
+        Base: {
+            size: {
+                default: 300,
+                range: [50, 600]
+            },
+            scaleX: {
+                default: 0.4
+            }
+        }
+    }
+    mergeObject(result, replace);
+    return result as SettingAll
 };
 
 const noteSetting = () => {
@@ -574,7 +589,7 @@ export const typeSetting: Record<AllType, SettingAll> = {
     'node': nodeSetting(),
     'link': linkSetting,
     'document': documentSetting,
-    'media': mediaSetting,
+    'media': mediaSetting(),
     'svg': svgSetting(),
     'note': noteSetting(),
     'fragment': fragmentSetting,

@@ -1002,14 +1002,14 @@
 
             updateSize: function (start: PointMixed, end: PointMixed, setting: Setting) {
                 // 视觉上的更新尺寸start, end
-                let scale = this.scale;
+                let scale = this.realScale;
                 // 更新起始点
                 setting.Base.x += start.x / (this.containerRect.width * scale);
                 setting.Base.y += start.y / (this.containerRect.height * scale);
                 //更新长宽
                 let width = setting.Base.size;
                 let height = setting.Base.scaleX * width;
-                let delta = getPoint(end).decrease(start).divide(this.scale);
+                let delta = getPoint(end).decrease(start).divide(scale);
                 width += delta.x;
                 height += delta.y;
                 setting.Base.scaleX = height / width;

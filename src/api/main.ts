@@ -18,6 +18,5 @@ instanceLogin.interceptors.response.use(function (response) {
     setLoginIn(response, true);
     return response
 }, function (error) {
-    setLoginOut();
     return Promise.reject(error)
 });

@@ -11,8 +11,9 @@
 <script lang="ts">
     import Vue from 'vue'
     import {MediaInfoPart} from "@/class/graphItem"
-    import {commitInfoAdd} from '@/store/modules/_mutations'
+    import {commitInfoAdd, commitUserConcernAdd} from '@/store/modules/_mutations'
     import {getIndex} from "@/utils/utils";
+    import {userConcernTemplate} from "@/utils/template";
 
     export default Vue.extend({
         name: "MediaResolver",
@@ -38,9 +39,11 @@
         methods: {
             resolveFile(file: File) {
                 let _id = getIndex();
-                let fileObj = MediaInfoPart.emptyMediaInfo(_id, file); // todo thumb缩略图
-                commitInfoAdd({item: fileObj});
-                return fileObj
+                let item = MediaInfoPart.emptyMediaInfo(_id, file); // todo thumb缩略图
+                commitInfoAdd({item});
+                let userConcern = userConcernTemplate();
+                commitUserConcernAdd({_id: item._id, _type: item.type, userConcern});
+                return item
             },
 
             fileChange(files: Array<File>) {

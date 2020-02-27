@@ -32,6 +32,7 @@ declare global {
         PrimaryLabel: string;
         Name: string,
         Description: Translate,
+        Translate: Translate,
         Labels: string[], //统计后的标签
         ExtraProps: ExtraProps, //额外属性
         StandardProps: ExtraProps, // 标准属性
@@ -66,7 +67,6 @@ declare global {
         BaseHardLevel: number;
         BaseUseful: number;
         Language: string;
-        Translate: Translate // 名字的翻译
         MainPic: string;
         IncludedMedia: Array<id>;
     }

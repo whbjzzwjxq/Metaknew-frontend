@@ -284,7 +284,8 @@ export function mediaInfoTemplate(_id: id, file: File) {
         IsFree: true,
         StandardProps: {},
         ExtraProps: {},
-        Description: {}
+        Description: {},
+        Translate: {'auto': ''}
     };
 }
 
@@ -324,7 +325,8 @@ export function linkInfoTemplate(_id: id, _label: string) {
         ExtraProps: {},
         Confidence: 0.5,
         StandardProps: StandardProps,
-        Description: {}
+        Description: {},
+        Translate: {'auto': ''}
     };
 }
 

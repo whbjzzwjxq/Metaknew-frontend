@@ -43,12 +43,15 @@ export interface BackendGraph {
 
 export function mediaCreate(data: { name: string, Info: BaseMediaInfo }) {
     return instance.request<id>({
-        url: '/subgraph/media/create',
+        url: '/item/media/create',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        data: data
+        data: {
+            Info: Object.assign({FileName: data.name}, data.Info),
+            CreateType: 'USER'
+        }
     });
 }
 

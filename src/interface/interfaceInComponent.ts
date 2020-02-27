@@ -32,22 +32,6 @@ export type GraphMetaData = {
     parent: GraphMetaData | null, //对应的上级MetaData
 }
 
-//DataTable使用
-export interface FlatNodeInfo extends BaseInfo {
-    Alias: Array<string>;
-    BaseImp: number;
-    BaseHardLevel: number;
-    BaseUseful: number;
-    Language: string;
-    Topic: Array<string>;
-    Labels: Array<string>;
-    Description: Translate;
-    IncludedMedia: Array<string | number>;
-    MainPic: string;
-
-    [prop: string]: any
-}
-
 export type SortProp = 'UpdateTime' | 'isStar' | 'PrimaryLabel' // 排序方式
 
 // SearchBar
