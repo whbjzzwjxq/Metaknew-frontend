@@ -84,8 +84,8 @@ export class PathInfoPart extends NodeInfoPart {
     Info: BasePathInfo;
     Ctrl: BaseNodeCtrl;
 
-    constructor(info: BasePathInfo, ctrl: BaseNodeCtrl) {
-        super(info, ctrl);
+    constructor(info: BasePathInfo, ctrl: BaseNodeCtrl, isRemote: boolean) {
+        super(info, ctrl, isRemote);
         this.Info = info;
         this.Ctrl = ctrl;
     }
@@ -94,7 +94,7 @@ export class PathInfoPart extends NodeInfoPart {
         let _id = getIndex();
         let info = nodeInfoTemplate(_id, "document", "path") as BasePathInfo;
         let ctrl = nodeCtrlTemplate("document", "path");
-        return new PathInfoPart(info, ctrl)
+        return new PathInfoPart(info, ctrl, false)
     }
 }
 

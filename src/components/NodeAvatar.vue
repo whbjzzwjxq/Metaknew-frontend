@@ -147,7 +147,7 @@
                 }).then(() => {
                     alert('Upload Image Success!');
                     this.$set(file, "status", "success");
-                    this.$emit('new-main-image', URL.createObjectURL(file))
+                    this.$emit('new-main-image', storeName)
                 }).catch(() => {
                         alert('Something Success!');
                         this.$set(file, "status", "error");

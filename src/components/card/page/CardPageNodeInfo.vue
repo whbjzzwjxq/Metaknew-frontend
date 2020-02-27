@@ -188,6 +188,7 @@
     import {deepClone} from "@/utils/utils";
     import {Draft, draftCreate, draftUpdate} from "@/api/subgraph/commonApi";
     import {commitInfoChangeId} from "@/store/modules/_mutations";
+    import {nodeBulkCreate} from "@/api/subgraph/node";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -405,13 +406,32 @@
 
             saveItem(isDraft: boolean, isAuto: boolean = false) {
                 if (isDraft) {
-                    if (this.baseData.isRemote) {
-                        //
+                    let data = {
+                        Query: this.baseData.queryObject,
+                        Name: this.info.Name,
+                        Content: this.info,
+                        VersionId: this.baseData.State.draftId
+                    } as Draft;
+                    if (this.baseData.isSaved) {
+                        draftUpdate([data], isAuto, this.type !== 'link').then(res => {
+                            let {IdMap, DraftIdMap} = res.data;
+                            this.baseData.State.draftId = DraftIdMap[this.baseData._id]
+                        })
                     } else {
-                        let data = {Query: this.baseData.queryObject, Name: this.info.Name, Content: this.info} as Draft;
                         draftCreate([data], isAuto, this.type !== 'link').then(res => {
+                            let {IdMap, DraftIdMap} = res.data;
+                            commitInfoChangeId({_type: this.type, idMap: IdMap});
+                            this.baseData.State.draftId = DraftIdMap[this.baseData._id]
+                        })
+                    }
+                } else {
+                    let data = [this.info];
+                    if (this.baseData.State.isRemote) {
+                    } else {
+                        nodeBulkCreate(data).then(res => {
                             let idMap = res.data;
-                            commitInfoChangeId({_type: this.type, idMap})
+                            commitInfoChangeId({_type: this.type, idMap});
+                            this.baseData.State.isRemote = true
                         })
                     }
                 }

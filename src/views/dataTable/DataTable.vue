@@ -100,9 +100,9 @@
     import PLabelSelector from '@/components/PLabelSelector.vue';
     import DataTableButtonGroup from '@/components/DataTableButtonGroup.vue';
     import DataTableField from '@/components/DataTableField.vue';
-    import {nodeCreateMulti} from "@/api/commonSource"
     import {getIcon} from "@/utils/icon";
     import {nodeInfoTemplate} from "@/utils/template";
+    import {nodeBulkCreate} from "@/api/subgraph/node";
 
     interface HeaderItem {
         text: string,
@@ -383,7 +383,7 @@
 
             saveNodes(nodes: BaseNodeInfo[]) {
                 let _this = this;
-                nodeCreateMulti(this.pLabel, nodes).then(res => {
+                nodeBulkCreate(this.pLabel, nodes).then(res => {
                     if (res.status === 200) {
                         for (let i in nodes) {
                             this.nodes.splice(_this.idList.indexOf(nodes[i]._id), 1);

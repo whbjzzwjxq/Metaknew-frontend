@@ -209,7 +209,7 @@ export function mergeList<T>(list: Array<T[]>) {
 }
 
 let globalIndex = 0;
-export let localIdRegex = new RegExp("\\$_[0-9]*");
+export let localIdRegex = /\$_[0-9]*/;
 export let ctrlPropRegex = new RegExp("\\$.*");
 export let crucialRegex = new RegExp("_.*");
 

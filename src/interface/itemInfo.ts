@@ -20,7 +20,11 @@ declare global {
     type IdMap = Record<id, id>; // 新旧id的Map
     //带有翻译的格式
     type Translate = Record<string, string>
-
+    interface InfoState {
+        isRemote: boolean // 是否有远端模型
+        isEdit: boolean // 自上次保存后，是否编辑过
+        draftId?: id // 对应草稿的versionId 如果没有那么就是undefined
+    }
     //InfoPart相关
     interface BaseInfo {
         _id: id;

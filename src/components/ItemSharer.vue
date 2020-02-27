@@ -109,7 +109,7 @@
             addFragment: function (method: string) {
                 let _id = getIndex();
                 if (!this.fragmentSourceIdList.includes(this.baseData._id)) {
-                    if (this.baseData.isRemote) {
+                    if (this.baseData.State.isRemote) {
                         let fragment = FragmentInfoPart.fragmentFromItem(this.baseData, _id, method);
                         dispatchFragmentAdd(fragment)
                     } else {

@@ -219,7 +219,7 @@
                 return this.setting._image !== '' &&
                     this.setting.Show.showAll &&
                     this.setting.Show.showImage &&
-                    this.height >= 16
+                    this.height >= 12
             },
             showFill: function (): boolean {
                 return this.setting.Show.showAll &&

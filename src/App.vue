@@ -152,7 +152,7 @@
         },
         watch: {},
         created(): void {
-            getCookie('token') && loginCookie().then(setLoginIn).catch(setLoginOut)
+            getCookie('token') && loginCookie().then(setLoginIn).catch()
         },
         mounted(): void {
             this.screenResize()

@@ -1,6 +1,5 @@
 import {instance} from './main'
-import {GraphSelfPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
-import {FlatNodeInfo} from "@/interface/interfaceInComponent";
+import {GraphSelfPart, MediaInfoPart} from "@/class/graphItem";
 
 export interface QueryObject {
     id: id;
@@ -86,31 +85,6 @@ export function mediaQueryMulti(queryList: Array<id>) {
             'Content-Type': 'application/json'
         },
         data: queryList
-    })
-}
-
-export function nodeUpdate(data: NodeInfoPart) {
-    return instance.request({
-        url: '/subgraph/update/node/normal',
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        data: data
-    })
-}
-
-export function nodeCreateMulti(pLabel: string, nodes: BaseNodeInfo[]) {
-    return instance.request({
-        url: '/item/node/bulk_create',
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        data: {
-            Data: nodes,
-            CreateType: 'USER'
-        }
     })
 }
 

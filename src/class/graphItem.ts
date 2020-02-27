@@ -7,8 +7,7 @@ import {
     getCookie,
     getIndex,
     getIsSelf,
-    itemEqual,
-    localIdRegex,
+    itemEqual, localIdRegex,
 } from "@/utils/utils";
 import Vue from "vue";
 import {
@@ -49,11 +48,10 @@ import {
     commitUserConcernAdd
 } from "@/store/modules/_mutations";
 import {FragmentCtrl, FragmentInfo} from "@/interface/interfaceUser";
-
 export abstract class InfoPart {
     Info: BaseInfo;
     Ctrl: BaseCtrl;
-    isEdit: boolean;
+    State: InfoState;
 
     get _id() {
         return this.Info._id
@@ -63,12 +61,13 @@ export abstract class InfoPart {
         return this.Info.type
     }
 
-    get isRemote() {
-        return !localIdRegex.test(this._id.toString());
+    get isSaved() {
+        // 是否保存了 草稿或者是模型
+        return !localIdRegex.test(this._id.toString())
     }
 
     get isUserMade() {
-        return this.Ctrl.CreateType === 'User'
+        return this.Ctrl.CreateType === 'USER'
     }
 
     get isSelf() {
@@ -79,17 +78,21 @@ export abstract class InfoPart {
         return this.Info.PrimaryLabel
     }
 
-    protected constructor(info: BaseInfo, ctrl: BaseCtrl) {
+    protected constructor(info: BaseInfo, ctrl: BaseCtrl, isRemote: boolean, draftId?: number) {
         this.Info = info;
         this.Ctrl = ctrl;
-        this.isEdit = false;
+        this.State = {
+            isEdit: false,
+            isRemote,
+            draftId
+        }
     }
 
     changeId(newId: id) {
         //先同步 再改info id
         this.synchronizationSource("_id", newId);
         Vue.set(this.Info, "_id", newId);
-        this.isEdit = false;
+        this.State.isEdit = false;
     }
 
     synchronizationSource(prop: string, value: any) {
@@ -101,13 +104,13 @@ export abstract class InfoPart {
             if (ctrlPropRegex.test(prop) || prop === "PrimaryLabel") {
                 // "不要使用updateValue更新控制属性"
             } else {
-                this.isEdit = true;
+                this.State.isEdit = true;
                 Vue.set(this.Info, prop, newValue);
             }
         } else {
             if (this.Info[prop] !== newValue) {
                 Vue.set(this.Info, prop, newValue);
-                this.isEdit = true;
+                this.State.isEdit = true;
             } else {
                 //空载的更新
             }
@@ -132,11 +135,8 @@ export class NodeInfoPart extends InfoPart {
         return list.filter(node => node._id === this._id)
     }
 
-    constructor(
-        info: BaseNodeInfo,
-        ctrl: BaseNodeCtrl,
-    ) {
-        super(info, ctrl);
+    constructor(info: BaseNodeInfo, ctrl: BaseNodeCtrl, isRemote: boolean) {
+        super(info, ctrl, isRemote);
         this.Info = info;
         this.Ctrl = ctrl;
     }
@@ -145,11 +145,12 @@ export class NodeInfoPart extends InfoPart {
         return new NodeInfoPart(
             nodeInfoTemplate(_id, _type, _label),
             nodeCtrlTemplate(_type, _label),
+            false
         );
     }
 
     changePrimaryLabel(newLabel: string) {
-        if (this.isRemote) {
+        if (this.State.isRemote) {
             // "如果是远端节点 那么PLabel不能修改"
         } else {
             let StandardProps = this.Info.StandardProps;
@@ -163,7 +164,7 @@ export class NodeInfoPart extends InfoPart {
             Vue.set(this.Ctrl, "PrimaryLabel", newLabel);
             Vue.set(this.Info, "PrimaryLabel", newLabel);
             this.synchronizationSource("_label", newLabel);
-            this.isEdit = true;
+            this.State.isEdit = true;
         }
     }
 
@@ -178,7 +179,6 @@ export class NodeInfoPart extends InfoPart {
     }
 
     synchronizationSource(prop: string, value: any) {
-        console.log('bound');
         crucialRegex.test(prop) &&
         this.allSettingItem.map(node =>
             node.updateCrucialProp(prop, value)
@@ -212,8 +212,8 @@ export class LinkInfoPart extends InfoPart {
         return linkList.filter(link => link._id === this._id)
     }
 
-    constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl) {
-        super(info, ctrl);
+    constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl, isRemote: boolean) {
+        super(info, ctrl, isRemote);
         this.Info = info;
         this.Ctrl = ctrl;
     }
@@ -226,7 +226,8 @@ export class LinkInfoPart extends InfoPart {
     ) {
         return new LinkInfoPart(
             linkInfoTemplate(_id, _label),
-            linkCtrlTemplate(_start, _end)
+            linkCtrlTemplate(_start, _end),
+            false
         );
     }
 
@@ -239,7 +240,7 @@ export class LinkInfoPart extends InfoPart {
         start: VisNodeSettingPart | null,
         end: VisNodeSettingPart | null
     ) {
-        if (!this.isRemote) {
+        if (!this.State.isRemote) {
             if (start && !itemEqual(this.Ctrl.Start.Setting, start.Setting)) {
                 Vue.set(this.Ctrl, "Start", start);
                 this.synchronizationSource("_start", start);
@@ -258,7 +259,7 @@ export class LinkInfoPart extends InfoPart {
         if (ctrlPropRegex.test(prop)) {
             // "不要使用updateValue更新控制属性"
         } else {
-            this.isEdit = true;
+            this.State.isEdit = true;
             Vue.set(this.Info, prop, newValue);
         }
     }
@@ -310,15 +311,16 @@ export class MediaInfoPart extends InfoPart {
     constructor(
         info: BaseMediaInfo,
         ctrl: BaseMediaCtrl,
+        isRemote: boolean,
         status: MediaStatus,
         error: string[],
-        file?: File
+        file?: File,
     ) {
-        super(info, ctrl);
+        super(info, ctrl, isRemote);
         file ? (this.file = file) : (this.file = null);
         this.status = status;
         this.error = error;
-        this.isEdit = false;
+        this.State.isEdit = false;
         this.Info = info;
         this.Ctrl = ctrl;
     }
@@ -327,6 +329,7 @@ export class MediaInfoPart extends InfoPart {
         return new MediaInfoPart(
             mediaInfoTemplate(_id, file),
             mediaCtrlTemplate(file),
+            false,
             "new",
             [],
             file
@@ -344,7 +347,7 @@ export class MediaInfoPart extends InfoPart {
 
     changeName(newName: string) {
         Vue.set(this.Info, 'Name', newName);
-        this.isEdit = true;
+        this.State.isEdit = true;
         this.synchronizationSource("_name", newName)
     }
 
@@ -354,12 +357,12 @@ export class MediaInfoPart extends InfoPart {
             if (ctrlPropRegex.test(prop) || prop === "PrimaryLabel") {
                 // "不要使用updateValue更新控制属性"
             } else {
-                this.isEdit = true;
+                this.State.isEdit = true;
                 Vue.set(this.Info, prop, newValue);
             }
         } else {
             //空载的更新
-            this.isEdit = true;
+            this.State.isEdit = true;
         }
     }
 
@@ -386,8 +389,8 @@ export class FragmentInfoPart extends InfoPart {
         return this.Info._id
     }
 
-    constructor(info: FragmentInfo, ctrl: FragmentCtrl) {
-        super(info, ctrl);
+    constructor(info: FragmentInfo, ctrl: FragmentCtrl, isRemote: boolean) {
+        super(info, ctrl, isRemote);
         this.Info = info;
         this.Ctrl = ctrl
     }
@@ -412,7 +415,7 @@ export class FragmentInfoPart extends InfoPart {
             SourceLabel: baseData.PrimaryLabel,
         } as FragmentCtrl;
 
-        return new FragmentInfoPart(info, ctrl)
+        return new FragmentInfoPart(info, ctrl, false)
     }
 
     static newFragment(_label: 'image' | 'text') {

@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti, QueryObject} from '@/api/commonSource';
+import {documentQuery, mediaCreate, mediaQueryMulti, QueryObject, sourceQueryMulti} from '@/api/commonSource';
 import {filePutBlob} from '@/api/fileUpload';
 import {
     DocumentSelfPart,
@@ -12,12 +12,12 @@ import {
 import {
     commitDocumentAdd,
     commitDocumentChangeId,
-    commitDocumentRemove,
     commitFileToken,
     commitInfoAdd,
     commitInfoRemove,
     commitItemChange,
-    commitSnackbarOn, commitUserConcernChangeId
+    commitSnackbarOn,
+    commitUserConcernChangeId
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
 import {isGraphSelfPart, isNodeBackend} from "@/utils/typeCheck";
@@ -142,7 +142,7 @@ const mutations = {
         delete state.graphManager[payload]
     },
 
-    documentChangeId(state: DataManagerState, payload: {oldId: id, newId: id}) {
+    documentChangeId(state: DataManagerState, payload: { oldId: id, newId: id }) {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
         console.log(oldGraph, payload);
@@ -199,7 +199,7 @@ const actions = {
         await documentQuery(_id).then(res => {
             let {data} = res;
             let graphSelf = GraphSelfPart.resolveFromBackEnd(data, parent);
-            let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl);
+            let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl, false);
             commitInfoAdd({item: graphInfo});
             commitDocumentAdd({document: graphSelf});
             // 请求节点
@@ -227,7 +227,7 @@ const actions = {
                 const {data} = res;
                 data.map(node => {
                     if (isNodeBackend(node)) {
-                        let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl);
+                        let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl, false);
                         nodeInfo.synchronizationAll();
                         commitInfoAdd({item: nodeInfo})
                     }
@@ -259,7 +259,8 @@ const actions = {
                             Object.assign(link.Ctrl, {
                                 Start: linkSetting._start,
                                 End: linkSetting._end,
-                            }) as BaseLinkCtrl
+                            }) as BaseLinkCtrl,
+                            false
                         );
 
                         commitInfoAdd({item: linkInfo})
@@ -288,7 +289,7 @@ const actions = {
             return mediaQueryMulti(noCacheMedia).then(res => {
                 const {data} = res;
                 data.map(media => {
-                    let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, 'remote', []);
+                    let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, false, 'remote', []);
                     mediaInfo.synchronizationAll();
                     commitInfoAdd({item: mediaInfo})
                 });
