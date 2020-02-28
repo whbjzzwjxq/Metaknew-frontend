@@ -4,22 +4,19 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {commitScreenResize} from "@/store/modules/_mutations";
 
     export default Vue.extend({
-        name: "Register",
+        name: "SubToolBlock",
         components: {},
-        data() {
+        data: function () {
             return {}
         },
         props: {},
         computed: {},
         methods: {},
-        watch: {},
-        mounted() {
-        },
         record: {
-            status: 'empty'
+            status: 'empty',
+            description: ''
         }
     })
 </script>
@@ -27,8 +24,3 @@
 <style scoped>
 
 </style>
-
-/**
-* Created by whb on 2019/12/4
-* Updated by []
-*/

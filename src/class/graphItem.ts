@@ -2,13 +2,12 @@ import {
     crucialRegex,
     ctrlPropRegex,
     deepClone,
-    emptyGraph,
+    emptyContent,
     findItem,
     getCookie,
     getIndex,
     getIsSelf,
-    itemEqual,
-    localIdRegex,
+    itemEqual, localIdRegex,
 } from "@/utils/utils";
 import Vue from "vue";
 import {
@@ -40,33 +39,35 @@ import {
     isSvgSetting
 } from "@/utils/typeCheck";
 import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
-import {BackendGraph} from "@/api/commonSource";
-import {commitGraphAdd, commitInfoAdd, commitNoteInDocAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
+import {BackendGraph, QueryObject} from "@/api/commonSource";
+import {
+    commitDocumentAdd,
+    commitInfoAdd,
+    commitInfoChangeId,
+    commitNoteInDocAdd,
+    commitUserConcernAdd
+} from "@/store/modules/_mutations";
 import {FragmentCtrl, FragmentInfo} from "@/interface/interfaceUser";
-
 export abstract class InfoPart {
     Info: BaseInfo;
     Ctrl: BaseCtrl;
-    isEdit: boolean;
+    State: InfoState;
 
     get _id() {
-        return this.Info._id
-    }
-
-    set _id(newId) {
-        this.changeId(newId)
+        return this.Info.id
     }
 
     get type() {
         return this.Info.type
     }
 
-    get isRemote() {
-        return !localIdRegex.test(this._id.toString());
+    get isSaved() {
+        // 是否保存了 草稿或者是模型
+        return !localIdRegex.test(this._id.toString())
     }
 
     get isUserMade() {
-        return this.Ctrl.CreateType === 'User'
+        return this.Ctrl.CreateType === 'USER'
     }
 
     get isSelf() {
@@ -77,34 +78,47 @@ export abstract class InfoPart {
         return this.Info.PrimaryLabel
     }
 
-    protected constructor(info: BaseInfo, ctrl: BaseCtrl) {
+    protected constructor(info: BaseInfo, ctrl: BaseCtrl, isRemote: boolean, draftId?: number) {
         this.Info = info;
         this.Ctrl = ctrl;
-        this.isEdit = false;
+        this.State = {
+            isEdit: false,
+            isRemote,
+            draftId
+        }
     }
 
     changeId(newId: id) {
+        //先同步 再改info id
+        this.synchronizationSource("_id", newId);
         Vue.set(this.Info, "_id", newId);
-        this.isEdit = false;
+        this.State.isEdit = false;
     }
 
+    synchronizationSource(prop: string, value: any) {
+        //
+    }
     // info修改值
     updateValue(prop: string, newValue: any, doItPassive?: boolean) {
         if (!doItPassive) {
             if (ctrlPropRegex.test(prop) || prop === "PrimaryLabel") {
-                console.log("不要使用updateValue更新控制属性");
+                // "不要使用updateValue更新控制属性"
             } else {
-                this.isEdit = true;
+                this.State.isEdit = true;
                 Vue.set(this.Info, prop, newValue);
             }
         } else {
             if (this.Info[prop] !== newValue) {
                 Vue.set(this.Info, prop, newValue);
-                this.isEdit = true;
+                this.State.isEdit = true;
             } else {
                 //空载的更新
             }
         }
+    }
+
+    get queryObject(): QueryObject {
+        return {id: this._id, type: this.type, pLabel: this.PrimaryLabel}
     }
 }
 
@@ -116,11 +130,13 @@ export class NodeInfoPart extends InfoPart {
         return this.Info.type
     }
 
-    constructor(
-        info: BaseNodeInfo,
-        ctrl: BaseNodeCtrl,
-    ) {
-        super(info, ctrl);
+    get allSettingItem() {
+        let list = NodeSettingPart.list;
+        return list.filter(node => node._id === this._id)
+    }
+
+    constructor(info: BaseNodeInfo, ctrl: BaseNodeCtrl, isRemote: boolean) {
+        super(info, ctrl, isRemote);
         this.Info = info;
         this.Ctrl = ctrl;
     }
@@ -129,33 +145,26 @@ export class NodeInfoPart extends InfoPart {
         return new NodeInfoPart(
             nodeInfoTemplate(_id, _type, _label),
             nodeCtrlTemplate(_type, _label),
+            false
         );
     }
 
-    changeId(newId: id) {
-        this._id = newId;
-        Vue.set(this.Info, "_id", newId);
-        this.isEdit = false;
-        // node 重写
-        this.synchronizationSource("_id", newId);
-    }
-
     changePrimaryLabel(newLabel: string) {
-        if (this.isRemote) {
-            console.log("如果是远端节点 那么PLabel不能修改");
+        if (this.State.isRemote) {
+            // "如果是远端节点 那么PLabel不能修改"
         } else {
-            let commonProps = this.Info.CommonProps;
+            let StandardProps = this.Info.StandardProps;
             Object.entries(nodeLabelToProp(newLabel)).map(([prop, value]) => {
                 let {resolve, type} = value;
-                Object.keys(commonProps).indexOf(prop) === -1
-                    ? (commonProps[prop] = {resolve, type, value: fieldDefaultValue[type]})
-                    : (commonProps[prop] = deepClone(commonProps[prop]));
+                Object.keys(StandardProps).indexOf(prop) === -1
+                    ? (StandardProps[prop] = {resolve, type, value: fieldDefaultValue[type]})
+                    : (StandardProps[prop] = deepClone(StandardProps[prop]));
             });
-            Vue.set(this.Info, "CommonProps", commonProps);
+            Vue.set(this.Info, "StandardProps", StandardProps);
             Vue.set(this.Ctrl, "PrimaryLabel", newLabel);
             Vue.set(this.Info, "PrimaryLabel", newLabel);
             this.synchronizationSource("_label", newLabel);
-            this.isEdit = true;
+            this.State.isEdit = true;
         }
     }
 
@@ -170,18 +179,16 @@ export class NodeInfoPart extends InfoPart {
     }
 
     synchronizationSource(prop: string, value: any) {
-        let nodeList = NodeSettingPart.list;
         crucialRegex.test(prop) &&
-        findItem(nodeList, this._id, this.Info.type).map(node =>
+        this.allSettingItem.map(node =>
             node.updateCrucialProp(prop, value)
         );
     }
 
     synchronizationAll() {
         // 同步所有属性到Setting
-        let nodeList = NodeSettingPart.list;
-        findItem(nodeList, this._id, this.Info.type).map(node => {
-            node.updateCrucialProp("_label", this.Info.PrimaryLabel);
+        this.allSettingItem.map(node => {
+            node.updateCrucialProp("_label", this.PrimaryLabel);
             node.updateCrucialProp("_name", this.Info.Name);
             node.updateCrucialProp("_image", this.Info.MainPic);
         });
@@ -200,8 +207,13 @@ export class LinkInfoPart extends InfoPart {
         return this.Info.type
     }
 
-    constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl) {
-        super(info, ctrl);
+    get allSettingItem() {
+        let linkList = LinkSettingPart.list;
+        return linkList.filter(link => link._id === this._id)
+    }
+
+    constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl, isRemote: boolean) {
+        super(info, ctrl, isRemote);
         this.Info = info;
         this.Ctrl = ctrl;
     }
@@ -214,14 +226,9 @@ export class LinkInfoPart extends InfoPart {
     ) {
         return new LinkInfoPart(
             linkInfoTemplate(_id, _label),
-            linkCtrlTemplate(_start, _end)
+            linkCtrlTemplate(_start, _end),
+            false
         );
-    }
-
-    changeId(newId: id) {
-        this.Info._id = newId;
-        this.synchronizationSource("_id", newId);
-        this.isEdit = false;
     }
 
     changeLabel(newLabel: string) {
@@ -233,7 +240,7 @@ export class LinkInfoPart extends InfoPart {
         start: VisNodeSettingPart | null,
         end: VisNodeSettingPart | null
     ) {
-        if (!this.isRemote) {
+        if (!this.State.isRemote) {
             if (start && !itemEqual(this.Ctrl.Start.Setting, start.Setting)) {
                 Vue.set(this.Ctrl, "Start", start);
                 this.synchronizationSource("_start", start);
@@ -244,30 +251,28 @@ export class LinkInfoPart extends InfoPart {
                 this.synchronizationSource("_end", end);
             }
         } else {
-            console.log("远端关系不能改变了");
+            // "远端关系不能改变了"
         }
     }
 
     updateValue(prop: string, newValue: any) {
         if (ctrlPropRegex.test(prop)) {
-            console.log("不要使用updateValue更新控制属性");
+            // "不要使用updateValue更新控制属性"
         } else {
-            this.isEdit = true;
+            this.State.isEdit = true;
             Vue.set(this.Info, prop, newValue);
         }
     }
 
     synchronizationSource(prop: string, value: any) {
-        let linkList = LinkSettingPart.list;
         crucialRegex.test(prop) &&
-        findItem(linkList, this._id, this.Info.type).map(link =>
+        this.allSettingItem.map(link =>
             link.updateCrucialProp(prop, value)
         );
     }
 
     synchronizationAll() {
-        let linkList = LinkSettingPart.list;
-        findItem(linkList, this._id, this.Info.type).map(link => {
+        this.allSettingItem.map(link => {
             link.updateCrucialProp("_start", this.Ctrl.Start);
             link.updateCrucialProp("_end", this.Ctrl.End);
         });
@@ -280,6 +285,11 @@ export class MediaInfoPart extends InfoPart {
     error: string[]; // file存在的错误
     Info: BaseMediaInfo;
     Ctrl: BaseMediaCtrl;
+
+    get allSettingItem() {
+        let list = MediaSettingPart.list;
+        return list.filter(media => media._id === this._id)
+    }
 
     get type() {
         return this.Info.type
@@ -301,15 +311,16 @@ export class MediaInfoPart extends InfoPart {
     constructor(
         info: BaseMediaInfo,
         ctrl: BaseMediaCtrl,
+        isRemote: boolean,
         status: MediaStatus,
         error: string[],
-        file?: File
+        file?: File,
     ) {
-        super(info, ctrl);
+        super(info, ctrl, isRemote);
         file ? (this.file = file) : (this.file = null);
         this.status = status;
         this.error = error;
-        this.isEdit = false;
+        this.State.isEdit = false;
         this.Info = info;
         this.Ctrl = ctrl;
     }
@@ -318,16 +329,11 @@ export class MediaInfoPart extends InfoPart {
         return new MediaInfoPart(
             mediaInfoTemplate(_id, file),
             mediaCtrlTemplate(file),
+            false,
             "new",
             [],
             file
         );
-    }
-
-    changeId(newId: id) {
-        this.Info._id = newId;
-        this.synchronizationSource("_id", newId);
-        this.isEdit = false;
     }
 
     changeStatus(status: MediaStatus) {
@@ -341,7 +347,7 @@ export class MediaInfoPart extends InfoPart {
 
     changeName(newName: string) {
         Vue.set(this.Info, 'Name', newName);
-        this.isEdit = true;
+        this.State.isEdit = true;
         this.synchronizationSource("_name", newName)
     }
 
@@ -349,28 +355,26 @@ export class MediaInfoPart extends InfoPart {
     updateValue(prop: string, newValue: any, doItPassive?: boolean) {
         if (!doItPassive) {
             if (ctrlPropRegex.test(prop) || prop === "PrimaryLabel") {
-                console.log("不要使用updateValue更新控制属性");
+                // "不要使用updateValue更新控制属性"
             } else {
-                this.isEdit = true;
+                this.State.isEdit = true;
                 Vue.set(this.Info, prop, newValue);
             }
         } else {
             //空载的更新
-            this.isEdit = true;
+            this.State.isEdit = true;
         }
     }
 
     synchronizationSource(prop: string, value: any) {
-        let mediaList = MediaSettingPart.list;
         crucialRegex.test(prop) &&
-        findItem(mediaList, this._id, this.Info.type).map(node =>
+        this.allSettingItem.map(node =>
             node.updateCrucialProp(prop, value)
         );
     }
 
     synchronizationAll() {
-        let nodeList = MediaSettingPart.list;
-        findItem(nodeList, this._id, this.Info.type).map(node => {
+        this.allSettingItem.map(node => {
             node.updateCrucialProp("_src", this.Ctrl.FileName);
             node.updateCrucialProp("_name", this.Info.Name);
         });
@@ -385,33 +389,33 @@ export class FragmentInfoPart extends InfoPart {
         return this.Info._id
     }
 
-    constructor(info: FragmentInfo, ctrl: FragmentCtrl) {
-        super(info, ctrl);
+    constructor(info: FragmentInfo, ctrl: FragmentCtrl, isRemote: boolean) {
+        super(info, ctrl, isRemote);
         this.Info = info;
         this.Ctrl = ctrl
     }
 
-    static fragmentFromItem(itemInfo: NodeInfoPart | MediaInfoPart | LinkInfoPart, _id: id, method: string) {
+    static fragmentFromItem(baseData: NodeInfoPart | MediaInfoPart | LinkInfoPart, _id: id, method: string) {
         let info = {
-            _id,
+            id: _id,
             type: 'fragment',
-            PrimaryLabel: isMediaInfoPart(itemInfo) ? 'image' : 'text',
-            Name: itemInfo.Info.Name === '' ? itemInfo.Info.Name : 'NewFragment From ' + itemInfo.type + itemInfo._id,
-            Labels: itemInfo.Info.Labels,
-            Src: isMediaInfoPart(itemInfo) ? itemInfo.Ctrl.Thumb : '',
-            Description: itemInfo.Info.Description
+            PrimaryLabel: isMediaInfoPart(baseData) ? 'image' : 'text',
+            Name: baseData.Info.Name === '' ? baseData.Info.Name : 'NewFragment From ' + baseData.type + baseData._id,
+            Labels: baseData.Info.Labels,
+            Src: isMediaInfoPart(baseData) ? baseData.Ctrl.Thumb : '',
+            Description: baseData.Info.Description
         } as FragmentInfo;
 
         let ctrl = {
-            $IsLinked: true,
+            IsLinked: true,
             CreateType: 'System-' + method,
             CreateUser: getCookie('user_id'),
-            SourceId: itemInfo._id,
-            SourceType: itemInfo.type,
-            SourceLabel: itemInfo.Info.PrimaryLabel,
+            SourceId: baseData._id,
+            SourceType: baseData.type,
+            SourceLabel: baseData.PrimaryLabel,
         } as FragmentCtrl;
 
-        return new FragmentInfoPart(info, ctrl)
+        return new FragmentInfoPart(info, ctrl, false)
     }
 
     static newFragment(_label: 'image' | 'text') {
@@ -458,13 +462,38 @@ export abstract class SettingPart {
     }
 }
 
-export class GraphItemSettingPart extends SettingPart {
+export abstract class ItemSettingPart extends SettingPart {
+    Setting: Setting;
+    State: BaseState;
+    parent: DocumentSelfPart | null;
+
+    protected constructor(Setting: Setting, State: BaseState, parent: DocumentSelfPart | null) {
+        super(Setting, State);
+        this.Setting = Setting;
+        this.State = State;
+        this.parent = parent;
+    }
+
+    findRoot() {
+        if (!this.parent) {
+            return [];
+        } else {
+            let result: Array<DocumentSelfPart>;
+            this.parent
+                ? (result = this.parent.rootList.concat(this.parent))
+                : (result = [this.parent]);
+            return result;
+        }
+    }
+}
+
+export class GraphItemSettingPart extends ItemSettingPart {
     Setting: GraphItemSetting;
     State: BaseState;
-    parent: GraphSelfPart | null;
+    parent: GraphSelfPart;
 
-    constructor(Setting: GraphItemSetting, State: BaseState, parent: GraphSelfPart | null) {
-        super(Setting, State);
+    constructor(Setting: GraphItemSetting, State: BaseState, parent: GraphSelfPart) {
+        super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
         this.parent = parent;
@@ -472,18 +501,6 @@ export class GraphItemSettingPart extends SettingPart {
 
     get _type() {
         return this.Setting._type
-    }
-
-    findRoot() {
-        if (!this.parent) {
-            return [];
-        } else {
-            let result: Array<GraphSelfPart>;
-            this.parent
-                ? (result = this.parent.rootList.concat(this.parent))
-                : (result = [this.parent]);
-            return result;
-        }
     }
 }
 
@@ -564,7 +581,7 @@ export class MediaSettingPart extends GraphItemSettingPart {
     }
 
     static emptyMediaSettingFromInfo(media: MediaInfoPart, parent: GraphSelfPart) {
-        return MediaSettingPart.emptyMediaSetting(media._id, media.Info.PrimaryLabel, media.Info.Name, media.Ctrl.FileName, parent)
+        return MediaSettingPart.emptyMediaSetting(media._id, media.PrimaryLabel, media.Info.Name, media.Ctrl.FileName, parent)
     }
 }
 
@@ -652,45 +669,42 @@ export class NoteSettingPart extends SettingPart {
     }
 }
 
-export class GraphConf extends GraphItemSettingPart {
+export class GraphConf extends ItemSettingPart {
     Setting: GraphSetting;
     State: GraphState;
-    parent: GraphSelfPart | null;
+    parent: DocumentSelfPart | null;
 
     constructor(
         Setting: GraphSetting,
         State: GraphState,
-        parent: GraphSelfPart | null
+        parent: DocumentSelfPart | null
     ) {
-        super(Setting, <NodeState>{}, parent);
+        super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
         this.parent = parent;
     }
 
-    static emptyGraphSetting(_id: id, parent: GraphSelfPart | null) {
+    static emptyGraphSetting(_id: id, parent: DocumentSelfPart | null) {
         let setting = graphSettingTemplate(_id);
         let state = graphStateTemplate("isSelf");
         return new GraphConf(setting, state, parent);
     }
 }
 
-export class GraphSelfPart {
-    static list: Array<GraphSelfPart> = [];
-    static baseList: Array<BackendGraph> = []; // 原始数据
-    Graph: Graph;
-    Conf: GraphConf;
-    // 草稿保存
+export abstract class DocumentSelfPart {
+    static list: Array<DocumentSelfPart> = [];
+    static baseList: Array<BackendGraph> = [];
     draftId: number;
-    // 图形尺寸
-    rect: RectObject;
-    protected _baseNode: NodeSettingPart;
-    get baseNode() {
-        return this._baseNode
-    }
+    Content: DocumentContent;
+    Conf: ItemSettingPart;
 
     get _id() {
         return this.Conf._id
+    }
+
+    get _name() {
+        return this.Conf.Setting._name
     }
 
     set _id(newId) {
@@ -701,7 +715,44 @@ export class GraphSelfPart {
         return this.Conf.findRoot()
     }
 
-    get root() {
+    get root(): DocumentSelfPart | null {
+        return this.rootList ? this.rootList[0] : null;
+    }
+
+    protected constructor(Content: DocumentContent, Conf: ItemSettingPart, draftId?: number) {
+        draftId || (draftId = 0);
+        this.Conf = Conf;
+        this.Content = Content;
+        this.draftId = draftId;
+    }
+
+    protected commitItemToVuex(info: InfoPartInDataManager) {
+        // commit过程
+        commitInfoAdd({item: info, strict: false});
+        let userConcern = userConcernTemplate();
+        commitUserConcernAdd({_id: info._id, _type: info.type, userConcern});
+    }
+}
+
+export class GraphSelfPart extends DocumentSelfPart {
+    static list: Array<GraphSelfPart> = [];
+    static baseList: Array<BackendGraph> = []; // 原始数据
+    Content: DocumentContent;
+    Conf: GraphConf;
+    // 草稿保存
+    draftId: number;
+    // 图形尺寸
+    rect: RectObject;
+    protected _baseNode: NodeSettingPart;
+    get baseNode() {
+        return this._baseNode
+    }
+
+    get rootList() {
+        return this.Conf.findRoot()
+    }
+
+    get root(): DocumentSelfPart | null {
         return this.rootList ? this.rootList[0] : null;
     }
 
@@ -709,14 +760,15 @@ export class GraphSelfPart {
         return this.Conf.State.isExplode
     }
 
-    constructor(graph: Graph, conf: GraphConf, baseNode?: NodeSetting, draftId?: number, rect?: RectObject) {
+    constructor(graph: DocumentContent, conf: GraphConf, baseNode?: NodeSetting, draftId?: number, rect?: RectObject) {
         // 自动保存id
+        super(graph, conf, draftId);
         draftId || (draftId = -1);
         this.draftId = draftId;
         // 设置
         this.Conf = conf;
         // Graph
-        this.Graph = graph;
+        this.Content = graph;
         // rect默认值
         rect || (rect = {width: 600, height: 400});
         this.rect = rect;
@@ -728,9 +780,9 @@ export class GraphSelfPart {
         this._baseNode = new NodeSettingPart(baseNode, state, this);
     }
 
-    static emptyGraphSelfPart(_id: id, parent: GraphSelfPart | null, commitToVuex?: boolean) {
+    static emptyGraphSelfPart(_id: id, parent: DocumentSelfPart | null, commitToVuex?: boolean) {
         commitToVuex === undefined && (commitToVuex = true);
-        let graphContent = emptyGraph();
+        let graphContent = emptyContent();
         let setting = GraphConf.emptyGraphSetting(_id, parent);
         let graph = new GraphSelfPart(graphContent, setting);
         graph.addItems([graph.baseNode]);
@@ -748,26 +800,26 @@ export class GraphSelfPart {
         getIsSelf(baseData.Base.Ctrl) && args.push("isSelf");
         let state = graphStateTemplate(...args);
         let setting = new GraphConf(baseData.Conf, state, parent);
-        let graph = emptyGraph();
-        let baseNodeSetting = baseData.Graph.nodes.filter(setting => setting._id === baseData.Conf._id)[0];
+        let graph = emptyContent();
+        let baseNodeSetting = baseData.Content.nodes.filter(setting => setting._id === baseData.Conf._id)[0];
         let result = new GraphSelfPart(
             graph,
             setting,
             baseNodeSetting
         );
-        result.Graph.nodes = baseData.Graph.nodes.map(
+        result.Content.nodes = baseData.Content.nodes.map(
             setting => new NodeSettingPart(setting, nodeStateTemplate(), result)
         );
-        result.Graph.medias = baseData.Graph.medias.map(
+        result.Content.medias = baseData.Content.medias.map(
             setting =>
                 new MediaSettingPart(setting, nodeStateTemplate(), result)
         );
-        result.Graph.links = baseData.Graph.links.map(setting => {
+        result.Content.links = baseData.Content.links.map(setting => {
             let linkNode = {
-                _start: result.Graph.nodes.filter(node =>
+                _start: result.Content.nodes.filter(node =>
                     itemEqual(setting._start, node.Setting)
                 )[0],
-                _end: result.Graph.nodes.filter(node =>
+                _end: result.Content.nodes.filter(node =>
                     itemEqual(setting._end, node.Setting)
                 )[0]
             };
@@ -791,11 +843,11 @@ export class GraphSelfPart {
 
     getSubItemById(_id: id, _type: GraphItemType) {
         let list = this.getItemListByName(_type);
-        return list.filter(item => item.Setting._id === _id)[0]
+        return list.filter(item => item._id === _id)[0]
     }
 
     allItems(): GraphSubItemSettingPart[] {
-        let {nodes, links, medias, svgs} = this.Graph;
+        let {nodes, links, medias, svgs} = this.Content;
         // @ts-ignore
         return nodes.concat(links).concat(medias).concat(svgs)
     }
@@ -810,14 +862,14 @@ export class GraphSelfPart {
         let itemList;
         if (isGraphType(name)) {
             name === 'media'
-                ? itemList = this.Graph.medias
+                ? itemList = this.Content.medias
                 : name === 'link'
-                ? itemList = this.Graph.links
+                ? itemList = this.Content.links
                 : name === 'svg'
-                    ? itemList = this.Graph.svgs
-                    : itemList = this.Graph.nodes //  name === 'document | 'node
+                    ? itemList = this.Content.svgs
+                    : itemList = this.Content.nodes //  name === 'document | 'node
         } else {
-            itemList = this.Graph[name]
+            itemList = this.Content[name]
         }
         return itemList
     }
@@ -828,18 +880,18 @@ export class GraphSelfPart {
     }
 
     checkExistByItem(item: GraphItemSettingPart) {
-        return this.checkExist(item.Setting._id, item._type)
+        return this.checkExist(item._id, item._type)
     }
 
     protected pushItem(item: GraphItemSettingPart) {
         item.parent = this;
         isMediaSetting(item)
-            ? this.Graph.medias.push(item)
+            ? this.Content.medias.push(item)
             : isNodeSetting(item)
-            ? this.Graph.nodes.push(item)
+            ? this.Content.nodes.push(item)
             : isSvgSetting(item)
-                ? this.Graph.svgs.push(item)
-                : isLinkSetting(item) && this.Graph.links.push(item)
+                ? this.Content.svgs.push(item)
+                : isLinkSetting(item) && this.Content.links.push(item)
     }
 
     getItemByState(name: GraphTypeS | GraphItemType, state: BaseStateKey) {
@@ -865,7 +917,7 @@ export class GraphSelfPart {
         setting.State.isSelf = true;
         this.addItems([setting]);
         let payload = {setting, info};
-        commitToVuex && this.commitItemToVuex(payload);
+        commitToVuex && this.commitItemToVuex(info);
         return payload
     }
 
@@ -880,7 +932,7 @@ export class GraphSelfPart {
         setting.State.isSelf = true;
         this.addItems([setting]);
         let payload = {setting, info};
-        commitToVuex && this.commitItemToVuex(payload);
+        commitToVuex && this.commitItemToVuex(info);
         return payload
     }
 
@@ -896,18 +948,9 @@ export class GraphSelfPart {
         return payload
     }
 
-    protected commitItemToVuex(payload: { setting: GraphItemSettingPart, info: InfoPart }) {
-        // commit过程
-        let {setting, info} = payload;
-        commitInfoAdd({item: info, strict: false});
-        let userConcern = userConcernTemplate();
-        commitUserConcernAdd({_id: setting._id, _type: setting._type, userConcern});
-        return setting
-    }
-
     protected commitGraphToVuex(payload: { graph: GraphSelfPart, info: NodeInfoPart }) {
         let {graph, info} = payload;
-        this.commitItemToVuex({setting: graph.baseNode, info});
-        commitGraphAdd({graph});
+        this.commitItemToVuex(info);
+        commitDocumentAdd({document: graph});
     }
 }

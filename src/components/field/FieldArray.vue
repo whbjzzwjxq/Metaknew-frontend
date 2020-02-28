@@ -62,7 +62,7 @@
     import Vue from 'vue'
     import {indexToColor, checkDuplicate} from '@/utils/utils'
     import {ResolveType} from '@/utils/fieldResolve'
-    import {TagRecommendation} from "@/api/user";
+    import {TagRecommendation} from "@/api/user/queryInfo";
 
     export default Vue.extend({
         name: 'FieldArray',

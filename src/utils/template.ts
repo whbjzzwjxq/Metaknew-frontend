@@ -1,9 +1,9 @@
-import {currentTime, getCookie, randomNumberInRange} from '@/utils/utils';
+import {currentTime, getCookie, randomIntegerInRange, randomNumberInRange} from '@/utils/utils';
 import {fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/fieldResolve";
 import PDFJS from 'pdfjs-dist';
 import {typeSetting} from "@/interface/itemSetting";
 
-export function settingTemplate(_type: SourceType) {
+export function settingTemplate(_type: AllType) {
     let settingConf = typeSetting[_type];
     const specialDict: { [prop: string]: any } = {
         'x': randomNumberInRange(0.3, 0.7),
@@ -178,7 +178,7 @@ export function graphStateTemplate(...rest: Array<string>) {
         isDeleted: false,
         isChanged: false,
         isSavedIn5min: false,
-        isExplode: false,
+        isExplode: true,
         isSelf: rest.indexOf("isSelf") > -1,
     };
 }
@@ -208,13 +208,13 @@ export function userConcernTemplate() {
 }
 
 export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: string) {
-    let commonProps: Record<string, ValueWithType<any>> = {};
+    let StandardProps: Record<string, ValueWithType<any>> = {};
     Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
         let {type, resolve} = value;
-        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
+        StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
     let info = <BaseNodeInfo>{
-        _id: _id,
+        id: _id,
         type: _type,
         PrimaryLabel: _label,
         Name: 'NewNode' + _id,
@@ -222,16 +222,16 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         Language: 'auto',
         Labels: [],
         Topic: [],
-        Text: {'auto': ''},
-        Description: {},
+        Translate: {'auto': ''},
+        Description: {'auto': ''},
         ExtraProps: {},
-        CommonProps: commonProps,
+        StandardProps: StandardProps,
         BaseImp: 0,
         BaseHardLevel: 0,
         BaseUseful: 0,
-        $IsOpenSource: false,
-        $IsCommon: true,
-        $IsFree: true,
+        IsOpenSource: false,
+        IsCommon: true,
+        IsFree: true,
         IncludedMedia: [],
         MainPic: ''
     };
@@ -245,12 +245,11 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
 export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
     // Ctrl数据
     let ctrl = {
-        $IsUserMade: true,
         CreateUser: getCookie("user_id"),
         Source: 'User',
         UpdateTime: currentTime(),
         PrimaryLabel: _label,
-        Imp: 50,
+        Imp: randomIntegerInRange(0, 100),
         HardLevel: 50,
         Useful: 50,
         isStar: 0,
@@ -260,7 +259,7 @@ export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
         Contributor: {create: getCookie("user_name"), update: []},
         TotalTime: 50,
         Labels: [],
-        CreateType: 'User'
+        CreateType: 'USER'
     };
     if (_type === 'node') {
         return ctrl as BaseNodeCtrl
@@ -275,16 +274,18 @@ export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
 
 export function mediaInfoTemplate(_id: id, file: File) {
     return <BaseMediaInfo>{
-        _id: _id,
+        id: _id,
         type: "media",
         PrimaryLabel: getMediaType(file),
         Name: file.name.split(".")[0],
         Labels: [],
-        $IsCommon: true,
-        $IsOpenSource: false,
-        $IsFree: true,
+        IsCommon: true,
+        IsOpenSource: false,
+        IsFree: true,
+        StandardProps: {},
         ExtraProps: {},
-        Description: {}
+        Description: {},
+        Translate: {'auto': ''}
     };
 }
 
@@ -296,36 +297,36 @@ export function mediaCtrlTemplate(file: File) {
         Thumb: "",
         UpdateTime: currentTime(),
         CreateUser: getCookie("user_id"),
-        $IsUserMade: true,
         Source: 'User',
         isStar: 0,
         isGood: 0,
         isBad: 0,
         isShared: 0,
         Labels: [],
-        CreateType: 'User'
+        CreateType: 'USER'
     };
 }
 
 export function linkInfoTemplate(_id: id, _label: string) {
-    let commonProps: Record<string, ValueWithType<any>> = {};
+    let StandardProps: Record<string, ValueWithType<any>> = {};
     Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
         let {type, resolve} = value;
-        commonProps[key] = {type, resolve, value: fieldDefaultValue[type]};
+        StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
     return <BaseLinkInfo>{
-        _id: _id,
+        id: _id,
         type: "link",
         PrimaryLabel: _label,
-        $IsCommon: true,
-        $IsFree: true,
-        $IsOpenSource: false,
+        IsCommon: true,
+        IsFree: true,
+        IsOpenSource: false,
         Name: '',
         Labels: [],
         ExtraProps: {},
         Confidence: 0.5,
-        CommonProps: commonProps,
-        Description: {}
+        StandardProps: StandardProps,
+        Description: {},
+        Translate: {'auto': ''}
     };
 }
 

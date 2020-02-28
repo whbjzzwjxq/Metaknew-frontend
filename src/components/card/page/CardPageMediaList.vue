@@ -34,13 +34,13 @@
     import Vue from 'vue'
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {mediaAppendToNode, SourceQueryObject} from "@/api/commonSource";
+    import {mediaAppendToNode, QueryObject} from "@/api/commonSource";
     import {NodeInfoPart, MediaInfoPart, MediaSettingPart} from "@/class/graphItem";
-    import {getFileToken} from '@/api/user'
     import {commitFileToken} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import {SortProp} from "@/interface/interfaceInComponent";
     import {sortCtrl} from "@/utils/utils";
+    import {loginCookie} from "@/api/user/loginApi";
 
     export default Vue.extend({
         name: "CardPageMediaList",
@@ -90,12 +90,8 @@
         },
         methods: {
             addMediaToNode: function (mediaIdList: id[]) {
-                if (this.baseData.isRemote) {
-                    let node = {
-                        '_id': this.baseData._id,
-                        '_type': this.baseData.type,
-                        '_label': this.baseData.Info.PrimaryLabel,
-                    } as SourceQueryObject;
+                if (this.baseData.State.isRemote) {
+                    let node = this.baseData.queryObject;
                     mediaAppendToNode(node, mediaIdList).then(res => {
                         let num = res.data.length;
                         num === 0
@@ -128,7 +124,7 @@
             let now = (new Date()).valueOf();
             //先判断Token情况
             if ((fileToken.Expiration * 1000 - now <= 0) || !fileToken.AccessKeyId) {
-                getFileToken().then(res => {
+                loginCookie().then(res => {
                     if (res.status === 200) {
                         commitFileToken(res.data.fileToken);
                     } else {

@@ -1,11 +1,10 @@
 import {instance} from './main'
-import {GraphSelfPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
-import {FlatNodeInfo} from "@/interface/interfaceInComponent";
+import {GraphSelfPart, MediaInfoPart} from "@/class/graphItem";
 
-export interface SourceQueryObject {
-    _id: id;
-    _type: GraphItemType;
-    _label: string;
+export interface QueryObject {
+    id: id;
+    type: AllType;
+    pLabel: string;
 } // 用于Query
 
 export interface BackendNodeInfoPart {
@@ -19,8 +18,8 @@ export interface BackendMediaInfoPart {
 }
 
 export interface BackendLinkCtrl extends PublicCtrl {
-    Start: SourceQueryObject;
-    End: SourceQueryObject;
+    Start: QueryObject;
+    End: QueryObject;
 }
 
 export interface BackendLinkInfoPart {
@@ -33,7 +32,7 @@ export interface BackendGraph {
         Info: BaseNodeInfo;
         Ctrl: BaseNodeCtrl;
     };
-    Graph: {
+    Content: {
         nodes: Array<NodeSetting>;
         links: Array<compressLinkSetting>;
         medias: Array<MediaSetting>;
@@ -44,18 +43,21 @@ export interface BackendGraph {
 
 export function mediaCreate(data: { name: string, Info: BaseMediaInfo }) {
     return instance.request<id>({
-        url: '/subgraph/create/media/normal',
+        url: '/item/media/create',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        data: data
+        data: {
+            Info: Object.assign({FileName: data.name}, data.Info),
+            CreateType: 'USER'
+        }
     });
 }
 
 export function mediaUpdate(data: MediaInfoPart) {
     return instance.request({
-        url: '/subgraph/update/media/normal',
+        url: '/subgraph/media/update',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
@@ -67,7 +69,7 @@ export function mediaUpdate(data: MediaInfoPart) {
     })
 }
 
-export function mediaAppendToNode(node: SourceQueryObject, mediaList: Array<id>) {
+export function mediaAppendToNode(node: QueryObject, mediaList: Array<id>) {
     return instance.request<id[]>({
         url: '/subgraph/update/node/media',
         method: 'post',
@@ -89,32 +91,7 @@ export function mediaQueryMulti(queryList: Array<id>) {
     })
 }
 
-export function nodeUpdate(data: NodeInfoPart) {
-    return instance.request({
-        url: '/subgraph/update/node/normal',
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        data: data
-    })
-}
-
-export function nodeCreateMulti(pLabel: string, nodes: FlatNodeInfo[]) {
-    return instance.request({
-        url: '/subgraph/create/node/bulk_create',
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        data: {
-            data: nodes,
-            pLabel: pLabel
-        }
-    })
-}
-
-export function nodeQuery(payload: SourceQueryObject) {
+export function nodeQuery(payload: QueryObject) {
     return instance.request({
         url: '/subgraph/query/',
         method: 'get',
@@ -147,11 +124,11 @@ export function documentSave(document: GraphSelfPart, isDraft: boolean, isAuto: 
     })
 }
 
-export function sourceQueryMulti(list: Array<SourceQueryObject>) {
+export function sourceQueryMulti(list: Array<QueryObject>) {
     return instance.request<(BackendNodeInfoPart | BackendLinkInfoPart)[]>({
         url: '/subgraph/query/multi',
         method: 'post',
-        data: list.map(query => [query._id, query._type, query._label])
+        data: list.map(query => [query.id, query.type, query.pLabel])
     })
 }
 

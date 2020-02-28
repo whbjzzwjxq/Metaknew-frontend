@@ -1,6 +1,6 @@
  <template>
     <div>
-        <div :style="viewBoxStyle">
+        <div :style="viewBoxStyle" class="cardItem">
             <paper-view-box>
 
             </paper-view-box>

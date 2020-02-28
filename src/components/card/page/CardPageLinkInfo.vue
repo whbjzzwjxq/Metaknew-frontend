@@ -26,11 +26,15 @@
         <card-sub-row text="关系标签">
             <template v-slot:content>
                 <card-sub-label-group
-                    @remove-item="removeItem"
-                    @add-item="addItem"
-                    :label-group="labelGroup"
+                    :editable="group.editable"
+                    :key="index"
                     :label-items="labelItems"
-                    small>
+                    :label-list="group.labels"
+                    :name="group.name"
+                    @add-label="addItem(arguments[0], group.prop)"
+                    @remove-label="removeItem"
+                    small
+                    v-for="(group, index) in labelGroup">
 
                 </card-sub-label-group>
             </template>
@@ -51,8 +55,8 @@
         <card-sub-row :text="'关系描述'">
             <template v-slot:content>
                 <field-text
-                    :base-text="info.Text"
-                    :prop-name="'Text'"
+                    :base-text="info.Description"
+                    :prop-name="'Description'"
                     @update-value="updateValue(arguments[0], arguments[1])"
                 >
 
@@ -70,7 +74,7 @@
     import CardSubLabelGroup from "@/components/card/subComp/CardSubLabelGroup.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
     import {GraphSelfPart, LinkInfoPart} from "@/class/graphItem";
-    import {FieldType, labelItems, ResolveType, EditProps} from "@/utils/fieldResolve";
+    import {EditProps, FieldType, labelItems, ResolveType} from "@/utils/fieldResolve";
     import {deepClone} from "@/utils/utils";
     import {LabelGroup} from "@/interface/interfaceInComponent";
 
@@ -115,7 +119,7 @@
             },
             pLabel: {
                 get(): string {
-                    return this.info.PrimaryLabel
+                    return this.baseData.PrimaryLabel
                 },
                 set(value: string): void {
                     this.baseData.changeLabel(value)
@@ -130,14 +134,14 @@
                             type: "JsonField" as FieldType,
                             resolve: "normal" as ResolveType
                         }
-                    }, this.info.CommonProps)
+                    }, this.info.StandardProps)
                 },
                 set(value: EditProps) {
                     this.updateValue('ExtraProps', value.ExtraProps.value);
-                    let commonProps = deepClone(value);
+                    let StandardProps = deepClone(value);
                     // 删除掉ExtraProps
-                    delete commonProps.ExtraProps;
-                    this.updateValue('CommonProps', commonProps)
+                    delete StandardProps.ExtraProps;
+                    this.updateValue('StandardProps', StandardProps)
                 }
             },
             labelGroup: function (): LabelGroup[] {

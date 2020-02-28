@@ -51,7 +51,7 @@
             settingItem: function(): setting[] {
                 return this.settingList.map((setting: AllSettingPart, index: number) => {
                     let name: string;
-                    let type = setting.Setting._type;
+                    let type = setting._type;
                     if (type === 'link') {
                         name = setting.Setting._start.Setting._name + '->' + setting.Setting._end.Setting._name
                     } else {
@@ -60,8 +60,8 @@
                     return {
                         index: index,
                         name,
-                        isMain: setting.Setting.Base.isMain,
-                        label: setting.Setting._label
+                        isMain: setting.Setting.View.isMain,
+                        label: setting._label
                     }
                 })
             },

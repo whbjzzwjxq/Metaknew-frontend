@@ -7,12 +7,24 @@ import styleLabelColor from "@/store/modules/styleLabelColor";
 import dataManager from "@/store/modules/dataManager";
 import styleComponentSize from "@/store/modules/styleComponentSize";
 import userDataManager from "@/store/modules/userDataManager";
-
+import componentState from "@/store/modules/componentState";
+import {doNothing} from "@/utils/utils";
 Vue.use(Vuex);
 
+interface RootState {
+    userIndex: number
+}
 export default new Vuex.Store({
-    state: {},
-    mutations: {},
+    state: {
+        userIndex: 0
+    } as RootState,
+    mutations: {
+        userIndexPlus(state: RootState, payload: number) {
+            payload >= state.userIndex
+                ? state.userIndex = payload
+                : doNothing()
+        }
+    },
     getters: {},
     actions: {},
     modules: {
@@ -23,5 +35,6 @@ export default new Vuex.Store({
         styleLabelColor: styleLabelColor,
         styleComponentSize: styleComponentSize,
         userDataManager: userDataManager,
+        componentState: componentState
     }
 })

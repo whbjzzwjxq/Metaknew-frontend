@@ -59,10 +59,6 @@ export const baseNodeProp: () => PLabelProps = () => ({
         type: "ArrayField",
         resolve: "name"
     },
-    Language: {
-        type: "StringField",
-        resolve: "normal"
-    },
     Labels: {
         type: "ArrayField",
         resolve: "normal"
@@ -71,7 +67,11 @@ export const baseNodeProp: () => PLabelProps = () => ({
         type: "ArrayField",
         resolve: "normal"
     },
-    Text: {
+    Language: {
+        type: "StringField",
+        resolve: "normal"
+    },
+    Translate: {
         type: "TextField",
         resolve: "normal"
     },
@@ -95,15 +95,11 @@ export const baseNodeProp: () => PLabelProps = () => ({
         type: "NumberField",
         resolve: "normal"
     },
-    $IsOpenSource: {
+    IsOpenSource: {
         type: "BooleanField",
         resolve: "normal"
     },
-    $IsCommon: {
-        type: "BooleanField",
-        resolve: "normal"
-    },
-    $IsFree: {
+    IsCommon: {
         type: "BooleanField",
         resolve: "normal"
     },
@@ -114,7 +110,7 @@ export const baseNodeProp: () => PLabelProps = () => ({
     MainPic: {
         type: "FileField",
         resolve: 'normal'
-    },
+    }
 });
 
 // node的属性

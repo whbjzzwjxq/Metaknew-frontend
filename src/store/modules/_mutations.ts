@@ -1,6 +1,6 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {GraphSelfPart, InfoPart, LinkInfoPart, NodeInfoPart, NoteSettingPart} from "@/class/graphItem";
+import {DocumentSelfPart, GraphSelfPart, LinkInfoPart, NodeInfoPart, NoteSettingPart} from "@/class/graphItem";
 import {NoteBook} from "@/store/modules/userDataManager";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
@@ -51,7 +51,7 @@ export const commitRootGraph = (payload: { graph: GraphSelfPart }) => {
     return store.commit('rootGraphChange', payload)
 };
 
-export const commitInfoAdd = (payload: { item: InfoPart, strict?: boolean }) => {
+export const commitInfoAdd = (payload: { item: InfoPartInDataManager, strict?: boolean }) => {
     return store.commit('infoAdd', payload)
 };
 
@@ -59,20 +59,20 @@ export const commitInfoRemove = (payload: { _id: id, _type: string }) => {
     return store.commit('infoRemove', payload)
 };
 
-export const commitInfoChangeId = (payload: { _type: string, idMap: idMap }) => {
+export const commitInfoChangeId = (payload: { _type: string, idMap: IdMap }) => {
     return store.commit('infoChangeId', payload)
 };
 
-export const commitGraphAdd = (payload: { graph: GraphSelfPart, strict?: boolean }) => {
-    return store.commit('graphAdd', payload)
+export const commitDocumentAdd = (payload: { document: GraphSelfPart | DocumentSelfPart, strict?: boolean }) => {
+    return store.commit('documentAdd', payload)
 };
 
-export const commitGraphRemove = (payload: id) => {
-    return store.commit('graphRemove', payload)
+export const commitDocumentRemove = (payload: id) => {
+    return store.commit('documentRemove', payload)
 };
 
-export const commitGraphChangeId = (payload: idMap) => {
-    return store.commit('graphChangeId', payload)
+export const commitDocumentChangeId = (payload: {oldId: id, newId: id}) => {
+    return store.commit('documentChangeId', payload)
 };
 
 export const commitUserConcernAdd = (payload: { _id: id, _type: GraphItemType, userConcern: UserConcern }) => {
@@ -95,6 +95,27 @@ export const commitNoteBookRemove = (payload: { note: NoteBook }) => {
     return store.commit('noteBookRemove', payload)
 };
 
-export const commitNoteInDocAdd = (payload: {note: NoteSettingPart }) => {
+export const commitNoteInDocAdd = (payload: { note: NoteSettingPart }) => {
     return store.commit('noteInDocAdd', payload)
+};
+
+export const commitGlobalIndexPlus = (payload: number) => {
+    return store.commit('userIndexPlus', payload)
+};
+
+export const commitLoginDialogChange = (payload: boolean) => {
+    return store.commit('loginDialogChange', payload)
+};
+
+export const commitLoginDialogOn = (payload: 0 | 1) => {
+    // 0 是登录 1是注册
+    return store.commit('loginDialogTab', payload)
+};
+
+export const commitEditModeChange = (payload: boolean) => {
+    return store.commit('changeEditMode', payload)
+};
+
+export const commitUserConcernChangeId = (payload: {_type: ItemType, idMap: IdMap}) => {
+    return store.commit('userConcernChangeId', payload)
 };

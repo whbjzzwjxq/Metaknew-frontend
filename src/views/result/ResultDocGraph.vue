@@ -16,20 +16,21 @@
                     <div style="width: 80px; height: 100%">
 
                     </div>
-                    <v-col cols="2" class="pa-0 ma-0">
+                    <v-col cols="1" class="pa-0 ma-0">
                         <sub-tool-new-item
                             @add-empty-node="newNode"
                             @add-empty-link="newLink"
                             @add-media="addMedia"
                             @add-empty-note="newNote"
+                            @add-empty-document="addDocument"
                         >
                         </sub-tool-new-item>
                     </v-col>
-                    <v-col cols="2" class="pa-0 ma-0">
+                    <v-col cols="1" class="pa-0 ma-0">
                         <sub-tool-style>
                         </sub-tool-style>
                     </v-col>
-                    <v-col cols="2" class="pa-0 ma-0">
+                    <v-col cols="1" class="pa-0 ma-0">
                         <sub-tool-path
                             :edit-mode="editMode"
                             @path-open-current="bottomSheetOn('path')"
@@ -37,10 +38,15 @@
 
                         </sub-tool-path>
                     </v-col>
-                    <v-col cols="2" class="pa-0 ma-0">
+                    <v-col cols="1" class="pa-0 ma-0">
                         <sub-tool-svg>
 
                         </sub-tool-svg>
+                    </v-col>
+                    <v-col cols="1" class="pa-0 ma-0">
+                        <sub-tool-doc-save>
+
+                        </sub-tool-doc-save>
                     </v-col>
                 </div>
             </template>
@@ -78,6 +84,7 @@
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
     import SubToolSvg from "@/components/toolbar/SubToolSvg.vue";
     import IconGroup from "@/components/IconGroup.vue";
+    import SubToolDocSave from "@/components/toolbar/SubToolDocSave.vue";
     import {getIcon} from "@/utils/icon";
     import {PathSelfPart} from "@/class/path";
     import {getIndex} from "@/utils/utils";
@@ -92,7 +99,8 @@
             SubToolPath,
             IconGroup,
             PathDrawer,
-            SubToolSvg
+            SubToolSvg,
+            SubToolDocSave
         },
         data() {
             return {
@@ -103,7 +111,12 @@
                 path: PathSelfPart.emptyPathSelfPart()
             }
         },
-        props: {},
+        props: {
+            editMode: {
+                type: Boolean,
+                default: false
+            }
+        },
         computed: {
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
@@ -120,9 +133,6 @@
 
             graph: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
-            },
-            editMode: function (): boolean {
-                return this.editPageRegex.test(String(this.$route.name))
             },
             bottomSheetRect: function (): RectByPoint {
                 return this.allComponentsStyle.bottomDynamicBar
@@ -180,10 +190,6 @@
             addDocument: function (_label: 'DocGraph' | 'DocPaper', graph?: GraphSelfPart) {
                 graph || (graph = this.graph);
                 return graph.addSubGraph();
-            },
-
-            saveDocument() {
-
             },
 
             bottomSheetOn: function (key: string) {

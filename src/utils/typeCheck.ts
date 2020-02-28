@@ -1,5 +1,6 @@
 import {
-    GraphItemSettingPart,
+    DocumentSelfPart,
+    GraphItemSettingPart, GraphSelfPart,
     InfoPart,
     LinkSettingPart,
     MediaInfoPart,
@@ -9,6 +10,7 @@ import {
 } from "@/class/graphItem";
 import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
 import {PathNode, PathNodeExist} from "@/class/path";
+import {PaperSelfPart} from "@/class/paperItem";
 
 export function isNodeBackend(item: BackendNodeInfoPart | BackendLinkInfoPart): item is BackendNodeInfoPart {
     let type = (item as BackendNodeInfoPart).Info.type;
@@ -48,6 +50,14 @@ export function isSvgSetting(item: GraphItemSettingPart): item is SvgSettingPart
     return (item as SvgSettingPart)._type === 'svg'
 }
 
+export function isGraphSelfPart(item: DocumentSelfPart): item is GraphSelfPart {
+    return (item as GraphSelfPart).Conf._label === 'DocGraph'
+}
+
+export function isPaperSelfPart(item: DocumentSelfPart): item is PaperSelfPart {
+    return (item as PaperSelfPart).Conf._label === 'DocPaper'
+}
+
 export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is BooleanConcern {
     return (
         prop === "isStar" || prop === "isBad" || prop === "isGood" || prop === "isShared"
@@ -59,7 +69,7 @@ export function isLevelConcern(prop: LevelConcern | BooleanConcern | "Labels"): 
 }
 
 export function isMediaInfoPart(info: InfoPart): info is MediaInfoPart {
-    return info.Info.type === 'media'
+    return info.type === 'media'
 }
 
 export function isPathNodeExist(item: PathNode): item is PathNodeExist {

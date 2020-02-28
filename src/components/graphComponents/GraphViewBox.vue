@@ -14,7 +14,7 @@
             <graph-link
                 v-for="(link, index) in links"
                 v-show="showLink[index]"
-                :key="link.Setting._id"
+                :key="link._id"
                 :link="link"
                 :scale="realScale"
                 :source="getTargetInfo(link.Setting._start)"
@@ -25,9 +25,8 @@
             <graph-node
                 v-for="(node, index) in nodes"
                 v-show="showNode[index]"
-                :key="node.Setting._id"
-                :setting="node.Setting"
-                :state="node.State"
+                :key="node._id"
+                :node="node"
                 :size="impScaleRadius[index]"
                 :scale="realScale"
                 :point="nodeLocation[index].positiveRect()"
@@ -89,7 +88,7 @@
 
         <graph-media
             v-for="(media, index) in medias"
-            :key="media.Setting._id"
+            :key="media._id"
             :setting="media"
             :container="mediaLocation[index]"
             :scale="realScale"
@@ -131,6 +130,21 @@
 
         </graph-note>
 
+        <div :style="topNavigationStyle" class="unselected">
+            <v-breadcrumbs
+                :items="navigationList"
+                :divider="'->'">
+                <template v-slot:item="{item}">
+                    <v-breadcrumbs-item
+                        :disabled="item.disabled"
+                        :style="{'color': item.color}"
+                        @click="gotoDocument(item.document)"
+                        large>
+                        {{ item.text }}
+                    </v-breadcrumbs-item>
+                </template>
+            </v-breadcrumbs>
+        </div>
         <div :style="viewBoxToolStyle" class="d-flex flex-row">
             <graph-label-selector
                 v-if="renderLabelSelector"
@@ -160,6 +174,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
+        DocumentSelfPart,
         GraphConf,
         GraphItemSettingPart,
         GraphSelfPart,
@@ -181,11 +196,23 @@
     import GraphSvg from "@/components/graphComponents/GraphSvg.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting, isVisNodeSetting} from "@/utils/typeCheck";
-    import {commitChangeSubTab, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {
+        commitChangeSubTab,
+        commitGraphChange,
+        commitItemChange,
+        commitSnackbarOn
+    } from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
+
+    interface NavigationItem {
+        disabled: boolean;
+        document: DocumentSelfPart;
+        text: string;
+        color: string
+    }
 
     export default Vue.extend({
         name: "GraphViewBox",
@@ -241,7 +268,6 @@
                     "node": {},
                     "media": {},
                     "link": {},
-                    "note": {},
                     "document": {},
                 } as LabelViewDict,
 
@@ -331,8 +357,18 @@
                 )
             },
             // 所有的孩子Document
-            childDocumentList: function () {
-                return this.graph.getChildDocument()
+            childDocumentList: function (): GraphSelfPart[] {
+                let docList = this.$store.getters.documentList as GraphSelfPart[];
+                return docList.filter(doc => doc.root && doc.root._id === this.graph._id)
+            },
+            navigationList: function (): NavigationItem[] {
+                let result: DocumentSelfPart[] = (this.graph.rootList).concat([this.graph]);
+                return result.map(doc => ({
+                    disabled: doc._id === this.graph._id,
+                    document: doc,
+                    text: this.dataManager.nodeManager[doc._id].Info.Name,
+                    color: doc._id === this.graph._id ? 'grey' : 'royalblue'
+                }) as NavigationItem)
             },
             // 未被删除的Graph
             activeGraphList: function (): GraphSelfPart[] {
@@ -384,7 +420,7 @@
 
                 let result = [root];
                 let searchGraph = function (graphMeta: GraphMetaData) {
-                    let graph = graphMeta.self.Graph;
+                    let graph = graphMeta.self.Content;
                     graph.nodes.map(node => {
                         let {_type, _id} = node.Setting;
                         let index = vm.activeGraphIdList.indexOf(_id);
@@ -417,11 +453,11 @@
 
             // 包含所有的Nodes
             nodes: function (): NodeSettingPart[] {
-                let result = this.graph.Graph.nodes
-                    .filter(node => node.Setting._id === this.graph._id) as NodeSettingPart[];
+                let result = this.graph.Content.nodes
+                    .filter(node => node._id === this.graph._id) as NodeSettingPart[];
                 // root Graph的节点显示
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Graph.nodes.filter(node => node.Setting._id !== graph._id))
+                    result = result.concat(graph.Content.nodes.filter(node => node._id !== graph._id))
                     // Graph底下的节点由父亲Graph中的Nodes代替
                 });
                 return result
@@ -429,19 +465,20 @@
 
             // nodesIdList
             nodeIdList: function (): id[] {
-                return this.nodes.map(node => node._id)
+                let result = this.nodes.map(node => node._id);
+                return result.concat(this.medias.map(media => media._id));
             },
 
             nodeInfoList: function (): NodeInfoPart[] {
-                return this.nodes.map(node => this.dataManager.nodeManager[node.Setting._id])
+                return this.nodes.map(node => this.dataManager.nodeManager[node._id])
             },
 
             links: function (): LinkSettingPart[] {
                 let result: LinkSettingPart[] = [];
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Graph.links.filter(link => {
-                        return this.nodeIdList.includes(link.Setting._start.Setting._id) &&
-                            this.nodeIdList.includes(link.Setting._end.Setting._id)
+                    result = result.concat(graph.Content.links.filter(link => {
+                        return this.nodeIdList.includes(link.Setting._start._id) &&
+                            this.nodeIdList.includes(link.Setting._end._id)
                     }))
                 });
                 return result
@@ -449,11 +486,11 @@
 
             // 只有自身的medias
             medias: function (): MediaSettingPart[] {
-                return this.graph.Graph.medias
+                return this.graph.Content.medias
             },
 
             mediaIdList: function (): id[] {
-                return this.medias.map(media => media.Setting._id)
+                return this.medias.map(media => media._id)
             },
 
             notes: function (): NoteSettingPart[] {
@@ -462,29 +499,30 @@
 
             // svg
             svgs: function (): SvgSettingPart[] {
-                return this.graph.Graph.svgs
+                return this.graph.Content.svgs
             },
 
             selectedItem: function (): GraphSubItemSettingPart[] {
                 return this.graph.allItems().filter(item => item.State.isSelected)
             },
 
-            labelDict: function () {
+            labelDict: function (): Record<GraphItemType, string[]> {
                 let getLabels = (list: AllSettingPart[]) => {
                     let result: string[] = [];
                     list.map((item: AllSettingPart) => {
-                        result.indexOf(item.Setting._label) === -1 &&
-                        result.push(item.Setting._label)
+                        result.indexOf(item._label) === -1 &&
+                        result.push(item._label)
                     });
                     return result
                 };
-                let labelDict = {
-                    'node': getLabels(this.nodes),
+                let docLabel = ['DocGraph', 'DocPaper'];
+                let normalNodes = this.nodes.filter(item => !docLabel.includes(item._label));
+                return {
+                    'node': getLabels(normalNodes),
                     'link': getLabels(this.links),
                     'media': getLabels(this.medias),
-                    'document': ['DocGraph', 'DocPaper']
-                } as Record<GraphItemType, string[]>;
-                return labelDict
+                    'document': docLabel
+                } as Record<GraphItemType, string[]>
             },
 
             selectedItems: function (): GraphItemSettingPart[] {
@@ -555,14 +593,14 @@
                     let y1 = this.getTargetInfo(link.Setting._start).y;
                     let x2 = this.getTargetInfo(link.Setting._end).x;
                     let y2 = this.getTargetInfo(link.Setting._end).y;
-                    switch (link.Setting.Base.type) {
+                    switch (link.Setting.View.viewType) {
                         case "curve":
-                            link.Setting.Base.direct === 'top'
+                            link.Setting.View.direct === 'top'
                                 ? result = {"x": (x1 + x2) / 2, "y": y2}
                                 : result = {"x": (x1 + x2) / 2, "y": y1};
                             break;
                         case "polyline":
-                            link.Setting.Base.direct === 'top'
+                            link.Setting.View.direct === 'top'
                                 ? result = {"x": (x1 + x2) / 2, "y": y2}
                                 : result = {"x": (x1 + x2) / 2, "y": y1};
                             break;
@@ -623,7 +661,7 @@
             showLink: function (): boolean[] {
                 return this.links.map(link =>
                     link.parent.Conf.State.isExplode && // 父组件要炸开
-                    this.labelViewDict.link[link.Setting._label] &&
+                    this.labelViewDict.link[link._label] &&
                     !link.State.isDeleted &&
                     this.getTargetInfo(link.Setting._start).show &&
                     this.getTargetInfo(link.Setting._end).show
@@ -632,7 +670,7 @@
 
             showMedia: function (): boolean[] {
                 return this.medias.map(media =>
-                    this.labelViewDict.media[media.Setting._label] &&
+                    this.labelViewDict.media[media._label] &&
                     !media.State.isDeleted &&
                     media.Setting.Show.showAll
                 )
@@ -660,6 +698,16 @@
                     position: 'absolute',
                     left: this.containerRect.width * 0.85 + 'px',
                     top: this.containerRect.height * 0.65 + 'px',
+                }
+            },
+
+            topNavigationStyle: function (): CSSProp {
+                return {
+                    position: 'absolute',
+                    left: '0px',
+                    top: '0px',
+                    width: '100%',
+                    height: '60px'
                 }
             },
 
@@ -777,9 +825,9 @@
                     let item = itemList[0];
                     let info;
                     isLinkSetting(item)
-                        ? info = this.dataManager.linkManager[item.Setting._id]
+                        ? info = this.dataManager.linkManager[item._id]
                         : isNodeSetting(item)
-                        ? info = this.dataManager.nodeManager[item.Setting._id]
+                        ? info = this.dataManager.nodeManager[item._id]
                         : info = undefined;
                     if (info) {
                         commitItemChange(info);
@@ -790,7 +838,7 @@
             },
 
             selectLabel(_type: GraphItemType, _label: string) {
-                let result = this.nodes.filter(node => node.Setting._label === _label);
+                let result = this.nodes.filter(node => node._label === _label);
                 this.selectItem(result)
             },
 
@@ -848,8 +896,8 @@
                     );
                     nodes.map(node => {
                             //如果选中了Document 对应的Node
-                            let index = this.activeGraphIdList.indexOf(node.Setting._id);
-                            if (node.Setting._type === 'document' && index > -1) {
+                            let index = this.activeGraphIdList.indexOf(node._id);
+                            if (node._type === 'document' && index > -1) {
                                 this.activeGraphList[index].selectAll('isSelected', true)
                             }
                         }
@@ -894,8 +942,8 @@
                 let result;
                 item
                     ? isMediaSetting(item)
-                    ? result = this.mediaSettingList[this.mediaIdList.indexOf(item.Setting._id)]
-                    : result = this.nodeSettingList[this.nodeIdList.indexOf(item.Setting._id)]
+                    ? result = this.mediaSettingList[this.mediaIdList.indexOf(item._id)]
+                    : result = this.nodeSettingList[this.nodeIdList.indexOf(item._id)]
                     : result = {x: 0, y: 0, show: true};
                 return result
             },
@@ -955,18 +1003,22 @@
 
             updateSize: function (start: PointMixed, end: PointMixed, setting: Setting) {
                 // 视觉上的更新尺寸start, end
-                let scale = this.scale;
+                let scale = this.realScale;
                 // 更新起始点
                 setting.Base.x += start.x / (this.containerRect.width * scale);
                 setting.Base.y += start.y / (this.containerRect.height * scale);
                 //更新长宽
                 let width = setting.Base.size;
                 let height = setting.Base.scaleX * width;
-                let delta = getPoint(end).decrease(start).divide(this.scale);
+                let delta = getPoint(end).decrease(start).divide(scale);
                 width += delta.x;
                 height += delta.y;
                 setting.Base.scaleX = height / width;
                 setting.Base.size = width;
+            },
+
+            gotoDocument(graph: GraphSelfPart) {
+                commitGraphChange({graph})
             }
         },
 

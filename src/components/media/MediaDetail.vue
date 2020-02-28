@@ -18,13 +18,13 @@
                 </v-toolbar>
 
                 <v-card>
-                    <div v-if="media.Info.PrimaryLabel === 'image'"
+                    <div v-if="media.PrimaryLabel === 'image'"
                          style="overflow-y:scroll;overflow-x:hidden;text-align:center">
                         <img :src=realSrc id="image" @click="bigPic" alt="图片描述">
                     </div>
                 </v-card>
 
-                <div v-if="media.Info.PrimaryLabel === 'pdf'"
+                <div v-if="media.PrimaryLabel === 'pdf'"
                      :style="{height:scrollHeight}"
                      style="overflow-y:scroll;overflow-x:hidden;text-align:center"
                 >
@@ -37,7 +37,7 @@
                     </pdf>
                 </div>
 
-                <div v-if="media.Info.PrimaryLabel === 'markdown'"
+                <div v-if="media.PrimaryLabel === 'markdown'"
                      :style="{height:scrollHeight}">
                     <mavon-editor
                         ref="md"
@@ -167,7 +167,7 @@
             },
             //markdown编辑器模式
             prop() {
-                if (this.media.Info.PrimaryLabel === 'markdown') {
+                if (this.media.PrimaryLabel === 'markdown') {
                     //阅读模式
                     if (this.dialogEdit === false) {
                         return {
@@ -194,14 +194,14 @@
         methods: {
             init() {
                 let realSrc = getSrc(this.media.Ctrl.FileName);
-                if (this.media.Info.PrimaryLabel === 'pdf') {
+                if (this.media.PrimaryLabel === 'pdf') {
                     this.pdfSrc = pdf.createLoadingTask(realSrc);
                     this.pdfSrc.then(pdf => {
                         this.numPages = pdf.numPages
                     }).catch(() => {
                     })
                 }
-                if (this.media.Info.PrimaryLabel === 'markdown') {
+                if (this.media.PrimaryLabel === 'markdown') {
                     axios.get(realSrc).then(response => {
                         this.mdText = response.data
                     })

@@ -84,7 +84,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ##### 基础数据类
     1.
     2.Node, Link, Media分成Setting, Info两个大部分， 其中Setting可能有id相同的多个实例, Info则统一存在vuex中
-    3.Graph 分成Graph, Setting, Info三大部分， Graph.nodes下有一个节点Setting实例就是Graph本身
+    3.Content 分成Graph, Setting, Info三大部分， Graph.nodes下有一个节点Setting实例就是Graph本身
     
 ##### tips
 See [Prop类型推测](https://stackoverflow.com/questions/54391162/typescript-wont-recognize-prop-values-on-vue-component)

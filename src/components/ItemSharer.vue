@@ -1,17 +1,13 @@
 <template>
     <div>
-        <v-row style="width: 360px" class="ma-0 pl-8">
-            <v-col v-for="icon in iconList" :key="icon.name" cols="2" class="pa-1" style="align-content: normal">
+        <v-row style="width: 210px" class="ma-0 ml-n1">
+            <v-col v-for="icon in iconList" :key="icon.name" cols="3" class="pa-0 pr-2" style="align-content: normal">
                 <v-btn text
+                       small
                        @click="icon._func"
                        :color="icon.color ? icon.color : 'grey'">
                     <v-icon left class="pr-1"> {{ icon.name }}</v-icon>
                     <p> {{ icon.num }} </p>
-                </v-btn>
-            </v-col>
-            <v-col cols="3">
-                <v-btn text>
-                    Learn+
                 </v-btn>
             </v-col>
         </v-row>
@@ -20,10 +16,10 @@
 
 <script lang="ts">
     import Vue from 'vue'
+    import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
     import {LinkInfoPart, MediaInfoPart, NodeInfoPart, FragmentInfoPart} from "@/class/graphItem";
     import {dispatchFragmentAdd} from "@/store/modules/_dispatch";
-    import IconGroup from "@/components/IconGroup.vue";
     import {getIndex} from "@/utils/utils";
 
     export default Vue.extend({
@@ -35,7 +31,7 @@
             return {}
         },
         props: {
-            itemInfo: {
+            baseData: {
                 type: Object as () => NodeInfoPart | MediaInfoPart | LinkInfoPart,
                 required: true
             }
@@ -46,7 +42,7 @@
             },
 
             userConcern: function (): UserConcern {
-                return this.userDataManager.userConcernDict[this.itemInfo.type][this.itemInfo._id]
+                return this.userDataManager.userConcernDict[this.baseData.type][this.baseData._id]
             },
 
             iconList: function (): IconItem[] {
@@ -80,7 +76,7 @@
             },
 
             ctrl: function (): PublicCtrl {
-                return this.itemInfo.Ctrl
+                return this.baseData.Ctrl
             },
 
             fragmentSourceIdList: function (): id[] {
@@ -112,13 +108,13 @@
 
             addFragment: function (method: string) {
                 let _id = getIndex();
-                if (!this.fragmentSourceIdList.includes(this.itemInfo._id)) {
-                    if (this.itemInfo.isRemote) {
-                        let fragment = FragmentInfoPart.fragmentFromItem(this.itemInfo, _id, method);
+                if (!this.fragmentSourceIdList.includes(this.baseData._id)) {
+                    if (this.baseData.State.isRemote) {
+                        let fragment = FragmentInfoPart.fragmentFromItem(this.baseData, _id, method);
                         dispatchFragmentAdd(fragment)
                     } else {
                         // 非远端不生成 测试功能暂时使用
-                        let fragment = FragmentInfoPart.fragmentFromItem(this.itemInfo, _id, method);
+                        let fragment = FragmentInfoPart.fragmentFromItem(this.baseData, _id, method);
                         dispatchFragmentAdd(fragment)
                     }
                 } else {

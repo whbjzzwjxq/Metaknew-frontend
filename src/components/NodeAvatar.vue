@@ -1,9 +1,9 @@
 <template>
-    <v-card class="empty-avatar" flat tile>
+    <v-card class="empty-avatar" flat tile :width="avatarSize + 4" :height="avatarSize + 4">
         <v-img
             :src="realSrc"
-            width="120px"
-            height="120px"
+            :width="avatarSize + 'px'"
+            :height="avatarSize + 'px'"
             contain>
             <template v-if="!sourceUrl">
                 <div style="height: 40px"></div>
@@ -49,8 +49,8 @@
                                         :img="currentImage"
                                         :max-img-size="4000"
                                         :enlarge="4"
-                                        auto-crop-width="120"
-                                        auto-crop-height="120"
+                                        :auto-crop-width="avatarSize"
+                                        :auto-crop-height="avatarSize"
                                         auto-crop
                                         fixed-box
                                     >
@@ -101,7 +101,8 @@
                 },
                 guid: guid,
                 deleteIcon: getIcon('i-edit', 'delete'),
-                uploadIcon: getIcon('i-add-media-method', 'upload')
+                uploadIcon: getIcon('i-add-media-method', 'upload'),
+                avatarSize: 128
             }
         },
         props: {
@@ -146,10 +147,11 @@
                 }).then(() => {
                     alert('Upload Image Success!');
                     this.$set(file, "status", "success");
-                    this.$emit('new-main-image', URL.createObjectURL(file))
+                    this.$emit('new-main-image', storeName)
                 }).catch(() => {
                         alert('Something Success!');
                         this.$set(file, "status", "error");
+                        this.$emit('new-main-image', URL.createObjectURL(file))
                     }
                 );
             },
@@ -183,8 +185,6 @@
         border-width: 2px;
         border-style: dashed;
         border-color: lightslategrey;
-        height: 124px;
-        width: 124px;
     }
 </style>
 

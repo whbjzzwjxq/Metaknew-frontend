@@ -12,16 +12,16 @@
                 </div>
                 <div :style="toolbarRightStyle">
                     <div class="pt-2">
-                    <v-btn text href="/index">Home</v-btn>
-                    <v-btn text href="/index/about">About</v-btn>
-                    <template v-if="isLogin">
-                        <v-btn text href="/index/userCenter">{{userName}}</v-btn>
-                        <v-btn text @click="logout">Sign Out</v-btn>
-                    </template>
-                    <template v-else>
-                        <v-btn text href="/index/login">Sign in</v-btn>
-                        <v-btn text href="/index/register">Sign up</v-btn>
-                    </template>
+                        <v-btn text href="/index">Home</v-btn>
+                        <v-btn text href="/index/about">About</v-btn>
+                        <template v-if="isLogin">
+                            <v-btn text href="/index/user-center">{{userName}}</v-btn>
+                            <v-btn text @click="logout">Sign Out</v-btn>
+                        </template>
+                        <template v-else>
+                            <v-btn text @click="logIn">Sign in</v-btn>
+                            <v-btn text @click="signUp">Sign up</v-btn>
+                        </template>
                     </div>
                 </div>
             </v-card>
@@ -35,6 +35,7 @@
             </v-container>
         </v-content>
         <global-snack-bar></global-snack-bar>
+        <global-login-register></global-login-register>
     </v-app>
 </template>
 
@@ -42,13 +43,19 @@
     import Vue from 'vue'
     import GlobalSnackBar from '@/components/global/GlobalSnackBar.vue';
     import SearchBar from '@/components/SearchBar.vue';
-    import {delCookie, getCookie} from "@/utils/utils"
-    import {commitLoginOut, commitScreenResize, commitUserLogin} from '@/store/modules/_mutations'
+    import GlobalLoginRegister from "@/components/global/GlobalLoginRegister.vue";
+    import {getCookie, setLoginIn, setLoginOut} from "@/utils/utils"
+    import {commitLoginDialogOn, commitScreenResize} from '@/store/modules/_mutations'
     import {ToolBar} from "@/store/modules/styleComponentSize";
+    import {loginCookie} from "@/api/user/loginApi";
 
     export default Vue.extend({
         name: "App",
-        components: {GlobalSnackBar, SearchBar},
+        components: {
+            GlobalSnackBar,
+            SearchBar,
+            GlobalLoginRegister
+        },
         data() {
             return {
                 buttonNum: 5,
@@ -60,8 +67,11 @@
             isLogin: function (): boolean {
                 return this.$store.state.userBaseModule.isLogin
             },
-            userName: function (): boolean {
-                return this.$store.state.userBaseModule.userInfo.userName
+            userInfo: function (): UserLoginResponse {
+                return this.$store.state.userBaseModule.userInfo
+            },
+            userName: function (): string {
+                return this.userInfo.userName
             },
             toolBarSearch: function (): boolean {
                 return this.$route.name !== 'home'
@@ -72,7 +82,7 @@
             toolBar: function (): ToolBar {
                 return this.allComponentSize.toolBar
             },
-            toolBarStyle: function(): CSSProp {
+            toolBarStyle: function (): CSSProp {
                 return {
                     width: '100%',
                     height: this.toolBar.height + 'px',
@@ -82,19 +92,19 @@
                     zIndex: 2,
                 }
             },
-            spaceStyle: function(): CSSProp {
+            spaceStyle: function (): CSSProp {
                 return {
                     height: this.toolBar.height + 'px',
                     width: '100%'
                 }
             },
-            contentStyle: function(): CSSProp {
+            contentStyle: function (): CSSProp {
                 return {
                     width: "100%",
                     height: this.allComponentSize.screenY - this.toolBar.height + "px"
                 }
             },
-            toolbarLeftStyle: function(): CSSProp {
+            toolbarLeftStyle: function (): CSSProp {
                 return {
                     height: this.toolBar.height + 'px',
                     width: this.allComponentSize.leftCard.width + 'px',
@@ -106,7 +116,7 @@
                 }
             },
 
-            toolbarRightStyle: function(): CSSProp {
+            toolbarRightStyle: function (): CSSProp {
                 return {
                     height: this.toolBar.height + 'px',
                     width: this.rightWidth + 'px',
@@ -116,7 +126,7 @@
                 }
             },
 
-            toolbarMidStyle: function(): CSSProp {
+            toolbarMidStyle: function (): CSSProp {
                 return {
                     height: this.toolBar.height + 'px',
                     width: (this.allComponentSize.screenX - this.rightWidth - this.allComponentSize.leftCard.width) + 'px',
@@ -128,9 +138,13 @@
         },
         methods: {
             logout() {
-                delCookie("user_name");
-                delCookie("token");
-                commitLoginOut();
+                setLoginOut()
+            },
+            logIn() {
+                commitLoginDialogOn(0)
+            },
+            signUp() {
+                commitLoginDialogOn(1)
             },
             screenResize() {
                 commitScreenResize()
@@ -138,18 +152,7 @@
         },
         watch: {},
         created(): void {
-            let userName = getCookie("user_name");
-            let userId = parseInt(getCookie('user_id'));
-            let token = getCookie('token');
-            let fileToken = {
-                'AccessKeySecret': '',
-                'AccessKeyId': '',
-                'Expiration': 19000000,
-                'SecurityToken': ''
-            } as FileToken;
-            userName
-                ? commitUserLogin({userName, userId, token, fileToken})
-                : commitLoginOut();
+            getCookie('token') && loginCookie().then(setLoginIn).catch()
         },
         mounted(): void {
             this.screenResize()

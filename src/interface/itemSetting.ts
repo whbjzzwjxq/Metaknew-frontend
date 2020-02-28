@@ -60,7 +60,7 @@ const size = () => {
     return {
         size: {
             type: 'Number',
-            default: 18,
+            default: 0,
             range: [6, 64],
             tips: '不能为0',
             explain: '可视化尺寸'
@@ -199,8 +199,8 @@ const borderDashArray = () => {
     return {
         dashArray: {
             type: 'String',
-            default: '2, 4',
-            range: '',
+            default: '0, 0',
+            range: ['0, 0', '2, 2', '2, 4', '4, 4', '8, 4', '12, 4'],
             tips: '',
             explain: '描边形状'
         }
@@ -499,15 +499,45 @@ const documentSetting: SettingAll = {
     }
 };
 
-const mediaSetting: SettingAll = {
-    Base: BaseSettingGroup(),
-    Border: BorderSettingGroup(),
-    Show: mergeSetting(showAll(), showBorder(), showAppendText()),
-    Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup())
+const mediaSetting = () => {
+    let result = {
+        Base: BaseSettingGroup(),
+        Border: BorderSettingGroup(),
+        Show: mergeSetting(showAll(), showBorder(), showAppendText()),
+        Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup())
+    }
+    let replace = {
+        Base: {
+            size: {
+                default: 300,
+                range: [50, 600]
+            },
+            scaleX: {
+                default: 0.4
+            }
+        }
+    }
+    mergeObject(result, replace);
+    return result as SettingAll
 };
 
-const noteSetting: SettingAll = {
-    Base: BaseSettingGroup()
+const noteSetting = () => {
+    let result = {
+        Base: BaseSettingGroup()
+    };
+    let replace = {
+        Base: {
+            size: {
+                default: 300,
+                range: [100, 600]
+            },
+            scaleX: {
+                default: 1.5,
+            }
+        }
+    };
+    mergeObject(result, replace);
+    return result as SettingAll
 };
 
 const svgSetting = () => {
@@ -555,13 +585,13 @@ const fragmentSetting = {};
 
 const pathSetting = {};
 
-export const typeSetting: Record<SourceType, SettingAll> = {
+export const typeSetting: Record<AllType, SettingAll> = {
     'node': nodeSetting(),
     'link': linkSetting,
     'document': documentSetting,
-    'media': mediaSetting,
+    'media': mediaSetting(),
     'svg': svgSetting(),
-    'note': noteSetting,
+    'note': noteSetting(),
     'fragment': fragmentSetting,
     'path': pathSetting
 };
@@ -580,7 +610,7 @@ declare global {
 
     interface Setting {
         _id: id;
-        _type: SourceType;
+        _type: AllType;
         _label: string;
 
         [propName: string]: any;
@@ -651,7 +681,7 @@ declare global {
             direct: 'top' | 'bottom';
             startLoc: LinkPointLocation;
             endLoc: LinkPointLocation;
-            isDash: boolean;
+            dashArray: string;
             isMain: boolean;
         };
         Arrow: {
@@ -765,10 +795,6 @@ declare global {
         _text: string
     }
 
-    interface PaperSetting extends Setting {
-
-    }
-
     type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
     type AllStateProp = 'isLock' | 'isDark' | 'isLoading' | 'isChanged' | 'isExplode' | 'isSavedIn5min' | GraphStateProp
 
@@ -806,9 +832,5 @@ declare global {
         isChanged: boolean; // 是否变化
         isSavedIn5min: boolean; // 5分钟内是否保存
         isExplode: boolean; // 是否爆炸
-    }
-
-    interface PaperState extends BaseState {
-
     }
 }

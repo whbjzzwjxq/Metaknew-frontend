@@ -23,21 +23,26 @@
                         >
                         </icon-group>
                     </template>
-                    </media-viewer>
+                </media-viewer>
             </v-card>
 
-            <v-card v-show="detailOn" class="cardItem" :height='getHeight' :width="width" >
-                <v-card-text :width="width" >
+            <v-card v-show="detailOn" class="cardItem" :height='getHeight' :width="width">
+                <v-card-text :width="width">
                     <card-sub-label-group
-                        @remove-item="removeItem"
-                        @add-item="addItem"
-                        :label-group="labelGroup"
+                        :editable="group.editable"
+                        :key="index"
                         :label-items="labelItems"
+                        :label-list="group.labels"
+                        :name="group.name"
+                        @add-label="addItem(arguments[0], group.prop)"
+                        @remove-label="removeItem"
                         small
-                    ></card-sub-label-group>
+                        v-for="(group, index) in labelGroup">
+
+                    </card-sub-label-group>
                     <field-text
-                        prop-name="Text"
-                        :base-text="info.Text"
+                        prop-name="Description"
+                        :base-text="info.Description"
                         :editable="editMode"
                         @update-value="updateValue"
                     ></field-text>
@@ -178,7 +183,7 @@
             },
 
             userDataManager: function (): UserDataManagerState {
-               return this.$store.state.userDataManager
+                return this.$store.state.userDataManager
             },
 
             userConcern: function (): UserConcern {
@@ -224,7 +229,7 @@
             },
 
             title: function (): string {
-                return this.info.PrimaryLabel + " --> " + this.info.Name;
+                return this.media.PrimaryLabel + " --> " + this.info.Name;
             },
             buttonGroupStyle: function (): CSSProp {
                 return {
@@ -239,7 +244,7 @@
             },
             //能够删除 在画布中删除是从画布中删除 在节点中删除是从节点删除
 
-            showDeleteIcon: function ():boolean {
+            showDeleteIcon: function (): boolean {
                 return this.inViewBox
                     ? this.nodeIsSelf
                     : this.dataManager.currentGraph.Conf.State.isSelf;
@@ -255,12 +260,12 @@
                 let sizeIconGroup = iconMap["i-resize"];
                 let deleteAble = vm.isSelf || vm.showDeleteIcon;
                 return [
-                    {name: sizeIconGroup.plus, _func: vm.enlarge, render: vm.inViewBox},
-                    {name: sizeIconGroup.minus, _func: vm.narrow, render: vm.inViewBox},
-                    {name: sizeIconGroup.five, _func: vm.twentyPercent, render: vm.inViewBox},
-                    {name: sizeIconGroup.three, _func: vm.oneThird, render: vm.inViewBox},
-                    {name: sizeIconGroup.two, _func: vm.half, render: vm.inViewBox},
-                    {name: sizeIconGroup.double, _func: vm.double, render: vm.inViewBox},
+                    {name: sizeIconGroup.plus, _func: vm.enlarge, render: vm.inViewBox, toolTip: '增大尺寸'},
+                    {name: sizeIconGroup.minus, _func: vm.narrow, render: vm.inViewBox, toolTip: '减小尺寸'},
+                    {name: sizeIconGroup.five, _func: vm.twentyPercent, render: vm.inViewBox, toolTip: '缩放到五分之一'},
+                    {name: sizeIconGroup.three, _func: vm.oneThird, render: vm.inViewBox, toolTip: '缩放到三分之一'},
+                    {name: sizeIconGroup.two, _func: vm.half, render: vm.inViewBox, toolTip: '缩放到二分之一'},
+                    {name: sizeIconGroup.double, _func: vm.double, render: vm.inViewBox, toolTip: '放大到两倍'},
                     {name: getIcon('i-item', 'link'), _func: vm.addLink, render: vm.inViewBox},
                     {name: "", _func: vm.doNothing},
                     {name: "mdi-magnify", _func: vm.dialogDetailWatch},
@@ -275,9 +280,9 @@
                 return this.height / 2
             },
             viewer(): Vue & { validate: () => boolean } {
- return this.$refs.viewer as Vue
-                & { validate: () => boolean }
-}
+                return this.$refs.viewer as Vue
+                    & { validate: () => boolean }
+            }
         },
         methods: {
             updateValue: function (prop: string, value: any) {
@@ -355,7 +360,13 @@
 
             addLink() {
                 this.$emit('add-link')
-            }
+            },
+            addItem(value: string[], prop: string) {
+                prop === 'Info'
+                    ? this.media.updateValue('Labels', value)
+                    : this.$set(this.userConcern, 'Labels', value)
+            },
+
         },
         watch: {},
         record: {
@@ -367,8 +378,6 @@
 </script>
 
 <style scoped>
-    @import '../../../style/css/unselected.css';
-    @import '../../../style/css/card.css';
 
 </style>
 /**

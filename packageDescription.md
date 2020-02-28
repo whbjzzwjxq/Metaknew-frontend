@@ -11,7 +11,7 @@
     "jest": "^24.9.0", // 测试
     "mime": "^2.4.4", // 文件后缀分析
     "node": "^13.5.0", 
-    "register-service-worker": "^1.6.2",
+    "registerApi-service-worker": "^1.6.2",
     "roboto-fontface": "*", // roboto 字体
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.2",

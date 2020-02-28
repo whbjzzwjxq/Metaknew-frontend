@@ -2,7 +2,7 @@
     <div v-if="!loading">
         <card-sub-row :text="nameTrans[type] + '标题'">
             <template v-slot:content>
-                <v-col cols="4" class="pa-0 ma-0 pb-1">
+                <v-col cols="5" class="pa-0 ma-0">
                     <node-avatar
                         :source-url="mainImage"
                         :imageList="imageList"
@@ -11,32 +11,49 @@
 
                     </node-avatar>
                 </v-col>
-                <v-col cols="8" class="pt-1 ma-0 pl-4">
-                    <v-row>
-                        <v-text-field
-                            v-model="name"
-                            class="pr-2 font-weight-bold"
-                            :style="simplifySetting.titleSize"
-                            :disabled="!editMode"
-                            label="Name"
-                            dense>
+                <v-col cols="7" class="pa-0 ma-0 pt-2">
+                    <v-text-field
+                        v-model="name"
+                        class="pr-2 font-weight-bold"
+                        :style="simplifySetting.titleSize"
+                        :disabled="!editMode"
+                        label="Name"
+                        dense>
 
-                        </v-text-field>
-                    </v-row>
-                    <v-row>
-                        <v-autocomplete
-                            :disabled="!typeSelectable"
-                            :items="nodeLabels"
-                            :value="info.PrimaryLabel"
-                            class="pr-2 font-weight-bold"
-                            dense
-                            label="PrimaryLabel"
-                            style="font-size: 18px;"
-                            v-model="label">
+                    </v-text-field>
+                    <v-autocomplete
+                        :disabled="!typeSelectable"
+                        :items="nodeLabels"
+                        :value="info.PrimaryLabel"
+                        class="pr-2 font-weight-bold"
+                        dense
+                        label="PrimaryLabel"
+                        style="font-size: 18px;"
+                        v-model="label">
 
-                        </v-autocomplete>
-                    </v-row>
+                    </v-autocomplete>
+                    <item-sharer
+                        :base-data="baseData"
+                    >
+
+                    </item-sharer>
                 </v-col>
+            </template>
+        </card-sub-row>
+
+        <card-sub-row :text="nameTrans[type] + '的别名与翻译'">
+            <template v-slot:content>
+                <v-text-field
+                    :disabled="!editMode"
+                    class="pt-2 font-weight-bold"
+                    dense
+                    label="Alias"
+                    placeholder="使用;分割多个别名"
+                    style="font-size: 16px;"
+                    v-if="simplifySetting.renderAlias"
+                    v-model="alias">
+
+                </v-text-field>
             </template>
         </card-sub-row>
 
@@ -50,6 +67,7 @@
                         :small="simplifySetting.chipSize === 'small'"
                         :x-small="simplifySetting.chipSize === 'xSmall'"
                         :index="index"
+                        :closeable="baseData.isSelf"
                         @close-chip="removeTopic">
 
                     </global-chip>
@@ -76,30 +94,18 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '的别名'">
-            <template v-slot:content>
-                <v-text-field
-                    :disabled="!editMode"
-                    class="pt-2 font-weight-bold"
-                    dense
-                    label="Alias"
-                    placeholder="使用;分割多个别名"
-                    style="font-size: 16px;"
-                    v-if="simplifySetting.renderAlias"
-                    v-model="alias">
-
-                </v-text-field>
-            </template>
-        </card-sub-row>
-
         <card-sub-row :text="nameTrans[type] + '有关的标签'">
             <template v-slot:content>
                 <card-sub-label-group
-                    @remove-item="removeItem"
-                    @add-item="addItem"
-                    :label-group="labelGroup"
+                    :editable="group.editable"
+                    :key="index"
                     :label-items="labelItems"
-                    small>
+                    :label-list="group.labels"
+                    :name="group.name"
+                    @add-label="addItem(arguments[0], group.prop)"
+                    @remove-label="removeItem"
+                    small
+                    v-for="(group, index) in labelGroup">
 
                 </card-sub-label-group>
             </template>
@@ -138,8 +144,8 @@
             <template v-slot:content>
                 <field-text
                     class="pa-1"
-                    :base-text="info.Text"
-                    :prop-name="'Text'"
+                    :base-text="info.Description"
+                    :prop-name="'Description'"
                     :editable="editMode"
                     @update-value="updateValue"
                 >
@@ -148,6 +154,19 @@
             </template>
         </card-sub-row>
 
+        <card-sub-row :text="'保存与记录'" v-if="editMode">
+            <template v-slot:content>
+                <v-menu offset-y>
+                    <template v-slot:activator="{ on }">
+                        <v-btn text v-on="on" color="primary">Save</v-btn>
+                    </template>
+                    <v-list>
+                        <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
+                        <v-list-item @click="saveItem(true)">Save as Draft</v-list-item>
+                    </v-list>
+                </v-menu>
+            </template>
+        </card-sub-row>
     </div>
 </template>
 
@@ -162,11 +181,15 @@
     import CardSubRating from "@/components/card/subComp/CardSubRating.vue";
     import NodeAvatar from "@/components/NodeAvatar.vue";
     import GlobalChip from "@/components/global/GlobalChip.vue";
+    import ItemSharer from "@/components/ItemSharer.vue";
+    import ItemMarker from "@/components/ItemMarker.vue";
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/fieldResolve";
     import {LabelGroup} from "@/interface/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
-    import ItemSharer from "@/components/ItemSharer.vue";
-    import ItemMarker from "@/components/ItemMarker.vue";
+    import {Draft, draftCreate, draftUpdate} from "@/api/subgraph/commonApi";
+    import {commitInfoChangeId} from "@/store/modules/_mutations";
+    import {nodeBulkCreate} from "@/api/subgraph/node";
+
     export default Vue.extend({
         name: "CardPageNodeInfo",
         components: {
@@ -215,7 +238,7 @@
                 return this.baseData.Ctrl
             },
             userConcern: function (): UserConcern {
-                return this.$store.state.userConcernManager[this.baseData.type][this.baseData._id]
+                return this.$store.state.userDataManager[this.baseData.type][this.baseData._id]
             },
 
             dataManager: function (): DataManagerState {
@@ -266,7 +289,7 @@
 
             label: {
                 get(): string {
-                    return this.info.PrimaryLabel
+                    return this.baseData.PrimaryLabel
                 },
                 set(value: string) {
                     this.baseData.changePrimaryLabel(value)
@@ -290,13 +313,13 @@
                             type: "JsonField" as FieldType,
                             resolve: "normal" as ResolveType
                         }
-                    }, this.info.CommonProps)
+                    }, this.info.StandardProps)
                 },
                 set(value: EditProps) {
                     this.updateValue('ExtraProps', value.ExtraProps.value);
-                    let commonProps = deepClone(value);
-                    delete commonProps.ExtraProps;
-                    this.updateValue('CommonProps', commonProps)
+                    let StandardProps = deepClone(value);
+                    delete StandardProps.ExtraProps;
+                    this.updateValue('StandardProps', StandardProps)
                 }
             },
 
@@ -348,21 +371,12 @@
                 } else {
                     this.info.IncludedMedia.map(_id => {
                         let media = this.dataManager.mediaManager[_id];
-                        if (media && media.Info.PrimaryLabel === 'image') {
+                        if (media && media.PrimaryLabel === 'image') {
                             result.push(media)
                         }
                     })
                 }
                 return result;
-            },
-
-            bottomStyle: function (): CSSProp {
-                return {
-                    position: "fixed",
-                    bottom: 0,
-                    backgroundColor: "#eeeeee",
-                    width: this.$store.state.styleComponentSize.leftCard.width + "px"
-                }
             }
 
         },
@@ -383,11 +397,44 @@
             addItem(value: string[], prop: string) {
                 prop === 'Info'
                     ? this.baseData.updateValue('Labels', value)
-                    : console.log('todo')// todo
+                    : this.$set(this.userConcern, 'Labels', value)
             },
 
             updateRating(prop: LevelConcern, rating: number) {
                 // todo
+            },
+
+            saveItem(isDraft: boolean, isAuto: boolean = false) {
+                if (isDraft) {
+                    let data = {
+                        Query: this.baseData.queryObject,
+                        Name: this.info.Name,
+                        Content: this.info,
+                        VersionId: this.baseData.State.draftId
+                    } as Draft;
+                    if (this.baseData.isSaved) {
+                        draftUpdate([data], isAuto, this.type !== 'link').then(res => {
+                            let {IdMap, DraftIdMap} = res.data;
+                            this.baseData.State.draftId = DraftIdMap[this.baseData._id]
+                        })
+                    } else {
+                        draftCreate([data], isAuto, this.type !== 'link').then(res => {
+                            let {IdMap, DraftIdMap} = res.data;
+                            commitInfoChangeId({_type: this.type, idMap: IdMap});
+                            this.baseData.State.draftId = DraftIdMap[this.baseData._id]
+                        })
+                    }
+                } else {
+                    let data = [this.info];
+                    if (this.baseData.State.isRemote) {
+                    } else {
+                        nodeBulkCreate(data).then(res => {
+                            let idMap = res.data;
+                            commitInfoChangeId({_type: this.type, idMap});
+                            this.baseData.State.isRemote = true
+                        })
+                    }
+                }
             }
         },
         watch: {},
@@ -411,7 +458,8 @@
 </script>
 
 <style scoped>
-
+    @import '../../../style/css/unselected.css';
+    @import '../../../style/css/card.css';
 </style>
 
 /**

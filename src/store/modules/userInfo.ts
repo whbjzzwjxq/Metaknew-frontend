@@ -1,7 +1,6 @@
-import {loginCookie, UserLoginResponse} from '@/api/user'
-import {setCookie} from '@/utils/utils'
+import {loginCookie} from '@/api/user/loginApi'
+import {setLoginIn} from '@/utils/utils'
 import {Commit, Dispatch} from "vuex";
-import {commitFileToken, commitUserLogin} from "@/store/modules/_mutations";
 
 export type userId = number;
 export type userName = string;
@@ -15,7 +14,6 @@ export interface UserInfo {
 export interface State {
     isLogin: boolean,
     userInfo: UserInfo,
-    fileToken: FileToken
 }
 
 const state: State = {
@@ -24,12 +22,6 @@ const state: State = {
         userName: '',
         userId: 0
     } as UserInfo,
-    fileToken: <FileToken>{
-        AccessKeySecret: '',
-        AccessKeyId: '',
-        Expiration: 1571219891,
-        SecurityToken: ''
-    }
 };
 
 const mutations = {
@@ -40,24 +32,10 @@ const mutations = {
 
     loginOut(state: State) {
         state.isLogin = false
-    },
-
-    updateFileToken(state: State, payload: FileToken) {
-        state.fileToken = payload
     }
 };
 
-const actions = {
-    loginCookie: (context: { commit: Commit, state: State, dispatch: Dispatch }) => {
-        loginCookie().then((res) => {
-            const {data} = res;
-            setCookie('user_name', data.userName, 7);
-            setCookie('token', data.token, 7);
-            commitUserLogin(data);
-            commitFileToken(data.fileToken)
-        })
-    }
-};
+const actions = {};
 
 const getters = {};
 

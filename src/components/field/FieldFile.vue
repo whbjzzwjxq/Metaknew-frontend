@@ -33,7 +33,7 @@
                             {{ file.Info.Name }}
                         </td>
                         <td>
-                            {{file.Info.PrimaryLabel}}
+                            {{file.PrimaryLabel}}
                         </td>
                         <td>
                             <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}
@@ -74,7 +74,7 @@
                             {{ file.Info.Name }}
                         </td>
                         <td>
-                            {{file.Info.PrimaryLabel}}
+                            {{file.PrimaryLabel}}
                         </td>
                         <td>
                             <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}
@@ -118,7 +118,7 @@
     import CardPageMediaInfo from '../card/page/CardPageMediaInfo.vue';
     import MediaResolver from '../media/MediaResolver.vue';
     import {MediaInfoPart} from '@/class/graphItem'
-    import {commitInfoAdd} from '@/store/modules/_mutations'
+    import {commitInfoAdd, commitInfoChangeId} from '@/store/modules/_mutations'
     import {dispatchUploadFile} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
@@ -212,7 +212,7 @@
             addFile: function (files: MediaInfoPart[], isExist: boolean) {
                 isExist
                     ? this.currentFiles = this.currentFiles.concat(files.map(file => {
-                        let _id = file.Info._id;
+                        let _id = file._id;
                         commitInfoAdd({item: file});
                         return _id
                     }))
@@ -229,13 +229,12 @@
                     uploadType: 'normal',
                     realFile: file.file
                 }).then(res => {
-                    let _id = res.data;
-                    file.changeId(_id);
-                    file.changeSource(URL.createObjectURL(file.file));
+                    let idMap = res.data;
                     file.changeStatus('success');
-                    commitInfoAdd({item: file});
-                    this.currentFiles.push(_id);
+                    commitInfoChangeId({_type: 'media', idMap});
+                    this.currentFiles.push(file._id);
                     this.newFiles.splice(index, 1);
+                    file.Ctrl.FileName = `userResource/${file._id}.${file.Ctrl.Format}`;
                     this.saveMedia()
                 }).catch((res) => {
                     file.changeStatus('error')

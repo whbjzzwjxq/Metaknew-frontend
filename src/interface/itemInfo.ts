@@ -1,30 +1,44 @@
-import {ValueWithType, ExtraProps} from "@/utils/fieldResolve";
-import {GraphSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart, SvgSettingPart} from "@/class/graphItem";
+import {ExtraProps, ValueWithType} from "@/utils/fieldResolve";
+import {
+    LinkInfoPart,
+    LinkSettingPart,
+    MediaInfoPart,
+    MediaSettingPart,
+    NodeInfoPart,
+    NodeSettingPart,
+    SvgSettingPart
+} from "@/class/graphItem";
 import {PathNodeSettingPart} from "@/class/path";
-import {PaperSelfPart} from "@/class/paperItem";
 
 declare global {
     type id = number | string;
     type ItemType = "node" | "link" | "media" | "document" // 基础的type
     type GraphItemType = ItemType | "svg" | "note"; // Graph里使用的type
-    type SourceType = GraphItemType | "fragment" | "path";
+    type AllType = GraphItemType | "fragment" | "path";
     type GraphTypeS = 'nodes' | 'medias' | 'links' | "svgs";
     type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
-    type idMap = Record<id, id>; // 新旧id的Map
+    type IdMap = Record<id, id>; // 新旧id的Map
     //带有翻译的格式
     type Translate = Record<string, string>
-
+    interface InfoState {
+        isRemote: boolean // 是否有远端模型
+        isEdit: boolean // 自上次保存后，是否编辑过
+        draftId?: id // 对应草稿的versionId 如果没有那么就是undefined
+    }
     //InfoPart相关
     interface BaseInfo {
-        _id: id;
-        type: SourceType;
+        id: id;
+        type: AllType;
         PrimaryLabel: string;
         Name: string,
         Description: Translate,
+        Translate: Translate,
         Labels: string[], //统计后的标签
-        $IsCommon: boolean;
-        $IsFree: boolean;
-        $IsOpenSource: boolean;
+        ExtraProps: ExtraProps, //额外属性
+        StandardProps: ExtraProps, // 标准属性
+        IsCommon: boolean;
+        IsFree: boolean;
+        IsOpenSource: boolean;
 
         [prop: string]: any;
     }
@@ -48,16 +62,13 @@ declare global {
     interface BaseNodeInfo extends BaseInfo {
         type: "node" | "document";
         Alias: Array<string>;
+        Topic: Array<string>;
         BaseImp: number;
         BaseHardLevel: number;
         BaseUseful: number;
         Language: string;
-        Topic: Array<string>;
-        ExtraProps: ExtraProps;
-        CommonProps: Record<string, ValueWithType<any>>;
-        Text: Translate; // 名字的翻译
-        IncludedMedia: Array<string | number>;
         MainPic: string;
+        IncludedMedia: Array<id>;
     }
 
     interface BaseNodeCtrl extends PublicCtrl {
@@ -77,7 +88,6 @@ declare global {
 
     interface BaseMediaInfo extends BaseInfo {
         type: "media";
-        ExtraProps: ExtraProps;
 
         [propName: string]: any;
     }
@@ -90,11 +100,6 @@ declare global {
 
     interface BaseLinkInfo extends BaseInfo {
         type: "link";
-        Name: string;
-        Labels: Array<string>;
-        CommonProps: Record<string, ValueWithType<any>>;
-        ExtraProps: ExtraProps;
-        Confidence: number;
 
         [propName: string]: any;
     }
@@ -105,7 +110,7 @@ declare global {
     }
 
     //Graph
-    interface Graph {
+    interface DocumentContent {
         nodes: Array<NodeSettingPart>;
         links: Array<LinkSettingPart>;
         medias: Array<MediaSettingPart>;
@@ -124,5 +129,5 @@ declare global {
 
     type PathArray = (PathNodeSettingPart | null)[][];
 
-    type DocumentSelfPart = GraphSelfPart | PaperSelfPart
+    type InfoPartInDataManager = NodeInfoPart | LinkInfoPart | MediaInfoPart
 }

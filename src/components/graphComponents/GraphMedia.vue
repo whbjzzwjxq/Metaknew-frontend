@@ -86,7 +86,7 @@
         },
         methods: {
             updateSize(start: PointMixed, end: PointMixed) {
-                this.$emit('update-size', start, end, this.setting)
+                this.$emit('update-size', start, end, this.setting.Setting)
             },
 
             updateSizeByNumber(newWidth: number): void {

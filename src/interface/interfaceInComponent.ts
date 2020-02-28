@@ -32,24 +32,6 @@ export type GraphMetaData = {
     parent: GraphMetaData | null, //对应的上级MetaData
 }
 
-//DataTable使用
-export interface FlatNodeInfo extends BaseInfo {
-    _id: string;
-    Name: string;
-    Alias: Array<string>;
-    BaseImp: number;
-    BaseHardLevel: number;
-    Language: string;
-    Topic: Array<string>;
-    Labels: Array<string>;
-    Text: Translate;
-    Description: Translate;
-    IncludedMedia: Array<string | number>;
-    MainPic: string;
-
-    [prop: string]: any
-}
-
 export type SortProp = 'UpdateTime' | 'isStar' | 'PrimaryLabel' // 排序方式
 
 // SearchBar
@@ -78,3 +60,27 @@ export interface ListTitle {
 export type ListItem = AvailableListItem | ListTitle
 export type AvailableListItem = ListInfoItem | ListTextItem
 export type ArrayListItem = ListItem[]
+
+export type Rule<T> = (v: T) => string | boolean
+type InputType = 'text' | 'password'
+export interface TextFieldSetting {
+    rules: Rule<string>[],
+    label: string,
+    prop: string,
+    type?: InputType,
+    clearable?: boolean,
+    appendIcon?: string,
+    _func?: Function
+}
+
+export interface RegisterData extends FastRegisterData {
+    Name: string,
+    Password: string,
+    ConfirmPassword: string,
+    Email: string,
+}
+
+export interface FastRegisterData {
+    Phone: string,
+    Code: string
+}

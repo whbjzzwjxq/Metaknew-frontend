@@ -1,5 +1,6 @@
 import Vue from 'vue'
-import VueRouter from 'vue-router'
+import VueRouter, {Route} from 'vue-router'
+import {commitEditModeChange} from "@/store/modules/_mutations";
 
 Vue.use(VueRouter);
 export const IndexUrl = '/index';
@@ -26,16 +27,10 @@ const routes = [
         component: () => import(/* webpackChunkName: "group-index" */ '@/views/index/Home.vue'),
     },
     {
-        path: IndexUrl + '/login',
-        name: 'login',
-        component: () => import(/* webpackChunkName: "group-index" */ '@/views/index/Login.vue')
+        path: IndexUrl + 'user-center',
+        name: 'user-center',
+        component: () => import(/* webpackChunkName: "group-index" */ '@/views/index/UserCenter.vue'),
     },
-    {
-        path: IndexUrl + '/register',
-        name: 'register',
-        component: () => import(/* webpackChunkName: "group-index" */ '@/views/index/Register.vue')
-    },
-
     {
         path: ResultUrl,
         name: "result",
@@ -50,6 +45,10 @@ const routes = [
             {
                 path: 'graph/edit',
                 name: 'graph-edit',
+                beforeRouteEnter(to: Route, from: Route, next: Function) {
+                    commitEditModeChange(true);
+                    next()
+                },
                 component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocGraph.vue'),
             },
             {

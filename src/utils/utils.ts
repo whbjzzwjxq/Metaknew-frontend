@@ -1,5 +1,13 @@
 import {GraphItemSettingPart, InfoPart} from "@/class/graphItem";
 import {SortProp} from "@/interface/interfaceInComponent";
+import {
+    commitFileToken,
+    commitGlobalIndexPlus,
+    commitLoginDialogChange, commitLoginOut,
+    commitUserLogin
+} from "@/store/modules/_mutations";
+import store from '@/store/index';
+import {AxiosResponse} from "axios";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -201,21 +209,23 @@ export function mergeList<T>(list: Array<T[]>) {
 }
 
 let globalIndex = 0;
-export let localIdRegex = new RegExp("\\$_[0-9]*");
+export let localIdRegex = /\$_[0-9]*/;
 export let ctrlPropRegex = new RegExp("\\$.*");
 export let crucialRegex = new RegExp("_.*");
 
 // 获取新内容id
 export const getIndex = () => {
-    globalIndex += 1;
-    return '$_' + globalIndex as id
+    let index = store.state.userIndex + 1;
+    commitGlobalIndexPlus(index);
+    return '$_' + index as id
 };
+
 // 两个Item是否一样
 export const itemEqual = (itemA: { _id: id, _type: GraphItemType }, itemB: { _id: id, _type: GraphItemType }) =>
     itemA._id === itemB._id && itemA._type === itemB._type;
 export const findItem = (list: Array<GraphItemSettingPart>, _id: id, _type: GraphItemType) =>
     list.filter(
-        item => item.Setting._id === _id && item.Setting._type === _type // 在一个List里找Item
+        item => item._id === _id && item._type === _type // 在一个List里找Item
     );
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");
@@ -296,24 +306,17 @@ export const currentTime = () => {
     return time.getTime();
 };
 
-export const emptyGraph = () => {
+export const emptyContent = () => {
     return {
         nodes: [],
         links: [],
         medias: [],
-        texts: [],
         svgs: []
-    } as Graph
-};
-
-export const emptyPaper = () => {
-    return {
-        cards: [],
-        links: []
-    } as Paper
+    } as DocumentContent
 };
 
 const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];
+
 export function mergeObject<T extends Record<string, any>, K extends keyof T>(target: T, source: any, passive?: boolean) {
     // 递归对象
     // source里有target没有的值是否强制覆盖
@@ -336,3 +339,29 @@ export function mergeObject<T extends Record<string, any>, K extends keyof T>(ta
         }
     })
 }
+
+export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays?: boolean) => {
+    const {data} = res;
+    let day;
+    loginSevenDays
+        ? day = 7
+        : day = 1;
+    setCookie('user_name', data.userName, day);
+    setCookie('token', data.token, day);
+    commitUserLogin(data);
+    commitFileToken(data.fileToken);
+    commitGlobalIndexPlus(data.personalId);
+    commitLoginDialogChange(false);
+};
+
+export const setLoginOut = () => {
+    delCookie("user_name");
+    delCookie("token");
+    commitLoginOut();
+};
+
+export const badResponse = (res: AxiosResponse) => {
+
+};
+
+export const doNothing = () => {};

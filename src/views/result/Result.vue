@@ -5,10 +5,11 @@
         fill-height
         class="d-flex flex-row ma-0 pa-0">
         <card-root
-            :document="graph">
+            :document="currentDocument"
+            :edit-mode="editMode">
 
         </card-root>
-        <router-view></router-view>
+        <router-view :edit-mode="editMode"></router-view>
     </v-container>
 </template>
 
@@ -20,7 +21,7 @@
         commitRootGraph,
     } from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
-    import {GraphSelfPart} from "@/class/graphItem";
+    import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
     import {PaperSelfPart} from "@/class/paperItem";
 
     export default Vue.extend({
@@ -49,6 +50,9 @@
                 return this.graphRouteRegex.test(String(this.$route.name))
                     ? this.graph
                     : this.paper
+            },
+            editMode: function (): boolean {
+                return true
             }
         },
         methods: {},

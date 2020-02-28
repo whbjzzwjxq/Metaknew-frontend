@@ -4,21 +4,21 @@
         class="d-flex flex-column"
         flat
         tile>
-        <div v-if="media.Info.PrimaryLabel === 'image'">
+        <div v-if="media.PrimaryLabel === 'image'">
             <v-img :src="realSrc" :width="width" :max-height="height" id="image"></v-img>
 
             <slot name="button-group">
 
             </slot>
         </div>
-        <div v-else-if="media.Info.PrimaryLabel === 'pdf'">
+        <div v-else-if="media.PrimaryLabel === 'pdf'">
             <pdf :src="realSrc" contain>
             </pdf>
             <slot name="button-group">
 
             </slot>
         </div>
-        <div v-else-if="media.Info.PrimaryLabel === 'markdown'">
+        <div v-else-if="media.PrimaryLabel === 'markdown'">
             <v-card scroll :height="height" :width="width" class="cardItem">
                 <mavon-editor style="z-index: 0"
                               :value="mdText"

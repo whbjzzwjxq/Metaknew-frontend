@@ -97,15 +97,8 @@
         },
         props: {
 
-            // 设置
-            setting: {
-                type: Object as () => NodeSetting,
-                required: true
-            },
-
-            // 状态
-            state: {
-                type: Object as () => NodeState,
+            node: {
+                type: Object as () => NodeSettingPart,
                 required: true
             },
 
@@ -136,6 +129,14 @@
         computed: {
             transform: function (): string {
                 return 'translate(' + this.point.x + ' ' + this.point.y + ')'
+            },
+
+            setting: function (): NodeSetting {
+                return this.node.Setting
+            },
+
+            state: function (): NodeState {
+                return this.node.State
             },
 
             isSelected: function (): boolean {
@@ -174,9 +175,9 @@
                 if (this.setting.View.color !== '') {
                     return this.setting.View.color
                 } else {
-                    this.$store.state.styleLabelColor[this.setting._type] ||
-                    commitNewLabel([this.setting._type]);
-                    return this.$store.state.styleLabelColor[this.setting._type]
+                    this.$store.state.styleLabelColor[this.node._type] ||
+                    commitNewLabel([this.node._type]);
+                    return this.$store.state.styleLabelColor[this.node._type]
                 }
             },
 
@@ -186,9 +187,9 @@
                 if (this.setting.Border.color !== '') {
                     color = this.setting.Border.color
                 } else {
-                    this.$store.state.styleLabelColor[this.setting._label] ||
-                    commitNewLabel([this.setting._label]);
-                    color = this.$store.state.styleLabelColor[this.setting._label]
+                    this.$store.state.styleLabelColor[this.node._label] ||
+                    commitNewLabel([this.node._label]);
+                    color = this.$store.state.styleLabelColor[this.node._label]
                 }
                 return {
                     color,
@@ -218,7 +219,7 @@
                 return this.setting._image !== '' &&
                     this.setting.Show.showAll &&
                     this.setting.Show.showImage &&
-                    this.height >= 16
+                    this.height >= 12
             },
             showFill: function (): boolean {
                 return this.setting.Show.showAll &&
@@ -278,14 +279,14 @@
                     ? this.setting.Text.textSize * this.scale
                     : 10;
                 let width = this.setting.Text.textBreak
-                    ? this.setting._name.length * 6 * this.scale
-                    : this.setting._name.length * 12 * this.scale;
+                    ? this.setting._name.length * 18 * this.scale
+                    : this.setting._name.length * 36 * this.scale;
                 let height = this.setting.Text.textBreak
                     ? (size + 5) * 2
                     : (size + 5);
                 return {
                     offsetX: -width * 0.5,
-                    offsetY: height + this.borderSetting.width + 5,
+                    offsetY: this.height + (this.borderSetting.width + 5) * this.scale,
                     width,
                     height,
                     size
@@ -329,7 +330,7 @@
                 return getSrc(this.setting._image)
             },
             getClipId: function (): string {
-                return 'clipPath_' + this.setting._id
+                return 'clipPath_' + this.node._id
             },
             rhombusPath: function (): string {
                 let loc = [-this.width + ',0', '0,' + -this.height, this.width + ',0', '0,' + this.height];
@@ -344,7 +345,7 @@
             },
 
             boundGraph: function (): GraphSelfPart {
-                return this.$store.state.dataManager.graphManager[this.setting._id]
+                return this.$store.state.dataManager.graphManager[this.node._id]
             }
         },
         methods: {},
