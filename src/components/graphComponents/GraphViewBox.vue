@@ -465,7 +465,8 @@
 
             // nodesIdList
             nodeIdList: function (): id[] {
-                return this.nodes.map(node => node._id)
+                let result = this.nodes.map(node => node._id);
+                return result.concat(this.medias.map(media => media._id));
             },
 
             nodeInfoList: function (): NodeInfoPart[] {
@@ -1023,7 +1024,6 @@
 
         watch: {
             labelDict: function (): void {
-                console.log('watch');
                 this.getLabelViewDict()
             }
         },

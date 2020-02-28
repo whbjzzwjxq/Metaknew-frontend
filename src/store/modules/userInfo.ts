@@ -14,7 +14,6 @@ export interface UserInfo {
 export interface State {
     isLogin: boolean,
     userInfo: UserInfo,
-    fileToken: FileToken
 }
 
 const state: State = {
@@ -23,12 +22,6 @@ const state: State = {
         userName: '',
         userId: 0
     } as UserInfo,
-    fileToken: <FileToken>{
-        AccessKeySecret: '',
-        AccessKeyId: '',
-        Expiration: 1571219891,
-        SecurityToken: ''
-    }
 };
 
 const mutations = {
@@ -39,10 +32,6 @@ const mutations = {
 
     loginOut(state: State) {
         state.isLogin = false
-    },
-
-    updateFileToken(state: State, payload: FileToken) {
-        state.fileToken = payload
     }
 };
 

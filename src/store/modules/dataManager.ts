@@ -25,6 +25,7 @@ import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
 import {loginCookie} from "@/api/user/loginApi";
+import {State} from "@/store/modules/userInfo";
 
 const getManager = (_type: string) =>
     _type === 'link'
@@ -145,7 +146,6 @@ const mutations = {
     documentChangeId(state: DataManagerState, payload: { oldId: id, newId: id }) {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
-        console.log(oldGraph, payload);
         if (oldGraph) {
             oldGraph._id = newId;
             commitDocumentAdd({document: oldGraph});
@@ -172,7 +172,6 @@ const mutations = {
     infoChangeId(state: DataManagerState, payload: { _type: ItemType, idMap: IdMap }) {
         let {_type, idMap} = payload;
         let manager = getManager(_type);
-        console.log(idMap);
         Object.keys(idMap).map(oldId => {
             let newId = idMap[oldId];
             let oldInfo = manager[oldId];
@@ -187,6 +186,10 @@ const mutations = {
         });
         commitUserConcernChangeId(payload);
     },
+
+    updateFileToken(state: DataManagerState, payload: FileToken) {
+        state.fileToken = payload
+    }
 
 };
 const actions = {
@@ -303,7 +306,7 @@ const actions = {
     }) {
         let {item, realFile, storeName, uploadType} = payload;
         // checkFileToken
-        let fileToken = state.fileToken;
+        let fileToken = context.state.fileToken;
         let now = (new Date()).valueOf();
         // 先判断Token情况
         if ((fileToken.Expiration * 1000 - now <= 0) || !fileToken.AccessKeyId) {
@@ -347,8 +350,11 @@ const actions = {
         } else {
             subGraph.explode()
         }
-    }
+    },
 
+    async graphSave(context: Context, payload: {graphList: GraphSelfPart[]}) {
+        
+    }
 };
 
 export default {

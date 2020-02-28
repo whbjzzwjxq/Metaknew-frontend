@@ -279,8 +279,8 @@
                     ? this.setting.Text.textSize * this.scale
                     : 10;
                 let width = this.setting.Text.textBreak
-                    ? this.setting._name.length * 6 * this.scale
-                    : this.setting._name.length * 12 * this.scale;
+                    ? this.setting._name.length * 18 * this.scale
+                    : this.setting._name.length * 36 * this.scale;
                 let height = this.setting.Text.textBreak
                     ? (size + 5) * 2
                     : (size + 5);

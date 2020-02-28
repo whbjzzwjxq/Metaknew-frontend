@@ -27,7 +27,7 @@ declare global {
     }
     //InfoPart相关
     interface BaseInfo {
-        _id: id;
+        id: id;
         type: AllType;
         PrimaryLabel: string;
         Name: string,

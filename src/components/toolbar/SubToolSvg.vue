@@ -6,7 +6,7 @@
                 <v-icon small right> {{ svgIcon }}</v-icon>
             </v-chip>
         </v-card-subtitle>
-        <icon-group :icon-list="iconList">
+        <icon-group :icon-list="iconList" :container-style="{width: '100%'}">
 
         </icon-group>
     </v-card>

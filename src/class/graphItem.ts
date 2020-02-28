@@ -54,7 +54,7 @@ export abstract class InfoPart {
     State: InfoState;
 
     get _id() {
-        return this.Info._id
+        return this.Info.id
     }
 
     get type() {
@@ -397,7 +397,7 @@ export class FragmentInfoPart extends InfoPart {
 
     static fragmentFromItem(baseData: NodeInfoPart | MediaInfoPart | LinkInfoPart, _id: id, method: string) {
         let info = {
-            _id,
+            id: _id,
             type: 'fragment',
             PrimaryLabel: isMediaInfoPart(baseData) ? 'image' : 'text',
             Name: baseData.Info.Name === '' ? baseData.Info.Name : 'NewFragment From ' + baseData.type + baseData._id,
@@ -900,7 +900,6 @@ export class GraphSelfPart extends DocumentSelfPart {
     }
 
     explode() {
-        console.log('explode')
         this.Conf.updateState('isExplode')
     }
 

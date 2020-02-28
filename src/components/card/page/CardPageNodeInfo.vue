@@ -458,7 +458,8 @@
 </script>
 
 <style scoped>
-
+    @import '../../../style/css/unselected.css';
+    @import '../../../style/css/card.css';
 </style>
 
 /**

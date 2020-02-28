@@ -1,6 +1,6 @@
 <template>
     <v-card tile :style="toolbarStyle" elevation="2">
-        <div :style="buttonStyle" class="floatButton">
+        <div :style="buttonGroupStyle" class="floatButton">
             <div class="button-normal pb-4">
                 <v-menu top offset-x :close-on-content-click="false" nudge-bottom="100" nudge-right="12">
                     <template v-slot:activator="{ on }">
@@ -65,7 +65,7 @@
                     overflow: "hidden"
                 }
             },
-            buttonStyle: function (): CSSProp {
+            buttonGroupStyle: function (): CSSProp {
                 return {
                     left: '10px',
                     bottom: (this.styleManager.bottomBar.height + 12) + 'px',
