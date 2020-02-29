@@ -775,6 +775,10 @@ export class GraphSelfPart extends DocumentSelfPart {
         return this.Conf.State.isExplode
     }
 
+    set isExplode(value) {
+        this.Conf.State.isExplode = value
+    }
+
     get visualNodeList() {
         let result: VisNodeSettingPart[] = [];
         result.push(...this.Content.nodes);

@@ -10,6 +10,7 @@ declare global {
         NumGood: boolean;
         NumBad: boolean;
         Labels: Array<string>;
+        isRemote: boolean;
     }
 }
 

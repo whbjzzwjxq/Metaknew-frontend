@@ -75,7 +75,7 @@ export const commitDocumentChangeId = (payload: {oldId: id, newId: id}) => {
     return store.commit('documentChangeId', payload)
 };
 
-export const commitUserConcernAdd = (payload: { _id: id, _type: GraphItemType, userConcern: UserConcern }) => {
+export const commitUserConcernAdd = (payload: ConcernPayload) => {
     return store.commit('userConcernAdd', payload)
 };
 

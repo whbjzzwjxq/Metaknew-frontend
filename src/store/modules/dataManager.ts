@@ -17,7 +17,7 @@ import {
     commitInfoAdd,
     commitInfoRemove,
     commitItemChange,
-    commitSnackbarOn,
+    commitSnackbarOn, commitUserConcernAdd,
     commitUserConcernChangeId
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
@@ -27,6 +27,7 @@ import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
 import {loginCookie} from "@/api/user/loginApi";
 import {settingToQuery} from "@/utils/utils";
+import {userConcernTemplate} from "@/utils/template";
 
 const getManager = (_type: string) =>
     _type === 'link'
@@ -100,7 +101,7 @@ const mutations = {
     currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
         let _id = graph._id; // 这里payload是document
-        Vue.set(graph.Conf.State, 'isExplode', true);
+        graph.isExplode = true;
         state.currentGraph = graph;
         let node = state.nodeManager[_id];
         commitItemChange(node);
@@ -114,7 +115,7 @@ const mutations = {
 
     rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
-        Vue.set(graph.Conf.State, 'isExplode', true);
+        graph.isExplode = true;
         state.rootGraph = graph
     },
 
@@ -157,12 +158,13 @@ const mutations = {
     // ------------以下是Info部分的内容------------
     infoAdd(state: DataManagerState, payload: { item: InfoPartInDataManager, strict?: boolean }) {
         let {item, strict} = payload;
-        let _id = item._id;
+        let {_id, _type} = item;
         let manager = getManager(item._type);
         strict || (strict = true);
         strict
             ? Vue.set(manager, _id, item)
-            : !manager[_id] && Vue.set(manager, _id, item)
+            : !manager[_id] && Vue.set(manager, _id, item);
+        commitUserConcernAdd({id: _id, type: _type, userConcern: userConcernTemplate(), strict: false})
     },
 
     infoRemove(state: DataManagerState, payload: { _id: id, _type: string }) {
@@ -202,7 +204,7 @@ const actions = {
         // 先绘制Graph
         await documentQuery(_id).then(res => {
             let {data} = res;
-            let graphSelf = GraphSelfPart.resolveFromBackEnd(data, parent);
+            return GraphSelfPart.resolveFromBackEnd(data, parent);
         })
     },
 

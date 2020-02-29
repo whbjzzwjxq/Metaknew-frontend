@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import Vuex from 'vuex'
+import Vuex, {StoreOptions} from 'vuex'
 import userInfo from "@/store/modules/userInfo";
 import componentSnackBar from "@/store/modules/componentSnackBar";
 import dataTextResolveCache from "@/store/modules/dataTextResolveCache";
@@ -11,15 +11,23 @@ import componentState from "@/store/modules/componentState";
 import {doNothing} from "@/utils/utils";
 Vue.use(Vuex);
 
-interface RootState {
+export interface NormalState {
     userIndex: number
+}
+
+export interface RootState {
+    state: any,
+    mutations: any,
+    getters: any,
+    actions: any,
+    modules: any
 }
 export default new Vuex.Store({
     state: {
         userIndex: 0
-    } as RootState,
+    } as NormalState,
     mutations: {
-        userIndexPlus(state: RootState, payload: number) {
+        userIndexPlus(state: NormalState, payload: number) {
             payload >= state.userIndex
                 ? state.userIndex = payload
                 : doNothing()
@@ -37,4 +45,4 @@ export default new Vuex.Store({
         userDataManager: userDataManager,
         componentState: componentState
     }
-})
+} as RootState)
