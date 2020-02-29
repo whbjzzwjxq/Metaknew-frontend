@@ -13,8 +13,8 @@ import {PathNodeSettingPart} from "@/class/path";
 declare global {
     type id = number | string;
     type ItemType = "node" | "link" | "media" | "document" // 基础的type
-    type GraphItemType = ItemType | "text" | "note"; // Graph里使用的type
-    type AllType = GraphItemType | "fragment" | "path";
+    type GraphItemType = ItemType | "text"; // Graph里使用的type
+    type AllType = GraphItemType | "fragment" | "path" | "note";
     type GraphTypeS = 'nodes' | 'medias' | 'links' | "texts";
     type MediaStatus = "new" | "uploading" | "error" | "success" | "warning";
     type IdMap = Record<id, id>; // 新旧id的Map

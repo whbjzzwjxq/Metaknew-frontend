@@ -229,7 +229,7 @@
             },
 
             title: function (): string {
-                return this.media.PrimaryLabel + " --> " + this.info.Name;
+                return this.media._label + " --> " + this.info.Name;
             },
             buttonGroupStyle: function (): CSSProp {
                 return {
@@ -307,7 +307,7 @@
                 this.$emit("add-media-to-graph", this.media);
             },
             dialogDetailWatch() {
-                if (this.media.PrimaryLabel === 'image') {
+                if (this.media._label === 'image') {
                     let el: any = this.$refs.mediaViewer;
                     el.bigPic()
                 } else {
@@ -324,7 +324,7 @@
             },
             saveMedia() {
                 let status = this.media.status;
-                if (status === "success" || status === "remote") {
+                if (status === "success" || this.media.State.isRemote) {
                     mediaUpdate(this.media).then(res => {
                         res.status === 200
                             ? alert("保存成功")

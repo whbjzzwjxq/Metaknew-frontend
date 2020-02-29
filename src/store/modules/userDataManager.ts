@@ -4,7 +4,7 @@ import Vue from 'vue';
 
 declare global {
     interface UserDataManagerState {
-        userConcernDict: Record<ItemType, Record<id, UserConcern>>,
+        userConcernDict: Record<GraphItemType, Record<id, UserConcern>>,
         fragments: Array<FragmentInfoPart>,
         userSetting: Record<string, Record<string, any>>,
         userNoteBook: NoteBook[],
@@ -29,7 +29,8 @@ const state: UserDataManagerState = {
         node: {},
         link: {},
         media: {},
-        document: {}
+        document: {},
+        text: {}
     },
     fragments: [],
     userSetting: {
@@ -46,11 +47,11 @@ const mutations = {
         Vue.set(state.userConcernDict[_type], _id, userConcern)
     },
 
-        userConcernChangeId(state: UserDataManagerState, payload: {_type: ItemType, idMap: IdMap}) {
+    userConcernChangeId(state: UserDataManagerState, payload: { _type: ItemType, idMap: IdMap }) {
         let {_type, idMap} = payload;
         let dict = state.userConcernDict[_type];
         Object.entries(idMap).map(([key, value]) => {
-            dict[value] = dict[key];
+            Vue.set(dict, key, dict[value]);
             delete dict[key]
         })
     },

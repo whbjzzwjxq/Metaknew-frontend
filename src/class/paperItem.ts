@@ -56,7 +56,6 @@ export class PaperSelfPart extends DocumentSelfPart {
 
     commitPaperToVuex(payload: { paper: PaperSelfPart, info: NodeInfoPart }) {
         let {paper, info} = payload;
-        this.commitItemToVuex(info);
         commitDocumentAdd({document: paper});
     }
 }

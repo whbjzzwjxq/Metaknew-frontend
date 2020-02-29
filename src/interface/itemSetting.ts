@@ -753,7 +753,7 @@ declare global {
         Base: Record<string, any>
     }
 
-    interface NoteSetting extends GraphItemSetting {
+    interface NoteSetting extends Setting {
         _type: 'note';
         _title: string;
         _content: string;

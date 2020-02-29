@@ -7,6 +7,7 @@ import {
     getCookie,
     getIndex,
     getIsSelf,
+    getSrc,
     itemEqual,
     localIdRegex,
 } from "@/utils/utils";
@@ -29,7 +30,6 @@ import {
     noteStateTemplate,
     textSettingTemplate,
     textStateTemplate,
-    userConcernTemplate,
 } from "@/utils/template";
 import {
     isGraphType,
@@ -41,7 +41,7 @@ import {
 } from "@/utils/typeCheck";
 import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
 import {BackendGraph, BackendLinkInfoPart, BackendMediaInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
-import {commitDocumentAdd, commitInfoAdd, commitNoteInDocAdd, commitUserConcernAdd} from "@/store/modules/_mutations";
+import {commitDocumentAdd, commitInfoAdd, commitNoteInDocAdd} from "@/store/modules/_mutations";
 import {FragmentCtrl, FragmentInfo} from "@/interface/interfaceUser";
 
 export abstract class InfoPart {
@@ -76,6 +76,10 @@ export abstract class InfoPart {
 
     get queryObject(): QueryObject {
         return {id: this._id, type: this._type, pLabel: this._label}
+    }
+
+    get userConcern() {
+        return {}
     }
 
     protected constructor(info: BaseInfo, ctrl: BaseCtrl, isRemote: boolean, draftId?: number) {
@@ -296,6 +300,10 @@ export class MediaInfoPart extends InfoPart {
         return MediaInfoPart.statusDict[this.status]
     }
 
+    get realSrc() {
+        return getSrc(this.Ctrl.FileName)
+    }
+
     static statusDict: Record<MediaStatus, string> = {
         new: 'blue',
         error: 'red',
@@ -470,10 +478,10 @@ export abstract class ItemSettingPart extends SettingPart {
 
 export class GraphItemSettingPart extends ItemSettingPart {
     Setting: GraphItemSetting;
-    State: BaseState;
+    State: GraphItemState;
     parent: GraphSelfPart;
 
-    constructor(Setting: GraphItemSetting, State: BaseState, parent: GraphSelfPart) {
+    constructor(Setting: GraphItemSetting, State: GraphItemState, parent: GraphSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
@@ -741,13 +749,6 @@ export abstract class DocumentSelfPart {
             lastSave: currentTime()
         } as DocumentData
     }
-
-    protected commitItemToVuex(info: InfoPartInDataManager) {
-        // commit过程
-        commitInfoAdd({item: info, strict: false});
-        let userConcern = userConcernTemplate();
-        commitUserConcernAdd({_id: info._id, _type: info._type, userConcern});
-    }
 }
 
 export class GraphSelfPart extends DocumentSelfPart {
@@ -825,12 +826,7 @@ export class GraphSelfPart extends DocumentSelfPart {
         let setting = GraphConf.resolveBackend(data.Conf, parent);
         let graphContent = emptyContent();
         let baseNodeSetting = data.Content.nodes.filter(setting => setting._id === data.Conf._id)[0];
-        let graph = new GraphSelfPart(
-            graphContent,
-            setting,
-            true,
-            baseNodeSetting
-        );
+        let graph = new GraphSelfPart(graphContent, setting, true, baseNodeSetting);
         let info = NodeInfoPart.resolveBackend(data.Base, commitToVuex);
         let {nodes, links, medias, texts} = data.Content;
         graph.Content.nodes = nodes.map(setting => NodeSettingPart.resolveBackend(setting, graph));
@@ -865,6 +861,7 @@ export class GraphSelfPart extends DocumentSelfPart {
 
     addItems(items: GraphItemSettingPart[]) {
         items.filter(item => !this.checkExistByItem(item)).map(item => {
+            item.State.isAdd = true;
             this.pushItem(item)
         })
     }
@@ -921,16 +918,12 @@ export class GraphSelfPart extends DocumentSelfPart {
 
     addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex?: boolean) {
         _label || (_label = 'BaseNode');
-        commitToVuex === undefined && (commitToVuex = true);
         let _id = getIndex();
         let nodeQuery = {id: _id, type: _type, pLabel: _label} as NodeQuery;
-        let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery);
+        let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
         let setting = NodeSettingPart.emptyNodeSetting(_id, _type, _label, 'NewNode' + _id, '', this);
-        setting.State.isSelf = true;
         this.addItems([setting]);
-        let payload = {setting, info};
-        commitToVuex && this.commitItemToVuex(info);
-        return payload
+        return {setting, info}
     }
 
     addEmptyLink(_start: VisNodeSettingPart, _end: VisNodeSettingPart, _label?: string, commitToVuex?: boolean) {
@@ -941,28 +934,15 @@ export class GraphSelfPart extends DocumentSelfPart {
         let info = LinkInfoPart.emptyLinkInfo(_id, _label, _start, _end);
         // setting
         let setting = LinkSettingPart.emptyLinkSetting(_id, _label, _start, _end, this);
-        setting.State.isSelf = true;
         this.addItems([setting]);
-        let payload = {setting, info};
-        commitToVuex && this.commitItemToVuex(info);
-        return payload
+        return {setting, info};
     }
 
-    addSubGraph(commitToVuex?: boolean) {
-        commitToVuex === undefined && (commitToVuex = true);
+    addSubGraph(commitToVuex: boolean = true) {
         let _id = getIndex();
-        let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, this);
+        let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, this, commitToVuex);
         let payload = {graph, info};
         this.addItems([graph.baseNode.deepCloneSelf()]);
-        if (commitToVuex) {
-            this.commitGraphToVuex(payload)
-        }
         return payload
-    }
-
-    protected commitGraphToVuex(payload: { graph: GraphSelfPart, info: NodeInfoPart }) {
-        let {graph, info} = payload;
-        this.commitItemToVuex(info);
-        commitDocumentAdd({document: graph});
     }
 }

@@ -211,11 +211,7 @@
             // 如果从收藏里获取内容 那么就不需要上传了
             addFile: function (files: MediaInfoPart[], isExist: boolean) {
                 isExist
-                    ? this.currentFiles = this.currentFiles.concat(files.map(file => {
-                        let _id = file._id;
-                        commitInfoAdd({item: file});
-                        return _id
-                    }))
+                    ? this.currentFiles = this.currentFiles.concat(files.map(file => file._id))
                     : this.newFiles = this.newFiles.concat(files)
             },
 

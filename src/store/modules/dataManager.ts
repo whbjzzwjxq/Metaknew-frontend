@@ -12,6 +12,7 @@ import {
 import {
     commitDocumentAdd,
     commitDocumentChangeId,
+    commitDocumentRemove,
     commitFileToken,
     commitInfoAdd,
     commitInfoRemove,
@@ -25,7 +26,6 @@ import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
 import {loginCookie} from "@/api/user/loginApi";
-import {State} from "@/store/modules/userInfo";
 import {settingToQuery} from "@/utils/utils";
 
 const getManager = (_type: string) =>
@@ -150,7 +150,7 @@ const mutations = {
         if (oldGraph) {
             oldGraph._id = newId;
             commitDocumentAdd({document: oldGraph});
-            // commitDocumentRemove(oldId);
+            commitDocumentRemove(oldId);
         }
     },
 
@@ -216,7 +216,6 @@ const actions = {
                 // 先使用假数据 然后再请求
                 let query = settingToQuery<NodeQuery>(node);
                 let item = NodeInfoPart.emptyNodeInfoPart(query);
-                commitInfoAdd({item, strict: false});
                 return item.queryObject
             });
             // 请求节点
@@ -224,9 +223,7 @@ const actions = {
                 const {data} = res;
                 data.map(node => {
                     if (isNodeBackend(node)) {
-                        let nodeInfo = NodeInfoPart.resolveBackend(node);
-                        nodeInfo.synchronizationAll();
-                        commitInfoAdd({item: nodeInfo})
+                        NodeInfoPart.resolveBackend(node);
                     }
                 });
             });
@@ -240,10 +237,6 @@ const actions = {
         if (noCacheLink.length > 0) {
             let linkQuery = noCacheLink.map(link => {
                 let item = LinkInfoPart.emptyLinkInfo(link._id, link._label, link._start, link._end);
-                commitInfoAdd({
-                    item: LinkInfoPart.emptyLinkInfo(link._id, link._label, link._start, link._end),
-                    strict: false
-                });
                 return item.queryObject
             });
             // 请求关系
@@ -251,10 +244,7 @@ const actions = {
                 const {data} = res;
                 data.map(link => {
                     if (!isNodeBackend(link)) {
-                        let linkSetting = noCacheLink.filter(setting => setting._id === link.Info._id)[0];
-                        let linkInfo = LinkInfoPart.resolveBackend(link);
-
-                        commitInfoAdd({item: linkInfo})
+                        LinkInfoPart.resolveBackend(link);
                     }
                 });
             });
@@ -274,7 +264,9 @@ const actions = {
             });
 
             return mediaQueryMulti(noCacheMedia).then(res => {
-                res.data.map(media => {MediaInfoPart.resolveBackend(media);});
+                res.data.map(media => {
+                    MediaInfoPart.resolveBackend(media);
+                });
             })
         }
     },
@@ -331,7 +323,7 @@ const actions = {
         }
     },
 
-    async graphSave(context: Context, payload: {graphList: GraphSelfPart[]}) {
+    async graphSave(context: Context, payload: { graphList: GraphSelfPart[] }) {
 
     }
 };
