@@ -238,7 +238,7 @@
                 return this.baseData.Ctrl
             },
             userConcern: function (): UserConcern {
-                return this.$store.state.userDataManager[this.baseData.type][this.baseData._id]
+                return this.$store.state.userDataManager[this.baseData._type][this.baseData._id]
             },
 
             dataManager: function (): DataManagerState {
@@ -289,7 +289,7 @@
 
             label: {
                 get(): string {
-                    return this.baseData.PrimaryLabel
+                    return this.baseData._label
                 },
                 set(value: string) {
                     this.baseData.changePrimaryLabel(value)
@@ -371,7 +371,7 @@
                 } else {
                     this.info.IncludedMedia.map(_id => {
                         let media = this.dataManager.mediaManager[_id];
-                        if (media && media.PrimaryLabel === 'image') {
+                        if (media && media._label === 'image') {
                             result.push(media)
                         }
                     })

@@ -6,7 +6,7 @@ import {
     MediaInfoPart,
     MediaSettingPart,
     NodeSettingPart,
-    SvgSettingPart
+    TextSettingPart
 } from "@/class/graphItem";
 import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
 import {PathNode, PathNodeExist} from "@/class/path";
@@ -27,7 +27,7 @@ export function isGraphType(str: string): str is GraphItemType {
         (str as GraphItemType) === 'link' ||
         (str as GraphItemType) === 'media' ||
         (str as GraphItemType) === 'document' ||
-        (str as GraphItemType) === 'svg'
+        (str as GraphItemType) === 'text'
 }
 
 export function isLinkSetting(item: GraphItemSettingPart): item is LinkSettingPart {
@@ -46,8 +46,8 @@ export function isVisNodeSetting(item: GraphItemSettingPart): item is VisNodeSet
     return isNodeSetting(item) || isMediaSetting(item)
 }
 
-export function isSvgSetting(item: GraphItemSettingPart): item is SvgSettingPart {
-    return (item as SvgSettingPart)._type === 'svg'
+export function isSvgSetting(item: GraphItemSettingPart): item is TextSettingPart {
+    return (item as TextSettingPart)._type === 'text'
 }
 
 export function isGraphSelfPart(item: DocumentSelfPart): item is GraphSelfPart {
@@ -60,7 +60,7 @@ export function isPaperSelfPart(item: DocumentSelfPart): item is PaperSelfPart {
 
 export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is BooleanConcern {
     return (
-        prop === "isStar" || prop === "isBad" || prop === "isGood" || prop === "isShared"
+        prop === "NumStar" || prop === "NumBad" || prop === "NumGood" || prop === "NumShared"
     );
 }
 
@@ -69,7 +69,7 @@ export function isLevelConcern(prop: LevelConcern | BooleanConcern | "Labels"): 
 }
 
 export function isMediaInfoPart(info: InfoPart): info is MediaInfoPart {
-    return info.type === 'media'
+    return info._type === 'media'
 }
 
 export function isPathNodeExist(item: PathNode): item is PathNodeExist {

@@ -42,7 +42,7 @@
                 let item = MediaInfoPart.emptyMediaInfo(_id, file); // todo thumb缩略图
                 commitInfoAdd({item});
                 let userConcern = userConcernTemplate();
-                commitUserConcernAdd({_id: item._id, _type: item.type, userConcern});
+                commitUserConcernAdd({_id: item._id, _type: item._type, userConcern});
                 return item
             },
 

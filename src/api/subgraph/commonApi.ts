@@ -1,5 +1,4 @@
 import {instance} from "@/api/main";
-import {QueryObject} from "@/api/commonSource";
 
 export interface Draft {
     Query: QueryObject;

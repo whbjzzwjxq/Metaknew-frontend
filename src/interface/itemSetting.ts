@@ -4,7 +4,7 @@ import {
     MediaSettingPart,
     NodeSettingPart,
     NoteSettingPart,
-    SvgSettingPart
+    TextSettingPart
 } from "@/class/graphItem";
 import {mergeObject} from "@/utils/utils";
 
@@ -590,7 +590,7 @@ export const typeSetting: Record<AllType, SettingAll> = {
     'link': linkSetting,
     'document': documentSetting,
     'media': mediaSetting(),
-    'svg': svgSetting(),
+    'text': svgSetting(),
     'note': noteSetting(),
     'fragment': fragmentSetting,
     'path': pathSetting
@@ -600,7 +600,7 @@ declare global {
     // 从视觉上来说是Node的对象
     type VisNodeSettingPart = NodeSettingPart | MediaSettingPart;
     // 从视觉上是一个区域的对象
-    type VisAreaSettingPart = VisNodeSettingPart | SvgSettingPart;
+    type VisAreaSettingPart = VisNodeSettingPart | TextSettingPart;
     // 所有Item对象
     type GraphSubItemSettingPart = VisAreaSettingPart | LinkSettingPart;
     // 所有Setting对象
@@ -743,7 +743,7 @@ declare global {
         _src: string; // url字符串或者 URL.createObjectUrl返回值
     }
 
-    interface compressLinkSetting extends GraphItemSetting, LinkStyleSetting {
+    interface BackendLinkSetting extends GraphItemSetting, LinkStyleSetting {
         _start: GraphItemSetting;
         _end: GraphItemSetting;
     }
@@ -761,7 +761,7 @@ declare global {
         Base: BaseSize;
     }
 
-    type SvgLabel = 'polygon' | 'polyline' | 'rect' | 'ellipse'
+    type TextLabel = 'polygon' | 'polyline' | 'rect' | 'ellipse'
 
     interface SvgStyleSetting {
         Base: BaseSize;
@@ -788,9 +788,9 @@ declare global {
         }
     }
 
-    interface SvgSetting extends GraphItemSetting, SvgStyleSetting {
-        _type: 'svg',
-        _label: SvgLabel,
+    interface TextSetting extends GraphItemSetting, SvgStyleSetting {
+        _type: 'text',
+        _label: TextLabel,
         _points: PointObject[],
         _text: string
     }
@@ -800,7 +800,6 @@ declare global {
 
     interface BaseState {
         isDeleted: boolean; // 是否被删除;
-        isSelf: boolean; // 是否是自己的内容
         [prop: string]: boolean;
     }
 
@@ -824,13 +823,11 @@ declare global {
         isEditing: boolean; // 是否正在编辑
     }
 
-    interface SvgState extends GraphItemState {
+    interface TextState extends GraphItemState {
         isEditing: boolean;
     }
 
     interface GraphState extends BaseState {
-        isChanged: boolean; // 是否变化
-        isSavedIn5min: boolean; // 5分钟内是否保存
         isExplode: boolean; // 是否爆炸
     }
 }

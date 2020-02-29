@@ -1,14 +1,14 @@
 declare global {
-    type BooleanConcern = "isStar" | "isBad" | "isGood" | "isShared";
+    type BooleanConcern = "NumStar" | "NumBad" | "NumGood" | "NumShared";
     type LevelConcern = "Imp" | "HardLevel" | "Useful";
     interface UserConcern {
         Imp: number;
         HardLevel: number;
         Useful: number;
-        isStar: boolean;
-        isShared: boolean;
-        isGood: boolean;
-        isBad: boolean;
+        NumStar: boolean;
+        NumShared: boolean;
+        NumGood: boolean;
+        NumBad: boolean;
         Labels: Array<string>;
     }
 }

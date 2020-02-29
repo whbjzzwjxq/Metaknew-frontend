@@ -278,9 +278,9 @@ export const sortByTime = (a: InfoPart, b: InfoPart) => {
 };
 
 export const sortByLabel = (a: InfoPart, b: InfoPart) => {
-    return a.PrimaryLabel > b.PrimaryLabel
+    return a._label > b._label
         ? 1
-        : a.PrimaryLabel === b.PrimaryLabel
+        : a._label === b._label
             ? 0
             : -1
 };
@@ -293,10 +293,10 @@ export const sortByName = (a: InfoPart, b: InfoPart) => {
             : -1
 };
 
-export const sortByIsStar = (a: UserConcern, b: UserConcern) => {
-    return a.isStar > b.isStar
+export const sortByNumStar = (a: UserConcern, b: UserConcern) => {
+    return a.NumStar > b.NumStar
         ? 1
-        : a.isStar === b.isStar
+        : a.NumStar === b.NumStar
             ? 0
             : -1
 };
@@ -311,7 +311,7 @@ export const emptyContent = () => {
         nodes: [],
         links: [],
         medias: [],
-        svgs: []
+        texts: []
     } as DocumentContent
 };
 
@@ -365,3 +365,7 @@ export const badResponse = (res: AxiosResponse) => {
 };
 
 export const doNothing = () => {};
+
+export function settingToQuery<T>(setting: Setting) {
+    return {id: setting._id, type: setting._type, pLabel: setting._label} as unknown as T
+}

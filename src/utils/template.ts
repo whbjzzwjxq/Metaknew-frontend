@@ -120,15 +120,15 @@ export function noteSettingTemplate(_id: id, _label: string, _title: string, _co
     return setting
 }
 
-export function svgSettingTemplate (_id: id, _label: SvgLabel, _points: PointObject[]) {
+export function textSettingTemplate (_id: id, _label: TextLabel, _points: PointObject[]) {
     let setting = {
         _id,
-        _type: 'svg',
+        _type: 'text',
         _label,
         _points,
         _text: ''
-    } as SvgSetting;
-    return Object.assign(setting, settingTemplate('svg'));
+    } as TextSetting;
+    return Object.assign(setting, settingTemplate('text'));
 }
 
 export function paperSettingTemplate(_id: id) {
@@ -140,53 +140,46 @@ export function paperSettingTemplate(_id: id) {
     return Object.assign(setting, settingTemplate('document'))
 }
 
-export function nodeStateTemplate(...rest: Array<string>) {
+export function nodeStateTemplate() {
     return {
         isSelected: false,
         isMouseOn: false,
         isDeleted: false,
-        isAdd: rest.indexOf("isAdd") > -1,
-        isSelf: rest.indexOf("isSelf") > -1
+        isAdd: false,
     } as NodeState;
 }
 
-export function linkStateTemplate(...rest: Array<string>) {
+export function linkStateTemplate() {
     return {
         isSelected: false,
         isMouseOn: false,
         isDeleted: false,
-        isAdd: rest.indexOf("isAdd") > -1,
-        isSelf: rest.indexOf("isSelf") > -1
+        isAdd: false,
     } as LinkState;
 }
 
-export function noteStateTemplate(...rest: Array<string>) {
+export function noteStateTemplate() {
     return {
         isSelected: false,
         isMouseOn: false,
-        isAdd: rest.indexOf("isAdd") > -1,
+        isAdd: false,
         isLock: false,
         isDark: false,
         isDeleted: false,
-        isSelf: true,
         isEditing: false
     } as NoteState
 }
 
-export function graphStateTemplate(...rest: Array<string>) {
+export function graphStateTemplate() {
     return <GraphState>{
         isDeleted: false,
-        isChanged: false,
-        isSavedIn5min: false,
         isExplode: true,
-        isSelf: rest.indexOf("isSelf") > -1,
     };
 }
 
-export function svgStateTemplate(...rest: Array<string>) {
-    return <SvgState>{
+export function textStateTemplate() {
+    return <TextState>{
         isDeleted: false,
-        isSelf: true,
         isAdd: true,
         isEditing: false,
         isMouseOn: false,
@@ -199,10 +192,10 @@ export function userConcernTemplate() {
         Imp: -1,
         HardLevel: -1,
         Useful: -1,
-        isStar: false,
-        isGood: false,
-        isBad: false,
-        isShared: false,
+        NumStar: false,
+        NumGood: false,
+        NumBad: false,
+        NumShared: false,
         Labels: []
     };
 }
@@ -242,34 +235,23 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
     return info;
 }
 
-export function nodeCtrlTemplate(_type: 'node' | 'document', _label: string) {
+export function nodeCtrlTemplate() {
     // Ctrl数据
-    let ctrl = {
+    return {
         CreateUser: getCookie("user_id"),
-        Source: 'User',
         UpdateTime: currentTime(),
-        PrimaryLabel: _label,
         Imp: randomIntegerInRange(0, 100),
         HardLevel: 50,
         Useful: 50,
-        isStar: 0,
-        isShared: 0,
-        isGood: 0,
-        isBad: 0,
+        NumStar: 0,
+        NumShared: 0,
+        NumGood: 0,
+        NumBad: 0,
         Contributor: {create: getCookie("user_name"), update: []},
         TotalTime: 50,
         Labels: [],
         CreateType: 'USER'
-    };
-    if (_type === 'node') {
-        return ctrl as BaseNodeCtrl
-    } else {
-        return Object.assign({
-            Size: 1,
-            Complete: 2,
-            MainNodes: [],
-        }, ctrl) as BaseGraphCtrl
-    }
+    } as BaseNodeCtrl
 }
 
 export function mediaInfoTemplate(_id: id, file: File) {
@@ -298,10 +280,10 @@ export function mediaCtrlTemplate(file: File) {
         UpdateTime: currentTime(),
         CreateUser: getCookie("user_id"),
         Source: 'User',
-        isStar: 0,
-        isGood: 0,
-        isBad: 0,
-        isShared: 0,
+        NumStar: 0,
+        NumGood: 0,
+        NumBad: 0,
+        NumShared: 0,
         Labels: [],
         CreateType: 'USER'
     };
@@ -313,7 +295,7 @@ export function linkInfoTemplate(_id: id, _label: string) {
         let {type, resolve} = value;
         StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
-    return <BaseLinkInfo>{
+    return {
         id: _id,
         type: "link",
         PrimaryLabel: _label,
@@ -323,11 +305,10 @@ export function linkInfoTemplate(_id: id, _label: string) {
         Name: '',
         Labels: [],
         ExtraProps: {},
-        Confidence: 0.5,
         StandardProps: StandardProps,
         Description: {},
         Translate: {'auto': ''}
-    };
+    } as BaseLinkInfo;
 }
 
 export function linkCtrlTemplate(_start: VisNodeSettingPart, _end: VisNodeSettingPart) {

@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import {documentQuery, mediaCreate, mediaQueryMulti, QueryObject, sourceQueryMulti} from '@/api/commonSource';
+import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti} from '@/api/commonSource';
 import {filePutBlob} from '@/api/fileUpload';
 import {
     DocumentSelfPart,
@@ -26,6 +26,7 @@ import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
 import {loginCookie} from "@/api/user/loginApi";
 import {State} from "@/store/modules/userInfo";
+import {settingToQuery} from "@/utils/utils";
 
 const getManager = (_type: string) =>
     _type === 'link'
@@ -157,7 +158,7 @@ const mutations = {
     infoAdd(state: DataManagerState, payload: { item: InfoPartInDataManager, strict?: boolean }) {
         let {item, strict} = payload;
         let _id = item._id;
-        let manager = getManager(item.type);
+        let manager = getManager(item._type);
         strict || (strict = true);
         strict
             ? Vue.set(manager, _id, item)
@@ -202,14 +203,6 @@ const actions = {
         await documentQuery(_id).then(res => {
             let {data} = res;
             let graphSelf = GraphSelfPart.resolveFromBackEnd(data, parent);
-            let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl, false);
-            commitInfoAdd({item: graphInfo});
-            commitDocumentAdd({document: graphSelf});
-            // 请求节点
-            let graph = graphSelf.Content;
-            context.dispatch('nodeQuery', graph.nodes.map(node => node.Setting));
-            context.dispatch('linkQuery', graph.links.map(link => link.Setting));
-            context.dispatch('mediaQuery', graph.medias.map(media => media._id))
         })
     },
 
@@ -221,7 +214,8 @@ const actions = {
             // 请求体
             let nodeQuery = noCacheNode.map(node => {
                 // 先使用假数据 然后再请求
-                let item = NodeInfoPart.emptyNodeInfoPart(node._id, node._type, node._label);
+                let query = settingToQuery<NodeQuery>(node);
+                let item = NodeInfoPart.emptyNodeInfoPart(query);
                 commitInfoAdd({item, strict: false});
                 return item.queryObject
             });
@@ -230,7 +224,7 @@ const actions = {
                 const {data} = res;
                 data.map(node => {
                     if (isNodeBackend(node)) {
-                        let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl, false);
+                        let nodeInfo = NodeInfoPart.resolveBackend(node);
                         nodeInfo.synchronizationAll();
                         commitInfoAdd({item: nodeInfo})
                     }
@@ -258,13 +252,7 @@ const actions = {
                 data.map(link => {
                     if (!isNodeBackend(link)) {
                         let linkSetting = noCacheLink.filter(setting => setting._id === link.Info._id)[0];
-                        let linkInfo = new LinkInfoPart(link.Info,
-                            Object.assign(link.Ctrl, {
-                                Start: linkSetting._start,
-                                End: linkSetting._end,
-                            }) as BaseLinkCtrl,
-                            false
-                        );
+                        let linkInfo = LinkInfoPart.resolveBackend(link);
 
                         commitInfoAdd({item: linkInfo})
                     }
@@ -281,21 +269,12 @@ const actions = {
         if (noCacheMedia.length > 0) {
             let defaultImage = require('@/assets/defaultImage.jpg');
             noCacheMedia.map(_id => {
-                commitInfoAdd({item: MediaInfoPart.emptyMediaInfo(_id, defaultImage)});
-                return <QueryObject>{
-                    id: _id,
-                    type: 'media',
-                    pLabel: 'unknown'
-                }
+                let item = MediaInfoPart.emptyMediaInfo(_id, defaultImage);
+                return item.queryObject
             });
 
             return mediaQueryMulti(noCacheMedia).then(res => {
-                const {data} = res;
-                data.map(media => {
-                    let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, false, 'remote', []);
-                    mediaInfo.synchronizationAll();
-                    commitInfoAdd({item: mediaInfo})
-                });
+                res.data.map(media => {MediaInfoPart.resolveBackend(media);});
             })
         }
     },
@@ -353,7 +332,7 @@ const actions = {
     },
 
     async graphSave(context: Context, payload: {graphList: GraphSelfPart[]}) {
-        
+
     }
 };
 

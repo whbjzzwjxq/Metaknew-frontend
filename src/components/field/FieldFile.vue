@@ -74,7 +74,7 @@
                             {{ file.Info.Name }}
                         </td>
                         <td>
-                            {{file.PrimaryLabel}}
+                            {{file._label}}
                         </td>
                         <td>
                             <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}

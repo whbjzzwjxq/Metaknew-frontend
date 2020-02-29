@@ -314,7 +314,7 @@
                     commitItemChange(info)
                 } else if (item.type === 'media') {
                     // media编辑
-                } else if (item.type === 'svg') {
+                } else if (item.type === 'text') {
                     let svg = this.getOriginItem(item);
                     svg.updateState('isEditing')
                 } else if (item.type === 'document') {

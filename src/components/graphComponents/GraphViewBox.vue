@@ -183,7 +183,7 @@
         NodeInfoPart,
         NodeSettingPart,
         NoteSettingPart,
-        SvgSettingPart
+        TextSettingPart
     } from '@/class/graphItem'
     import {maxN, minN} from "@/utils/utils"
     import {getPoint, Point, RectByPoint} from '@/class/geometric'
@@ -498,8 +498,8 @@
             },
 
             // svg
-            svgs: function (): SvgSettingPart[] {
-                return this.graph.Content.svgs
+            svgs: function (): TextSettingPart[] {
+                return this.graph.Content.texts
             },
 
             selectedItem: function (): GraphSubItemSettingPart[] {

@@ -42,35 +42,35 @@
             },
 
             userConcern: function (): UserConcern {
-                return this.userDataManager.userConcernDict[this.baseData.type][this.baseData._id]
+                return this.userDataManager.userConcernDict[this.baseData._type][this.baseData._id]
             },
 
             iconList: function (): IconItem[] {
-                let {isShared, isGood, isBad, isStar} = this.userConcern;
+                let {NumShared, NumGood, NumBad, NumStar} = this.userConcern;
                 return [
                     {
                         name: getIcon('i-edit', 'share'),
-                        color: isShared ? 'blue' : 'grey',
+                        color: NumShared ? 'blue' : 'grey',
                         _func: this.shareItem,
-                        num: this.ctrl.isShared
+                        num: this.ctrl.NumShared
                     },
                     {
-                        name: getIcon('i-good', isGood),
-                        color: isGood ? 'green' : 'grey',
+                        name: getIcon('i-good', NumGood),
+                        color: NumGood ? 'green' : 'grey',
                         _func: this.goodItem,
-                        num: this.ctrl.isGood
+                        num: this.ctrl.NumGood
                     },
                     {
-                        name: getIcon('i-bad', isBad),
-                        color: isBad ? 'red' : 'grey',
+                        name: getIcon('i-bad', NumBad),
+                        color: NumBad ? 'red' : 'grey',
                         _func: this.badItem,
-                        num: this.ctrl.isBad
+                        num: this.ctrl.NumBad
                     },
                     {
-                        name: getIcon('i-star', isStar),
-                        color: isStar ? 'yellow' : 'grey',
+                        name: getIcon('i-star', NumStar),
+                        color: NumStar ? 'yellow' : 'grey',
                         _func: this.starItem,
-                        num: this.ctrl.isStar
+                        num: this.ctrl.NumStar
                     },
                 ]
             },
@@ -85,21 +85,21 @@
         },
         methods: {
             shareItem: function () {
-                !this.userConcern.isShared && (this.ctrl.isShared += 1);
-                this.userConcern.isShared = true;
+                !this.userConcern.NumShared && (this.ctrl.NumShared += 1);
+                this.userConcern.NumShared = true;
             },
             goodItem: function () {
-                this.handleNum('isGood');
+                this.handleNum('NumGood');
                 this.addFragment('good')
             },
             badItem: function () {
-                this.handleNum('isBad')
+                this.handleNum('NumBad')
             },
             starItem: function () {
-                this.handleNum('isStar');
+                this.handleNum('NumStar');
                 this.addFragment('star')
             },
-            handleNum: function (prop: 'isGood' | 'isBad' | 'isStar') {
+            handleNum: function (prop: 'NumGood' | 'NumBad' | 'NumStar') {
                 this.userConcern[prop]
                     ? (this.ctrl[prop] -= 1)
                     : (this.ctrl[prop] += 1);

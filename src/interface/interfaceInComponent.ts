@@ -32,7 +32,7 @@ export type GraphMetaData = {
     parent: GraphMetaData | null, //对应的上级MetaData
 }
 
-export type SortProp = 'UpdateTime' | 'isStar' | 'PrimaryLabel' // 排序方式
+export type SortProp = 'UpdateTime' | 'NumStar' | 'PrimaryLabel' // 排序方式
 
 // SearchBar
 

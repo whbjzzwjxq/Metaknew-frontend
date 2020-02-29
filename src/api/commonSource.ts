@@ -1,12 +1,6 @@
 import {instance} from './main'
 import {GraphSelfPart, MediaInfoPart} from "@/class/graphItem";
 
-export interface QueryObject {
-    id: id;
-    type: AllType;
-    pLabel: string;
-} // 用于Query
-
 export interface BackendNodeInfoPart {
     Info: BaseNodeInfo;
     Ctrl: BaseNodeCtrl;
@@ -28,15 +22,12 @@ export interface BackendLinkInfoPart {
 }
 
 export interface BackendGraph {
-    Base: {
-        Info: BaseNodeInfo;
-        Ctrl: BaseNodeCtrl;
-    };
+    Base: BackendNodeInfoPart;
     Content: {
         nodes: Array<NodeSetting>;
-        links: Array<compressLinkSetting>;
+        links: Array<BackendLinkSetting>;
         medias: Array<MediaSetting>;
-        svgs: Array<SvgSetting>;
+        texts: Array<TextSetting>;
     };
     Conf: GraphSetting;
 }

@@ -33,8 +33,8 @@ export class PaperSelfPart extends DocumentSelfPart {
     Content: DocumentContent;
     Conf: PaperConf;
 
-    constructor(paper: DocumentContent, conf: PaperConf, draftId?: number) {
-        super(paper, conf, draftId);
+    constructor(paper: DocumentContent, conf: PaperConf, isRemote: boolean, draftId?: number) {
+        super(paper, conf, isRemote, draftId);
         this.Content = paper;
         this.Conf = conf;
         PaperSelfPart.list.push(this)
@@ -42,10 +42,11 @@ export class PaperSelfPart extends DocumentSelfPart {
 
     static emptyPaperSelfPart(_id: id, parent: DocumentSelfPart | null, commitToVuex?: boolean) {
         commitToVuex === undefined && (commitToVuex = true);
+        let query = {id: _id, type: 'document', pLabel: 'DocPaper'} as DocumentQuery;
         let paperContent = emptyContent();
         let setting = PaperConf.emptyPaperConf(_id, parent);
-        let paper = new PaperSelfPart(paperContent, setting);
-        let info = NodeInfoPart.emptyNodeInfoPart(_id, 'document', 'DocPaper');
+        let paper = new PaperSelfPart(paperContent, setting, false);
+        let info = NodeInfoPart.emptyNodeInfoPart(query);
         let payload = {paper, info};
         if (commitToVuex) {
             paper.commitPaperToVuex(payload)

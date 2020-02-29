@@ -15,7 +15,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import {GraphSelfPart, SvgSettingPart} from "@/class/graphItem";
+    import {GraphSelfPart, TextSettingPart} from "@/class/graphItem";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIndex} from "@/utils/utils";
 
@@ -26,7 +26,7 @@
         },
         data: function () {
             return {
-                svgIcon: getIcon('i-item', 'svg')
+                svgIcon: getIcon('i-item', 'text')
             }
         },
         props: {},
@@ -46,7 +46,7 @@
         methods: {
             addNewRect() {
                 let _id = getIndex();
-                let rect = SvgSettingPart.emptyRect(_id, this.currentGraph);
+                let rect = TextSettingPart.emptyRect(_id, this.currentGraph);
                 this.currentGraph.addItems([rect])
             },
             addNewSquare() {

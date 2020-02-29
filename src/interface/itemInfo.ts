@@ -6,17 +6,17 @@ import {
     MediaSettingPart,
     NodeInfoPart,
     NodeSettingPart,
-    SvgSettingPart
+    TextSettingPart
 } from "@/class/graphItem";
 import {PathNodeSettingPart} from "@/class/path";
 
 declare global {
     type id = number | string;
     type ItemType = "node" | "link" | "media" | "document" // 基础的type
-    type GraphItemType = ItemType | "svg" | "note"; // Graph里使用的type
+    type GraphItemType = ItemType | "text" | "note"; // Graph里使用的type
     type AllType = GraphItemType | "fragment" | "path";
-    type GraphTypeS = 'nodes' | 'medias' | 'links' | "svgs";
-    type MediaStatus = "new" | "remote" | "uploading" | "error" | "success" | "warning";
+    type GraphTypeS = 'nodes' | 'medias' | 'links' | "texts";
+    type MediaStatus = "new" | "uploading" | "error" | "success" | "warning";
     type IdMap = Record<id, id>; // 新旧id的Map
     //带有翻译的格式
     type Translate = Record<string, string>
@@ -52,10 +52,10 @@ declare global {
     }
 
     interface PublicCtrl extends BaseCtrl {
-        isStar: number;
-        isShared: number;
-        isGood: number;
-        isBad: number;
+        NumStar: number;
+        NumShared: number;
+        NumGood: number;
+        NumBad: number;
         // 向外发布的内容才有统计数据
     }
 
@@ -77,13 +77,6 @@ declare global {
         Useful: number;
         Contributor: Object;
         TotalTime: number;
-    }
-
-    //GraphInfo 和 NodeInfo一样
-    interface BaseGraphCtrl extends BaseNodeCtrl {
-        Size: number;
-        MainNodes: Array<id>;
-        Complete: number
     }
 
     interface BaseMediaInfo extends BaseInfo {
@@ -114,7 +107,13 @@ declare global {
         nodes: Array<NodeSettingPart>;
         links: Array<LinkSettingPart>;
         medias: Array<MediaSettingPart>;
-        svgs: Array<SvgSettingPart>;
+        texts: Array<TextSettingPart>;
+    }
+
+    interface DocumentData {
+        draftId?: number;
+        isRemote: boolean;
+        lastSave: number;
     }
 
     interface PathConf extends Setting {
@@ -130,4 +129,28 @@ declare global {
     type PathArray = (PathNodeSettingPart | null)[][];
 
     type InfoPartInDataManager = NodeInfoPart | LinkInfoPart | MediaInfoPart
+
+    interface QueryObject {
+        id: id;
+        type: AllType;
+        pLabel: string;
+    } // 用于Query
+
+    interface NodeQuery extends QueryObject{
+        type: 'node' | 'document'
+    }
+
+    interface LinkQuery extends QueryObject{
+        type: 'link'
+    }
+
+    interface MediaQuery extends QueryObject{
+        type: 'media'
+    }
+
+    type DocumentLabel = 'DocPaper' | 'DocGraph' | 'Path'
+    interface DocumentQuery extends NodeQuery{
+        type: 'document'
+        pLabel: DocumentLabel
+    }
 }

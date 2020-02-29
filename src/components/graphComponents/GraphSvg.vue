@@ -51,7 +51,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {SvgSettingPart} from "@/class/graphItem";
+    import {TextSettingPart} from "@/class/graphItem";
     import {RectByPoint} from "@/class/geometric";
     import RectContainer from "@/components/container/RectContainer.vue";
     import FieldTextRender from "@/components/field/FieldTextRender.vue";
@@ -67,7 +67,7 @@
         },
         props: {
             svg: {
-                type: Object as () => SvgSettingPart,
+                type: Object as () => TextSettingPart,
                 required: true
             },
             scale: {
@@ -80,7 +80,7 @@
             }
         },
         computed: {
-            setting: function (): SvgSetting {
+            setting: function (): TextSetting {
                 return this.svg.Setting
             },
 
@@ -88,7 +88,7 @@
                 return this.setting._points
             },
 
-            label: function (): SvgLabel {
+            label: function (): TextLabel {
                 return this.setting._label
             },
 
