@@ -22,7 +22,6 @@ export interface BackendLinkInfoPart {
 }
 
 export interface BackendGraph {
-    Base: BackendNodeInfoPart;
     Content: {
         nodes: Array<NodeSetting>;
         links: Array<BackendLinkSetting>;
@@ -30,6 +29,10 @@ export interface BackendGraph {
         texts: Array<TextSetting>;
     };
     Conf: GraphSetting;
+}
+
+export interface BackendGraphWithNode extends BackendGraph {
+    Base: BackendNodeInfoPart;
 }
 
 export function mediaCreate(data: { name: string, Info: BaseMediaInfo }) {
@@ -91,7 +94,7 @@ export function nodeQuery(payload: QueryObject) {
 }
 
 export function documentQuery(_id: id) {
-    return instance.request<BackendGraph>({
+    return instance.request<BackendGraphWithNode>({
         url: '/document/query/graph',
         method: 'get',
         params: {

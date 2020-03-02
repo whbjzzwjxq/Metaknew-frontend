@@ -190,7 +190,7 @@
                 return result
             },
             // 现有的真的MediaInfoPart
-            currentRealFiles: function () {
+            currentRealFiles: function (): MediaInfoPart[] {
                 return this.baseFiles.map((_id: id) => this.$store.state.dataManager.mediaManager[_id])
             },
         },

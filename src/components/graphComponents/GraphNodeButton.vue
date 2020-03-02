@@ -80,7 +80,7 @@
                 let deleteIcon;
                 this.node._type === 'document'
                     ? deleteIcon = false
-                    : this.node.State.isDeleted
+                    : this.node.isDeleted
                     ? deleteIcon = 'rollback'
                     : deleteIcon = true;
 
@@ -104,7 +104,7 @@
         },
         methods: {
             deleteItem() {
-                let current = this.node.State.isDeleted;
+                let current = this.node.isDeleted;
                 this.$set(this.node.State, 'isDeleted', !current);
             },
             unShow() {

@@ -69,7 +69,7 @@
             render-as-border
             expand
             v-for="(metaData, index) in activeGraphRectList"
-            v-show="metaData.self.Conf.State.isExplode">
+            v-show="metaData.self.isExplode">
 
         </rect-container>
 
@@ -494,7 +494,7 @@
             },
 
             notes: function (): NoteSettingPart[] {
-                return this.userDataManager.userNoteInDoc.filter(item => !item.State.isDeleted && item.Setting._parent === this.graph._id)
+                return this.userDataManager.userNoteInDoc.filter(item => !item.isDeleted && item.Setting._parent === this.graph._id)
             },
 
             // svg
@@ -626,7 +626,7 @@
                         y,
                         show: this.showNode[index],
                         isSelected: node.State.isSelected,
-                        isDeleted: node.State.isDeleted
+                        isDeleted: node.isDeleted
                     }
                 });
             },
@@ -652,7 +652,7 @@
             showNode: function (): boolean[] {
                 return this.nodes.map(node =>
                     // 父组件要炸开
-                    (node.isFatherExplode && this.labelViewDict[node._type][node._label] && !node.State.isDeleted) ||
+                    (node.isFatherExplode && this.labelViewDict[node._type][node._label] && !node.isDeleted) ||
                     node._id === this.graph._id
                 )
             },
@@ -660,9 +660,9 @@
             //显示边
             showLink: function (): boolean[] {
                 return this.links.map(link =>
-                    link.parent.Conf.State.isExplode && // 父组件要炸开
+                    link.isFatherExplode && // 父组件要炸开
                     this.labelViewDict.link[link._label] &&
-                    !link.State.isDeleted &&
+                    !link.isDeleted &&
                     this.getTargetInfo(link.Setting._start).show &&
                     this.getTargetInfo(link.Setting._end).show
                 )
@@ -671,13 +671,13 @@
             showMedia: function (): boolean[] {
                 return this.medias.map(media =>
                     this.labelViewDict.media[media._label] &&
-                    !media.State.isDeleted &&
+                    !media.isDeleted &&
                     media.Setting.Show.showAll
                 )
             },
 
             showSvg: function (): boolean[] {
-                return this.svgs.map(svg => !svg.State.isDeleted && svg.Setting.Show.showAll)
+                return this.svgs.map(svg => !svg.isDeleted && svg.Setting.Show.showAll)
             },
 
             //选择框的相关设置

@@ -383,7 +383,7 @@
 
             saveNodes(nodes: BaseNodeInfo[]) {
                 let _this = this;
-                nodeBulkCreate(this.pLabel, nodes).then(res => {
+                nodeBulkCreate(nodes).then(res => {
                     if (res.status === 200) {
                         for (let i in nodes) {
                             this.nodes.splice(_this.idList.indexOf(nodes[i]._id), 1);

@@ -15,21 +15,26 @@ import {
     commitDocumentRemove,
     commitFileToken,
     commitInfoAdd,
+    commitInfoChangeId,
     commitInfoRemove,
     commitItemChange,
-    commitSnackbarOn, commitUserConcernAdd,
+    commitSnackbarOn,
+    commitUserConcernAdd,
     commitUserConcernChangeId
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
 import {isGraphSelfPart, isNodeBackend} from "@/utils/typeCheck";
-import {dispatchGraphQuery} from "@/store/modules/_dispatch";
+import {dispatchGraphQuery, dispatchLinkBulkCreate, dispatchVisNodeCreate} from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
 import {loginCookie} from "@/api/user/loginApi";
 import {settingToQuery} from "@/utils/utils";
 import {userConcernTemplate} from "@/utils/template";
+import {visNodeBulkCreate} from "@/api/subgraph/node";
+import {linkBulkCreate} from "@/api/subgraph/link";
+import {documentBulkCreate, documentBulkUpdate} from "@/api/document/document";
 
-const getManager = (_type: string) =>
+export const getManager = (_type: ItemType) =>
     _type === 'link'
         ? state.linkManager
         : _type === 'media'
@@ -61,6 +66,7 @@ declare global {
         state: DataManagerState,
         commit: Commit,
         dispatch: Dispatch,
+        getters: any
     }
 }
 
@@ -142,7 +148,7 @@ const mutations = {
     },
 
     documentRemove(state: DataManagerState, payload: id) {
-        delete state.graphManager[payload]
+        Vue.delete(state.graphManager, payload)
     },
 
     documentChangeId(state: DataManagerState, payload: { oldId: id, newId: id }) {
@@ -152,6 +158,8 @@ const mutations = {
             oldGraph._id = newId;
             commitDocumentAdd({document: oldGraph});
             commitDocumentRemove(oldId);
+        } else {
+            // 普通Node
         }
     },
 
@@ -167,7 +175,7 @@ const mutations = {
         commitUserConcernAdd({id: _id, type: _type, userConcern: userConcernTemplate(), strict: false})
     },
 
-    infoRemove(state: DataManagerState, payload: { _id: id, _type: string }) {
+    infoRemove(state: DataManagerState, payload: { _id: id, _type: ItemType }) {
         let manager = getManager(payload._type);
         delete manager[payload._id]
     },
@@ -184,7 +192,7 @@ const mutations = {
                 commitInfoRemove({_id: oldId, _type: _type});
             }
             // 额外检查一下Graph
-            _type === 'document' &&
+            (_type === 'document' || _type === 'node') &&
             commitDocumentChangeId({oldId, newId})
         });
         commitUserConcernChangeId(payload);
@@ -325,8 +333,68 @@ const actions = {
         }
     },
 
-    async graphSave(context: Context, payload: { graphList: GraphSelfPart[] }) {
+    async visNodeCreate(context: Context) {
+        let nodeList = Object.values(state.nodeManager).filter(node => !node.isRemote).map(item => item.Info);
+        let mediaList = Object.values(state.mediaManager).filter(media => !media.isRemote).map(item => item.Info);
+        if (nodeList.length + mediaList.length > 0) {
+            return visNodeBulkCreate(nodeList, mediaList).then(res => {
+                Object.entries(res.data).map(([_type, idMap]) => {
+                    idMap && commitInfoChangeId({_type, idMap})
+                })
+            })
+        } else {
+            return true
+        }
+    },
 
+    async linkBulkCreate(context: Context, payload: CompressLinkInfo[]) {
+        if (payload.length > 0) {
+            return linkBulkCreate(payload, 'USER').then(res => {
+                let idMap = res.data;
+                idMap && commitInfoChangeId({_type: 'link', idMap})
+            })
+        } else {
+            return true
+        }
+    },
+
+    async documentSave(context: Context, payload: 'current' | 'all') {
+        await dispatchVisNodeCreate();
+        await dispatchLinkBulkCreate(
+            Object.values(state.linkManager).filter(link => !link.isRemote).map(item => item.compress())
+        );
+        let documentList: DocumentSelfPart[];
+        if (payload === 'current') {
+            let document = context.state.currentGraph;
+            documentList = document.rootList;
+            documentList.push(document);
+        } else {
+            documentList = context.getters.documentList
+        }
+        let dataList = documentList.filter(document => !document.DocumentData.isRemote)
+            .map(document => document.backendDocument);
+        console.log(dataList);
+        let updateDataList = documentList.filter(document => document.DocumentData.isRemote).map(
+            document => document.backendDocument);
+        console.log(updateDataList);
+        if (updateDataList.length > 0) {
+            documentBulkUpdate(updateDataList).then(res => {
+                let idList = res.data;
+                idList.map(id => {
+                    let graph = state.graphManager[id];
+                    graph && (graph.updateStateUpdate())
+                })
+            });
+        }
+        if (dataList.length > 0) {
+            await documentBulkCreate(dataList).then(res => {
+                let idList = res.data;
+                idList.map(id => {
+                    let graph = state.graphManager[id];
+                    graph && (graph.updateStateSave())
+                })
+            })
+        }
     }
 };
 

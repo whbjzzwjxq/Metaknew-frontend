@@ -504,8 +504,9 @@ const mediaSetting = () => {
         Base: BaseSettingGroup(),
         Border: BorderSettingGroup(),
         Show: mergeSetting(showAll(), showBorder(), showAppendText()),
-        Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup())
-    }
+        Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup()),
+        View: mergeSetting(isMain(), opacity())
+    };
     let replace = {
         Base: {
             size: {
@@ -540,7 +541,7 @@ const noteSetting = () => {
     return result as SettingAll
 };
 
-const svgSetting = () => {
+const textSetting = () => {
     let result = {
         Base: BaseSettingGroup(),
         Border: BorderSettingGroup(),
@@ -590,7 +591,7 @@ export const typeSetting: Record<AllType, SettingAll> = {
     'link': linkSetting,
     'document': documentSetting,
     'media': mediaSetting(),
-    'text': svgSetting(),
+    'text': textSetting(),
     'note': noteSetting(),
     'fragment': fragmentSetting,
     'path': pathSetting
@@ -744,8 +745,8 @@ declare global {
     }
 
     interface BackendLinkSetting extends GraphItemSetting, LinkStyleSetting {
-        _start: GraphItemSetting;
-        _end: GraphItemSetting;
+        _start: VisNodeQuery;
+        _end: VisNodeQuery;
     }
 
     interface GraphSetting extends GraphItemSetting {

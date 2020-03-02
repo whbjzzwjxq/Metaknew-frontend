@@ -412,7 +412,7 @@
                         Content: this.info,
                         VersionId: this.baseData.State.draftId
                     } as Draft;
-                    if (this.baseData.isSaved) {
+                    if (this.baseData.isRemote) {
                         draftUpdate([data], isAuto, this.type !== 'link').then(res => {
                             let {IdMap, DraftIdMap} = res.data;
                             this.baseData.State.draftId = DraftIdMap[this.baseData._id]
@@ -420,18 +420,16 @@
                     } else {
                         draftCreate([data], isAuto, this.type !== 'link').then(res => {
                             let {IdMap, DraftIdMap} = res.data;
-                            commitInfoChangeId({_type: this.type, idMap: IdMap});
                             this.baseData.State.draftId = DraftIdMap[this.baseData._id]
                         })
                     }
                 } else {
                     let data = [this.info];
-                    if (this.baseData.State.isRemote) {
+                    if (this.baseData.isRemote) {
                     } else {
                         nodeBulkCreate(data).then(res => {
                             let idMap = res.data;
                             commitInfoChangeId({_type: this.type, idMap});
-                            this.baseData.State.isRemote = true
                         })
                     }
                 }

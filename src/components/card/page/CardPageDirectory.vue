@@ -43,7 +43,12 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {commitGraphChange, commitItemChange, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {
+        commitChangeRootTab, commitChangeSubTab,
+        commitGraphChange,
+        commitItemChange,
+        commitSnackbarOn
+    } from "@/store/modules/_mutations";
     import {
         GraphSelfPart,
         LinkSettingPart,
@@ -180,6 +185,7 @@
         },
         methods: {
             buildStructure: function () {
+                console.log('structure');
                 let docItemDict: Record<id, DirectoryItemDocument> = {};
                 let docLayerDict: Record<number, GraphSelfPart[]> = {};
                 let tree: DirectoryItemDocument[] = [];
@@ -210,6 +216,7 @@
                 this.tree = tree;
                 this.docItemDict = docItemDict;
                 this.docLayerDict = docLayerDict;
+                this.buildDirectory();
             },
 
             buildDirectory: function () {
@@ -227,8 +234,8 @@
                 label: node._label,
                 name: node.Setting._name,
                 icon: getIcon('i-item', 'node'),
-                deletable: node.parent.Conf.State.isSelf,
-                editable: node.State.isSelf,
+                deletable: node.parent.isSelf,
+                editable: node.isSelf,
                 parent: node.parent._id,
                 children: node._type === 'document' && node._id !== node.parent._id ? [] : undefined
             }) as DirectoryItem,
@@ -239,8 +246,8 @@
                 label: link._label,
                 icon: getIcon('i-item', 'link'),
                 name: link.Setting._start.Setting._name + ' --> ' + link.Setting._end.Setting._name,
-                deletable: link.parent.Conf.State.isSelf,
-                editable: link.State.isSelf,
+                deletable: link.parent.isSelf,
+                editable: link.isSelf,
                 parent: link.parent._id
             }) as DirectoryItem,
 
@@ -250,8 +257,8 @@
                 label: media._label,
                 name: media.Setting._name,
                 icon: getIcon("i-media-type", media._label),
-                deletable: media.parent.Conf.State.isSelf,
-                editable: false,
+                deletable: media.parent.isSelf,
+                editable: media.isSelf,
                 parent: media.parent._id
             }) as DirectoryItem,
 
@@ -263,9 +270,9 @@
                     name: document.baseNode.Setting._name,
                     icon: getIcon('i-item', document.baseNode._label),
                     deletable: false,
-                    editable: document.Conf.State.isSelf,
+                    editable: document.isSelf,
                     children: [], // 注意这里的children是空的
-                    parent: document.Conf.parent ? document.Conf.parent._id : '$_-1', // 注意这里对rootGraph的parent进行了一个假设
+                    parent: document.Conf.parent ? document._id : '$_-1', // 注意这里对rootGraph的parent进行了一个假设
                     childDoc: []
                 } as DirectoryItemDocument;
             },
@@ -308,10 +315,12 @@
             editItem(item: DirectoryItem) {
                 if (item.type === 'node') {
                     let info = this.dataManager.nodeManager[item._id];
-                    commitItemChange(info)
+                    commitItemChange(info);
+                    commitChangeSubTab('info');
                 } else if (item.type === 'link') {
                     let info = this.dataManager.linkManager[item._id];
-                    commitItemChange(info)
+                    commitItemChange(info);
+                    commitChangeSubTab('info');
                 } else if (item.type === 'media') {
                     // media编辑
                 } else if (item.type === 'text') {
@@ -332,9 +341,9 @@
             },
 
             async getDocument(nodeItem: DirectoryItem) {
-                let node = this.getOriginItem(nodeItem) as NodeSettingPart;
-                let document = node.parent;
-                await dispatchNodeExplode({node, document});
+                // let node = this.getOriginItem(nodeItem) as NodeSettingPart;
+                // let document = node.parent;
+                // await dispatchNodeExplode({node, document});
             },
 
             open(itemList: DirectoryItem[]) {
@@ -372,7 +381,6 @@
         },
         mounted: function (): void {
             this.buildStructure();
-            this.buildDirectory()
         },
         record: {
             status: 'editing',

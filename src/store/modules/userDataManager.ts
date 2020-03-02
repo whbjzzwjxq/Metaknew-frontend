@@ -104,7 +104,7 @@ const actions = {
     userConcernQuery(context: ActionContext<UserDataManagerState, RootState>, payload: InfoPartInDataManager) {
         let state = context.state;
         let userConcern = state.userConcernDict[payload._type][payload._id];
-        if (payload.State.isRemote) {
+        if (payload.isRemote) {
             if (userConcern && userConcern.isRemote) {
                 return userConcern
             } else {

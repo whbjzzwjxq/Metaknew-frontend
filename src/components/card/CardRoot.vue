@@ -108,7 +108,7 @@
                 return this.dataManager.currentItem
             },
             currentItemType: function (): GraphItemType {
-                let _type = this.currentItem.type;
+                let _type = this.currentItem._type;
                 _type === 'document' && (_type = 'node');
                 return _type
             },

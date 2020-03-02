@@ -1,4 +1,4 @@
-import {ExtraProps, ValueWithType} from "@/utils/fieldResolve";
+import {ExtraProps} from "@/utils/fieldResolve";
 import {
     LinkInfoPart,
     LinkSettingPart,
@@ -21,7 +21,7 @@ declare global {
     //带有翻译的格式
     type Translate = Record<string, string>
     interface InfoState {
-        isRemote: boolean // 是否有远端模型
+        remoteNotFound: boolean // 远端模型是否被删除
         isEdit: boolean // 自上次保存后，是否编辑过
         draftId?: id // 对应草稿的versionId 如果没有那么就是undefined
     }
@@ -36,11 +36,14 @@ declare global {
         Labels: string[], //统计后的标签
         ExtraProps: ExtraProps, //额外属性
         StandardProps: ExtraProps, // 标准属性
+
+        [prop: string]: any;
+    }
+
+    interface PublicInfo extends BaseInfo {
         IsCommon: boolean;
         IsFree: boolean;
         IsOpenSource: boolean;
-
-        [prop: string]: any;
     }
 
     interface BaseCtrl {
@@ -59,7 +62,7 @@ declare global {
         // 向外发布的内容才有统计数据
     }
 
-    interface BaseNodeInfo extends BaseInfo {
+    interface BaseNodeInfo extends PublicInfo {
         type: "node" | "document";
         Alias: Array<string>;
         Topic: Array<string>;
@@ -79,7 +82,7 @@ declare global {
         TotalTime: number;
     }
 
-    interface BaseMediaInfo extends BaseInfo {
+    interface BaseMediaInfo extends PublicInfo {
         type: "media";
 
         [propName: string]: any;
@@ -91,10 +94,15 @@ declare global {
         Thumb: string; // 缩略图
     }
 
-    interface BaseLinkInfo extends BaseInfo {
+    interface BaseLinkInfo extends PublicInfo {
         type: "link";
 
         [propName: string]: any;
+    }
+
+    interface CompressLinkInfo extends BaseLinkInfo {
+        Start: QueryObject;
+        End: QueryObject;
     }
 
     interface BaseLinkCtrl extends PublicCtrl {
@@ -139,6 +147,8 @@ declare global {
     interface NodeQuery extends QueryObject{
         type: 'node' | 'document'
     }
+
+    type VisNodeQuery = NodeQuery | MediaQuery
 
     interface LinkQuery extends QueryObject{
         type: 'link'

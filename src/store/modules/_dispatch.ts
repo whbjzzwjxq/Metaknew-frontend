@@ -21,3 +21,15 @@ export function dispatchNodeExplode(payload: { node: NodeSettingPart, document: 
 export function dispatchFragmentAdd(payload: FragmentInfoPart) {
     return store.dispatch('fragmentAdd', payload)
 }
+
+export function dispatchVisNodeCreate() {
+    return store.dispatch('visNodeCreate')
+}
+
+export function dispatchDocumentSave(payload: 'current' | 'all') {
+    return store.dispatch('documentSave', payload)
+}
+
+export function dispatchLinkBulkCreate(payload: CompressLinkInfo[]) {
+    return store.dispatch('linkBulkCreate', payload)
+}

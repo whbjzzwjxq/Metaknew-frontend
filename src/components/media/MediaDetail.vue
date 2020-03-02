@@ -167,7 +167,7 @@
             },
             //markdown编辑器模式
             prop() {
-                if (this.media.PrimaryLabel === 'markdown') {
+                if (this.media._label === 'markdown') {
                     //阅读模式
                     if (this.dialogEdit === false) {
                         return {
@@ -194,14 +194,14 @@
         methods: {
             init() {
                 let realSrc = getSrc(this.media.Ctrl.FileName);
-                if (this.media.PrimaryLabel === 'pdf') {
+                if (this.media._label === 'pdf') {
                     this.pdfSrc = pdf.createLoadingTask(realSrc);
                     this.pdfSrc.then(pdf => {
                         this.numPages = pdf.numPages
                     }).catch(() => {
                     })
                 }
-                if (this.media.PrimaryLabel === 'markdown') {
+                if (this.media._label === 'markdown') {
                     axios.get(realSrc).then(response => {
                         this.mdText = response.data
                     })
@@ -237,7 +237,7 @@
                 this.dialogEdit = !this.dialogEdit
             },
             handleSave() {
-                if (this.media.PrimaryLabel === "markdown") {
+                if (this.media._label === "markdown") {
                     let currentValue = this.$refs.md.d_value;
                     let updateValue = [];
                     updateValue.push(currentValue);
