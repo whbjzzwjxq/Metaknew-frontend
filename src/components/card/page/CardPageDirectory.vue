@@ -185,7 +185,6 @@
         },
         methods: {
             buildStructure: function () {
-                console.log('structure');
                 let docItemDict: Record<id, DirectoryItemDocument> = {};
                 let docLayerDict: Record<number, GraphSelfPart[]> = {};
                 let tree: DirectoryItemDocument[] = [];

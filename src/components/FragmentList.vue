@@ -1,5 +1,5 @@
 <template>
-    <v-card :height="height" :width="width" class="cardItem">
+    <v-card :height="container.height" :width="container.width" class="cardItem">
         <v-card-title>
             Your Fragment
         </v-card-title>
@@ -24,23 +24,20 @@
         data: function () {
             return {}
         },
-        props: {
-            width: {
-                type: Number as () => number,
-                default: 480
-            },
-            height: {
-                type: Number as () => number,
-                default: 720
-            }
-        },
+        props: {},
         computed: {
             userDataManager: function (): UserDataManagerState {
                 return this.$store.state.userDataManager
             },
             fragments: function (): FragmentInfoPart[] {
                 return this.userDataManager.fragments
-            }
+            },
+            styleManager: function (): StyleManagerState {
+                return this.$store.state.styleComponentSize
+            },
+            container: function (): ComponentSize {
+                return this.styleManager.noteBook
+            },
         },
         methods: {},
         record: {

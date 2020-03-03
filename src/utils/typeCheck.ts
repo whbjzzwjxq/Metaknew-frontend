@@ -11,6 +11,7 @@ import {
 import {BackendLinkInfoPart, BackendNodeInfoPart} from "@/api/commonSource";
 import {PathNode, PathNodeExist} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
+import {ListItem, ListText, ListTitle} from "@/interface/interfaceInComponent";
 
 export function isNodeBackend(item: BackendNodeInfoPart | BackendLinkInfoPart): item is BackendNodeInfoPart {
     let type = (item as BackendNodeInfoPart).Info.type;
@@ -74,4 +75,8 @@ export function isMediaInfoPart(info: InfoPart): info is MediaInfoPart {
 
 export function isPathNodeExist(item: PathNode): item is PathNodeExist {
     return (item as PathNodeExist).node !== null
+}
+
+export function isListText(item: ListText | ListTitle): item is ListText {
+    return !(item as ListText).isTitle
 }

@@ -12,7 +12,7 @@
                 </v-menu>
             </div>
             <div class="button-normal pb-4">
-                <v-menu top offset-x :close-on-content-click="false">
+                <v-menu top offset-x :close-on-content-click="false" nudge-bottom="100" nudge-right="12">
                     <template v-slot:activator="{ on }">
                         <v-btn fixed fab color="green" large v-on="on" v-show="toolbarOn">
                             <v-icon color="#111111"> {{ fragmentIcon }}</v-icon>

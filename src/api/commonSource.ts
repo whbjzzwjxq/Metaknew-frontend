@@ -76,12 +76,14 @@ export function mediaAppendToNode(node: QueryObject, mediaList: Array<id>) {
 
 export function mediaQueryMulti(queryList: Array<id>) {
     return instance.request<BackendMediaInfoPart[]>({
-        url: '/subgraph/query/media/multi',
+        url: '/item/media/query',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        data: queryList
+        data: {
+            DataList: queryList
+        }
     })
 }
 
@@ -93,12 +95,12 @@ export function nodeQuery(payload: QueryObject) {
     })
 }
 
-export function documentQuery(_id: id) {
+export function documentQuery(id: id) {
     return instance.request<BackendGraphWithNode>({
         url: '/document/query/graph',
         method: 'get',
         params: {
-            _id
+            id
         }
     })
 }
@@ -118,11 +120,23 @@ export function documentSave(document: GraphSelfPart, isDraft: boolean, isAuto: 
     })
 }
 
-export function sourceQueryMulti(list: Array<QueryObject>) {
-    return instance.request<(BackendNodeInfoPart | BackendLinkInfoPart)[]>({
-        url: '/subgraph/query/multi',
+export function nodeQueryBulk(list: Array<QueryObject>) {
+    return instance.request<BackendNodeInfoPart[]>({
+        url: '/item/node/query',
         method: 'post',
-        data: list.map(query => [query.id, query.type, query.pLabel])
+        data: {
+            DataList: list
+        }
+    })
+}
+
+export function linkQueryBulk(list: Array<QueryObject>) {
+    return instance.request<BackendLinkInfoPart[]>({
+        url: '/item/link/query',
+        method: 'post',
+        data: {
+            DataList: list
+        }
     })
 }
 

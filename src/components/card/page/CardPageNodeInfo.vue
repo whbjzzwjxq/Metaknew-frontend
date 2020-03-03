@@ -189,6 +189,7 @@
     import {Draft, draftCreate, draftUpdate} from "@/api/subgraph/commonApi";
     import {commitInfoChangeId} from "@/store/modules/_mutations";
     import {nodeBulkCreate} from "@/api/subgraph/node";
+    import {dispatchMediaQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -437,13 +438,13 @@
         },
         watch: {},
         created() {
-            this.$store.dispatch('mediaQuery', this.baseData.Info.IncludedMedia).then(() => {
+            dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
                 this.loading = false
             })
         },
 
         updated() {
-            this.$store.dispatch('mediaQuery', this.baseData.Info.IncludedMedia).then(() => {
+            dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
                 this.loading = false
             })
         },

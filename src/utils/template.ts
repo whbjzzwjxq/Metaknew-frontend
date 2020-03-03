@@ -255,12 +255,12 @@ export function nodeCtrlTemplate() {
     } as BaseNodeCtrl
 }
 
-export function mediaInfoTemplate(_id: id, file: File) {
+export function mediaInfoTemplate(_id: id, file?: File) {
     return <BaseMediaInfo>{
         id: _id,
         type: "media",
-        PrimaryLabel: getMediaType(file),
-        Name: file.name.split(".")[0],
+        PrimaryLabel: file ? getMediaType(file) : 'unknown',
+        Name: file ? file.name.split(".")[0] : "NewMedia" + _id,
         Labels: [],
         IsCommon: true,
         IsOpenSource: false,
@@ -272,11 +272,11 @@ export function mediaInfoTemplate(_id: id, file: File) {
     };
 }
 
-export function mediaCtrlTemplate(file: File) {
+export function mediaCtrlTemplate(file?: File) {
     return <BaseMediaCtrl>{
-        FileName: URL.createObjectURL(file),
-        Format: file.name.split(".")[1],
-        PrimaryLabel: getMediaType(file),
+        FileName: file ? URL.createObjectURL(file) : '',
+        Format: file ? file.name.split(".")[1] : 'unknown',
+        PrimaryLabel: file ? getMediaType(file) : 'unknown',
         Thumb: "",
         UpdateTime: currentTime(),
         CreateUser: getCookie("user_id"),

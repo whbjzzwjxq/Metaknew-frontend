@@ -1,4 +1,4 @@
-  <template>
+<template>
     <v-container
         v-if="!loading"
         fluid
@@ -16,13 +16,11 @@
 <script lang="ts">
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
-    import {
-        commitGraphChange,
-        commitRootGraph,
-    } from "@/store/modules/_mutations";
+    import {commitGraphChange, commitRootGraph} from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
     import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
     import {PaperSelfPart} from "@/class/paperItem";
+    import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "Result",
@@ -58,17 +56,29 @@
         methods: {},
         watch: {},
         created(): void {
-            if (this.graph._id === '$_-1') {
-                let _id = getIndex();
-                let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, null);
-                commitGraphChange({graph});
-                commitRootGraph({graph});
-                this.loading = false
+            let id = this.$route.params.id;
+            if (id) {
+                dispatchGraphQuery({_id: id, parent: null}).then(() => {
+                        let graph = this.dataManager.graphManager[id];
+                        commitGraphChange({graph});
+                        commitRootGraph({graph});
+                        this.loading = false
+                    }
+                )
             } else {
-                this.loading = false
+                if (this.graph._id === '$_-1') {
+                    let _id = getIndex();
+                    let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, null);
+                    commitGraphChange({graph});
+                    commitRootGraph({graph});
+                    this.loading = false
+                } else {
+                    this.loading = false
+                }
             }
         },
-        mounted(): void {},
+        mounted(): void {
+        },
         record: {
             status: 'done',
             description: '结果页整体框架'

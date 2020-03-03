@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import {documentQuery, mediaCreate, mediaQueryMulti, sourceQueryMulti} from '@/api/commonSource';
+import {documentQuery, linkQueryBulk, mediaCreate, mediaQueryMulti, nodeQueryBulk} from '@/api/commonSource';
 import {filePutBlob} from '@/api/fileUpload';
 import {
     DocumentSelfPart,
@@ -23,8 +23,15 @@ import {
     commitUserConcernChangeId
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
-import {isGraphSelfPart, isNodeBackend} from "@/utils/typeCheck";
-import {dispatchGraphQuery, dispatchLinkBulkCreate, dispatchVisNodeCreate} from "@/store/modules/_dispatch";
+import {isGraphSelfPart} from "@/utils/typeCheck";
+import {
+    dispatchGraphQuery,
+    dispatchLinkBulkCreate,
+    dispatchLinkQuery,
+    dispatchMediaQuery,
+    dispatchNodeQuery,
+    dispatchVisNodeCreate
+} from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
 import {loginCookie} from "@/api/user/loginApi";
@@ -212,12 +219,15 @@ const actions = {
         // 先绘制Graph
         await documentQuery(_id).then(res => {
             let {data} = res;
-            return GraphSelfPart.resolveFromBackEnd(data, parent);
-        })
+            let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
+            dispatchNodeQuery(graph.Content.nodes.map(item => item.Setting));
+            dispatchLinkQuery(graph.Content.links.map(item => item.Setting));
+            dispatchMediaQuery(graph.Content.medias.map(item => item._id))
+        });
     },
 
     // 异步请求Node
-    nodeQuery(context: { commit: Commit, state: DataManagerState }, payload: Array<NodeSetting>) {
+    nodeQuery(context: { commit: Commit, state: DataManagerState }, payload: NodeSetting[]) {
         // 未缓存的节点列表
         let noCacheNode = payload.filter(node => !state.nodeManager[node._id]);
         if (noCacheNode.length > 0) {
@@ -229,19 +239,16 @@ const actions = {
                 return item.queryObject
             });
             // 请求节点
-            sourceQueryMulti(nodeQuery).then(res => {
-                const {data} = res;
-                data.map(node => {
-                    if (isNodeBackend(node)) {
-                        NodeInfoPart.resolveBackend(node);
-                    }
+            nodeQueryBulk(nodeQuery).then(res => {
+                res.data.map(node => {
+                    NodeInfoPart.resolveBackend(node);
                 });
             });
         }
     },
 
     // 异步请求link
-    linkQuery(context: Context, payload: Array<LinkSetting>) {
+    linkQuery(context: Context, payload: LinkSetting[]) {
         // 未缓存的关系列表
         let noCacheLink = payload.filter(link => !state.linkManager[link._id]);
         if (noCacheLink.length > 0) {
@@ -250,12 +257,9 @@ const actions = {
                 return item.queryObject
             });
             // 请求关系
-            sourceQueryMulti(linkQuery).then(res => {
-                const {data} = res;
-                data.map(link => {
-                    if (!isNodeBackend(link)) {
-                        LinkInfoPart.resolveBackend(link);
-                    }
+            linkQueryBulk(linkQuery).then(res => {
+                res.data.map(link => {
+                    LinkInfoPart.resolveBackend(link);
                 });
             });
         }
@@ -267,9 +271,8 @@ const actions = {
         let noCacheMedia = payload.filter(_id => !state.nodeManager[_id]);
 
         if (noCacheMedia.length > 0) {
-            let defaultImage = require('@/assets/defaultImage.jpg');
             noCacheMedia.map(_id => {
-                let item = MediaInfoPart.emptyMediaInfo(_id, defaultImage);
+                let item = MediaInfoPart.emptyMediaInfo(_id);
                 return item.queryObject
             });
 
@@ -373,10 +376,8 @@ const actions = {
         }
         let dataList = documentList.filter(document => !document.DocumentData.isRemote)
             .map(document => document.backendDocument);
-        console.log(dataList);
         let updateDataList = documentList.filter(document => document.DocumentData.isRemote).map(
             document => document.backendDocument);
-        console.log(updateDataList);
         if (updateDataList.length > 0) {
             documentBulkUpdate(updateDataList).then(res => {
                 let idList = res.data;

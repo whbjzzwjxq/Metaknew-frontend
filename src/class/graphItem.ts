@@ -339,7 +339,7 @@ export class MediaInfoPart extends InfoPart {
             : ''
     }
 
-    static emptyMediaInfo(_id: id, file: File, commit: boolean = true, isDeleted: boolean = false) {
+    static emptyMediaInfo(_id: id, file?: File, commit: boolean = true, isDeleted: boolean = false) {
         let item = new MediaInfoPart(mediaInfoTemplate(_id, file), mediaCtrlTemplate(file), isDeleted, file);
         commit && commitInfoAdd({item, strict: false});
         return item
@@ -469,7 +469,7 @@ export abstract class SettingPart {
     }
 
     updateCrucialProp(prop: string, value: any) {
-        crucialRegex.test(prop) && (this.Setting[prop] = value);
+        crucialRegex.test(prop) && (Vue.set(this.Setting, prop, value));
     }
 
     protected constructor(Setting: Setting, State: BaseState) {

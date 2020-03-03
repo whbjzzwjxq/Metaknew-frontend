@@ -33,3 +33,15 @@ export function dispatchDocumentSave(payload: 'current' | 'all') {
 export function dispatchLinkBulkCreate(payload: CompressLinkInfo[]) {
     return store.dispatch('linkBulkCreate', payload)
 }
+
+export function dispatchNodeQuery(payload: NodeSetting[]) {
+    return store.dispatch('nodeQuery', payload)
+}
+
+export function dispatchLinkQuery(payload: LinkSetting[]) {
+    return store.dispatch('linkQuery', payload)
+}
+
+export function dispatchMediaQuery(payload: id[]) {
+    return store.dispatch('mediaQuery', payload)
+}

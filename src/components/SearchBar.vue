@@ -3,7 +3,7 @@
         <v-col cols="11" class="pa-0 pt-1 pl-4 pr-2">
             <v-autocomplete
                 :dense="editMode"
-                :items="activeItems()"
+                :items="activeItems"
                 :loading="isLoading"
                 @input="updateSelection"
                 @update:search-input="keywordChange"
@@ -13,7 +13,7 @@
                 flat
                 height="32px"
                 hide-selected
-                item-text="Name_auto"
+                item-text="Name.auto"
                 multiple
                 no-filter
                 outlined
@@ -32,13 +32,13 @@
                         </v-btn>
                     </template>
 
-                    <template v-else-if="item.isInfo">
+                    <template v-else-if="!item.isTitle">
                         <v-list-item-avatar>
                             <v-img :src="getSrc(item.MainPic)"></v-img>
                         </v-list-item-avatar>
                         <v-list-item-content>
                             <v-list-item-title
-                                v-html="getItemTitle(item.Name_auto, item.PrimaryLabel)"></v-list-item-title>
+                                v-html="getItemTitle(item.Name.auto, item.PrimaryLabel)"></v-list-item-title>
                             <v-list-item-subtitle v-html="getItemSubTitle(item.Tags.Topic)"></v-list-item-subtitle>
                         </v-list-item-content>
                         <v-divider vertical light></v-divider>
@@ -47,10 +47,9 @@
                         </v-chip>
                         <v-chip outlined label>
                             <v-icon color="yellow">mdi-star</v-icon>
-                            <span class="font-weight-border">{{'\xa0\xa0\xa0' + item.Level.Star}}</span>
+                            <span class="font-weight-border">{{'\xa0\xa0\xa0' + item.Num.NumStar}}</span>
                         </v-chip>
                     </template>
-
                 </template>
             </v-autocomplete>
         </v-col>
@@ -64,19 +63,13 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search'
-    import {GraphSelfPart, MediaSettingPart, NodeSettingPart} from '@/class/graphItem'
+    import {IndexedInfo, queryHomePage, SearchQueryObject} from '@/api/search'
+    import {GraphSelfPart} from '@/class/graphItem'
     import {getIcon} from "@/utils/icon";
-    import {getSrc, InfoToSetting} from "@/utils/utils";
+    import {getSrc} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
-    import {
-        ArrayListItem,
-        AvailableListItem,
-        ListInfoItem,
-        ListItem,
-        ListTextItem,
-        ListTitle
-    } from "@/interface/interfaceInComponent";
+    import {ListItem, ListText, ListTitle} from "@/interface/interfaceInComponent";
+    import {isListText} from "@/utils/typeCheck";
 
     export default Vue.extend({
         name: "SearchBar",
@@ -87,18 +80,21 @@
             return {
                 keyword: '',
                 isLoading: false,
-                selection: [] as AvailableListItem[],
+                selection: [] as ListText[],
                 searchResult: {
-                    recent: [],
-                    info: [],
-                    text: []
-                } as HomePageSearchResponse,
-                regexLabel: new RegExp(':.{3,12}'),
-                regexProps: new RegExp('-.{3,12}'),
+                    'node': [],
+                    'link': [],
+                    'media': [],
+                    'document': []
+                } as Record<ItemType, IndexedInfo[]>,
+                regexLabel: /:.{3,12}/,
+                regexProps: /-.{3,12}/,
+                regexType: /@.{3,12}/,
                 regexSymbol: new RegExp('\\s[-\\\\:*?",;<>|]'),
                 typeTimer: 0,
-                titleDict: {} as Record<string, ListTitle>,
-                listItems: [] as ListItem[]
+                titleDict: {} as Record<ItemType, ListTitle>,
+                listItems: [] as ListItem[],
+                typeList: ['node', 'media', 'link', 'document'] as ItemType[]
             }
         },
         props: {
@@ -122,13 +118,14 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
+
             currentGraph: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
             },
             buildQueryObject: function (): SearchQueryObject {
                 let index = this.keyword.search(this.regexSymbol);
                 let append;
-                let words: Array<string>;
+                let words: string[];
                 if (index === -1) {
                     index = this.keyword.length;
                     append = "";
@@ -144,44 +141,11 @@
                 ).filter(word => word !== '');
                 return {
                     language: "auto",
-                    labels: labels.filter(label => label),
-                    props: {},
-                    keyword: this.keyword.substring(0, index)
+                    labels: labels.filter(label => label) || [],
+                    props: [],
+                    keyword: this.keyword.substring(0, index),
+                    type: ['node']
                 };
-            },
-
-            recentList: function (): ListInfoItem[] {
-                return this.searchResult.recent.map(item => {
-                        let info = Object.assign({} as ListInfoItem, item);
-                        info.isTitle = false;
-                        info.isInfo = true;
-                        info.disabled = false;
-                        return info
-                    }
-                )
-            },
-
-            textList: function (): ListTextItem[] {
-                return this.searchResult.text.map(item => {
-                        let info = Object.assign({MainPic: ''} as ListTextItem, item);
-                        info.isTitle = false;
-                        info.isInfo = true;
-                        info.disabled = false;
-                        info.Name_auto = info.Name;
-                        return info
-                    }
-                )
-            },
-
-            infoList: function (): ListInfoItem[] {
-                return this.searchResult.info.map(item => {
-                        let info = Object.assign({} as ListInfoItem, item);
-                        info.isTitle = false;
-                        info.isInfo = true;
-                        info.disabled = false;
-                        return info
-                    }
-                )
             },
 
             appendIconList: function (): IconItem[] {
@@ -189,24 +153,28 @@
                     {name: getIcon('i-edit', this.editMode ? 'add' : 'search'), _func: this.addItemToGraph},
                     {name: getIcon('i-edit', 'close'), _func: this.clear}
                 ]
-            }
-        },
-        methods: {
-            activeItems(): ArrayListItem {
-                let dict: Record<string, ArrayListItem> = {
-                    recent: this.recentList,
-                    text: this.textList,
-                    info: this.infoList
-                };
-                let result: ArrayListItem = [];
-                Object.keys(this.titleDict).map(key => {
+            },
+
+            activeItems: function (): ListItem[] {
+                let result: ListItem[] = [];
+                this.typeList.map((key: ItemType) => {
                     result.push(this.titleDict[key]);
-                    if (!this.titleDict[key].isCollapse && dict[key]) {
-                        (result = result.concat(dict[key]))
+                    if (!this.titleDict[key].isCollapse) {
+                        let listItem = this.searchResult[key].map(item => {
+                            return {
+                                ...item,
+                                isTitle: false,
+                                isInfo: false,
+                                disabled: false
+                            } as ListItem
+                        });
+                        result = result.concat(listItem)
                     }
                 });
                 return result
             },
+        },
+        methods: {
             hint() {
                 if (this.isLoading) {
                     //
@@ -214,7 +182,9 @@
                     this.isLoading = true;
                     queryHomePage(this.buildQueryObject)
                         .then(res => {
-                            this.searchResult = res.data
+                            this.typeList.map(key => {
+                                this.searchResult[key] = res.data.filter(item => item.type === key)
+                            })
                         })
                         .catch(() => {
                             //
@@ -233,7 +203,7 @@
                 }
             },
 
-            getSrc: function (src: string) {
+            getSrc(src: string) {
                 return getSrc(src)
             },
 
@@ -242,26 +212,26 @@
             },
 
             addItemToGraph() {
-                let unDuplicateItems = this.selection.filter(item => this.currentGraph.checkExist(item._id, item.type));
-                let nodes = unDuplicateItems.filter(item => item.type !== 'media');
-                let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let queryObjectList = this.selection.filter(item => !this.dataManager.nodeManager[item._id]);
-                this.$store.dispatch('nodeQuery', queryObjectList.filter(item => item.type !== 'media').map(
-                    item => InfoToSetting(item))
-                );
-                this.$store.dispatch('mediaQuery', queryObjectList.filter(item => item.type === 'media').map(
-                    item => item._id)
-                );
-                let nodeSettingList = nodes.map(node => {
-                    let {_id, _type, _label} = InfoToSetting(node);
-                    return NodeSettingPart.emptyNodeSetting(_id, _type, _label, node.Name_auto, node.MainPic, this.currentGraph)
-                });
-                this.currentGraph.addItems(nodeSettingList);
-                let mediaSettingList = medias.map(media => {
-                    let {_id, _label} = InfoToSetting(media);
-                    return MediaSettingPart.emptyMediaSetting(_id, _label, media.Name_auto, '', this.currentGraph)
-                });
-                this.currentGraph.addItems(mediaSettingList)
+                // let unDuplicateItems = this.selection.filter(item => this.currentGraph.checkExist(item._id, item.type));
+                // let nodes = unDuplicateItems.filter(item => item.type !== 'media');
+                // let medias = unDuplicateItems.filter(item => item.type === 'media');
+                // let queryObjectList = this.selection.filter(item => !this.dataManager.nodeManager[item._id]);
+                // this.$store.dispatch('nodeQuery', queryObjectList.filter(item => item.type !== 'media').map(
+                //     item => InfoToSetting(item))
+                // );
+                // this.$store.dispatch('mediaQuery', queryObjectList.filter(item => item.type === 'media').map(
+                //     item => item._id)
+                // );
+                // let nodeSettingList = nodes.map(node => {
+                //     let {_id, _type, _label} = InfoToSetting(node);
+                //     return NodeSettingPart.emptyNodeSetting(_id, _type, _label, node.Name_auto, node.MainPic, this.currentGraph)
+                // });
+                // this.currentGraph.addItems(nodeSettingList);
+                // let mediaSettingList = medias.map(media => {
+                //     let {_id, _label} = InfoToSetting(media);
+                //     return MediaSettingPart.emptyMediaSetting(_id, _label, media.Name_auto, '', this.currentGraph)
+                // });
+                // this.currentGraph.addItems(mediaSettingList)
             },
 
             getHeaderNameHtml(name: string, length: number) {
@@ -287,8 +257,8 @@
                 this.$set(item, 'isCollapse', !item.isCollapse)
             },
             getTitle() {
-                let keys = Object.keys(this.searchResult);
-                keys.map(key => {
+                let typeList = this.typeList;
+                typeList.map(key => {
                     this.titleDict[key] = {
                         name: key,
                         length: this.searchResult[key].length,
@@ -299,8 +269,9 @@
                     } as ListTitle
                 });
             },
-            updateSelection($event: AvailableListItem[]) {
-                this.selection = $event.filter(item => !item.isTitle)
+            updateSelection($event: ListItem[]) {
+                //@ts-ignore
+                this.selection = $event.filter(item => isListText(item))
             }
 
         },
@@ -311,8 +282,8 @@
                         if (this.selection[0].PrimaryLabel === 'DocGraph') {
                             this.$router.push({
                                 name: "graph",
-                                path: "graph/id=:id/mode=:mode",
-                                params: {id: this.selection[0]._id.toString(), mode: 'normal'}
+                                path: "graph/id=:id",
+                                params: {id: this.selection[0].id.toString()}
                             })
                         }
                     }

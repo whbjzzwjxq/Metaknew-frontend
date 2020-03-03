@@ -1,66 +1,50 @@
 import {instance} from './main'
 
 export interface SearchQueryObject {
-    labels: Array<string>,
-    props: Record<string, string>,
+    labels: string[],
+    props: string[],
     keyword: string,
+    type: ItemType[],
     language: string
 }
 
 export interface IndexedInfo {
-    _id: id,
+    id: id,
     type: GraphItemType,
     PrimaryLabel: string,
     Language: string,
     CreateUser: number,
     UpdateTime: string,
+    Hot: number,
     MainPic: string,
-    'Name_auto': string,
-    'Name_zh': string,
-    'Name_en': string,
     Alias: Array<string>,
     Tags: {
+        UserLabels: string[]
         Labels: Array<string>,
         Topic: Array<string>
     },
-    Level: {
-        Imp: number,
-        HardLevel: number,
-        Useful: number,
-        Star: number,
-        Hot: number,
-        TotalTime: number
+    Name: Record<string, string>,
+    Description: Record<string, string>,
+    Num: {
+        NumBad: number,
+        NumGood: number,
+        NumShared: number,
+        NumStar: number
     },
-    'Is_Used': boolean,
-    'Is_Common': boolean,
-    'Is_OpenSource': boolean
+    Auth: {
+        IsUsed: boolean,
+        IsCommon: boolean,
+        IsOpenSource: boolean
+    }
 }
 
-export interface IndexedText {
-    _id: id,
-    type: GraphItemType,
-    PrimaryLabel: string,
-    Language: string,
-    Name: string,
-    'Name_auto': string,
-    MainPic: string,
-    Text: Translate,
-    Tags: Array<string>,
-    Star: number,
-    Hot: number,
-}
-
-export interface HomePageSearchResponse {
-    recent: Array<IndexedInfo>,
-    text: Array<IndexedText>,
-    info: Array<IndexedInfo>,
-
-    [index: string]: Array<any>
-}
+export type HomePageSearchResponse = IndexedInfo[]
 
 export const queryHomePage = (queryObject: SearchQueryObject) =>
     instance.request<HomePageSearchResponse>({
-        url: '/es_query/query/home_page_search',
-        method: "post",
-        data: queryObject
+        url: '/es/home_query',
+        method: "GET",
+        params: {
+            ...queryObject
+        }
     });
