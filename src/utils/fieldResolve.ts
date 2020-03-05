@@ -191,7 +191,6 @@ export const nodePropType: PLabelPropsDict = {
             }
         },
     BaseNode: {},
-    $Fragment: {}
 };
 
 // link的属性
@@ -218,8 +217,7 @@ export function nodeLabelToProp(pLabel: string) {
         : {};
 }
 
-export const availableLabel = Object.keys(nodePropType)
-    .filter(label => label !== 'DocGraph');
+export var availableLabel = ['ArchProject', 'Person', 'Project', 'BaseNode', 'DocGraph', 'DocPaper'];
 
 // 以下是预设 测试用
 export const topicItems = {

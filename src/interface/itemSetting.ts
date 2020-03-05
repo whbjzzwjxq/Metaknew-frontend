@@ -61,7 +61,7 @@ const size = () => {
         size: {
             type: 'Number',
             default: 0,
-            range: [6, 64],
+            range: [12, 128],
             tips: '不能为0',
             explain: '可视化尺寸'
         },
@@ -105,7 +105,7 @@ const rotate = () => {
         rotate: {
             type: 'Number',
             default: 0,
-            range: [0, 359],
+            range: [1, 360],
             tips: '旋转的角度',
             explain: '旋转的角度'
         },

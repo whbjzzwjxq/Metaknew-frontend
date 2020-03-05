@@ -276,11 +276,9 @@ export function mediaCtrlTemplate(file?: File) {
     return <BaseMediaCtrl>{
         FileName: file ? URL.createObjectURL(file) : '',
         Format: file ? file.name.split(".")[1] : 'unknown',
-        PrimaryLabel: file ? getMediaType(file) : 'unknown',
         Thumb: "",
         UpdateTime: currentTime(),
         CreateUser: getCookie("user_id"),
-        Source: 'User',
         NumStar: 0,
         NumGood: 0,
         NumBad: 0,

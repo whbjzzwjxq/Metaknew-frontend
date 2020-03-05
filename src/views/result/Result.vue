@@ -16,7 +16,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
-    import {commitGraphChange, commitRootGraph} from "@/store/modules/_mutations";
+    import {commitGraphChange, commitRefreshDirectory, commitRootGraph} from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
     import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
     import {PaperSelfPart} from "@/class/paperItem";
@@ -62,7 +62,8 @@
                         let graph = this.dataManager.graphManager[id];
                         commitGraphChange({graph});
                         commitRootGraph({graph});
-                        this.loading = false
+                        this.loading = false;
+                        commitRefreshDirectory(true);
                     }
                 )
             } else {

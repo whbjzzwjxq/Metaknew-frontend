@@ -119,3 +119,7 @@ export const commitEditModeChange = (payload: boolean) => {
 export const commitUserConcernChangeId = (payload: {_type: ItemType, idMap: IdMap}) => {
     return store.commit('userConcernChangeId', payload)
 };
+
+export const commitRefreshDirectory = (payload: boolean) => {
+    return store.commit('refreshDirectory', payload)
+};

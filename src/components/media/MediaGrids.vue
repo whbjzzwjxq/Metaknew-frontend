@@ -1,33 +1,32 @@
 <template>
     <div class="d-flex no-gutters flex-wrap scene ml-1">
-        <keep-alive>
-            <v-col
+        <v-col
                 v-for="n in length"
                 :key="n"
                 class="d-flex child-flex pa-1"
                 style="height: 128px"
                 cols="4">
-                <v-card
+            <v-card
                     @click="click(n-1)"
                     color="grey"
                     flat
                     tile>
-                    <v-img :src="fileList[n-1].Ctrl.Thumb" contain width="120px" height="120px">
+                <v-img :src="realSrc(fileList[n-1].Ctrl.FileName)" contain width="120px" height="120px">
 
-                    </v-img>
-                    <v-icon v-show="getSelected(n-1) > -1" x-large class="select-icon">
-                        mdi-check-circle-outline
-                    </v-icon>
-                </v-card>
+                </v-img>
+                <v-icon v-show="getSelected(n-1) > -1" x-large class="select-icon">
+                    mdi-check-circle-outline
+                </v-icon>
+            </v-card>
 
-            </v-col>
-        </keep-alive>
+        </v-col>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import {MediaInfoPart} from '@/class/graphItem'
+    import {getSrc} from "@/utils/utils";
 
     export default Vue.extend({
         name: "MediaGrids",
@@ -49,7 +48,7 @@
         },
         computed: {
             // 第一页
-            length: function() {
+            length: function (): number {
                 return this.fileList.length > 9 ? 9 : this.fileList.length
             }
         },
@@ -62,10 +61,13 @@
                     ? this.selection = [n]
                     : this.selection.push(n);
                 let fileSelection = this.selection.map(index => this.fileList[index]);
-                this.$emit('upload-selectItem', fileSelection)
+                this.$emit('upload-select', fileSelection)
             },
             getSelected(n: number) {
                 return this.selection.indexOf(n)
+            },
+            realSrc: function (url: string): string {
+                return getSrc(url)
             }
         },
         watch: {},

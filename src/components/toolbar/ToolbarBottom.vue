@@ -1,5 +1,5 @@
 <template>
-    <v-card tile :style="toolbarStyle" elevation="2">
+    <v-card tile :style="toolbarStyle" elevation="0" outlined>
         <div :style="buttonGroupStyle" class="floatButton">
             <div class="button-normal pb-4">
                 <v-menu top offset-x :close-on-content-click="false" nudge-bottom="100" nudge-right="12">
@@ -36,6 +36,7 @@
     import {getIcon} from "@/utils/icon";
     import FragmentList from "@/components/FragmentList.vue";
     import PersonalNote from "@/components/PersonalNote.vue";
+    import {leftCardPadding} from "@/store/modules/styleComponentSize";
     export default Vue.extend({
         name: "ToolbarBottom",
         components: {
@@ -57,7 +58,7 @@
             toolbarStyle: function (): CSSProp {
                 return {
                     position: "absolute",
-                    left: this.styleManager.leftCard.width + 'px',
+                    left: (this.styleManager.leftCard.width + 1) + 'px',
                     bottom: 0,
                     height: this.styleManager.bottomBar.height + 'px',
                     width: this.styleManager.bottomBar.width,

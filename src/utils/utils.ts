@@ -215,8 +215,8 @@ export let crucialRegex = new RegExp("_.*");
 
 // 获取新内容id
 export const getIndex = () => {
-    let index = store.state.userIndex + 1;
-    commitGlobalIndexPlus(index);
+    let index = globalIndex;
+    globalIndex += 1;
     return '$_' + index as id
 };
 
@@ -229,8 +229,6 @@ export const findItem = (list: Array<GraphItemSettingPart>, _id: id, _type: Grap
     );
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");
-export const InfoToSetting = (payload: { _id: id; type: GraphItemType; PrimaryLabel: string; }) =>
-    ({_id: payload._id, _type: payload.type, _label: payload.PrimaryLabel} as Setting);
 
 // 区别远端id和客户端id
 export function idSort(idList: id[]): id[] {
@@ -346,6 +344,7 @@ export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays
     loginSevenDays
         ? day = 7
         : day = 1;
+    setCookie('user_id', data.userId.toString(), day);
     setCookie('user_name', data.userName, day);
     setCookie('token', data.token, day);
     commitUserLogin(data);

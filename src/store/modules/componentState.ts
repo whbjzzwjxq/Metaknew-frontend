@@ -8,7 +8,8 @@ declare global {
         loginTab: {
             root: number
         },
-        editMode: boolean
+        editMode: boolean,
+        refreshDirectory: boolean
     }
 
     type RootTabName = 'ecoSystem' | 'document' | 'metaKnowledge';
@@ -47,7 +48,8 @@ const state = {
     loginTab: {
         root: 0
     },
-    editMode: false
+    editMode: false,
+    refreshDirectory: false
 } as ComponentState;
 
 const mutations = {
@@ -84,6 +86,10 @@ const mutations = {
     },
     changeEditMode: (state: ComponentState, payload: boolean) => {
         state.editMode = payload
+    },
+
+    refreshDirectory: (state:ComponentState, payload: boolean) => {
+        state.refreshDirectory = payload
     }
 };
 const actions = {};

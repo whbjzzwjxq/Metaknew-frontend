@@ -17,7 +17,7 @@ import {
     commitInfoAdd,
     commitInfoChangeId,
     commitInfoRemove,
-    commitItemChange,
+    commitItemChange, commitRefreshDirectory,
     commitSnackbarOn,
     commitUserConcernAdd,
     commitUserConcernChangeId
@@ -222,7 +222,8 @@ const actions = {
             let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
             dispatchNodeQuery(graph.Content.nodes.map(item => item.Setting));
             dispatchLinkQuery(graph.Content.links.map(item => item.Setting));
-            dispatchMediaQuery(graph.Content.medias.map(item => item._id))
+            dispatchMediaQuery(graph.Content.medias.map(item => item._id));
+            commitRefreshDirectory(true)
         });
     },
 

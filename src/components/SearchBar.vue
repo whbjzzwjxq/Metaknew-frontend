@@ -64,12 +64,13 @@
 <script lang="ts">
     import Vue from 'vue'
     import {IndexedInfo, queryHomePage, SearchQueryObject} from '@/api/search'
-    import {GraphSelfPart} from '@/class/graphItem'
+    import {GraphSelfPart, MediaSettingPart, NodeSettingPart} from '@/class/graphItem'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
     import {ListItem, ListText, ListTitle} from "@/interface/interfaceInComponent";
     import {isListText} from "@/utils/typeCheck";
+    import {dispatchMediaQuery, dispatchNodeQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "SearchBar",
@@ -212,26 +213,29 @@
             },
 
             addItemToGraph() {
-                // let unDuplicateItems = this.selection.filter(item => this.currentGraph.checkExist(item._id, item.type));
-                // let nodes = unDuplicateItems.filter(item => item.type !== 'media');
-                // let medias = unDuplicateItems.filter(item => item.type === 'media');
-                // let queryObjectList = this.selection.filter(item => !this.dataManager.nodeManager[item._id]);
-                // this.$store.dispatch('nodeQuery', queryObjectList.filter(item => item.type !== 'media').map(
-                //     item => InfoToSetting(item))
-                // );
-                // this.$store.dispatch('mediaQuery', queryObjectList.filter(item => item.type === 'media').map(
-                //     item => item._id)
-                // );
-                // let nodeSettingList = nodes.map(node => {
-                //     let {_id, _type, _label} = InfoToSetting(node);
-                //     return NodeSettingPart.emptyNodeSetting(_id, _type, _label, node.Name_auto, node.MainPic, this.currentGraph)
-                // });
-                // this.currentGraph.addItems(nodeSettingList);
-                // let mediaSettingList = medias.map(media => {
-                //     let {_id, _label} = InfoToSetting(media);
-                //     return MediaSettingPart.emptyMediaSetting(_id, _label, media.Name_auto, '', this.currentGraph)
-                // });
-                // this.currentGraph.addItems(mediaSettingList)
+                let unDuplicateItems = this.selection.filter(item => !this.currentGraph.checkExist(item.id, item.type));
+                console.log(unDuplicateItems);
+                let nodes = unDuplicateItems.filter(item => item.type !== 'media');
+                let medias = unDuplicateItems.filter(item => item.type === 'media');
+                let nodeSettingList = nodes.map(node => NodeSettingPart.emptyNodeSetting(
+                    node.id,
+                    node.type,
+                    node.PrimaryLabel,
+                    node.Name['auto'],
+                    node.MainPic,
+                    this.currentGraph)
+                );
+                this.currentGraph.addItems(nodeSettingList);
+                dispatchNodeQuery(nodeSettingList.map(item => item.Setting));
+                let mediaSettingList = medias.map(media => MediaSettingPart.emptyMediaSetting(
+                    media.id,
+                    media.PrimaryLabel,
+                    media.Name['auto'],
+                    '',
+                    this.currentGraph
+                ));
+                dispatchMediaQuery(medias.map(media => media.id));
+                this.currentGraph.addItems(mediaSettingList)
             },
 
             getHeaderNameHtml(name: string, length: number) {

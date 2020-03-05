@@ -324,7 +324,7 @@
             },
             saveMedia() {
                 let status = this.media.status;
-                if (status === "success" || this.media.State.isRemote) {
+                if (status === "success" || this.media.isRemote) {
                     mediaUpdate(this.media).then(res => {
                         res.status === 200
                             ? alert("保存成功")

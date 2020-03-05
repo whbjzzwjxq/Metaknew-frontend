@@ -85,7 +85,7 @@
                 return this.baseData.isSelf
             },
             width: function () {
-                return this.$store.state.styleComponentSize.leftCard.width - 24
+                return this.$store.state.styleComponentSize.leftCard.width - 40
             }
         },
         methods: {

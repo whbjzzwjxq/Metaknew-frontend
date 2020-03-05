@@ -44,20 +44,15 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        commitChangeRootTab, commitChangeSubTab,
+        commitChangeSubTab,
         commitGraphChange,
         commitItemChange,
+        commitRefreshDirectory,
         commitSnackbarOn
     } from "@/store/modules/_mutations";
-    import {
-        GraphSelfPart,
-        LinkSettingPart,
-        MediaSettingPart,
-        NodeSettingPart,
-    } from "@/class/graphItem";
+    import {GraphSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/class/graphItem";
     import {mergeList} from "@/utils/utils";
     import {getIcon} from "@/utils/icon";
-    import {dispatchNodeExplode} from "@/store/modules/_dispatch";
 
     interface DirectoryItem {
         _id: id,
@@ -143,6 +138,10 @@
             baseItemLength: function (): number {
                 // 用length监听Directory变化有些粗糙 后续开发注意Length不变的情况
                 return this.baseItemList.length
+            },
+
+            refresh: function (): boolean {
+                return this.$store.state.componentState.refreshDirectory
             },
 
             selection: {
@@ -346,7 +345,7 @@
             },
 
             open(itemList: DirectoryItem[]) {
-
+                this.buildDirectory()
             },
 
             getDocumentChildList(document: GraphSelfPart): DirectoryItem[] {
@@ -377,6 +376,13 @@
                 this.buildDirectory()
             },
 
+            refresh: function () {
+                console.log('refresh');
+                if (this.refresh) {
+                    this.buildDirectory();
+                    commitRefreshDirectory(false)
+                }
+            }
         },
         mounted: function (): void {
             this.buildStructure();

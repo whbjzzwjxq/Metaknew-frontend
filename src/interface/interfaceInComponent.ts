@@ -14,7 +14,7 @@ export interface LabelGroup {
 }
 
 // _type _label bool 控制标签是否可以显示
-export type LabelViewDict = Record<string, Record<string, boolean>>
+export type LabelViewDict = Record<GraphItemType, Record<string, boolean>>
 
 // v-tab 相关组件使用
 export interface TabContent {

@@ -21,20 +21,13 @@
                         dense>
 
                     </v-text-field>
-                    <v-autocomplete
-                        :disabled="!typeSelectable"
-                        :items="nodeLabels"
-                        :value="info.PrimaryLabel"
-                        class="pr-2 font-weight-bold"
-                        dense
-                        label="PrimaryLabel"
-                        style="font-size: 18px;"
-                        v-model="label">
+                    <p-label-selector
+                        :label="info.PrimaryLabel"
+                        @update-label="label = $event"
+                        :disabled="!typeSelectable">
 
-                    </v-autocomplete>
-                    <item-sharer
-                        :base-data="baseData"
-                    >
+                    </p-label-selector>
+                    <item-sharer :base-data="baseData">
 
                     </item-sharer>
                 </v-col>
@@ -158,11 +151,11 @@
             <template v-slot:content>
                 <v-menu offset-y>
                     <template v-slot:activator="{ on }">
-                        <v-btn text v-on="on" color="primary">Save</v-btn>
+                        <v-btn text v-on="on" coor="primary">Save</v-btn>
                     </template>
                     <v-list>
                         <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
-                        <v-list-item @click="saveItem(true)">Save as Draft</v-list-item>
+                        <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft</v-list-item>
                     </v-list>
                 </v-menu>
             </template>
@@ -183,6 +176,7 @@
     import GlobalChip from "@/components/global/GlobalChip.vue";
     import ItemSharer from "@/components/ItemSharer.vue";
     import ItemMarker from "@/components/ItemMarker.vue";
+    import PLabelSelector from "@/components/PLabelSelector.vue";
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/fieldResolve";
     import {LabelGroup} from "@/interface/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
@@ -190,6 +184,7 @@
     import {commitInfoChangeId} from "@/store/modules/_mutations";
     import {nodeBulkCreate} from "@/api/subgraph/node";
     import {dispatchMediaQuery} from "@/store/modules/_dispatch";
+    import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -203,7 +198,8 @@
             NodeAvatar,
             GlobalChip,
             ItemSharer,
-            ItemMarker
+            ItemMarker,
+            PLabelSelector
         },
         data() {
             return {
@@ -211,10 +207,11 @@
                     "document": "专题",
                     "node": "节点"
                 },
-                nodeLabels: availableLabel.concat(["DocGraph", "DocPaper"]),
+                nodeLabels: availableLabel,
                 topicItems: topicItems,
                 labelItems: labelItems,
                 loading: true,
+                plusIcon: getIcon('i-edit', 'add')
             }
         },
         props: {
@@ -434,6 +431,10 @@
                         })
                     }
                 }
+            },
+
+            addLabel() {
+                console.log(this.label)
             }
         },
         watch: {},

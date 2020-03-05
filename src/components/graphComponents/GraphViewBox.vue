@@ -107,7 +107,7 @@
         </graph-media>
 
         <graph-svg
-            v-for="(svg, index) in svgs"
+            v-for="(svg, index) in texts"
             :key="svg._id"
             :svg="svg"
             :container="svgLocation[index]"
@@ -149,7 +149,9 @@
             <graph-label-selector
                 v-if="renderLabelSelector"
                 :label-view-dict="labelViewDict"
-                @selectItem-label="selectLabel"
+                @select-label="selectLabel"
+                @reset-label="resetLabel"
+                @set-label="setLabel"
                 class="justify-end">
             </graph-label-selector>
             <div>
@@ -497,8 +499,7 @@
                 return this.userDataManager.userNoteInDoc.filter(item => !item.isDeleted && item.Setting._parent === this.graph._id)
             },
 
-            // svg
-            svgs: function (): TextSettingPart[] {
+            texts: function (): TextSettingPart[] {
                 return this.graph.Content.texts
             },
 
@@ -578,7 +579,7 @@
             },
 
             svgLocation: function (): RectByPoint[] {
-                return this.svgs.map(svg => {
+                return this.texts.map(svg => {
                     let width = svg.Setting.Base.size * this.realScale;
                     let height = width * svg.Setting.Base.scaleX;
                     return this.getRectByPoint(width, height, svg)
@@ -677,7 +678,7 @@
             },
 
             showSvg: function (): boolean[] {
-                return this.svgs.map(svg => !svg.isDeleted && svg.Setting.Show.showAll)
+                return this.texts.map(svg => !svg.isDeleted && svg.Setting.Show.showAll)
             },
 
             //选择框的相关设置
@@ -775,7 +776,7 @@
                 }
             },
 
-            dragEnd(target: VisNodeSettingPart, $event: MouseEvent) {
+            dragEnd(target: VisAreaSettingPart, $event: MouseEvent) {
                 if (this.isDragging && this.dragAble) {
                     this.drag(target, $event);
                     this.isDragging = false;
@@ -837,11 +838,6 @@
                 }
             },
 
-            selectLabel(_type: GraphItemType, _label: string) {
-                let result = this.nodes.filter(node => node._label === _label);
-                this.selectItem(result)
-            },
-
             startSelect($event: MouseEvent) {
                 if ($event.ctrlKey) {
                     this.isMoving = true;
@@ -891,7 +887,7 @@
                     let medias = this.medias.filter((media, index) =>
                         this.selectRect.checkInRect(this.mediaLocation[index].midPoint()) && this.showMedia[index]
                     );
-                    let svgs = this.svgs.filter((svg, index) =>
+                    let texts = this.texts.filter((svg, index) =>
                         this.selectRect.checkInRect(this.svgLocation[index].midPoint()) && this.showSvg[index]
                     );
                     nodes.map(node => {
@@ -902,7 +898,7 @@
                             }
                         }
                     );
-                    let result = [nodes, medias, links, svgs].flat(1) as GraphSubItemSettingPart[];
+                    let result = [nodes, medias, links, texts].flat(1) as GraphSubItemSettingPart[];
                     this.selectItem(result)
                 }
             },
@@ -928,9 +924,11 @@
 
             getLabelViewDict: function () {
                 Object.entries(this.labelDict).map(([_type, labels]) => {
+                    //@ts-ignore
+                    let type: GraphItemType = _type;
                     labels.map(label => {
-                        if (this.labelViewDict[_type][label] === undefined) {
-                            this.labelViewDict[_type][label] = true
+                        if (this.labelViewDict[type][label] === undefined) {
+                            this.$set(this.labelViewDict[type], label, true)
                         }
                     })
                 })
@@ -1017,9 +1015,39 @@
                 setting.Base.size = width;
             },
 
+            getItemList(_type: GraphItemType) {
+                return _type === 'link'
+                    ? this.links
+                    : _type === 'media'
+                        ? this.medias
+                        : _type === 'text'
+                            ? this.texts
+                            : this.nodes
+            },
+
             gotoDocument(graph: GraphSelfPart) {
                 commitGraphChange({graph})
-            }
+            },
+
+            setLabel(_type: GraphItemType, _label: string) {
+                let value = this.labelViewDict[_type][_label];
+                this.$set(this.labelViewDict[_type], _label, !value)
+            },
+
+            resetLabel() {
+                this.labelViewDict = {
+                    "node": {},
+                    "media": {},
+                    "link": {},
+                    "document": {},
+                } as LabelViewDict;
+                this.getLabelViewDict()
+            },
+
+            selectLabel(_type: GraphItemType, _label: string) {
+                let list: GraphItemSettingPart[] = this.getItemList(_type);
+                list.filter(item => item._label === _label).map(item => item.updateState('isSelected'))
+            },
         },
 
         watch: {
