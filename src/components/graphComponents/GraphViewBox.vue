@@ -106,7 +106,7 @@
 
         </graph-media>
 
-        <graph-svg
+        <graph-text
             v-for="(svg, index) in texts"
             :key="svg._id"
             :svg="svg"
@@ -119,7 +119,7 @@
             @dblclick.native.stop="dbClickNode(svg)"
             @update-size="updateSize">
 
-        </graph-svg>
+        </graph-text>
 
         <graph-note
             v-for="note in notes"
@@ -195,7 +195,7 @@
     import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
-    import GraphSvg from "@/components/graphComponents/GraphSvg.vue";
+    import GraphText from "@/components/graphComponents/GraphText.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting, isVisNodeSetting} from "@/utils/typeCheck";
     import {
@@ -226,7 +226,7 @@
             GraphLabelSelector,
             RectContainer,
             GraphNote,
-            GraphSvg
+            GraphText
         },
         data() {
             return {
@@ -488,7 +488,7 @@
 
             // 只有自身的medias
             medias: function (): MediaSettingPart[] {
-                return this.graph.Content.medias
+                return this.graph.Content.medias.filter(item => !item.State.isDeleted)
             },
 
             mediaIdList: function (): id[] {

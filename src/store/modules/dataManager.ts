@@ -17,7 +17,7 @@ import {
     commitInfoAdd,
     commitInfoChangeId,
     commitInfoRemove,
-    commitItemChange, commitRefreshDirectory,
+    commitItemChange,
     commitSnackbarOn,
     commitUserConcernAdd,
     commitUserConcernChangeId
@@ -223,7 +223,6 @@ const actions = {
             dispatchNodeQuery(graph.Content.nodes.map(item => item.Setting));
             dispatchLinkQuery(graph.Content.links.map(item => item.Setting));
             dispatchMediaQuery(graph.Content.medias.map(item => item._id));
-            commitRefreshDirectory(true)
         });
     },
 

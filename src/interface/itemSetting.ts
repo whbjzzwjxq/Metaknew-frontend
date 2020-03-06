@@ -74,7 +74,7 @@ const scaleX = () => {
             default: 1,
             range: [0.2, 5],
             tips: '',
-            explain: '宽度与高度之比'
+            explain: '高度与宽度之比'
         },
     } as SettingGroup
 };

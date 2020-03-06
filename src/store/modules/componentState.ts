@@ -9,7 +9,6 @@ declare global {
             root: number
         },
         editMode: boolean,
-        refreshDirectory: boolean
     }
 
     type RootTabName = 'ecoSystem' | 'document' | 'metaKnowledge';
@@ -49,7 +48,6 @@ const state = {
         root: 0
     },
     editMode: false,
-    refreshDirectory: false
 } as ComponentState;
 
 const mutations = {
@@ -87,10 +85,6 @@ const mutations = {
     changeEditMode: (state: ComponentState, payload: boolean) => {
         state.editMode = payload
     },
-
-    refreshDirectory: (state:ComponentState, payload: boolean) => {
-        state.refreshDirectory = payload
-    }
 };
 const actions = {};
 const getters = {};

@@ -16,7 +16,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
-    import {commitGraphChange, commitRefreshDirectory, commitRootGraph} from "@/store/modules/_mutations";
+    import {commitGraphChange, commitRootGraph} from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
     import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
     import {PaperSelfPart} from "@/class/paperItem";
@@ -30,7 +30,8 @@
         data() {
             return {
                 loading: true,
-                graphRouteRegex: new RegExp('graph.*')
+                graphRouteRegex: new RegExp('graph.*'),
+                editRegex: /.*-edit/
             }
         },
         props: {},
@@ -50,7 +51,7 @@
                     : this.paper
             },
             editMode: function (): boolean {
-                return true
+                return this.editRegex.test(String(this.$route.name))
             }
         },
         methods: {},
@@ -63,7 +64,6 @@
                         commitGraphChange({graph});
                         commitRootGraph({graph});
                         this.loading = false;
-                        commitRefreshDirectory(true);
                     }
                 )
             } else {

@@ -32,19 +32,21 @@
                     ry="">
 
                 </ellipse>
-            </svg>
-            <div :style="divStyle">
-                <field-text-render
-                    :editing="isSelected"
-                    render-as-markdown
-                    :value="setting._text"
-                    :rows="4"
-                    :row-height="14"
-                    @update-text="updateText"
-                >
+                <foreignObject :x="borderWidth" :y="borderWidth" :height="inlineRect.height" :width="inlineRect.width">
+                    <div :style="divStyle">
+                        <field-text-render
+                            :disabled="!isSelected"
+                            render-as-markdown
+                            :value="setting._text"
+                            :rows="4"
+                            :row-height="14"
+                            @update-text="updateText"
+                        >
 
-                </field-text-render>
-            </div>
+                        </field-text-render>
+                    </div>
+                </foreignObject>
+            </svg>
         </template>
     </rect-container>
 </template>
@@ -57,7 +59,7 @@
     import FieldTextRender from "@/components/field/FieldTextRender.vue";
 
     export default Vue.extend({
-        name: "SvgBase",
+        name: "GraphText",
         components: {
             RectContainer,
             FieldTextRender
@@ -117,8 +119,9 @@
                     position: "absolute",
                     left: borderWidth + 'px',
                     top: borderWidth + 'px',
-                    width: this.inlineRect.width + 'px',
-                    height: this.inlineRect.height + 'px'
+                    width: (this.inlineRect.width - borderWidth * 2) + 'px',
+                    height: (this.inlineRect.height - borderWidth * 2) + 'px',
+                    overflow: 'hidden'
                 }
             },
 

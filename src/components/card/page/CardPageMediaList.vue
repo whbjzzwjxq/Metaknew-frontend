@@ -84,7 +84,7 @@
             nodeIsSelf: function (): boolean {
                 return this.baseData.isSelf
             },
-            width: function () {
+            width: function (): number {
                 return this.$store.state.styleComponentSize.leftCard.width - 40
             }
         },
