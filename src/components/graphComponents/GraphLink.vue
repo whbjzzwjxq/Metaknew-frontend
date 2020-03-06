@@ -131,7 +131,7 @@
             },
 
             isSelected: function (): boolean {
-                return this.link.State.isSelected
+                return this.link.isSelected
             },
 
             drawStyle: function (): CSSProp {

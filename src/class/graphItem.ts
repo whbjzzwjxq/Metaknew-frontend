@@ -9,7 +9,7 @@ import {
     getIsSelf,
     getSrc,
     itemEqual,
-    localIdRegex,
+    frontendIdRegex,
 } from "@/utils/utils";
 import Vue from "vue";
 import {
@@ -71,7 +71,7 @@ export abstract class InfoPart {
 
     get isRemote() {
         // 是否保存了模型
-        return !localIdRegex.test(this._id.toString())
+        return !frontendIdRegex.test(this._id.toString())
     }
 
     get isUserMade() {
@@ -460,7 +460,7 @@ export abstract class SettingPart {
     }
 
     updateState(prop: AllStateProp, value?: boolean) {
-        value || (value = !this.State[prop]);
+        value === undefined && (value = !this.State[prop]);
         Vue.set(this.State, prop, value);
     }
 
@@ -476,6 +476,10 @@ export abstract class SettingPart {
         this.Setting = Setting;
         this.State = State;
     }
+}
+
+export class SubTagSettingPart extends SettingPart {
+
 }
 
 export abstract class ItemSettingPart extends SettingPart {
@@ -534,6 +538,15 @@ export class GraphItemSettingPart extends ItemSettingPart {
             return this.parent.isSelf
         }
     }
+
+    get isSelected(): boolean {
+        return this.State.isSelected;
+    }
+
+    select(value?: boolean) {
+        value === undefined && (value = !this.isSelected);
+        this.updateState('isSelected', value)
+    }
 }
 
 export class NodeSettingPart extends GraphItemSettingPart {
@@ -576,6 +589,10 @@ export class NodeSettingPart extends GraphItemSettingPart {
         let setting = deepClone(this.Setting);
         let state = deepClone(this.State);
         return new NodeSettingPart(setting, state, this.parent)
+    }
+
+    select(value?: boolean) {
+        super.select(value);
     }
 }
 
@@ -730,10 +747,6 @@ export class NoteSettingPart extends SettingPart {
         let note = new NoteSettingPart(setting, state);
         commitToVuex && commitNoteInDocAdd({note});
         return note
-    }
-
-    commitNoteToVuex() {
-
     }
 }
 

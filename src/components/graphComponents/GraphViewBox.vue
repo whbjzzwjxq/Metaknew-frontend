@@ -82,7 +82,8 @@
             @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
             @add-link="addLink(node)"
-            @explode="explode">
+            @explode="explode"
+        >
 
         </graph-node-button>
 
@@ -501,10 +502,6 @@
 
             texts: function (): TextSettingPart[] {
                 return this.graph.Content.texts
-            },
-
-            selectedItem: function (): GraphSubItemSettingPart[] {
-                return this.graph.allItems().filter(item => item.State.isSelected)
             },
 
             labelDict: function (): Record<GraphItemType, string[]> {

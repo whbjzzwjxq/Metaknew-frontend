@@ -209,7 +209,7 @@ export function mergeList<T>(list: Array<T[]>) {
 }
 
 let globalIndex = 0;
-export let localIdRegex = /\$_[0-9]*/;
+export let frontendIdRegex = /\$_[0-9]*/;
 export let ctrlPropRegex = new RegExp("\\$.*");
 export let crucialRegex = new RegExp("_.*");
 
@@ -238,7 +238,7 @@ export function idSort(idList: id[]): id[] {
         if (typeof _id === 'number') {
             remoteId.push(_id)
         } else {
-            localIdRegex.test(_id)
+            frontendIdRegex.test(_id)
                 ? localId.push(_id)
                 : remoteId.push(parseInt(_id))
         }

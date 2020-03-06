@@ -1,13 +1,13 @@
 <template>
     <div :style="divStyle" v-show="!hide">
-    <icon-group
-        :container-style="buttonGroupStyle"
-        :icon-list="buttonGroup"
-        vertical
-        x-small
-        :hide="hide">
+        <icon-group
+            :container-style="buttonGroupStyle"
+            :icon-list="buttonGroup"
+            vertical
+            x-small
+            :hide="hide">
 
-    </icon-group>
+        </icon-group>
     </div>
 </template>
 
@@ -37,8 +37,13 @@
             },
 
             hide: {
-                type: Boolean as () => boolean,
+                type: Boolean,
                 default: false
+            },
+
+            editMode: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
@@ -77,6 +82,7 @@
             },
             buttonGroup: function (): IconItem[] {
                 // 是否可以删除
+                let editMode = this.editMode;
                 let deleteIcon;
                 this.node._type === 'document'
                     ? deleteIcon = false
@@ -94,11 +100,20 @@
                     ? explodeIcon = 'unload'
                     : explodeIcon = !this.boundGraph.isExplode;
                 return [
-                    {name: getIcon("i-delete-able", deleteIcon), _func: this.deleteItem, disabled: !deleteIcon},
-                    {name: 'mdi-arrow-top-right', _func: this.addLink},
+                    {
+                        name: getIcon("i-delete-able", deleteIcon),
+                        _func: this.deleteItem,
+                        disabled: !deleteIcon,
+                        render: editMode
+                    },
+                    {name: 'mdi-arrow-top-right', _func: this.addLink, render: editMode},
+                    {
+                        name: getIcon("i-explode", explodeIcon),
+                        _func: this.explode,
+                        render: this.node._type === 'document',
+                        disabled: explodeAble
+                    },
                     {name: getIcon('i-eye', this.node.Setting.Show.showAll), _func: this.unShow},
-                    {name: 'mdi-content-copy', _func: this.copyItem},
-                    {name: getIcon("i-explode", explodeIcon), _func: this.explode, render: this.node._type === 'document', disabled: explodeAble}
                 ]
             }
         },
@@ -114,9 +129,6 @@
 
             addLink() {
                 this.$emit('add-link', this.node)
-            },
-            copyItem() {
-                this.$emit('copy-item', this.node)
             },
             explode() {
                 this.$emit('explode', this.node)

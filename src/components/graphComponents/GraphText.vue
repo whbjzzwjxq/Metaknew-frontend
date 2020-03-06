@@ -153,7 +153,7 @@
             },
 
             isSelected: function (): boolean {
-                return this.svg.State.isSelected
+                return this.svg.isSelected
             }
         },
         methods: {
