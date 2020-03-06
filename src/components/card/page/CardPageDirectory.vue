@@ -377,7 +377,6 @@
             },
 
             refresh: function () {
-                console.log('refresh');
                 if (this.refresh) {
                     this.buildDirectory();
                     commitRefreshDirectory(false)

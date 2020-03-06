@@ -431,10 +431,6 @@
                         })
                     }
                 }
-            },
-
-            addLabel() {
-                console.log(this.label)
             }
         },
         watch: {},

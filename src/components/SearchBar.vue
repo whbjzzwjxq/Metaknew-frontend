@@ -214,7 +214,6 @@
 
             addItemToGraph() {
                 let unDuplicateItems = this.selection.filter(item => !this.currentGraph.checkExist(item.id, item.type));
-                console.log(unDuplicateItems);
                 let nodes = unDuplicateItems.filter(item => item.type !== 'media');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
                 let nodeSettingList = nodes.map(node => NodeSettingPart.emptyNodeSetting(
