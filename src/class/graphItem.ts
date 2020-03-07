@@ -1004,8 +1004,8 @@ export class GraphSelfPart extends DocumentSelfPart {
         return list.filter(item => item.State[state])
     }
 
-    explode() {
-        this.Conf.updateState('isExplode')
+    explode(value: boolean = true) {
+        this.Conf.updateState('isExplode', value)
     }
 
     selectAll(state: 'isSelected', value: boolean) {

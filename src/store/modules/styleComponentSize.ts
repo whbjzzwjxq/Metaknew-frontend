@@ -86,7 +86,7 @@ const mutations = {
     getViewBox: (state: StyleManagerState) => {
         // 计算ViewBox
         state.viewBox.start.update({x: state.leftCard.width, y: state.toolBar.height});
-        state.viewBox.end.update({x: state.screenX, y: state.screenY})
+        state.viewBox.end.update({x: state.screenX, y: state.screenY - state.bottomBar.height})
     },
 
     getBottomDynamicBar: (state: StyleManagerState, payload?: number) => {

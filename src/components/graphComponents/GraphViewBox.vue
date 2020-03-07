@@ -695,7 +695,7 @@
                 return {
                     position: 'absolute',
                     left: this.containerRect.width * 0.85 + 'px',
-                    top: this.containerRect.height * 0.65 + 'px',
+                    top: this.containerRect.height * 0.7 + 'px',
                 }
             },
 

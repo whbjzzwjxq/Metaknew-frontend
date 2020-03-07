@@ -24,10 +24,11 @@
                     <p-label-selector
                         :label="info.PrimaryLabel"
                         @update-label="label = $event"
-                        :disabled="!typeSelectable">
+                        :disabled="!typeSelectable"
+                        class="mt-n2">
 
                     </p-label-selector>
-                    <item-sharer :base-data="baseData">
+                    <item-sharer :base-data="baseData" class="mt-n2">
 
                     </item-sharer>
                 </v-col>

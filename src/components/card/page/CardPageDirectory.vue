@@ -1,9 +1,10 @@
 <template>
     <v-treeview
-        :items="directory"
+        :items="directory[0]"
         :selectable="editMode"
+        :load-children="getDocument"
         :selection-type="'independent'"
-        :active.sync="active"
+        :active.sync="activeList"
         @update:open="open"
         activatable
         dense
@@ -91,8 +92,7 @@
                 tree: [] as DirectoryNode[],
                 docItemDict: {} as Record<id, DirectoryNode>,
                 docLayerDict: {} as Record<number, GraphSelfPart[]>, // 用层级记录的Item信息
-                lastOpenList: [] as DirectoryItem[],
-                active: []
+                active: [],
             }
         },
         props: {
@@ -138,9 +138,10 @@
                 return result
             },
 
-            directory: function (): DirectoryItemDocument[] {
+            directory: function (): DirectoryItemDocument[][] {
                 let vm = this;
                 let tree = this.tree;
+                let docItemList: DirectoryItemDocument[] = [];
                 let update = function (docItem: DirectoryNode): DirectoryItemDocument {
                     // Document节点转化为item
                     let subRoot = vm.documentToItem(docItem.self);
@@ -154,38 +155,49 @@
                     let childSubItemList = vm.itemList.filter(item => item.parent === subRoot.id)
                         .filter(item => !currentDocId.includes(item.id) || item.type !== ('node' || 'document'));
                     subRoot.children.push(...childSubItemList);
+                    docItemList.push(subRoot);
                     return subRoot
                 };
-                return tree.map(item => update(item));
+                return [tree.map(item => update(item)), docItemList];
             },
 
             selection: {
                 get(): DirectoryItem[] {
-                    let root = this.directory.filter(root => {
-                        let node = this.document.Content.nodes.filter(item => item._id === root.id)[0];
-                        return node.State.isSelected
-                    }) as DirectoryItem[];
-                    return root.concat(this.itemList.filter(item => this.getOriginItem(item).State.isSelected))
+                    let root: DirectoryItem[] = this.directory[1].filter(docItem =>
+                        this.documents.filter(doc => doc._id === docItem.id)[0].baseNode.State.isSelected
+                    );
+                    let sub = this.itemList.filter(item => this.getOriginItem(item).State.isSelected);
+                    return root.concat(sub)
                 },
                 set(value: DirectoryItem[]) {
-                    console.log(value)
-                    let newIdList = value.map(item => item.id);
-                    let oldIdList = this.selection.map(item => item.id);
-                    let selectedItems = value.filter(item => !oldIdList.includes(item.id));
-                    let unselectedItems = this.selection.filter(item => !newIdList.includes(item.id));
-                    selectedItems.map(item => {
-                        let origin = this.getOriginItem(item)
-                        origin.updateState('isSelected', true)
-                    });
-                    unselectedItems.map(item => {
-                        let origin = this.getOriginItem(item)
-                        origin.updateState('isSelected', false)
-                    });
-                    // 把root级别的subNode也找到
-                    this.directory.map(root => {
-                        let origin = this.document.Content.nodes.filter(item => item._id === root.id)[0];
-                        origin.updateState('isSelected', newIdList.includes(root.id));
-                    })
+                    let idList = value.map(item => item.id);
+                    this.itemList.map(item => this.getOriginItem(item)).map(
+                        item => item.updateState('isSelected', idList.includes(item._id))
+                    );
+                    this.directory[1].map(docItem =>
+                        this.documents.filter(doc => doc._id === docItem.id)[0].baseNode).map(
+                        item => item.updateState('isSelected', idList.includes(item._id))
+                    )
+                }
+            },
+
+            activeList: {
+                get(): DirectoryItem[] {
+                    let root: DirectoryItem[] = this.directory[1].filter(docItem =>
+                        this.documents.filter(doc => doc._id === docItem.id)[0].baseNode.State.isMouseOn
+                    );
+                    let sub = this.itemList.filter(item => this.getOriginItem(item).State.isMouseOn);
+                    return root.concat(sub)
+                },
+                set(value: DirectoryItem[]) {
+                    let idList = value.map(item => item.id);
+                    this.itemList.map(item => this.getOriginItem(item)).map(
+                        item => item.updateState('isMouseOn', idList.includes(item._id))
+                    );
+                    this.directory[1].map(docItem =>
+                        this.documents.filter(doc => doc._id === docItem.id)[0].baseNode).map(
+                        item => item.updateState('isMouseOn', idList.includes(item._id))
+                    )
                 }
             }
         },
@@ -226,7 +238,7 @@
             },
 
             nodeToItem: (node: NodeSettingPart) => {
-                let result = {
+                return {
                     id: node._id,
                     type: 'node', //这里是目录意义上的节点
                     label: node._label,
@@ -234,10 +246,9 @@
                     icon: getIcon('i-item', 'node'),
                     deletable: node.parent.isSelf,
                     editable: node.isSelf,
-                    parent: node.parent._id
-                } as DirectoryItem;
-                node._type === 'document' && (result.children = []);
-                return result
+                    parent: node.parent._id,
+                    children: node._type === 'document' && node._id !== node.parent._id ? [] : undefined
+                } as DirectoryItem
             },
 
             linkToItem: (link: LinkSettingPart) => ({
@@ -326,7 +337,6 @@
             },
 
             async getDocument(nodeItem: DirectoryItem) {
-                console.log('async');
                 if (!frontendIdRegex.test(String(nodeItem.id))) {
                     let node = this.getOriginItem(nodeItem) as NodeSettingPart;
                     let parent = node.parent;
@@ -336,13 +346,16 @@
                 }
             },
 
-            open(item: DirectoryItemDocument) {
-                console.log(item)
+            open(docList: DirectoryItemDocument[]) {
+                let idList = docList.map(item => item.id);
+                // 根专题不会缩回 其他的专题检查是否在list中
+                this.documents.map(doc => doc.explode(idList.includes(doc._id) || doc.Conf.parent === null))
             },
 
             getDocumentChildList(document: GraphSelfPart): DirectoryItem[] {
                 let nodes = document.Content.nodes.filter(item => !item.State.isDeleted)
-                    .map(node => this.nodeToItem(node));
+                    .map(node => this.nodeToItem(node))
+                    .filter(node => node.id !== node.parent);
 
                 let links = document.Content.links.filter(item => !item.State.isDeleted)
                     .map(link => this.linkToItem(link));
