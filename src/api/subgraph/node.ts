@@ -1,14 +1,16 @@
-import {MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
 import {instance} from "@/api/main";
 
-export function nodeUpdate(data: NodeInfoPart) {
+export function nodeBulkUpdate(nodes: BaseNodeInfo[]) {
     return instance.request({
-        url: '/subgraph/update/node/normal',
+        url: '/item/node/bulk_update',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        data: data
+        data: {
+            Data: nodes,
+            CreateType: 'USER'
+        }
     })
 }
 

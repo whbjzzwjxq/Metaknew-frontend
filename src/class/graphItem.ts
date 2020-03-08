@@ -4,12 +4,12 @@ import {
     deepClone,
     emptyContent,
     findItem,
+    frontendIdRegex,
     getCookie,
     getIndex,
     getIsSelf,
     getSrc,
     itemEqual,
-    frontendIdRegex,
 } from "@/utils/utils";
 import Vue from "vue";
 import {
@@ -842,6 +842,27 @@ export abstract class DocumentSelfPart {
         this.updateStateUpdate();
         Vue.set(this.DocumentData, 'isRemote', true)
     }
+
+    getItemListByName(name: GraphTypeS | GraphItemType): GraphSubItemSettingPart[] {
+        let itemList;
+        if (isGraphType(name)) {
+            name === 'media'
+                ? itemList = this.Content.medias
+                : name === 'link'
+                ? itemList = this.Content.links
+                : name === 'text'
+                    ? itemList = this.Content.texts
+                    : itemList = this.Content.nodes //  name === 'document | 'node
+        } else {
+            itemList = this.Content[name]
+        }
+        return itemList
+    }
+
+    getSubItemById(_id: id, _type: GraphItemType) {
+        let list = this.getItemListByName(_type);
+        return list.filter(item => item._id === _id)[0]
+    }
 }
 
 export class GraphSelfPart extends DocumentSelfPart {
@@ -945,11 +966,6 @@ export class GraphSelfPart extends DocumentSelfPart {
         return result
     }
 
-    getSubItemById(_id: id, _type: GraphItemType) {
-        let list = this.getItemListByName(_type);
-        return list.filter(item => item._id === _id)[0]
-    }
-
     allItems(): GraphSubItemSettingPart[] {
         let {nodes, links, medias, texts} = this.Content;
         // @ts-ignore
@@ -961,22 +977,6 @@ export class GraphSelfPart extends DocumentSelfPart {
             item.State.isAdd = true;
             this.pushItem(item)
         })
-    }
-
-    getItemListByName(name: GraphTypeS | GraphItemType): GraphSubItemSettingPart[] {
-        let itemList;
-        if (isGraphType(name)) {
-            name === 'media'
-                ? itemList = this.Content.medias
-                : name === 'link'
-                ? itemList = this.Content.links
-                : name === 'text'
-                    ? itemList = this.Content.texts
-                    : itemList = this.Content.nodes //  name === 'document | 'node
-        } else {
-            itemList = this.Content[name]
-        }
-        return itemList
     }
 
     checkExist(_id: id, _type: GraphItemType) {
@@ -1040,5 +1040,20 @@ export class GraphSelfPart extends DocumentSelfPart {
         let payload = {graph, info};
         this.addItems([graph.baseNode.deepCloneSelf()]);
         return payload
+    }
+
+    removeFromParent() {
+        if (this.Conf.parent) {
+            //@ts-ignore
+            let node: NodeSettingPart = this.Conf.parent.getSubItemById(this._id, 'document');
+            let index = this.Conf.parent.Content.nodes.indexOf(node);
+            this.Conf.parent.Content.nodes.splice(index, 1)
+        }
+        Vue.set(this.Conf, 'parent', null)
+    }
+
+    addToDocument(target: GraphSelfPart) {
+        target.addItems([this.baseNode.deepCloneSelf()]);
+        Vue.set(this.Conf, 'parent', target)
     }
 }

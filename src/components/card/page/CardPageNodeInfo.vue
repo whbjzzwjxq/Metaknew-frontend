@@ -182,8 +182,8 @@
     import {LabelGroup} from "@/interface/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
     import {Draft, draftCreate, draftUpdate} from "@/api/subgraph/commonApi";
-    import {commitInfoChangeId} from "@/store/modules/_mutations";
-    import {nodeBulkCreate} from "@/api/subgraph/node";
+    import {commitInfoChangeId, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
     import {dispatchMediaQuery} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
 
@@ -425,6 +425,15 @@
                 } else {
                     let data = [this.info];
                     if (this.baseData.isRemote) {
+                        nodeBulkUpdate(data).then(res => {
+                            let payload = {
+                                actionName: 'nodeBulkUpdate',
+                                color: 'success',
+                                once: false,
+                                content: '更新成功'
+                            } as SnackBarStatePayload;
+                            commitSnackbarOn(payload)
+                        })
                     } else {
                         nodeBulkCreate(data).then(res => {
                             let idMap = res.data;

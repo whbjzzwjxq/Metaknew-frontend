@@ -84,7 +84,7 @@
                 // 是否可以删除
                 let editMode = this.editMode;
                 let deleteIcon;
-                this.node._type === 'document'
+                this.node._id === this.dataManager.currentGraph._id
                     ? deleteIcon = false
                     : this.node.isDeleted
                     ? deleteIcon = 'rollback'
@@ -119,8 +119,13 @@
         },
         methods: {
             deleteItem() {
-                let current = this.node.isDeleted;
-                this.$set(this.node.State, 'isDeleted', !current);
+                this.node.updateState('isDeleted');
+                let graph = this.dataManager.graphManager[this.node._id];
+                if (graph) {
+                    this.node.isDeleted
+                        ? Vue.set(graph.Conf, 'parent', null)
+                        : Vue.set(graph.Conf, 'parent', this.node.parent)
+                }
             },
             unShow() {
                 let current = this.node.Setting.Show.showAll;

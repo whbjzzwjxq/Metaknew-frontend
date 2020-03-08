@@ -281,7 +281,7 @@
                     label: document.baseNode._label,
                     name: document.baseNode.Setting._name,
                     icon: getIcon('i-item', document.baseNode._label),
-                    deletable: false,
+                    deletable: document._id !== this.document._id,
                     editable: document.isSelf,
                     children: [], // 注意这里的children是空的
                     parent: parent ? document._id : '$_-1', // 注意这里对rootGraph的parent进行了一个假设
@@ -290,7 +290,11 @@
             },
 
             deleteItem(item: DirectoryItem) {
-                this.$set(this.getOriginItem(item).State, 'isDeleted', true);
+                this.getOriginItem(item).updateState('isDeleted', true);
+                let graph = this.dataManager.graphManager[item.id];
+                if (item.type === 'document' && graph) {
+                    graph.removeFromParent()
+                }
                 let payload = {
                     timeout: 3000,
                     color: 'warning',
@@ -305,7 +309,11 @@
             },
 
             rollBackDelete(item: DirectoryItem) {
-                this.$set(this.getOriginItem(item).State, "isDeleted", false)
+                this.getOriginItem(item).updateState('isDeleted', false);
+                let graph = this.dataManager.graphManager[item.id];
+                if (item.type === 'document' && graph) {
+                    graph.addToDocument(graph.baseNode.parent)
+                }
             },
 
             changeItem(item: DirectoryItem) {

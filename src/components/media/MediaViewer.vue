@@ -5,7 +5,7 @@
         :min-height="minHeight"
         flat
         tile
-        style="position:relative;"
+        style="overflow-y: hidden"
         class="test">
         <div :style="floatStyle" v-show="showFloat">
             <slot name="float">
@@ -14,6 +14,7 @@
         </div>
         <v-img
             :src="realSrc"
+            contain
             v-if="media._label === 'image'">
 
         </v-img>

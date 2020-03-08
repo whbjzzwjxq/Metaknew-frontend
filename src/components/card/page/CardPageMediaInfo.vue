@@ -23,7 +23,7 @@
                 </template>
             </media-viewer>
         </v-card-title>
-        <v-card-text v-show="detailOn" class="cardItem" style="height: 360px">
+        <v-card-text v-show="detailOn" class="ma-0 pa-0">
             <card-sub-row :width="rowWidth" text="Title">
                 <template v-slot:content>
                     <field-title
@@ -32,6 +32,9 @@
                         @update-text="updateName"
                         v-show="showText"
                     ></field-title>
+                    <item-sharer :base-data="media">
+
+                    </item-sharer>
                 </template>
             </card-sub-row>
             <card-sub-row :width="rowWidth" text="Labels">
@@ -84,6 +87,7 @@
     import {getIcon, iconMap} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
     import MediaDetail from "../../media/MediaDetail.vue"
+    import ItemSharer from "@/components/ItemSharer.vue";
     import {getSrc} from '@/utils/utils'
     import 'viewerjs/dist/viewer.css'
 
@@ -96,7 +100,8 @@
             CardSubLabelGroup,
             IconGroup,
             MediaDetail,
-            CardSubRow
+            CardSubRow,
+            ItemSharer
         },
         data() {
             return {
@@ -107,7 +112,7 @@
                 resizeBase: 100,
                 dialogDetailVisible: false,
                 dialogEdit: false,
-                rowWidth: 360
+                rowWidth: 340
             };
         },
         props: {
@@ -263,9 +268,6 @@
                 ];
             },
 
-            getHeight: function () {
-                return this.height / 2
-            },
             viewer(): Vue & { validate: () => boolean } {
                 return this.$refs.viewer as Vue
                     & { validate: () => boolean }
