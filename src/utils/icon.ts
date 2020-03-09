@@ -176,7 +176,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     'i-save': {
         save: 'mdi-content-save',
         saveAll: 'mdi-content-save-settings',
-        savePublish: 'mdi-content-save-move'
+        savePublish: 'mdi-content-save-move',
+        saveDraft: 'mdi-content-save-edit'
     }
 };
 

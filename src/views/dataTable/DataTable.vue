@@ -366,7 +366,7 @@
                 node._id = this.getIndex();
                 // 合并Prop
                 this.mergeProp(node.Description, translate);
-                this.mergeProp(node.Text, text);
+                this.mergeProp(node.Translate, text);
                 this.mergeProp(node.ExtraProps, extraProps);
                 return node
             },

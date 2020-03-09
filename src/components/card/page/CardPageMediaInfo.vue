@@ -7,6 +7,7 @@
         outlined
         class="unselected"
         :width="width"
+        :height="height"
     >
         <v-card-title class="ma-0 pa-0">
             <media-viewer :max-height="height" :media="media" :show-float="showTool" :width="width" ref="mediaViewer">

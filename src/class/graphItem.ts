@@ -931,7 +931,7 @@ export class GraphSelfPart extends DocumentSelfPart {
         let graphContent = emptyContent();
         let setting = GraphConf.emptyGraphSetting(_id, parent);
         let graph = new GraphSelfPart(graphContent, setting, false);
-        graph.addItems([graph.baseNode]);
+        graph.addItems([graph.baseNode.deepCloneSelf()]);
         let nodeQuery = {id: _id, type: 'document', pLabel: 'DocGraph'} as DocumentQuery;
         let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
         let payload = {graph, info};

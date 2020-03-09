@@ -32,18 +32,18 @@
         computed: {
             iconLiSt: function (): IconItem[] {
                 return [
-                    {
-                        name: this.saveGroup.save,
-                        _func: this.saveDocument,
-                        payload: 'current',
-                        toolTip: '保存现有的专题'
-                    },
+                    // {
+                    //     name: this.saveGroup.save,
+                    //     _func: this.saveDocument,
+                    //     payload: 'current',
+                    //     toolTip: '保存现有的专题'
+                    // },
                     {
                         name: this.saveGroup.saveAll,
                         _func: this.saveDocument,
                         payload: 'all',
                         toolTip: '保存所有专题'
-                    }
+                    },
                 ]
             },
 

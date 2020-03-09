@@ -481,7 +481,7 @@
                 this.activeGraphList.map(graph => {
                     result = result.concat(graph.Content.links.filter(link => {
                         return this.nodeIdList.includes(link.Setting._start._id) &&
-                            this.nodeIdList.includes(link.Setting._end._id)
+                            this.nodeIdList.includes(link.Setting._end._id) && !link.State.isDeleted
                     }))
                 });
                 return result
