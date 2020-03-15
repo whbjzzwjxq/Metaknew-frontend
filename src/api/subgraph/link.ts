@@ -10,3 +10,23 @@ export function linkBulkCreate(linkList: CompressLinkInfo[], createType: string 
         }
     })
 }
+
+export interface BackendLinkCtrl extends PublicCtrl {
+    Start: QueryObject;
+    End: QueryObject;
+}
+
+export interface BackendLinkInfoPart {
+    Info: BaseLinkInfo;
+    Ctrl: BackendLinkCtrl;
+}
+
+export function linkQueryBulk(list: Array<QueryObject>) {
+    return instance.request<BackendLinkInfoPart[]>({
+        url: '/item/link/query',
+        method: 'post',
+        data: {
+            DataList: list
+        }
+    })
+}

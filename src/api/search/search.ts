@@ -1,4 +1,4 @@
-import {instance} from './main'
+import {instance} from '../main'
 
 export interface SearchQueryObject {
     labels: string[],
@@ -38,7 +38,17 @@ export interface IndexedInfo {
     }
 }
 
-export type HomePageSearchResponse = IndexedInfo[]
+export interface HomePageSearchResponse {
+    Document: IndexedInfo[],
+    Meta: IndexedInfo[],
+    [prop: string]: IndexedInfo[]
+}
+
+export interface NameQueryObject {
+    id: id,
+    type: AllType,
+    name: string
+}
 
 export const queryHomePage = (queryObject: SearchQueryObject) =>
     instance.request<HomePageSearchResponse>({
@@ -48,3 +58,13 @@ export const queryHomePage = (queryObject: SearchQueryObject) =>
             ...queryObject
         }
     });
+
+export function nameSimilar(nameList: NameQueryObject[]) {
+    return instance.request({
+        url: 'es/name_similar',
+        method: 'POST',
+        data: {
+            NameList: nameList
+        }
+    })
+}

@@ -1,5 +1,6 @@
 import store from '../index';
 import {FragmentInfoPart, GraphSelfPart, MediaInfoPart, NodeSettingPart} from "@/class/graphItem";
+import {PropDescription} from "@/utils/fieldResolve";
 
 export function dispatchUploadFile(payload: {
     item?: MediaInfoPart,
@@ -26,8 +27,8 @@ export function dispatchVisNodeCreate() {
     return store.dispatch('visNodeCreate')
 }
 
-export function dispatchDocumentSave(payload: 'current' | 'all') {
-    return store.dispatch('documentSave', payload)
+export function dispatchDocumentSave() {
+    return store.dispatch('documentSave')
 }
 
 export function dispatchLinkBulkCreate(payload: CompressLinkInfo[]) {
@@ -44,4 +45,12 @@ export function dispatchLinkQuery(payload: LinkSetting[]) {
 
 export function dispatchMediaQuery(payload: id[]) {
     return store.dispatch('mediaQuery', payload)
+}
+
+export function dispatchUserPropResolveChange(payload: PropDescriptionPayload) {
+    return store.dispatch('changeUserPropResolve', payload)
+}
+
+export function dispatchUserConcernQuery(payload: InfoPartInDataManager) {
+    return store.dispatch('userConcernQuery', payload)
 }

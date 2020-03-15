@@ -1,10 +1,11 @@
-import {FragmentInfoPart, InfoPart, NoteSettingPart} from "@/class/graphItem";
+import {FragmentInfoPart, NoteSettingPart} from "@/class/graphItem";
 import {ActionContext} from "vuex";
 import {RootState} from '@/store';
 import Vue from 'vue';
 import {userConcernQuery} from "@/api/user/queryInfo";
-import {commitUserConcernAdd} from "@/store/modules/_mutations";
+import {commitUserConcernAdd, commitUserPropDescription} from "@/store/modules/_mutations";
 import {userConcernTemplate} from "@/utils/template";
+import {PropDescription, PropDescriptionDict} from "@/utils/fieldResolve";
 
 declare global {
     interface UserDataManagerState {
@@ -14,7 +15,8 @@ declare global {
         userSetting: Record<string, Record<string, any>>,
         userNoteBook: NoteBook[],
         userNoteInDoc: NoteSettingPart[],
-        timerForConcern?: number
+        timerForConcern?: number,
+        userPropResolve: PropDescriptionDict
     }
 
     interface ConcernKey {
@@ -27,6 +29,12 @@ declare global {
         id: id,
         type: GraphItemType,
         userConcern: UserConcern,
+        strict?: boolean
+    }
+
+    interface PropDescriptionPayload {
+        prop: string,
+        resolve: PropDescription,
         strict?: boolean
     }
 }
@@ -59,6 +67,7 @@ const state: UserDataManagerState = {
     },
     userNoteBook: [],
     userNoteInDoc: [],
+    userPropResolve: {}
 };
 
 const mutations = {
@@ -92,7 +101,13 @@ const mutations = {
     noteInDocAdd(state: UserDataManagerState, payload: { note: NoteSettingPart }) {
         let {note} = payload;
         state.userNoteInDoc.push(note)
-    }
+    },
+
+    addUserPropResolve(state: UserDataManagerState, payload: PropDescriptionPayload) {
+        let {prop, resolve, strict} = payload;
+        strict === undefined && (strict = false);
+        (strict || !state.userPropResolve[prop]) && Vue.set(state.userPropResolve, prop, resolve);
+    },
 };
 
 const actions = {
@@ -104,19 +119,21 @@ const actions = {
     userConcernQuery(context: ActionContext<UserDataManagerState, RootState>, payload: InfoPartInDataManager) {
         let state = context.state;
         let userConcern = state.userConcernDict[payload._type][payload._id];
+        // 远端请求
         if (payload.isRemote) {
             if (userConcern && userConcern.isRemote) {
-                return userConcern
+                // 加载完毕
             } else {
-                context.dispatch('addUserConcernQuery', [{id: payload._id, type: payload._type, isRemote: false}]).then()
+                // 未加载
+                context.dispatch('addUserConcernQuery', [{
+                    id: payload._id,
+                    type: payload._type,
+                    isRemote: false
+                }]).then();
             }
         } else {
-            // 远端不请求了
+            commitUserConcernAdd({id: payload._id, type: payload._type, userConcern: userConcernTemplate()})
         }
-        if (userConcern === undefined) {
-            userConcern = userConcernTemplate()
-        }
-        return userConcern
     },
 
     addUserConcernQuery(context: ActionContext<UserDataManagerState, RootState>, payload: ConcernKey[]) {
@@ -151,7 +168,12 @@ const actions = {
         } else {
 
         }
-    }
+    },
+
+    changeUserPropResolve(context: ActionContext<UserDataManagerState, RootState>, payload: PropDescriptionPayload) {
+        commitUserPropDescription(payload)
+    },
+
 };
 
 const getters = {

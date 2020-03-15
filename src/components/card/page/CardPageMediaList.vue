@@ -34,13 +34,13 @@
     import Vue from 'vue'
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {mediaAppendToNode} from "@/api/commonSource";
     import {NodeInfoPart, MediaInfoPart, MediaSettingPart} from "@/class/graphItem";
     import {commitFileToken} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import {SortProp} from "@/interface/interfaceInComponent";
     import {sortCtrl} from "@/utils/utils";
     import {loginCookie} from "@/api/user/loginApi";
+    import {mediaAppendToNode} from "@/api/subgraph/media";
 
     export default Vue.extend({
         name: "CardPageMediaList",

@@ -23,8 +23,9 @@
             >
                 <template v-slot:item="{ item }">
                     <template v-if="item.isTitle">
-                        <v-list-item-content
-                            v-html="getHeaderNameHtml(item.name, item.length)"></v-list-item-content>
+                        <v-list-item-content v-html="getHeaderNameHtml(item.name, item.length)">
+
+                        </v-list-item-content>
                         <v-btn icon @click="collapse(item)">
                             <v-icon>
                                 {{ getArrow(item)}}
@@ -63,7 +64,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {IndexedInfo, queryHomePage, SearchQueryObject} from '@/api/search'
+    import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search/search'
     import {GraphSelfPart, MediaSettingPart, NodeSettingPart} from '@/class/graphItem'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
@@ -83,19 +84,17 @@
                 isLoading: false,
                 selection: [] as ListText[],
                 searchResult: {
-                    'node': [],
-                    'link': [],
-                    'media': [],
-                    'document': []
-                } as Record<ItemType, IndexedInfo[]>,
+                    'Document': [],
+                    'Meta': []
+                } as HomePageSearchResponse,
                 regexLabel: /:.{3,12}/,
                 regexProps: /-.{3,12}/,
                 regexType: /@.{3,12}/,
                 regexSymbol: new RegExp('\\s[-\\\\:*?",;<>|]'),
                 typeTimer: 0,
-                titleDict: {} as Record<ItemType, ListTitle>,
+                titleDict: {} as Record<string, ListTitle>,
                 listItems: [] as ListItem[],
-                typeList: ['node', 'media', 'link', 'document'] as ItemType[]
+                titleList: ['Document', 'Meta'] as string[]
             }
         },
         props: {
@@ -158,14 +157,14 @@
 
             activeItems: function (): ListItem[] {
                 let result: ListItem[] = [];
-                this.typeList.map((key: ItemType) => {
+                this.titleList.map(key => {
                     result.push(this.titleDict[key]);
                     if (!this.titleDict[key].isCollapse) {
                         let listItem = this.searchResult[key].map(item => {
                             return {
                                 ...item,
                                 isTitle: false,
-                                isInfo: false,
+                                isDocument: item['type'] === 'document',
                                 disabled: false
                             } as ListItem
                         });
@@ -183,9 +182,7 @@
                     this.isLoading = true;
                     queryHomePage(this.buildQueryObject)
                         .then(res => {
-                            this.typeList.map(key => {
-                                this.searchResult[key] = res.data.filter(item => item.type === key)
-                            })
+                            this.searchResult = res.data
                         })
                         .catch(() => {
                             //
@@ -257,11 +254,11 @@
             getArrow: (item: ListTitle): string => getIcon('i-arrow', item.isCollapse),
 
             collapse(item: ListTitle) {
-                this.$set(item, 'isCollapse', !item.isCollapse)
+                item.isCollapse = !item.isCollapse
             },
             getTitle() {
-                let typeList = this.typeList;
-                typeList.map(key => {
+                let titleList = this.titleList;
+                titleList.map(key => {
                     this.titleDict[key] = {
                         name: key,
                         length: this.searchResult[key].length,

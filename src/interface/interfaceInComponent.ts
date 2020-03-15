@@ -1,6 +1,6 @@
 import {Point, RectByPoint} from "@/class/geometric";
 import {GraphSelfPart} from "@/class/graphItem";
-import {IndexedInfo} from "@/api/search";
+import {IndexedInfo} from "@/api/search/search";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -37,13 +37,17 @@ export type SortProp = 'UpdateTime' | 'NumStar' | 'PrimaryLabel' // 排序方式
 // SearchBar
 
 export interface ListText extends IndexedInfo {
-    isTitle: boolean,
-    isInfo: boolean,
+    isTitle: false,
+    isDocument: boolean,
     disabled: boolean
 }
 
+export interface ListDoc extends ListText {
+    isDocument: true
+}
+
 export interface ListTitle {
-    isTitle: boolean,
+    isTitle: true,
     isInfo: boolean,
     isCollapse: boolean,
     length: number,
@@ -51,8 +55,7 @@ export interface ListTitle {
     disabled: boolean
 }
 
-export type ListItem = ListText | ListTitle
-export type ArrayListItem = ListItem[]
+export type ListItem = ListText | ListTitle | ListDoc
 
 export type Rule<T> = (v: T) => string | boolean
 type InputType = 'text' | 'password'

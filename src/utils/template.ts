@@ -225,7 +225,6 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         BaseUseful: 0,
         IsOpenSource: false,
         IsCommon: true,
-        IsFree: true,
         IncludedMedia: [],
         MainPic: ''
     };

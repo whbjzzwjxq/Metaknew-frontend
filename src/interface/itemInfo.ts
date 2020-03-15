@@ -42,7 +42,6 @@ declare global {
 
     interface PublicInfo extends BaseInfo {
         IsCommon: boolean;
-        IsFree: boolean;
         IsOpenSource: boolean;
     }
 

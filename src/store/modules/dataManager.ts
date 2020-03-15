@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import {documentQuery, linkQueryBulk, mediaCreate, mediaQueryMulti, nodeQueryBulk} from '@/api/commonSource';
 import {filePutBlob} from '@/api/fileUpload';
 import {
     DocumentSelfPart,
@@ -37,9 +36,10 @@ import {PaperSelfPart} from "@/class/paperItem";
 import {loginCookie} from "@/api/user/loginApi";
 import {settingToQuery} from "@/utils/utils";
 import {userConcernTemplate} from "@/utils/template";
-import {visNodeBulkCreate} from "@/api/subgraph/node";
-import {linkBulkCreate} from "@/api/subgraph/link";
-import {documentBulkCreate, documentBulkUpdate} from "@/api/document/document";
+import {nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
+import {linkBulkCreate, linkQueryBulk} from "@/api/subgraph/link";
+import {documentBulkCreate, documentBulkUpdate, documentQuery} from "@/api/document/document";
+import {mediaCreate, mediaQueryMulti} from "@/api/subgraph/media";
 
 export const getManager = (_type: ItemType) =>
     _type === 'link'
@@ -361,19 +361,12 @@ const actions = {
         }
     },
 
-    async documentSave(context: Context, payload: 'current' | 'all') {
+    async documentSave(context: Context) {
         await dispatchVisNodeCreate();
         await dispatchLinkBulkCreate(
             Object.values(state.linkManager).filter(link => !link.isRemote).map(item => item.compress())
         );
-        let documentList: DocumentSelfPart[];
-        if (payload === 'current') {
-            let document = context.state.currentGraph;
-            documentList = document.rootList;
-            documentList.push(document);
-        } else {
-            documentList = context.getters.documentList
-        }
+        let documentList: DocumentSelfPart[] = context.getters.documentList;
         let dataList = documentList.filter(document => !document.DocumentData.isRemote)
             .map(document => document.backendDocument);
         let updateDataList = documentList.filter(document => document.DocumentData.isRemote).map(

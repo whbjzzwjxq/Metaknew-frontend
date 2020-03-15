@@ -1,4 +1,8 @@
 import {instance} from "@/api/main";
+export interface BackendNodeInfoPart {
+    Info: BaseNodeInfo;
+    Ctrl: BaseNodeCtrl;
+}
 
 export function nodeBulkUpdate(nodes: BaseNodeInfo[]) {
     return instance.request({
@@ -39,6 +43,16 @@ export function visNodeBulkCreate(nodeList: BaseNodeInfo[], mediaList: BaseMedia
             Nodes: nodeList,
             Medias: mediaList,
             CreateType: 'USER'
+        }
+    })
+}
+
+export function nodeQueryBulk(list: Array<QueryObject>) {
+    return instance.request<BackendNodeInfoPart[]>({
+        url: '/item/node/query',
+        method: 'post',
+        data: {
+            DataList: list
         }
     })
 }

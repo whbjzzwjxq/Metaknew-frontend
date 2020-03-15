@@ -5,7 +5,9 @@ export interface TagRecommendation {
 }
 
 export const userConcernQuery = (keyList: ConcernKey[]) => {
-    return instance.request<(ConcernPayload | {id: id, type: GraphItemType, userConcern: null})[]>(
-        {}
+    return instance.request<(ConcernPayload | { id: id, type: GraphItemType, userConcern: null })[]>(
+        {
+
+        }
     )
 };

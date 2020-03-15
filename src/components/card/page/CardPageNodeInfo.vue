@@ -184,7 +184,7 @@
     import {Draft, draftCreate, draftUpdate} from "@/api/subgraph/commonApi";
     import {commitInfoChangeId, commitSnackbarOn} from "@/store/modules/_mutations";
     import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
-    import {dispatchMediaQuery} from "@/store/modules/_dispatch";
+    import {dispatchMediaQuery, dispatchUserConcernQuery} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
@@ -237,7 +237,7 @@
                 return this.baseData.Ctrl
             },
             userConcern: function (): UserConcern {
-                return this.$store.state.userDataManager[this.baseData._type][this.baseData._id]
+                return this.$store.state.userDataManager.userConcernDict[this.type][this.baseData._id];
             },
 
             dataManager: function (): DataManagerState {
@@ -447,7 +447,9 @@
         created() {
             dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
                 this.loading = false
-            })
+            });
+
+            dispatchUserConcernQuery(this.baseData)
         },
 
         updated() {

@@ -40,17 +40,14 @@ import {
     isSvgSetting
 } from "@/utils/typeCheck";
 import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
-import {
-    BackendGraph,
-    BackendGraphWithNode,
-    BackendLinkInfoPart,
-    BackendMediaInfoPart,
-    BackendNodeInfoPart
-} from "@/api/commonSource";
 import {commitDocumentAdd, commitInfoAdd, commitNoteInDocAdd} from "@/store/modules/_mutations";
 import {FragmentCtrl, FragmentInfo} from "@/interface/interfaceUser";
 import store from '@/store'
 import {getManager} from "@/store/modules/dataManager";
+import {BackendMediaInfoPart} from "@/api/subgraph/media";
+import {BackendNodeInfoPart} from "@/api/subgraph/node";
+import {BackendGraph, BackendGraphWithNode} from "@/api/document/document";
+import {BackendLinkInfoPart} from "@/api/subgraph/link";
 
 export abstract class InfoPart {
     Info: BaseInfo;

@@ -84,13 +84,13 @@
     import {MediaInfoPart} from "@/class/graphItem";
     import {LabelGroup} from "@/interface/interfaceInComponent";
     import {labelItems} from "@/utils/fieldResolve";
-    import {mediaUpdate} from '@/api/commonSource';
     import {getIcon, iconMap} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
     import MediaDetail from "../../media/MediaDetail.vue"
     import ItemSharer from "@/components/ItemSharer.vue";
     import {getSrc} from '@/utils/utils'
     import 'viewerjs/dist/viewer.css'
+    import {mediaUpdate} from "@/api/subgraph/media";
 
     export default Vue.extend({
         name: "CardPageMediaInfo",
