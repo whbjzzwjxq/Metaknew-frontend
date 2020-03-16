@@ -24,7 +24,7 @@ import {
 import {Commit, Dispatch} from "vuex";
 import {isGraphSelfPart} from "@/utils/typeCheck";
 import {
-    dispatchGraphQuery,
+    dispatchGraphQuery, dispatchInfoDraftSaveAll,
     dispatchLinkBulkCreate,
     dispatchLinkQuery,
     dispatchMediaQuery,
@@ -40,6 +40,7 @@ import {nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
 import {linkBulkCreate, linkQueryBulk} from "@/api/subgraph/link";
 import {documentBulkCreate, documentBulkUpdate, documentQuery} from "@/api/document/document";
 import {mediaCreate, mediaQueryMulti} from "@/api/subgraph/media";
+import {draftUpdate} from "@/api/subgraph/commonApi";
 
 export const getManager = (_type: ItemType) =>
     _type === 'link'
@@ -84,10 +85,10 @@ const state: DataManagerState = {
     rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
     graphManager: {},
     paperManager: {},
+    pathManager: {},
     nodeManager: {},
     linkManager: {},
     mediaManager: {},
-    pathManager: {},
     fileToken: {
         'AccessKeySecret': '',
         'AccessKeyId': '',
@@ -105,6 +106,14 @@ const getters = {
         let result = [] as DocumentSelfPart[];
         result.push(...Object.values(state.graphManager));
         result.push(...Object.values(state.paperManager));
+        return result
+    },
+
+    allInfoPart: (state: DataManagerState) => {
+        let result = [] as InfoPartInDataManager[];
+        result.push(...Object.values(state.nodeManager));
+        result.push(...Object.values(state.linkManager));
+        result.push(...Object.values(state.mediaManager));
         return result
     }
 };
@@ -202,7 +211,6 @@ const mutations = {
             (_type === 'document' || _type === 'node') &&
             commitDocumentChangeId({oldId, newId})
         });
-        commitUserConcernChangeId(payload);
     },
 
     updateFileToken(state: DataManagerState, payload: FileToken) {
@@ -361,7 +369,29 @@ const actions = {
         }
     },
 
-    async documentSave(context: Context) {
+    draftSaveAll(context: Context, payload: { isAuto: boolean }) {
+        let infoList: InfoPartInDataManager[] = context.getters.allInfoPart;
+        let data = infoList.filter(info => info.isRemote && info.State.isEdit).map(info => info.draftObject);
+        let {isAuto} = payload;
+        return draftUpdate(data, isAuto).then(res => {
+            let {DraftIdMap} = res.data;
+            infoList.map(info => {
+                let newDraftId = DraftIdMap[info._id];
+                info.State.draftId === undefined && (info.State.draftId = newDraftId);
+                info.State.isEdit = false
+            });
+            let payload = {
+                actionName: `DraftUpdateAll`,
+                color: 'success',
+                once: false,
+                content: isAuto ? '自动保存成功' : '草稿保存成功'
+            } as SnackBarStatePayload;
+            commitSnackbarOn(payload)
+        })
+    },
+
+    async documentSave(context: Context, payload: { isDraft: boolean, isAuto: boolean }) {
+        let {isDraft, isAuto} = payload;
         await dispatchVisNodeCreate();
         await dispatchLinkBulkCreate(
             Object.values(state.linkManager).filter(link => !link.isRemote).map(item => item.compress())
@@ -369,16 +399,38 @@ const actions = {
         let documentList: DocumentSelfPart[] = context.getters.documentList;
         let dataList = documentList.filter(document => !document.DocumentData.isRemote)
             .map(document => document.backendDocument);
-        let updateDataList = documentList.filter(document => document.DocumentData.isRemote).map(
-            document => document.backendDocument);
+        let updateDataList = documentList.filter(document => document.DocumentData.isRemote);
+        if (isDraft) {
+            dispatchInfoDraftSaveAll({isAuto}).then()
+        } else {
+            // todo
+        }
         if (updateDataList.length > 0) {
-            documentBulkUpdate(updateDataList).then(res => {
-                let idList = res.data;
-                idList.map(id => {
-                    let graph = state.graphManager[id];
-                    graph && (graph.updateStateUpdate())
+            if (isDraft) {
+                let data = updateDataList.map(doc => doc.draftObject);
+                draftUpdate(data, isAuto).then(res => {
+                    let {DraftIdMap} = res.data;
+                    updateDataList.map(doc => {
+                        let newDraftId = DraftIdMap[doc._id];
+                        doc.DocumentData.draftId === undefined && (doc.DocumentData.draftId = newDraftId);
+                    });
+                    let payload = {
+                        actionName: `DraftUpdateDocument`,
+                        color: 'success',
+                        once: false,
+                        content: isAuto ? '专题自动保存成功' : '专题草稿保存成功'
+                    } as SnackBarStatePayload;
+                    commitSnackbarOn(payload)
                 })
-            });
+            } else {
+                documentBulkUpdate(updateDataList.map(doc => doc.backendDocument)).then(res => {
+                    let idList = res.data;
+                    idList.map(id => {
+                        let graph = state.graphManager[id];
+                        graph && (graph.updateStateUpdate())
+                    })
+                });
+            }
         }
         if (dataList.length > 0) {
             await documentBulkCreate(dataList).then(res => {

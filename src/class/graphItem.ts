@@ -40,7 +40,7 @@ import {
     isSvgSetting
 } from "@/utils/typeCheck";
 import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
-import {commitDocumentAdd, commitInfoAdd, commitNoteInDocAdd} from "@/store/modules/_mutations";
+import {commitDocumentAdd, commitInfoAdd, commitNoteInDocAdd, commitSnackbarOn} from "@/store/modules/_mutations";
 import {FragmentCtrl, FragmentInfo} from "@/interface/interfaceUser";
 import store from '@/store'
 import {getManager} from "@/store/modules/dataManager";
@@ -48,6 +48,7 @@ import {BackendMediaInfoPart} from "@/api/subgraph/media";
 import {BackendNodeInfoPart} from "@/api/subgraph/node";
 import {BackendGraph, BackendGraphWithNode} from "@/api/document/document";
 import {BackendLinkInfoPart} from "@/api/subgraph/link";
+import {DocumentDraft, Draft, draftUpdate} from "@/api/subgraph/commonApi";
 
 export abstract class InfoPart {
     Info: BaseInfo;
@@ -87,6 +88,15 @@ export abstract class InfoPart {
         return {}
     }
 
+    get draftObject() {
+        return {
+            Query: this.queryObject,
+            Name: this.Info.Name,
+            Content: this.Info,
+            VersionId: this.State.draftId
+        } as Draft;
+    }
+
     protected constructor(info: BaseInfo, ctrl: BaseCtrl, remoteNotFound: boolean, draftId?: number) {
         this.Info = info;
         this.Ctrl = ctrl;
@@ -122,8 +132,22 @@ export abstract class InfoPart {
         }
     }
 
-    draftSave() {
-
+    draftSave(isAuto: boolean = false) {
+        if (this.isRemote) {
+            draftUpdate([this.draftObject], isAuto).then(res => {
+                let {DraftIdMap} = res.data;
+                this.State.draftId = DraftIdMap[this._id];
+                let payload = {
+                    actionName: this._type + `DraftUpdate`,
+                    color: 'success',
+                    once: false,
+                    content: isAuto ? '自动保存成功' : '草稿保存成功'
+                } as SnackBarStatePayload;
+                commitSnackbarOn(payload)
+            })
+        } else {
+            // error
+        }
     }
 }
 
@@ -806,6 +830,14 @@ export abstract class DocumentSelfPart {
         return store.state.dataManager.nodeManager[this._id].isSelf
     }
 
+    get queryObject() {
+        return {
+            id: this._id,
+            type: this.Conf._type,
+            pLabel: this.Conf._label
+        } as QueryObject
+    }
+
     get backendDocument() {
         let Content: Record<string, GraphItemSetting[]> = {};
         Object.entries(this.Content).map(([key, items]) => {
@@ -819,6 +851,15 @@ export abstract class DocumentSelfPart {
             Content,
             Conf: this.Conf.Setting,
         } as BackendGraph
+    }
+
+    get draftObject(): DocumentDraft {
+        return {
+            Query: this.queryObject,
+            Name: this._name,
+            VersionId: this.DocumentData.draftId,
+            Content: this.backendDocument
+        }
     }
 
     protected constructor(Content: DocumentContent, Conf: ItemSettingPart, isRemote: boolean, draftId?: number) {
@@ -859,6 +900,10 @@ export abstract class DocumentSelfPart {
     getSubItemById(_id: id, _type: GraphItemType) {
         let list = this.getItemListByName(_type);
         return list.filter(item => item._id === _id)[0]
+    }
+
+    draftSave() {
+
     }
 }
 

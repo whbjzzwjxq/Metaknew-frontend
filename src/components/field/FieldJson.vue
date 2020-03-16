@@ -97,7 +97,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {fieldSetting, fieldDefaultValue, FieldType, ResolveType, ValueWithType} from '@/utils/fieldResolve'
-    import {deepClone} from '@/utils/utils';
+    import {deepClone, fieldHandler} from '@/utils/utils';
     import {validGroup} from "@/utils/validation";
     import {Rule} from "@/interface/interfaceInComponent";
     import {dispatchUserPropResolveChange} from "@/store/modules/_dispatch";
@@ -116,7 +116,8 @@
                 types: ['TextField', 'ArrayField', 'NumberField', 'StringField',
                     'JsonField', 'FileField', 'ImageField', 'BooleanField'] as FieldType[],
                 resolves: ['name', 'time', 'location', 'normal'] as ResolveType[],
-                reg: new RegExp('[\\\\:*?"<>|]')
+                reg: new RegExp('[\\\\:*?"<>|]'),
+                stringHandler: fieldHandler()
             }
         },
         components: {
@@ -230,21 +231,20 @@
                 let item = {
                     'value': fieldDefaultValue[this.newPropType],
                     'type': this.newPropType,
-                    'resolve': 'normal'
-                };
+                    'resolve': 'normal',
+                } as ValueWithType<any>;
                 this.addProp(key, item)
             },
 
-            updateType(item: any, key: string, type: FieldType) {
-                this.$set(item, 'type', type);
-                this.$set(item, 'value', fieldDefaultValue[type]);
-                let {resolve} = item;
-                dispatchUserPropResolveChange({prop: key, resolve: {resolve, type}, strict: true});
+            updateType(item: ValueWithType<any>, key: string, type: FieldType) {
+                item.type = type;
+                item.value = this.stringHandler[type](item.value);
+                dispatchUserPropResolveChange({prop: key, resolve: {resolve: item.resolve, type}, strict: true});
                 this.update()
             },
 
-            updateResolveType(item: any, key: string, resolve: ResolveType) {
-                this.$set(item, 'resolve', resolve);
+            updateResolveType(item: ValueWithType<any>, key: string, resolve: ResolveType) {
+                item.resolve = resolve;
                 let {type} = item;
                 dispatchUserPropResolveChange({prop: key, resolve: {resolve, type}, strict: true});
                 this.update()

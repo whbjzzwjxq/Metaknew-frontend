@@ -23,7 +23,7 @@ declare global {
     interface InfoState {
         remoteNotFound: boolean // 远端模型是否被删除
         isEdit: boolean // 自上次保存后，是否编辑过
-        draftId?: id // 对应草稿的versionId 如果没有那么就是undefined
+        draftId?: number // 对应草稿的versionId 如果没有那么就是undefined
     }
     //InfoPart相关
     interface BaseInfo {

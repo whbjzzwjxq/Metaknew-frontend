@@ -100,7 +100,7 @@
         PropDescriptionDict, ResolveType,
         ValueWithType,
     } from "@/utils/fieldResolve"
-    import {deepClone, getIndex} from "@/utils/utils"
+    import {deepClone, fieldHandler, getIndex} from "@/utils/utils"
     import DataTableImporter from '@/components/DataTableImporter.vue';
     import PLabelSelector from '@/components/PLabelSelector.vue';
     import DataTableButtonGroup from '@/components/DataTableButtonGroup.vue';
@@ -195,15 +195,7 @@
                     "textTrans": /Text_[a-zA-Z]{2}/
                 },
 
-                fieldHandler: {
-                    "StringField": (value: any) => value.toString(),
-                    "ArrayField": (value: any) => value.toString().split(";"),
-                    "NumberField": (value: any) => parseFloat(value),
-                    "JsonField": (value: any) => JSON.parse(value),
-                    "TextField": (value: any) => ({"auto": value.toString()}),
-                    "FileField": (value: any) => value.toString().split(";"),
-                    "ImageField": (value: any) => value.toString()
-                } as Record<FieldType, (value: any) => any>
+                fieldHandler: fieldHandler()
             }
         },
         props: {},
@@ -383,7 +375,7 @@
                                 [resolve, type] = ['normal', 'StringField']
                             }
                             extraProps[key] = {
-                                value,
+                                value: this.fieldHandler[type](value),
                                 resolve,
                                 type
                             }
@@ -397,6 +389,7 @@
                 });
                 node.id = getIndex();
                 node.type = 'node';
+                node.PrimaryLabel = this.pLabel;
                 // 合并Prop
                 this.mergeProp(node.Description, text);
                 this.mergeProp(node.Translate, translate);

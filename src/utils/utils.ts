@@ -3,11 +3,12 @@ import {SortProp} from "@/interface/interfaceInComponent";
 import {
     commitFileToken,
     commitGlobalIndexPlus,
-    commitLoginDialogChange, commitLoginOut,
+    commitLoginDialogChange,
+    commitLoginOut,
     commitUserLogin
 } from "@/store/modules/_mutations";
-import store from '@/store/index';
 import {AxiosResponse} from "axios";
+import {FieldType} from "@/utils/fieldResolve";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -363,8 +364,19 @@ export const badResponse = (res: AxiosResponse) => {
 
 };
 
-export const doNothing = () => {};
+export const doNothing = () => {
+};
 
 export function settingToQuery<T>(setting: Setting) {
     return {id: setting._id, type: setting._type, pLabel: setting._label} as unknown as T
 }
+
+export const fieldHandler = () => ({
+    "StringField": (value: any) => value.toString(),
+    "ArrayField": (value: any) => value.toString().split(";"),
+    "NumberField": (value: any) => parseFloat(value),
+    "JsonField": (value: any) => JSON.parse(value),
+    "TextField": (value: any) => ({"auto": value.toString()}),
+    "FileField": (value: any) => value.toString().split(";"),
+    "ImageField": (value: any) => value.toString()
+} as Record<FieldType, (value: any) => any>);

@@ -27,7 +27,7 @@ export interface PropDescription {
 
 // 将已有value转化为描述形式
 export interface ValueWithType<T> extends PropDescription {
-    value: T,
+    value: T
 }
 
 //描述已有属性 e.g. Name: {value: 'XXX', type: 'StringField', resolve: 'Name'}

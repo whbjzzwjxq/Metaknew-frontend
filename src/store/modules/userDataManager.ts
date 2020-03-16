@@ -8,20 +8,23 @@ import {userConcernTemplate} from "@/utils/template";
 import {PropDescription, PropDescriptionDict} from "@/utils/fieldResolve";
 
 declare global {
+    interface UserSetting {
+        userPropResolve: PropDescriptionDict // 用户对key的解释
+        pLabelExtraProps: Record<string, string[]> // 用户对某个属性的额外属性
+        fragmentCollect: any // 碎片采集设置
+    }
     interface UserDataManagerState {
-        userConcernDict: Record<GraphItemType, Record<id, UserConcern>>,
-        userConcernLoadingList: ConcernKey[],
-        fragments: Array<FragmentInfoPart>,
-        userSetting: Record<string, Record<string, any>>,
-        userNoteBook: NoteBook[],
-        userNoteInDoc: NoteSettingPart[],
-        timerForConcern?: number,
-        userPropResolve: PropDescriptionDict
+        userConcernDict: Record<GraphItemType, Record<id, UserConcern>>, // 基础的数据仓库
+        userConcernLoadingList: ConcernKey[], // 正在加载的List
+        fragments: Array<FragmentInfoPart>, // user收集的碎片
+        userNoteBook: NoteBook[], // 笔记本
+        userNoteInDoc: NoteSettingPart[], // 当前专题下的笔记
+        timerForConcern?: number, // 计时器
+        userSetting: UserSetting,
     }
 
     interface ConcernKey {
         id: id,
-        type: GraphItemType,
         isRemote: boolean
     }
 
@@ -63,11 +66,12 @@ const state: UserDataManagerState = {
     timerForConcern: undefined,
     fragments: [],
     userSetting: {
-        fragmentCollect: {}
+        fragmentCollect: {},
+        pLabelExtraProps: {},
+        userPropResolve: {}
     },
     userNoteBook: [],
     userNoteInDoc: [],
-    userPropResolve: {}
 };
 
 const mutations = {
@@ -76,15 +80,6 @@ const mutations = {
         let {id, type, userConcern, strict} = payload;
         strict === undefined && (strict = false);
         (strict || state.userConcernDict[type][id] === undefined) && Vue.set(state.userConcernDict[type], id, userConcern)
-    },
-
-    userConcernChangeId(state: UserDataManagerState, payload: { _type: ItemType, idMap: IdMap }) {
-        let {_type, idMap} = payload;
-        let dict = state.userConcernDict[_type];
-        Object.entries(idMap).map(([key, value]) => {
-            Vue.set(dict, key, dict[value]);
-            delete dict[key]
-        })
     },
 
     noteBookAdd(state: UserDataManagerState, payload: { note: NoteBook }) {
@@ -160,7 +155,7 @@ const actions = {
                             commitUserConcernAdd({id, type, userConcern, strict: true})
                         }
                         let {id, type} = concern;
-                        let index = state.userConcernLoadingList.indexOf({id, type, isRemote: false});
+                        let index = state.userConcernLoadingList.indexOf({id, isRemote: false});
                         state.userConcernLoadingList.splice(index, 1)
                     })
                 })

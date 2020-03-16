@@ -27,8 +27,8 @@ export function dispatchVisNodeCreate() {
     return store.dispatch('visNodeCreate')
 }
 
-export function dispatchDocumentSave() {
-    return store.dispatch('documentSave')
+export function dispatchDocumentSave(payload: {isDraft: boolean, isAuto: boolean}) {
+    return store.dispatch('documentSave', payload)
 }
 
 export function dispatchLinkBulkCreate(payload: CompressLinkInfo[]) {
@@ -53,4 +53,8 @@ export function dispatchUserPropResolveChange(payload: PropDescriptionPayload) {
 
 export function dispatchUserConcernQuery(payload: InfoPartInDataManager) {
     return store.dispatch('userConcernQuery', payload)
+}
+
+export function dispatchInfoDraftSaveAll(payload: {isAuto: boolean}) {
+    return store.dispatch('draftSaveAll', payload)
 }

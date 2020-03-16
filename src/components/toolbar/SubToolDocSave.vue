@@ -35,8 +35,14 @@
                     {
                         name: this.saveGroup.saveAll,
                         _func: this.saveDocument,
-                        payload: 'all',
+                        payload: {isDraft: false, isAuto: false},
                         toolTip: '保存所有专题'
+                    },
+                    {
+                        name: this.saveGroup.saveDraft,
+                        _func: this.saveDocument,
+                        payload: {isDraft: true, isAuto: false},
+                        toolTip: '保存所有专题(草稿)'
                     },
                 ]
             },
@@ -46,8 +52,8 @@
             }
         },
         methods: {
-            saveDocument() {
-                dispatchDocumentSave()
+            saveDocument(payload: {isDraft: boolean, isAuto: boolean}) {
+                dispatchDocumentSave(payload)
             }
         },
         record: {
