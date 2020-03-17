@@ -75,28 +75,12 @@ export const commitDocumentChangeId = (payload: {oldId: id, newId: id}) => {
     return store.commit('documentChangeId', payload)
 };
 
-export const commitUserConcernAdd = (payload: ConcernPayload) => {
-    return store.commit('userConcernAdd', payload)
-};
-
 export const commitChangeRootTab = (payload: RootTabName | number) => {
     return store.commit('changeRootTab', payload)
 };
 
 export const commitChangeSubTab = (payload: SubTabName) => {
     return store.commit('changeSubTab', payload)
-};
-
-export const commitNoteBookAdd = (payload: { note: NoteBook }) => {
-    return store.commit('noteBookAdd', payload)
-};
-
-export const commitNoteBookRemove = (payload: { note: NoteBook }) => {
-    return store.commit('noteBookRemove', payload)
-};
-
-export const commitNoteInDocAdd = (payload: { note: NoteSettingPart }) => {
-    return store.commit('noteInDocAdd', payload)
 };
 
 export const commitGlobalIndexPlus = (payload: number) => {
@@ -116,10 +100,10 @@ export const commitEditModeChange = (payload: boolean) => {
     return store.commit('changeEditMode', payload)
 };
 
-export const commitUserConcernChangeId = (payload: {_type: ItemType, idMap: IdMap}) => {
-    return store.commit('userConcernChangeId', payload)
+export const commitUserConcernAdd = (payload: UserConcernPayload) => {
+    return store.commit('userConcernAdd', payload)
 };
 
-export const commitUserPropDescription = (payload: PropDescriptionPayload) => {
-    return store.commit('addUserPropResolve', payload)
+export const commitNoteInDocAdd = (payload: { note: NoteSettingPart }) => {
+    return store.commit('noteInDocAdd', payload)
 };

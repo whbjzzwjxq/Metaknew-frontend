@@ -1,5 +1,12 @@
 import store from '../index';
-import {FragmentInfoPart, GraphSelfPart, MediaInfoPart, NodeSettingPart} from "@/class/graphItem";
+import {
+    FragmentInfoPart,
+    GraphSelfPart,
+    InfoPart,
+    MediaInfoPart,
+    NodeSettingPart,
+    NoteSettingPart
+} from "@/class/graphItem";
 import {PropDescription} from "@/utils/fieldResolve";
 
 export function dispatchUploadFile(payload: {
@@ -51,10 +58,18 @@ export function dispatchUserPropResolveChange(payload: PropDescriptionPayload) {
     return store.dispatch('changeUserPropResolve', payload)
 }
 
-export function dispatchUserConcernQuery(payload: InfoPartInDataManager) {
+export function dispatchUserConcernGet(payload: InfoPartInDataManager) {
+    return store.dispatch('userConcernGet', payload)
+}
+
+export function dispatchUserConcernQuery(payload: id[]) {
     return store.dispatch('userConcernQuery', payload)
 }
 
 export function dispatchInfoDraftSaveAll(payload: {isAuto: boolean}) {
     return store.dispatch('draftSaveAll', payload)
+}
+
+export function dispatchNoteInDocPush(payload: {note: NoteSettingPart}) {
+    return store.dispatch('noteInDocPush', payload)
 }

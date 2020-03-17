@@ -367,7 +367,7 @@
                         if (!trans && !texts) {
                             let resolve: ResolveType;
                             let type: FieldType;
-                            let propDescription = this.userDataManager.userPropResolve[key];
+                            let propDescription = this.userDataManager.userSetting.userPropResolve[key];
                             if (propDescription) {
                                 resolve = propDescription.resolve;
                                 type = propDescription.type

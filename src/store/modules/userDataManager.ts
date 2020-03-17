@@ -3,9 +3,11 @@ import {ActionContext} from "vuex";
 import {RootState} from '@/store';
 import Vue from 'vue';
 import {userConcernQuery} from "@/api/user/queryInfo";
-import {commitUserConcernAdd, commitUserPropDescription} from "@/store/modules/_mutations";
 import {userConcernTemplate} from "@/utils/template";
 import {PropDescription, PropDescriptionDict} from "@/utils/fieldResolve";
+import {fragmentAdd, fragmentDelete, fragmentUpdate} from "@/api/user/dataApi";
+import {commitNoteInDocAdd, commitSnackbarOn, commitUserConcernAdd} from "@/store/modules/_mutations";
+import {dispatchUserConcernQuery} from "@/store/modules/_dispatch";
 
 declare global {
     interface UserSetting {
@@ -13,22 +15,26 @@ declare global {
         pLabelExtraProps: Record<string, string[]> // 用户对某个属性的额外属性
         fragmentCollect: any // 碎片采集设置
     }
+
     interface UserDataManagerState {
+        // userConcern 部分
         userConcernDict: Record<GraphItemType, Record<id, UserConcern>>, // 基础的数据仓库
-        userConcernLoadingList: ConcernKey[], // 正在加载的List
+        userConcernLoadingList: id[], // 正在加载的List
+        timerForConcern?: number, // 计时器
+
         fragments: Array<FragmentInfoPart>, // user收集的碎片
         userNoteBook: NoteBook[], // 笔记本
-        userNoteInDoc: NoteSettingPart[], // 当前专题下的笔记
-        timerForConcern?: number, // 计时器
+        userNoteInDoc: NoteSettingPart[], // 所有专题的笔记， 通过father判断
         userSetting: UserSetting,
     }
 
-    interface ConcernKey {
+    interface UserConcernKey {
         id: id,
-        isRemote: boolean
+        type: GraphItemType,
+        isModeled: boolean
     }
 
-    interface ConcernPayload {
+    interface UserConcernPayload {
         id: id,
         type: GraphItemType,
         userConcern: UserConcern,
@@ -75,8 +81,8 @@ const state: UserDataManagerState = {
 };
 
 const mutations = {
-    //todo 改写成为queue list
-    userConcernAdd(state: UserDataManagerState, payload: ConcernPayload) {
+    // //todo 改写成为queue list
+    userConcernAdd(state: UserDataManagerState, payload: UserConcernPayload) {
         let {id, type, userConcern, strict} = payload;
         strict === undefined && (strict = false);
         (strict || state.userConcernDict[type][id] === undefined) && Vue.set(state.userConcernDict[type], id, userConcern)
@@ -98,76 +104,107 @@ const mutations = {
         state.userNoteInDoc.push(note)
     },
 
-    addUserPropResolve(state: UserDataManagerState, payload: PropDescriptionPayload) {
+    noteInDocRemove(state: UserDataManagerState, payload: { note: NoteSettingPart }) {
+
+    },
+
+    userPropResolveAdd(state: UserDataManagerState, payload: PropDescriptionPayload) {
         let {prop, resolve, strict} = payload;
         strict === undefined && (strict = false);
-        (strict || !state.userPropResolve[prop]) && Vue.set(state.userPropResolve, prop, resolve);
+        (strict || !state.userSetting.userPropResolve[prop]) && Vue.set(state.userSetting.userPropResolve, prop, resolve);
     },
 };
 
 const actions = {
-    fragmentAdd(context: ActionContext<UserDataManagerState, RootState>, payload: FragmentInfoPart) {
-        state.fragments.push(payload)
-        // todo
+    fragmentPush(context: ActionContext<UserDataManagerState, RootState>, payload: FragmentInfoPart) {
+        context.state.fragments.push(payload);
+        fragmentAdd().then(() => {
+            let payload = {actionName: 'fragmentAdd', content: '为您收集了碎片', color: 'success', once: false} as SnackBarStatePayload;
+            commitSnackbarOn(payload)
+        })
     },
 
-    userConcernQuery(context: ActionContext<UserDataManagerState, RootState>, payload: InfoPartInDataManager) {
+    fragmentDelete(context: ActionContext<UserDataManagerState, RootState>, payload: id) {
+        let index = context.getters.fragmentSourceIdList.indexOf(payload);
+        context.state.fragments.splice(index, 1);
+        fragmentDelete().then(() => {
+
+        })
+    },
+
+    fragmentUpdate(context: ActionContext<UserDataManagerState, RootState>, payload: id) {
+        fragmentUpdate().then(() => {
+
+        })
+    },
+
+    userConcernUpdate(context: ActionContext<UserDataManagerState, RootState>, payload: {prop: any, value: any}) {
+
+    },
+
+    userConcernGet(context: ActionContext<UserDataManagerState, RootState>, payload: InfoPartInDataManager) {
         let state = context.state;
         let userConcern = state.userConcernDict[payload._type][payload._id];
         // 远端请求
         if (payload.isRemote) {
-            if (userConcern && userConcern.isRemote) {
+            if (userConcern) {
                 // 加载完毕
+                return true
             } else {
-                // 未加载
-                context.dispatch('addUserConcernQuery', [{
-                    id: payload._id,
-                    type: payload._type,
-                    isRemote: false
-                }]).then();
+                // 未加载 尝试加载
+                return dispatchUserConcernQuery([payload._id])
             }
         } else {
-            commitUserConcernAdd({id: payload._id, type: payload._type, userConcern: userConcernTemplate()})
+            //error
         }
     },
 
-    addUserConcernQuery(context: ActionContext<UserDataManagerState, RootState>, payload: ConcernKey[]) {
-        let keyList: ConcernKey[] = context.getters.userConcernKeyList.filter((key: ConcernKey) => !key.isRemote);
+    userConcernQuery(context: ActionContext<UserDataManagerState, RootState>, payload: id[]) {
+        // 获取已有userConcern的id, 不管它是否是
+        let idList: id[] = context.getters.userConcernKeyList.map((key: UserConcernKey) => key.id);
         let state = context.state;
         // 添加那些没有在列表中的key
-        let addKeyList = payload.filter(key => !keyList.includes(key));
-        let queryList = state.userConcernLoadingList;
-        if (addKeyList.length > 0) {
-            queryList = queryList.concat(addKeyList);
+        let newQueryList = payload.filter(key => !idList.includes(key));
+        let currentQueryList = state.userConcernLoadingList;
+        if (newQueryList.length > 0) {
+            currentQueryList = currentQueryList.concat(newQueryList);
             state.timerForConcern && clearTimeout(state.timerForConcern);
             state.timerForConcern = setTimeout(() => {
-                userConcernQuery(queryList).then(res => {
+                userConcernQuery(currentQueryList).then(res => {
                     let concernList = res.data;
                     concernList.map(concern => {
                         if (concern.userConcern) {
-                            concern.userConcern.isRemote = true;
+                            concern.userConcern.isModeled = true;
                             concern.strict = true;
                             commitUserConcernAdd(concern);
                         } else {
                             let {id, type} = concern;
                             let userConcern = userConcernTemplate();
-                            userConcern.isRemote = true;
+                            userConcern.isModeled = false;
                             commitUserConcernAdd({id, type, userConcern, strict: true})
                         }
-                        let {id, type} = concern;
-                        let index = state.userConcernLoadingList.indexOf({id, isRemote: false});
+                        let {id} = concern;
+                        let index = state.userConcernLoadingList.indexOf(id);
                         state.userConcernLoadingList.splice(index, 1)
                     })
                 })
             }, 5000)
         } else {
-
+            // 没有新的需要请求的userConcern了
         }
     },
 
-    changeUserPropResolve(context: ActionContext<UserDataManagerState, RootState>, payload: PropDescriptionPayload) {
-        commitUserPropDescription(payload)
+    userPropResolveUpdate(context: ActionContext<UserDataManagerState, RootState>, payload: PropDescriptionPayload) {
+        //todo
     },
+
+    noteInDocPush(context: ActionContext<UserDataManagerState, RootState>, payload: {note: NoteSettingPart}) {
+        commitNoteInDocAdd(payload)
+    },
+
+    noteInDocDelete() {
+
+    }
 
 };
 
@@ -177,10 +214,10 @@ const getters = {
     },
 
     userConcernKeyList(state: UserDataManagerState) {
-        let result: ConcernKey[] = [];
+        let result: UserConcernKey[] = [];
         Object.entries(state.userConcernDict).map(([key, value]) => {
                 Object.entries(value).map(([id, userConcern]) => {
-                    result.push({id: id, type: key, isRemote: userConcern.isRemote} as ConcernKey)
+                    result.push({id: id, type: key, isModeled: userConcern.isModeled} as UserConcernKey)
                 })
             }
         );

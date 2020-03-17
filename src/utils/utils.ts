@@ -199,19 +199,8 @@ export const getSrc = (src: string | undefined) => {
         : ''
 };
 
-export function mergeList<T>(list: Array<T[]>) {
-    let output: T[] = [];
-    list.map(value => {
-        value.map(item => {
-            output.push(item)
-        })
-    });
-    return output
-}
-
 let globalIndex = 0;
 export let frontendIdRegex = /\$_[0-9]*/;
-export let ctrlPropRegex = new RegExp("\\$.*");
 export let crucialRegex = new RegExp("_.*");
 
 // 获取新内容id

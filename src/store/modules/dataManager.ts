@@ -17,9 +17,7 @@ import {
     commitInfoChangeId,
     commitInfoRemove,
     commitItemChange,
-    commitSnackbarOn,
-    commitUserConcernAdd,
-    commitUserConcernChangeId
+    commitSnackbarOn
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
 import {isGraphSelfPart} from "@/utils/typeCheck";
@@ -183,12 +181,11 @@ const mutations = {
     infoAdd(state: DataManagerState, payload: { item: InfoPartInDataManager, strict?: boolean }) {
         let {item, strict} = payload;
         let {_id, _type} = item;
-        let manager = getManager(item._type);
+        let manager = getManager(_type);
         strict || (strict = true);
         strict
             ? Vue.set(manager, _id, item)
             : !manager[_id] && Vue.set(manager, _id, item);
-        commitUserConcernAdd({id: _id, type: _type, userConcern: userConcernTemplate(), strict: false})
     },
 
     infoRemove(state: DataManagerState, payload: { _id: id, _type: ItemType }) {

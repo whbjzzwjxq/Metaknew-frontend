@@ -4,8 +4,14 @@ export interface TagRecommendation {
     [propName: string]: string[],
 }
 
-export const userConcernQuery = (keyList: ConcernKey[]) => {
-    return instance.request<(ConcernPayload | { id: id, type: GraphItemType, userConcern: null })[]>(
+interface EmptyUserConcern {
+    id: id,
+    type: GraphItemType,
+    userConcern: null
+}
+
+export const userConcernQuery = (keyList: id[]) => {
+    return instance.request<(UserConcernPayload | EmptyUserConcern)[]>(
         {
 
         }

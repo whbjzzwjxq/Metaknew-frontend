@@ -197,7 +197,7 @@ export function userConcernTemplate() {
         NumBad: false,
         NumShared: false,
         Labels: [],
-        isRemote: false
+        isModeled: false
     };
 }
 

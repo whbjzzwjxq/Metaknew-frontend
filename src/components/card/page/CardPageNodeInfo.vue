@@ -181,10 +181,9 @@
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/fieldResolve";
     import {LabelGroup} from "@/interface/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
-    import {Draft, draftCreate, draftUpdate} from "@/api/subgraph/commonApi";
     import {commitInfoChangeId, commitSnackbarOn} from "@/store/modules/_mutations";
     import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
-    import {dispatchMediaQuery, dispatchUserConcernQuery} from "@/store/modules/_dispatch";
+    import {dispatchMediaQuery} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
@@ -433,7 +432,6 @@
                 this.loading = false
             });
 
-            dispatchUserConcernQuery(this.baseData)
         },
 
         updated() {

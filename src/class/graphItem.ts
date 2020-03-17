@@ -40,7 +40,7 @@ import {
     isSvgSetting
 } from "@/utils/typeCheck";
 import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
-import {commitDocumentAdd, commitInfoAdd, commitNoteInDocAdd, commitSnackbarOn} from "@/store/modules/_mutations";
+import {commitDocumentAdd, commitInfoAdd, commitSnackbarOn} from "@/store/modules/_mutations";
 import {FragmentCtrl, FragmentInfo} from "@/interface/interfaceUser";
 import store from '@/store'
 import {getManager} from "@/store/modules/dataManager";
@@ -49,6 +49,7 @@ import {BackendNodeInfoPart} from "@/api/subgraph/node";
 import {BackendGraph, BackendGraphWithNode} from "@/api/document/document";
 import {BackendLinkInfoPart} from "@/api/subgraph/link";
 import {DocumentDraft, Draft, draftUpdate} from "@/api/subgraph/commonApi";
+import {dispatchNoteInDocPush} from "@/store/modules/_dispatch";
 
 export abstract class InfoPart {
     Info: BaseInfo;
@@ -766,7 +767,7 @@ export class NoteSettingPart extends SettingPart {
         let setting = noteSettingTemplate(_id, _label, _title, _content, _parent);
         let state = noteStateTemplate();
         let note = new NoteSettingPart(setting, state);
-        commitToVuex && commitNoteInDocAdd({note});
+        commitToVuex && dispatchNoteInDocPush({note});
         return note
     }
 }
