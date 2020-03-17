@@ -137,7 +137,7 @@ const isMain = () => {
     return {
         isMain: {
             type: 'Boolean',
-            default: true,
+            default: false,
             range: '',
             tips: '合理地主要节点设置会提高内容可信度',
             explain: '是否是主要节点'
@@ -514,7 +514,7 @@ const mediaSetting = () => {
                 range: [50, 600]
             },
             scaleX: {
-                default: 0.4
+                default: 0.6
             }
         }
     }
