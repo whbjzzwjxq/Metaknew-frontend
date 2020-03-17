@@ -148,15 +148,15 @@
             },
 
             //注意是实际二分之一的高度
-            height: function (): number {
+            width: function (): number {
                 return this.setting.Base.size !== 0
                     ? this.setting.Base.size * this.scale
                     : this.size * this.scale
             },
 
             //注意是实际二分之一的宽度
-            width: function (): number {
-                return this.height * this.setting.Base.scaleX
+            height: function (): number {
+                return this.width * this.setting.Base.scaleX
             },
 
             colorStyle: function (): CSSProp {

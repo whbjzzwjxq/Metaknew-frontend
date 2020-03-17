@@ -93,7 +93,7 @@ export class PathInfoPart extends NodeInfoPart {
     static emptyPathInfoPart() {
         let _id = getIndex();
         let info = nodeInfoTemplate(_id, "document", "path") as BasePathInfo;
-        let ctrl = nodeCtrlTemplate("document", "path");
+        let ctrl = nodeCtrlTemplate();
         return new PathInfoPart(info, ctrl, false)
     }
 }

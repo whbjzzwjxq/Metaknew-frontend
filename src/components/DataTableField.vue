@@ -82,7 +82,7 @@
         </template>
     </v-edit-dialog>
 
-    <v-edit-dialog v-else-if="fieldType === 'FileField'" large persistent>
+    <v-edit-dialog v-else-if="fieldType === 'FileField'">
         <v-chip
             label outlined
             small :color="status">

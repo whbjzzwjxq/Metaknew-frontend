@@ -32,32 +32,34 @@
                     ry="">
 
                 </ellipse>
-            </svg>
-            <div :style="divStyle">
-                <field-text-render
-                    :editing="isSelected"
-                    render-as-markdown
-                    :value="setting._text"
-                    :rows="4"
-                    :row-height="14"
-                    @update-text="updateText"
-                >
+                <foreignObject :x="borderWidth" :y="borderWidth" :height="inlineRect.height" :width="inlineRect.width">
+                    <div :style="divStyle">
+                        <field-text-render
+                            :disabled="!isSelected"
+                            render-as-markdown
+                            :value="setting._text"
+                            :rows="4"
+                            :row-height="14"
+                            @update-text="updateText"
+                        >
 
-                </field-text-render>
-            </div>
+                        </field-text-render>
+                    </div>
+                </foreignObject>
+            </svg>
         </template>
     </rect-container>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {SvgSettingPart} from "@/class/graphItem";
+    import {TextSettingPart} from "@/class/graphItem";
     import {RectByPoint} from "@/class/geometric";
     import RectContainer from "@/components/container/RectContainer.vue";
     import FieldTextRender from "@/components/field/FieldTextRender.vue";
 
     export default Vue.extend({
-        name: "SvgBase",
+        name: "GraphText",
         components: {
             RectContainer,
             FieldTextRender
@@ -67,7 +69,7 @@
         },
         props: {
             svg: {
-                type: Object as () => SvgSettingPart,
+                type: Object as () => TextSettingPart,
                 required: true
             },
             scale: {
@@ -80,7 +82,7 @@
             }
         },
         computed: {
-            setting: function (): SvgSetting {
+            setting: function (): TextSetting {
                 return this.svg.Setting
             },
 
@@ -88,7 +90,7 @@
                 return this.setting._points
             },
 
-            label: function (): SvgLabel {
+            label: function (): TextLabel {
                 return this.setting._label
             },
 
@@ -117,8 +119,9 @@
                     position: "absolute",
                     left: borderWidth + 'px',
                     top: borderWidth + 'px',
-                    width: this.inlineRect.width + 'px',
-                    height: this.inlineRect.height + 'px'
+                    width: (this.inlineRect.width - borderWidth * 2) + 'px',
+                    height: (this.inlineRect.height - borderWidth * 2) + 'px',
+                    overflow: 'hidden'
                 }
             },
 
@@ -150,7 +153,7 @@
             },
 
             isSelected: function (): boolean {
-                return this.svg.State.isSelected
+                return this.svg.isSelected
             }
         },
         methods: {

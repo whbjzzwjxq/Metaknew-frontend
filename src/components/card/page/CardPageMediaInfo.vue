@@ -2,32 +2,44 @@
     <v-card
         @mouseenter.stop="showTool = true"
         @mouseleave.stop="showTool = false"
-        :width="width"
-        :max-height="height"
         flat
         tile
         outlined
         class="unselected"
+        :width="width"
+        :height="height"
     >
-        <v-card :height="height">
-            <v-card :width="width" :height="getHeight" flat>
-                <media-viewer :media="media" :width="width" :height="height" ref="mediaViewer">
-                    <template v-slot:button-group>
-                        <icon-group
-                            v-if="height >= 100"
-                            :icon-list="iconList"
-                            :container-style="buttonGroupStyle"
-                            x-small
-                            vertical
-                            ref="img"
-                        >
-                        </icon-group>
-                    </template>
-                </media-viewer>
-            </v-card>
+        <v-card-title class="ma-0 pa-0">
+            <media-viewer :max-height="height" :media="media" :show-float="showTool" :width="width" ref="mediaViewer">
+                <template v-slot:float>
+                    <icon-group
+                        v-if="height >= 100"
+                        :icon-list="iconList"
+                        :container-style="buttonGroupStyle"
+                        small
+                        vertical
+                        ref="img"
+                    >
+                    </icon-group>
+                </template>
+            </media-viewer>
+        </v-card-title>
+        <v-card-text v-show="detailOn" class="ma-0 pa-0">
+            <card-sub-row :width="rowWidth" text="Title">
+                <template v-slot:content>
+                    <field-title
+                        :edit-mode="editMode"
+                        :text="media.Info.Name"
+                        @update-text="updateName"
+                        v-show="showText"
+                    ></field-title>
+                    <item-sharer :base-data="media">
 
-            <v-card v-show="detailOn" class="cardItem" :height='getHeight' :width="width">
-                <v-card-text :width="width">
+                    </item-sharer>
+                </template>
+            </card-sub-row>
+            <card-sub-row :width="rowWidth" text="Labels">
+                <template v-slot:content>
                     <card-sub-label-group
                         :editable="group.editable"
                         :key="index"
@@ -40,44 +52,25 @@
                         v-for="(group, index) in labelGroup">
 
                     </card-sub-label-group>
+                </template>
+            </card-sub-row>
+            <card-sub-row :width="rowWidth" text="Description">
+                <template v-slot:content>
                     <field-text
                         prop-name="Description"
                         :base-text="info.Description"
                         :editable="editMode"
+                        :rows="10"
                         @update-value="updateValue"
                     ></field-text>
-                </v-card-text>
-                <v-card-actions>
-                    <v-btn text>Learn More+</v-btn>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        text
-                        @click="editMode = !editMode"
-                        :disabled="!media.isSelf"
-                    >{{ editMode ? 'Edit Off' : 'Edit On' }}
-                    </v-btn>
-                    <v-btn text @click="saveMedia" :disabled="!media.isSelf">Save</v-btn>
-                </v-card-actions>
-
-                <media-detail
-                    :dialog-detail="dialogDetailVisible"
-                    :dialog-edit="dialogEdit"
-                    @close="closeDialog"
-                    :media="media"
-                >
-                </media-detail>
-
-            </v-card>
-        </v-card>
-
-        <div style="height: 6px"></div>
-        <field-title
-            :edit-mode="editMode"
-            :text="media.Info.Name"
-            @update-text="updateName"
-            v-show="showText"
-        ></field-title>
-
+                </template>
+            </card-sub-row>
+        </v-card-text>
+        <v-card-actions v-show="detailOn">
+            <v-btn text>Learn More+</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn text @click="saveMedia" :disabled="!media.isSelf">Save</v-btn>
+        </v-card-actions>
     </v-card>
 </template>
 
@@ -87,15 +80,17 @@
     import FieldText from "@/components/field/FieldText.vue";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import CardSubLabelGroup from '@/components/card/subComp/CardSubLabelGroup.vue';
+    import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import {MediaInfoPart} from "@/class/graphItem";
     import {LabelGroup} from "@/interface/interfaceInComponent";
     import {labelItems} from "@/utils/fieldResolve";
-    import {mediaUpdate} from '@/api/commonSource';
     import {getIcon, iconMap} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
     import MediaDetail from "../../media/MediaDetail.vue"
+    import ItemSharer from "@/components/ItemSharer.vue";
     import {getSrc} from '@/utils/utils'
     import 'viewerjs/dist/viewer.css'
+    import {mediaUpdate} from "@/api/subgraph/media";
 
     export default Vue.extend({
         name: "CardPageMediaInfo",
@@ -105,7 +100,9 @@
             FieldText,
             CardSubLabelGroup,
             IconGroup,
-            MediaDetail
+            MediaDetail,
+            CardSubRow,
+            ItemSharer
         },
         data() {
             return {
@@ -116,6 +113,7 @@
                 resizeBase: 100,
                 dialogDetailVisible: false,
                 dialogEdit: false,
+                rowWidth: 340
             };
         },
         props: {
@@ -229,15 +227,10 @@
             },
 
             title: function (): string {
-                return this.media.PrimaryLabel + " --> " + this.info.Name;
+                return this.media._label + " --> " + this.info.Name;
             },
             buttonGroupStyle: function (): CSSProp {
-                return {
-                    opacity: this.showTool ? '50%' : '0%',
-                    position: "absolute",
-                    right: 0,
-                    top: 0
-                }
+                return {}
             },
             showText: function () {
                 return this.height >= 100
@@ -270,15 +263,12 @@
                     {name: "", _func: vm.doNothing},
                     {name: "mdi-magnify", _func: vm.dialogDetailWatch},
                     {name: getIcon("i-arrow-double", vm.detailOn), _func: vm.changeDetail},
-                    {name: getIcon('i-edit-able', vm.isSelf), _func: vm.dialogDetailEdit, disabled: vm.isSelf},
-                    {name: getIcon('i-delete-able', deleteAble), _func: vm.deleteMedia, disabled: deleteAble},
+                    {name: getIcon('i-edit-able', vm.isSelf), _func: vm.dialogDetailEdit, disabled: !vm.isSelf},
+                    {name: getIcon('i-delete-able', deleteAble), _func: vm.deleteMedia, disabled: !deleteAble},
                     {name: "mdi-arrow-right-bold-circle-outline", _func: vm.addMediaToGraph, render: vm.showExportIcon}
                 ];
             },
 
-            getHeight: function () {
-                return this.height / 2
-            },
             viewer(): Vue & { validate: () => boolean } {
                 return this.$refs.viewer as Vue
                     & { validate: () => boolean }
@@ -307,7 +297,7 @@
                 this.$emit("add-media-to-graph", this.media);
             },
             dialogDetailWatch() {
-                if (this.media.PrimaryLabel === 'image') {
+                if (this.media._label === 'image') {
                     let el: any = this.$refs.mediaViewer;
                     el.bigPic()
                 } else {
@@ -320,11 +310,12 @@
             },
             dialogDetailEdit() {
                 this.dialogDetailVisible = true;
-                this.dialogEdit = true
+                this.dialogEdit = true;
+                this.editMode = true;
             },
             saveMedia() {
                 let status = this.media.status;
-                if (status === "success" || status === "remote") {
+                if (status === "success" || this.media.isRemote) {
                     mediaUpdate(this.media).then(res => {
                         res.status === 200
                             ? alert("保存成功")

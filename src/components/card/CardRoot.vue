@@ -18,7 +18,7 @@
                 </v-tabs>
                 <v-tabs-items v-model="subTab">
                     <v-tab-item v-for="subValue in value.children" :key="subValue.key">
-                        <div class="cardItem" :style="subCardStyle">
+                        <div :style="subCardStyle" class="cardItem">
                             <template v-if="value.key === 'ecoSystem'">
 
                             </template>
@@ -108,7 +108,7 @@
                 return this.dataManager.currentItem
             },
             currentItemType: function (): GraphItemType {
-                let _type = this.currentItem.type;
+                let _type = this.currentItem._type;
                 _type === 'document' && (_type = 'node');
                 return _type
             },
@@ -123,7 +123,7 @@
             },
             totalCardStyle: function (): CSSProp {
                 return {
-                    width: (this.allComponentSize.leftCard.width - leftCardPadding) + 'px',
+                    width: (this.allComponentSize.leftCard.width) + 'px',
                     height: this.allComponentSize.leftCard.height + 'px',
                     overflowY: "hidden",
                     overflowX: "hidden"
@@ -239,7 +239,7 @@
 </script>
 
 <style scoped>
-
+    @import "/src/style/css/card.css";
 </style>
 
 /**

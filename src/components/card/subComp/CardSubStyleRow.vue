@@ -39,27 +39,14 @@
                                     </v-color-picker>
 
                                     <template v-else-if="item.type === 'Number'">
-                                        <v-slider
-                                            :value="manyValue(prop)"
+                                        <card-sub-style-number
                                             :min="item.range[0]"
                                             :max="item.range[1]"
-                                            @change="updateCache(item.type, $event)"
-                                            thumb-label>
-                                            <template v-slot:append>
-                                                <v-text-field
-                                                    :value="selectionValue[prop][0]"
-                                                    @input="updateCache(item.type, parseInt($event))"
-                                                    :rules="[value => (item.range[0]<= value <= item.range[1]) || 'out of range']"
-                                                    class="mt-0 pt-0"
-                                                    single-line
-                                                    :type="'number'"
-                                                    style="width: 80px">
+                                            :value="manyValue(prop)"
+                                            :prop-name="prop"
+                                            @update="updateCache(item.type, $event)">
 
-                                                </v-text-field>
-                                            </template>
-                                        </v-slider>
-                                        <p>{{'minValue: ' + item.range[0]}}</p>
-                                        <p>{{'maxValue: ' + item.range[1]}}</p>
+                                        </card-sub-style-number>
                                     </template>
 
                                     <v-select
@@ -104,11 +91,14 @@
     import Vue from 'vue'
     import {GraphItemSettingPart} from "@/class/graphItem";
     import {SettingGroup} from "@/interface/itemSetting";
+    import CardSubStyleNumber from "@/components/card/subComp/CardSubStyleNumber.vue";
 
     type settingType = 'Color' | 'Number' | 'Boolean' | 'String' | 'Text'
     export default Vue.extend({
         name: "CardSubStyleRow",
-        components: {},
+        components: {
+            CardSubStyleNumber
+        },
         data() {
             return {
                 cache: {
@@ -147,7 +137,7 @@
                     })
                 }
                 return result
-            },
+            }
         },
         methods: {
             textView: (text: string) => text.length >= 8
@@ -161,7 +151,7 @@
             manyValue(prop: string) {
                 return this.selectionValue[prop].length === 1
                     ? this.selectionValue[prop][0]
-                    : undefined
+                    : 0
             },
 
             updateValue(prop: string, value: string | number) {

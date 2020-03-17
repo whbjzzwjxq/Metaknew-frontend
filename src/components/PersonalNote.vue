@@ -115,7 +115,6 @@
     import {NoteBook} from "@/store/modules/userDataManager";
     import IconGroup from "@/components/IconGroup.vue";
     import {currentTime, getCookie, getIndex} from "@/utils/utils";
-    import {commitNoteBookAdd, commitNoteBookRemove} from "@/store/modules/_mutations";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import TimeRender from "@/components/TimeRender.vue";
     import FieldTextRender from "@/components/field/FieldTextRender.vue";
@@ -262,7 +261,7 @@
                         isEditing: true
                     }
                 } as NoteBook;
-                commitNoteBookAdd({note});
+                //todo
                 let removed = this.pushNoteInShowed(note);
                 this.pushNoteInMore(removed)
             },
@@ -271,7 +270,7 @@
                 let note = this.currentNote;
                 let index = this.removeNoteFromShow(note);
                 index === -1 && (this.removeNoteFromMore(note));
-                commitNoteBookRemove({note});
+                //todo
             },
 
             editNote: function () {

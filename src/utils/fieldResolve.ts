@@ -27,17 +27,17 @@ export interface PropDescription {
 
 // 将已有value转化为描述形式
 export interface ValueWithType<T> extends PropDescription {
-    value: T,
+    value: T
 }
 
 //描述已有属性 e.g. Name: {value: 'XXX', type: 'StringField', resolve: 'Name'}
-export interface PLabelProps {
+export interface PropDescriptionDict {
     [propName: string]: PropDescription
 }
 
 //描述一个标签对应的一组属性
 interface PLabelPropsDict {
-    [pLabel: string]: PLabelProps
+    [pLabel: string]: PropDescriptionDict
 }
 
 // 额外的属性
@@ -50,7 +50,7 @@ export type EditProps = {
 }
 
 // 每个node都有的属性
-export const baseNodeProp: () => PLabelProps = () => ({
+export const baseNodeProp: () => PropDescriptionDict = () => ({
     Name: {
         type: "StringField",
         resolve: "name"
@@ -191,7 +191,6 @@ export const nodePropType: PLabelPropsDict = {
             }
         },
     BaseNode: {},
-    $Fragment: {}
 };
 
 // link的属性
@@ -218,8 +217,7 @@ export function nodeLabelToProp(pLabel: string) {
         : {};
 }
 
-export const availableLabel = Object.keys(nodePropType)
-    .filter(label => label !== 'DocGraph');
+export var availableLabel = ['ArchProject', 'Person', 'Project', 'BaseNode', 'DocGraph', 'DocPaper'];
 
 // 以下是预设 测试用
 export const topicItems = {
@@ -236,6 +234,9 @@ export type FieldSetting = Record<string, Record<string, any>>
 // 属性的Setting DataTable用
 export const fieldSetting: FieldSetting = {
     Name: {},
+    Translate: {
+        singleLine: true
+    },
     Alias: {
         availableTags: {}
     },

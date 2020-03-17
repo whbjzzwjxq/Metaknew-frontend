@@ -1,38 +1,32 @@
 import {instance} from "@/api/main";
-import {QueryObject} from "@/api/commonSource";
+import {BackendGraph} from "@/api/document/document";
 
 export interface Draft {
     Query: QueryObject;
-    Content: BaseInfo;
+    Content: Object;
     Name: string;
     VersionId?: number
 }
 
-export interface DraftResponse {
-    IdMap: IdMap,
-    DraftIdMap: IdMap
+export interface DocumentDraft extends Draft{
+    Content: BackendGraph
 }
 
-export const draftCreate = (data: Draft[], isAuto: boolean, isNode: boolean) =>
-    instance.request<DraftResponse>({
-        method: 'POST',
-        url: '/item/draft/bulk_create',
-        data: {
-            Data: data,
-            IsAuto: isAuto,
-            IsNode: isNode,
-            CreateType: 'USER'
-        }
-    });
+export interface NodeDraft extends Draft {
+    Content: BaseNodeInfo
+}
 
-export const draftUpdate = (data: Draft[], isAuto: boolean, isNode: boolean) =>
+export interface DraftResponse {
+    DraftIdMap: Record<id, number> // key是 item id value 是draftId
+}
+
+export const draftUpdate = (data: Draft[], isAuto: boolean) =>
     instance.request<DraftResponse>({
         method: 'POST',
         url: '/item/draft/bulk_update',
         data: {
             Data: data,
             IsAuto: isAuto,
-            IsNode: isNode,
             CreateType: 'USER'
         }
     });

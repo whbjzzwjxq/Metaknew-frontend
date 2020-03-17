@@ -45,7 +45,7 @@
                     <td v-if="changeType">
                         <v-select
                             :value="item.type"
-                            @change="updateType(item, $event)"
+                            @change="updateType(item, key, $event)"
                             :items="types"
                             dense>
 
@@ -55,7 +55,7 @@
                     <td v-if="changeType">
                         <v-select
                             :value="item.resolve"
-                            @change="updateResolveType(item, $event)"
+                            @change="updateResolveType(item, key, $event)"
                             :items="resolves">
 
                         </v-select>
@@ -96,10 +96,11 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {fieldSetting, fieldDefaultValue, FieldType, ResolveType} from '@/utils/fieldResolve'
-    import {deepClone} from '@/utils/utils';
+    import {fieldSetting, fieldDefaultValue, FieldType, ResolveType, ValueWithType} from '@/utils/fieldResolve'
+    import {deepClone, fieldHandler} from '@/utils/utils';
     import {validGroup} from "@/utils/validation";
     import {Rule} from "@/interface/interfaceInComponent";
+    import {dispatchUserPropResolveChange} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: 'fieldJson',
@@ -115,7 +116,8 @@
                 types: ['TextField', 'ArrayField', 'NumberField', 'StringField',
                     'JsonField', 'FileField', 'ImageField', 'BooleanField'] as FieldType[],
                 resolves: ['name', 'time', 'location', 'normal'] as ResolveType[],
-                reg: new RegExp('[\\\\:*?"<>|]')
+                reg: new RegExp('[\\\\:*?"<>|]'),
+                stringHandler: fieldHandler()
             }
         },
         components: {
@@ -177,6 +179,9 @@
                     ? 'default'
                     : 'error'
             },
+            userDataManager: function (): UserDataManagerState {
+                return this.$store.state.userDataManager
+            }
         },
 
         methods: {
@@ -184,11 +189,25 @@
                 this.cacheKey = $event
             },
 
-            updateKey(key: string, item: any) {
-                if (this.cacheKey !== '') {
+            updateKey(key: string, item: ValueWithType<any>) {
+                let newKey = this.cacheKey;
+                let newValue: ValueWithType<any>;
+                if (newKey !== '') {
                     this.delProp(key);
-                    this.addProp(this.cacheKey, item);
-                    this.cacheKey = ''
+                    let propDescription = this.userDataManager.userPropResolve[newKey];
+                    if (propDescription) {
+                        let {resolve, type} = propDescription;
+                        newValue = {
+                            value: fieldDefaultValue[type],
+                            resolve,
+                            type
+                        }
+                    } else {
+                        dispatchUserPropResolveChange({prop: newKey, resolve: item, strict: false});
+                        newValue = item;
+                    }
+                    this.addProp(newKey, newValue);
+                    this.cacheKey = '';
                 }
             },
 
@@ -212,19 +231,22 @@
                 let item = {
                     'value': fieldDefaultValue[this.newPropType],
                     'type': this.newPropType,
-                    'resolve': 'normal'
-                };
+                    'resolve': 'normal',
+                } as ValueWithType<any>;
                 this.addProp(key, item)
             },
 
-            updateType(item: any, type: FieldType) {
-                this.$set(item, 'type', type);
-                this.$set(item, 'value', fieldDefaultValue[type]);
+            updateType(item: ValueWithType<any>, key: string, type: FieldType) {
+                item.type = type;
+                item.value = this.stringHandler[type](item.value);
+                dispatchUserPropResolveChange({prop: key, resolve: {resolve: item.resolve, type}, strict: true});
                 this.update()
             },
 
-            updateResolveType(item: any, resolveType: ResolveType) {
-                this.$set(item, 'resolve', resolveType);
+            updateResolveType(item: ValueWithType<any>, key: string, resolve: ResolveType) {
+                item.resolve = resolve;
+                let {type} = item;
+                dispatchUserPropResolveChange({prop: key, resolve: {resolve, type}, strict: true});
                 this.update()
             },
 

@@ -24,11 +24,12 @@
                     <v-card flat tile width="400px">
                         <card-sub-row text="New Image">
                             <template v-slot:content>
-                                <file-resolver
-                                    :props="fileResolverProps"
-                                    @upload-file="newFile">
+                                <v-file-input
+                                    accept="image/*"
+                                    label="Image input"
+                                    @change="newFile">
 
-                                </file-resolver>
+                                </v-file-input>
                             </template>
                         </card-sub-row>
                         <card-sub-row text="Select Image">
@@ -93,7 +94,7 @@
         },
         data() {
             return {
-                currentFile: null as MediaInfoPart | null,
+                currentFile: null as string | null,
                 fileResolverProps: {
                     chips: false,
                     placeholder: "Click to Upload Image",
@@ -124,7 +125,7 @@
             },
             currentImage: function (): string {
                 return this.currentFile
-                    ? this.currentFile.Ctrl.FileName
+                    ? this.currentFile
                     : this.realSrc
             }
         },
@@ -146,17 +147,15 @@
                     realFile: file
                 }).then(() => {
                     alert('Upload Image Success!');
-                    this.$set(file, "status", "success");
                     this.$emit('new-main-image', storeName)
                 }).catch(() => {
-                        alert('Something Success!');
-                        this.$set(file, "status", "error");
+                        alert('Just PreView!');
                         this.$emit('new-main-image', URL.createObjectURL(file))
                     }
                 );
             },
-            newFile(fileList: MediaInfoPart[]) {
-                this.currentFile = fileList[0]
+            newFile(file: File) {
+                this.currentFile = URL.createObjectURL(file)
             },
             newResolvedFile(fileList: MediaInfoPart[]) {
                 this.$emit('new-main-image', fileList[0].Ctrl.FileName)

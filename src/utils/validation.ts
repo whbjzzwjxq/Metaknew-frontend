@@ -44,19 +44,11 @@ export const validGroup = {
     },
 
     'Number': {
-        'minCheck': (slotName: string, min?: number) => {
-            let activeMax: number;
-            min === undefined
-                ? (activeMax = -Infinity)
-                : (activeMax = min);
-            return (v: number) => (v && activeMax < v) || `${slotName} should more than ${activeMax}`
+        'minCheck': (slotName: string, min: number = -Infinity) => {
+            return (v: number) => (min <= v) || `${slotName} should more than ${min}`
         },
-        'maxCheck': (slotName: string, max?: number) => {
-            let activeMax: number;
-            max === undefined
-                ? (activeMax = -Infinity)
-                : (activeMax = max);
-            return (v: number) => (v && activeMax < v) || `${slotName} should less than ${activeMax}`
+        'maxCheck': (slotName: string, max: number = Infinity) => {
+            return (v: number) => (v <= max) || `${slotName} should less than ${max}`
         },
         'int': () => {
             return (v: number) => v % 1 === 0 || 'Int required'

@@ -63,6 +63,7 @@
                 :label="label"
                 :placeholder="placeholder"
                 :width="width"
+                :rows="rows"
                 @update-text="updateText">
 
             </field-text-render>
@@ -134,6 +135,10 @@
             singleLine: {
                 type: Boolean,
                 default: false
+            },
+            rows: {
+                type: Number,
+                default: 10
             }
         },
         computed: {

@@ -70,14 +70,13 @@ const mutations = {
     resetScreen: (state: StyleManagerState) => {
         state.screenX = document.documentElement.clientWidth;
         state.screenY = document.documentElement.clientHeight;
+        state.leftCard.height = document.documentElement.clientHeight - 48;
         commitViewBoxResize();
         commitBottomDynamicBarResize();
     },
 
     resetLeftCard: (state: StyleManagerState, payload: number) => {
         Vue.set(state.leftCard, 'width', payload);
-        commitViewBoxResize();
-        commitBottomDynamicBarResize();
     },
 
     resetBottomBar: (state: StyleManagerState, payload: number) => {
@@ -87,7 +86,7 @@ const mutations = {
     getViewBox: (state: StyleManagerState) => {
         // 计算ViewBox
         state.viewBox.start.update({x: state.leftCard.width, y: state.toolBar.height});
-        state.viewBox.end.update({x: state.screenX, y: state.screenY})
+        state.viewBox.end.update({x: state.screenX, y: state.screenY - state.bottomBar.height})
     },
 
     getBottomDynamicBar: (state: StyleManagerState, payload?: number) => {

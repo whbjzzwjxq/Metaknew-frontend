@@ -1,36 +1,39 @@
 <template>
     <v-card
         :width="width"
-        class="d-flex flex-column"
+        :max-height="maxHeight"
+        :min-height="minHeight"
         flat
-        tile>
-        <div v-if="media.PrimaryLabel === 'image'">
-            <v-img :src="realSrc" :width="width" :max-height="height" id="image"></v-img>
-
-            <slot name="button-group">
-
-            </slot>
-        </div>
-        <div v-else-if="media.PrimaryLabel === 'pdf'">
-            <pdf :src="realSrc" contain>
-            </pdf>
-            <slot name="button-group">
+        tile
+        style="overflow-y: hidden"
+        class="test">
+        <div :style="floatStyle" v-show="showFloat">
+            <slot name="float">
 
             </slot>
         </div>
-        <div v-else-if="media.PrimaryLabel === 'markdown'">
-            <v-card scroll :height="height" :width="width" class="cardItem">
-                <mavon-editor style="z-index: 0"
-                              :value="mdText"
-                              :subfield="false"
-                              :defaultOpen="'preview'"
-                              :toolbarsFlag="false"
-                              :boxShadow="false"
-                ></mavon-editor>
-                <slot name="button-group">
+        <v-img
+            :src="realSrc"
+            contain
+            v-if="media._label === 'image'">
 
-                </slot>
-            </v-card>
+        </v-img>
+        <pdf
+            :src="realSrc"
+            contain
+            v-else-if="media._label === 'pdf'">
+
+        </pdf>
+        <mavon-editor
+            :value="mdText"
+            :subfield="false"
+            :defaultOpen="'preview'"
+            :toolbarsFlag="false"
+            :boxShadow="false"
+            v-else-if="media._label === 'markdown'"
+        ></mavon-editor>
+        <div v-else>
+            Unknown Media
         </div>
     </v-card>
 </template>
@@ -41,17 +44,17 @@
     import axios from 'axios'
     import {mavonEditor} from "mavon-editor";
     import "mavon-editor/dist/css/index.css";
-    import Viewer from 'viewerjs'
 
     export default {
-        name: 'mediaViewer',
+        name: 'MediaViewer',
         components: {
             pdf,
             mavonEditor
         },
         data() {
             return {
-                mdText: ""
+                mdText: "",
+                minHeight: 240
             }
         },
 
@@ -64,59 +67,54 @@
                 type: Number,
                 default: 360
             },
-            height: {
+            maxHeight: {
                 type: Number,
                 default: 2880
             },
-        },
-        mounted() {
-            this.init()
+            showFloat: {
+                type: Boolean,
+                default: false
+            }
         },
 
         computed: {
             realSrc: function () {
                 return getSrc(this.media.Ctrl.FileName)
             },
+            floatStyle: function () {
+                return {
+                    position: 'absolute',
+                    'background-color': 'white',
+                    width: '32px',
+                    zIndex: 1,
+                    opacity: '50%',
+                    right: 0,
+                    height: this.minHeight + 'px'
+                }
+            }
         },
         methods: {
             init() {
                 let realSrc = this.realSrc;
-                if (this.media.PrimaryLabel === 'markdown') {
+                if (this.media._label === 'markdown') {
                     axios.get(realSrc).then(response => {
                         this.mdText = response.data
                     })
                 }
-            },
-            bigPic() {
-                let realSrc = this.realSrc;
-                let viewer = new Viewer(document.getElementById('image'), {
-                    url: realSrc,
-                    title: false,
-                    navbar: false,
-                    toolbar: {
-                        zoomIn: true,
-                        zoomOut: true,
-                        play: {
-                            show: 0,
-                        },
-                        rotateLeft: true,
-                        reset: true,
-                        rotateRight: true,
-                        flipHorizontal: true,
-                        flipVertical: true,
-                    }
-                })
-            },
+            }
         },
         watch: {
-            realSrc(newUrl, oldUrl) {
+            realSrc() {
                 this.init()
             }
         },
         record: {
             status: 'editing',
             description: '解析Media图像的工具'
-        }
+        },
+        mounted() {
+            this.init()
+        },
     }
 </script>
 

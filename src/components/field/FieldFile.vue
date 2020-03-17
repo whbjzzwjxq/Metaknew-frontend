@@ -74,7 +74,7 @@
                             {{ file.Info.Name }}
                         </td>
                         <td>
-                            {{file.PrimaryLabel}}
+                            {{file._label}}
                         </td>
                         <td>
                             <v-chip :color="statusColor[file.status]" outlined tile small label>{{ file.status}}
@@ -190,7 +190,7 @@
                 return result
             },
             // 现有的真的MediaInfoPart
-            currentRealFiles: function () {
+            currentRealFiles: function (): MediaInfoPart[] {
                 return this.baseFiles.map((_id: id) => this.$store.state.dataManager.mediaManager[_id])
             },
         },
@@ -211,11 +211,7 @@
             // 如果从收藏里获取内容 那么就不需要上传了
             addFile: function (files: MediaInfoPart[], isExist: boolean) {
                 isExist
-                    ? this.currentFiles = this.currentFiles.concat(files.map(file => {
-                        let _id = file._id;
-                        commitInfoAdd({item: file});
-                        return _id
-                    }))
+                    ? this.currentFiles = this.currentFiles.concat(files.map(file => file._id))
                     : this.newFiles = this.newFiles.concat(files)
             },
 

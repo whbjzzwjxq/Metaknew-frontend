@@ -114,7 +114,7 @@
 
             text: {
                 get(): string {
-                    return this.baseText
+                    return this.baseText !== undefined
                         ? this.baseText.toString()
                         : this.defaultValue.toString()
                 },

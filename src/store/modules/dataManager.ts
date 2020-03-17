@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import {documentQuery, mediaCreate, mediaQueryMulti, QueryObject, sourceQueryMulti} from '@/api/commonSource';
 import {filePutBlob} from '@/api/fileUpload';
 import {
     DocumentSelfPart,
@@ -12,22 +11,36 @@ import {
 import {
     commitDocumentAdd,
     commitDocumentChangeId,
+    commitDocumentRemove,
     commitFileToken,
     commitInfoAdd,
+    commitInfoChangeId,
     commitInfoRemove,
     commitItemChange,
-    commitSnackbarOn,
-    commitUserConcernChangeId
+    commitSnackbarOn
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
-import {isGraphSelfPart, isNodeBackend} from "@/utils/typeCheck";
-import {dispatchGraphQuery} from "@/store/modules/_dispatch";
+import {isGraphSelfPart} from "@/utils/typeCheck";
+import {
+    dispatchGraphQuery, dispatchInfoDraftSaveAll,
+    dispatchLinkBulkCreate,
+    dispatchLinkQuery,
+    dispatchMediaQuery,
+    dispatchNodeQuery,
+    dispatchVisNodeCreate
+} from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
 import {loginCookie} from "@/api/user/loginApi";
-import {State} from "@/store/modules/userInfo";
+import {settingToQuery} from "@/utils/utils";
+import {userConcernTemplate} from "@/utils/template";
+import {nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
+import {linkBulkCreate, linkQueryBulk} from "@/api/subgraph/link";
+import {documentBulkCreate, documentBulkUpdate, documentQuery} from "@/api/document/document";
+import {mediaCreate, mediaQueryMulti} from "@/api/subgraph/media";
+import {draftUpdate} from "@/api/subgraph/commonApi";
 
-const getManager = (_type: string) =>
+export const getManager = (_type: ItemType) =>
     _type === 'link'
         ? state.linkManager
         : _type === 'media'
@@ -59,6 +72,7 @@ declare global {
         state: DataManagerState,
         commit: Commit,
         dispatch: Dispatch,
+        getters: any
     }
 }
 
@@ -69,10 +83,10 @@ const state: DataManagerState = {
     rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
     graphManager: {},
     paperManager: {},
+    pathManager: {},
     nodeManager: {},
     linkManager: {},
     mediaManager: {},
-    pathManager: {},
     fileToken: {
         'AccessKeySecret': '',
         'AccessKeyId': '',
@@ -91,6 +105,14 @@ const getters = {
         result.push(...Object.values(state.graphManager));
         result.push(...Object.values(state.paperManager));
         return result
+    },
+
+    allInfoPart: (state: DataManagerState) => {
+        let result = [] as InfoPartInDataManager[];
+        result.push(...Object.values(state.nodeManager));
+        result.push(...Object.values(state.linkManager));
+        result.push(...Object.values(state.mediaManager));
+        return result
     }
 };
 const mutations = {
@@ -99,7 +121,7 @@ const mutations = {
     currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
         let _id = graph._id; // 这里payload是document
-        Vue.set(graph.Conf.State, 'isExplode', true);
+        graph.isExplode = true;
         state.currentGraph = graph;
         let node = state.nodeManager[_id];
         commitItemChange(node);
@@ -113,7 +135,7 @@ const mutations = {
 
     rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
-        Vue.set(graph.Conf.State, 'isExplode', true);
+        graph.isExplode = true;
         state.rootGraph = graph
     },
 
@@ -140,7 +162,7 @@ const mutations = {
     },
 
     documentRemove(state: DataManagerState, payload: id) {
-        delete state.graphManager[payload]
+        Vue.delete(state.graphManager, payload)
     },
 
     documentChangeId(state: DataManagerState, payload: { oldId: id, newId: id }) {
@@ -149,22 +171,24 @@ const mutations = {
         if (oldGraph) {
             oldGraph._id = newId;
             commitDocumentAdd({document: oldGraph});
-            // commitDocumentRemove(oldId);
+            commitDocumentRemove(oldId);
+        } else {
+            // 普通Node
         }
     },
 
     // ------------以下是Info部分的内容------------
     infoAdd(state: DataManagerState, payload: { item: InfoPartInDataManager, strict?: boolean }) {
         let {item, strict} = payload;
-        let _id = item._id;
-        let manager = getManager(item.type);
+        let {_id, _type} = item;
+        let manager = getManager(_type);
         strict || (strict = true);
         strict
             ? Vue.set(manager, _id, item)
-            : !manager[_id] && Vue.set(manager, _id, item)
+            : !manager[_id] && Vue.set(manager, _id, item);
     },
 
-    infoRemove(state: DataManagerState, payload: { _id: id, _type: string }) {
+    infoRemove(state: DataManagerState, payload: { _id: id, _type: ItemType }) {
         let manager = getManager(payload._type);
         delete manager[payload._id]
     },
@@ -181,10 +205,9 @@ const mutations = {
                 commitInfoRemove({_id: oldId, _type: _type});
             }
             // 额外检查一下Graph
-            _type === 'document' &&
+            (_type === 'document' || _type === 'node') &&
             commitDocumentChangeId({oldId, newId})
         });
-        commitUserConcernChangeId(payload);
     },
 
     updateFileToken(state: DataManagerState, payload: FileToken) {
@@ -201,73 +224,47 @@ const actions = {
         // 先绘制Graph
         await documentQuery(_id).then(res => {
             let {data} = res;
-            let graphSelf = GraphSelfPart.resolveFromBackEnd(data, parent);
-            let graphInfo = new NodeInfoPart(data.Base.Info, data.Base.Ctrl, false);
-            commitInfoAdd({item: graphInfo});
-            commitDocumentAdd({document: graphSelf});
-            // 请求节点
-            let graph = graphSelf.Content;
-            context.dispatch('nodeQuery', graph.nodes.map(node => node.Setting));
-            context.dispatch('linkQuery', graph.links.map(link => link.Setting));
-            context.dispatch('mediaQuery', graph.medias.map(media => media._id))
-        })
+            let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
+            dispatchNodeQuery(graph.Content.nodes.map(item => item.Setting));
+            dispatchLinkQuery(graph.Content.links.map(item => item.Setting));
+            dispatchMediaQuery(graph.Content.medias.map(item => item._id));
+        });
     },
 
     // 异步请求Node
-    nodeQuery(context: { commit: Commit, state: DataManagerState }, payload: Array<NodeSetting>) {
+    nodeQuery(context: { commit: Commit, state: DataManagerState }, payload: NodeSetting[]) {
         // 未缓存的节点列表
         let noCacheNode = payload.filter(node => !state.nodeManager[node._id]);
         if (noCacheNode.length > 0) {
             // 请求体
             let nodeQuery = noCacheNode.map(node => {
                 // 先使用假数据 然后再请求
-                let item = NodeInfoPart.emptyNodeInfoPart(node._id, node._type, node._label);
-                commitInfoAdd({item, strict: false});
+                let query = settingToQuery<NodeQuery>(node);
+                let item = NodeInfoPart.emptyNodeInfoPart(query);
                 return item.queryObject
             });
             // 请求节点
-            sourceQueryMulti(nodeQuery).then(res => {
-                const {data} = res;
-                data.map(node => {
-                    if (isNodeBackend(node)) {
-                        let nodeInfo = new NodeInfoPart(node.Info, node.Ctrl, false);
-                        nodeInfo.synchronizationAll();
-                        commitInfoAdd({item: nodeInfo})
-                    }
+            nodeQueryBulk(nodeQuery).then(res => {
+                res.data.map(node => {
+                    NodeInfoPart.resolveBackend(node);
                 });
             });
         }
     },
 
     // 异步请求link
-    linkQuery(context: Context, payload: Array<LinkSetting>) {
+    linkQuery(context: Context, payload: LinkSetting[]) {
         // 未缓存的关系列表
         let noCacheLink = payload.filter(link => !state.linkManager[link._id]);
         if (noCacheLink.length > 0) {
             let linkQuery = noCacheLink.map(link => {
                 let item = LinkInfoPart.emptyLinkInfo(link._id, link._label, link._start, link._end);
-                commitInfoAdd({
-                    item: LinkInfoPart.emptyLinkInfo(link._id, link._label, link._start, link._end),
-                    strict: false
-                });
                 return item.queryObject
             });
             // 请求关系
-            sourceQueryMulti(linkQuery).then(res => {
-                const {data} = res;
-                data.map(link => {
-                    if (!isNodeBackend(link)) {
-                        let linkSetting = noCacheLink.filter(setting => setting._id === link.Info._id)[0];
-                        let linkInfo = new LinkInfoPart(link.Info,
-                            Object.assign(link.Ctrl, {
-                                Start: linkSetting._start,
-                                End: linkSetting._end,
-                            }) as BaseLinkCtrl,
-                            false
-                        );
-
-                        commitInfoAdd({item: linkInfo})
-                    }
+            linkQueryBulk(linkQuery).then(res => {
+                res.data.map(link => {
+                    LinkInfoPart.resolveBackend(link);
                 });
             });
         }
@@ -279,22 +276,14 @@ const actions = {
         let noCacheMedia = payload.filter(_id => !state.nodeManager[_id]);
 
         if (noCacheMedia.length > 0) {
-            let defaultImage = require('@/assets/defaultImage.jpg');
             noCacheMedia.map(_id => {
-                commitInfoAdd({item: MediaInfoPart.emptyMediaInfo(_id, defaultImage)});
-                return <QueryObject>{
-                    id: _id,
-                    type: 'media',
-                    pLabel: 'unknown'
-                }
+                let item = MediaInfoPart.emptyMediaInfo(_id);
+                return item.queryObject
             });
 
             return mediaQueryMulti(noCacheMedia).then(res => {
-                const {data} = res;
-                data.map(media => {
-                    let mediaInfo = new MediaInfoPart(media.Info, media.Ctrl, false, 'remote', []);
-                    mediaInfo.synchronizationAll();
-                    commitInfoAdd({item: mediaInfo})
+                res.data.map(media => {
+                    MediaInfoPart.resolveBackend(media);
                 });
             })
         }
@@ -352,8 +341,103 @@ const actions = {
         }
     },
 
-    async graphSave(context: Context, payload: {graphList: GraphSelfPart[]}) {
-        
+    async visNodeCreate(context: Context) {
+        let nodeList = Object.values(state.nodeManager).filter(node => !node.isRemote).map(item => item.Info);
+        let mediaList = Object.values(state.mediaManager).filter(media => !media.isRemote).map(item => item.Info);
+        if (nodeList.length + mediaList.length > 0) {
+            return visNodeBulkCreate(nodeList, mediaList).then(res => {
+                Object.entries(res.data).map(([_type, idMap]) => {
+                    idMap && commitInfoChangeId({_type, idMap})
+                })
+            })
+        } else {
+            return true
+        }
+    },
+
+    async linkBulkCreate(context: Context, payload: CompressLinkInfo[]) {
+        if (payload.length > 0) {
+            return linkBulkCreate(payload, 'USER').then(res => {
+                let idMap = res.data;
+                idMap && commitInfoChangeId({_type: 'link', idMap})
+            })
+        } else {
+            return true
+        }
+    },
+
+    draftSaveAll(context: Context, payload: { isAuto: boolean }) {
+        let infoList: InfoPartInDataManager[] = context.getters.allInfoPart;
+        let data = infoList.filter(info => info.isRemote && info.State.isEdit).map(info => info.draftObject);
+        let {isAuto} = payload;
+        return draftUpdate(data, isAuto).then(res => {
+            let {DraftIdMap} = res.data;
+            infoList.map(info => {
+                let newDraftId = DraftIdMap[info._id];
+                info.State.draftId === undefined && (info.State.draftId = newDraftId);
+                info.State.isEdit = false
+            });
+            let payload = {
+                actionName: `DraftUpdateAll`,
+                color: 'success',
+                once: false,
+                content: isAuto ? '自动保存成功' : '草稿保存成功'
+            } as SnackBarStatePayload;
+            commitSnackbarOn(payload)
+        })
+    },
+
+    async documentSave(context: Context, payload: { isDraft: boolean, isAuto: boolean }) {
+        let {isDraft, isAuto} = payload;
+        await dispatchVisNodeCreate();
+        await dispatchLinkBulkCreate(
+            Object.values(state.linkManager).filter(link => !link.isRemote).map(item => item.compress())
+        );
+        let documentList: DocumentSelfPart[] = context.getters.documentList;
+        let dataList = documentList.filter(document => !document.DocumentData.isRemote)
+            .map(document => document.backendDocument);
+        let updateDataList = documentList.filter(document => document.DocumentData.isRemote);
+        if (isDraft) {
+            dispatchInfoDraftSaveAll({isAuto}).then()
+        } else {
+            // todo
+        }
+        if (updateDataList.length > 0) {
+            if (isDraft) {
+                let data = updateDataList.map(doc => doc.draftObject);
+                draftUpdate(data, isAuto).then(res => {
+                    let {DraftIdMap} = res.data;
+                    updateDataList.map(doc => {
+                        let newDraftId = DraftIdMap[doc._id];
+                        doc.DocumentData.draftId === undefined && (doc.DocumentData.draftId = newDraftId);
+                    });
+                    let payload = {
+                        actionName: `DraftUpdateDocument`,
+                        color: 'success',
+                        once: false,
+                        content: isAuto ? '专题自动保存成功' : '专题草稿保存成功'
+                    } as SnackBarStatePayload;
+                    commitSnackbarOn(payload)
+                })
+            } else {
+                documentBulkUpdate(updateDataList.map(doc => doc.backendDocument)).then(res => {
+                    let idList = res.data;
+                    idList.map(id => {
+                        let graph = state.graphManager[id];
+                        graph && (graph.updateStateUpdate())
+                    })
+                });
+            }
+        }
+        if (dataList.length > 0) {
+            await documentBulkCreate(dataList).then(res => {
+                let idList = res.data;
+                idList.map(id => {
+                    let graph = state.graphManager[id];
+                    graph && (graph.updateStateSave())
+                })
+            })
+        }
     }
 };
 

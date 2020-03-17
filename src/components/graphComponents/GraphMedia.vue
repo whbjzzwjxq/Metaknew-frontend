@@ -1,7 +1,7 @@
 <template>
     <rect-container
         :container="container"
-        :is-selected="setting.State.isSelected"
+        :is-selected="setting.isSelected"
         @update-size="updateSize"
         class="media"
         expand

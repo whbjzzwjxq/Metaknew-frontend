@@ -1,7 +1,7 @@
 <template>
     <v-container class="d-flex flex-column ma-0 pa-0 pt-2" fluid style="background-color: white">
         <v-row style="height: 64px">
-            <data-table-importer @new-node-from-file="addNode" :disabled="!pLabel">
+            <data-table-importer @new-node-from-file="addNodeUnresolved" :disabled="!pLabel">
 
             </data-table-importer>
         </v-row>
@@ -47,19 +47,23 @@
                     :items="nodes"
                     :headers="allHeader"
                     :footer-props="footSetting"
-                    item-key="_id"
+                    item-key="id"
                     show-select
                     calculate-widths>
 
                     <template v-slot:item.$_action="{ item }">
                         <div>
-                            <v-icon class="mr-2" small @click="copyItem(item)" style="display: inline-block"> {{ editIcon['copy'] }}</v-icon>
-                            <v-icon class="mr-2" small @click="deleteItem(item)" style="display: inline-block">{{ editIcon['delete'] }}</v-icon>
+                            <v-icon class="mr-2" small @click="copyItem(item)" style="display: inline-block"> {{
+                                editIcon['copy'] }}
+                            </v-icon>
+                            <v-icon class="mr-2" small @click="deleteItem(item)" style="display: inline-block">{{
+                                editIcon['delete'] }}
+                            </v-icon>
                         </div>
                     </template>
 
-                    <template v-slot:item._id="{item}">
-                        <span>{{item._id}}</span>
+                    <template v-slot:item.id="{item}">
+                        <span>{{item.id}}</span>
                     </template>
 
                     <template v-for="(setting, prop) in headerSlot" v-slot:[getName(prop)]="{ item }">
@@ -93,9 +97,10 @@
         fieldSetting,
         FieldType,
         nodeLabelToProp,
-        PLabelProps,
+        PropDescriptionDict, ResolveType,
+        ValueWithType,
     } from "@/utils/fieldResolve"
-    import {deepClone, getIndex} from "@/utils/utils"
+    import {deepClone, fieldHandler, getIndex} from "@/utils/utils"
     import DataTableImporter from '@/components/DataTableImporter.vue';
     import PLabelSelector from '@/components/PLabelSelector.vue';
     import DataTableButtonGroup from '@/components/DataTableButtonGroup.vue';
@@ -111,6 +116,10 @@
         value: any,
         divider: boolean,
         width: number
+    }
+
+    interface FlatNodeInfo extends BaseNodeInfo {
+
     }
 
     export default Vue.extend({
@@ -141,11 +150,11 @@
                     "IsOpenSource": "OpenSource"
                 } as Record<string, string>,
                 //全部的节点
-                nodes: [] as BaseNodeInfo[],
+                nodes: [] as FlatNodeInfo[],
                 //被选中的节点
-                selected: [] as BaseNodeInfo[],
+                selected: [] as FlatNodeInfo[],
                 //不需要编辑值的属性
-                unShowProps: ["_id", "type", "PrimaryLabel"],
+                unShowProps: ["id", "type", "PrimaryLabel"],
                 //数据表底部插槽
                 footSetting: {
                     showFirstLastPage: true,
@@ -182,26 +191,21 @@
                 } as HeaderItem,
 
                 reg: {
-                    "trans": new RegExp(/Name_[a-zA-Z]{2}/),
-                    "textTrans": new RegExp(/Text_[a-zA-Z]{2}/)
+                    "trans": /Name_[a-zA-Z]{2}/,
+                    "textTrans": /Text_[a-zA-Z]{2}/
                 },
 
-                fieldHandler: {
-                    "StringField": (value: any) => value.toString(),
-                    "ArrayField": (value: any) => value.toString().split(";"),
-                    "NumberField": (value: any) => parseFloat(value),
-                    "JsonField": (value: any) => JSON.parse(value),
-                    "TextField": (value: any) => ({"auto": value.toString()}),
-                    "FileField": (value: any) => value.toString().split(";"),
-                    "ImageField": (value: any) => value.toString()
-                } as Record<FieldType, (value: any) => any>
+                fieldHandler: fieldHandler()
             }
         },
         props: {},
         computed: {
             // 需要的标签--属性Dict
-            labelDict: function (): PLabelProps {
+            labelDict: function (): PropDescriptionDict {
                 return Object.assign(baseNodeProp(), nodeLabelToProp(this.pLabel))
+            },
+            standardPropKeys: function (): string[] {
+                return Object.keys(nodeLabelToProp(this.pLabel))
             },
             // 属性的keys
             propList: function (): string[] {
@@ -228,14 +232,19 @@
             },
 
             //基本插槽
-            headerSlot: function (): PLabelProps {
+            headerSlot: function (): PropDescriptionDict {
                 return Object.assign({}, this.labelDict);
             },
 
             //节点的模板
-            nodeTemplate: function (): BaseNodeInfo {
+            nodeTemplate: function (): FlatNodeInfo {
                 // id不是实际调用的
-                return nodeInfoTemplate('$_-1', 'node', this.pLabel)
+                let node = nodeInfoTemplate('$_-1', 'node', this.pLabel);
+                Object.entries(nodeLabelToProp(this.pLabel)).map(([key, value]) => {
+                    let {type} = value;
+                    node[key] = fieldDefaultValue[type];
+                });
+                return node
             },
 
             //是否窄行距
@@ -273,17 +282,21 @@
             },
             //现在的index
             idList: function (): id[] {
-                return this.nodes.map(node => node._id)
+                return this.nodes.map(node => node.id)
+            },
+
+            userDataManager: function (): UserDataManagerState {
+                return this.$store.state.userDataManager
             }
         },
         methods: {
             //添加新节点
-            addNode(nodeList: Record<string, string>[]) {
+            addNodeUnresolved(nodeList: Record<string, string>[]) {
                 this.nodes = this.nodes.concat(nodeList.map(node => this.resolveProp(node)))
             },
 
             //添加已经解析好的节点 也可以是后端导入
-            addResolvedNode(nodeList: BaseNodeInfo[]) {
+            addNodeResolved(nodeList: FlatNodeInfo[]) {
                 this.nodes = this.nodes.concat(nodeList);
             },
 
@@ -294,17 +307,17 @@
                 for (let i = 0; i < num; i++) {
                     let newObj = deepClone(this.nodeTemplate);
                     newObj.Name = "***" + (i + base).toString();
-                    newObj._id = this.getIndex();
+                    newObj.id = getIndex();
                     result.push(newObj)
                 }
-                this.addResolvedNode(result);
+                this.addNodeResolved(result);
             },
 
             //复制行元素
-            copyItem(item: BaseNodeInfo) {
+            copyItem(item: FlatNodeInfo) {
                 let index = this.nodes.indexOf(item);
-                let newItem = deepClone(item) as BaseNodeInfo;
-                newItem._id = this.getIndex();
+                let newItem = deepClone(item) as FlatNodeInfo;
+                newItem.id = getIndex();
                 this.nodes.splice(index + 1, 0, newItem);
             },
 
@@ -320,7 +333,7 @@
             },
 
             //删除行元素
-            deleteItem(item: BaseNodeInfo) {
+            deleteItem(item: FlatNodeInfo) {
                 if (confirm('确定要删除此项吗?')) {
                     let index = this.nodes.indexOf(item);
                     this.nodes.splice(index, 1);
@@ -330,12 +343,12 @@
             },
 
             //解析属性
-            resolveProp(item: Record<string, string>): BaseNodeInfo {
+            resolveProp(item: Record<string, string>): FlatNodeInfo {
                 //注意这里resolve了item的所有属性
                 let translate = {} as Record<string, string>;
                 let text = {} as Record<string, string>;
                 let extraProps = {} as ExtraProps;
-                let node = {} as BaseNodeInfo;
+                let node = {} as FlatNodeInfo;
                 Object.entries(item).map(([key, value]) => {
                     if (this.propList.indexOf(key) >= 0) {
                         // 如果是已有属性
@@ -351,11 +364,22 @@
                         // key === Text_zh ......
                         texts && (text[key.substring(5, key.length)] = value);
                         // 否则
-                        (!trans && !texts) && (extraProps[key] = {
-                            value: value,
-                            type: 'StringField',
-                            resolve: 'normal'
-                        });
+                        if (!trans && !texts) {
+                            let resolve: ResolveType;
+                            let type: FieldType;
+                            let propDescription = this.userDataManager.userSetting.userPropResolve[key];
+                            if (propDescription) {
+                                resolve = propDescription.resolve;
+                                type = propDescription.type
+                            } else {
+                                [resolve, type] = ['normal', 'StringField']
+                            }
+                            extraProps[key] = {
+                                value: this.fieldHandler[type](value),
+                                resolve,
+                                type
+                            }
+                        }
                     }
                     // 补充那些没有的属性
                     for (let i of this.propList) {
@@ -363,11 +387,19 @@
                         hasNeededProp || (node[i] = deepClone(this.nodeTemplate[i]));
                     }
                 });
-                node._id = this.getIndex();
+                node.id = getIndex();
+                node.type = 'node';
+                node.PrimaryLabel = this.pLabel;
                 // 合并Prop
-                this.mergeProp(node.Description, translate);
-                this.mergeProp(node.Text, text);
+                this.mergeProp(node.Description, text);
+                this.mergeProp(node.Translate, translate);
                 this.mergeProp(node.ExtraProps, extraProps);
+                let StandardProps: Record<string, ValueWithType<any>> = {};
+                Object.entries(nodeLabelToProp(this.pLabel)).map(([key, value]) => {
+                    let {type, resolve} = value;
+                    StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
+                });
+                node.StandardProps = StandardProps;
                 return node
             },
 
@@ -376,36 +408,36 @@
                 return "item." + prop.toString()
             },
 
-            //获取index
-            getIndex() {
-                return getIndex()
-            },
-
-            saveNodes(nodes: BaseNodeInfo[]) {
+            saveNodes(nodes: FlatNodeInfo[]) {
                 let _this = this;
-                nodeBulkCreate(this.pLabel, nodes).then(res => {
+                nodes.map(node => {
+                    Object.keys(node).map(prop => {
+                        this.standardPropKeys.includes(prop) && (node.StandardProps[prop]['value'] = node[prop])
+                    })
+                });
+                nodeBulkCreate(nodes).then(res => {
                     if (res.status === 200) {
                         for (let i in nodes) {
-                            this.nodes.splice(_this.idList.indexOf(nodes[i]._id), 1);
-                            this.selected.splice(_this.idList.indexOf(nodes[i]._id), 1)
+                            this.nodes.splice(_this.idList.indexOf(nodes[i].id), 1);
+                            this.selected.splice(_this.idList.indexOf(nodes[i].id), 1)
                         }
                     }
                 })
             },
 
             //更新值
-            updateProp(item: BaseNodeInfo, prop: string, value: any) {
+            updateProp(item: FlatNodeInfo, prop: string, value: any) {
                 this.$set(item, prop, value)
             },
 
             //更新节点
-            updateNode(node: BaseNodeInfo, oldLabel: string, newLabel: string) {
+            updateNode(node: FlatNodeInfo, oldLabel: string, newLabel: string) {
                 //参数解构使用for of
-                for (let [prop, setting] of Object.entries(nodeLabelToProp(newLabel))) {
+                Object.entries(nodeLabelToProp(newLabel)).map(([prop, setting]) => {
                     Object.prototype.hasOwnProperty.call(node, prop) ||
                     (this.updateProp(node, prop, fieldDefaultValue[setting.type]));
                     this.updateProp(node, 'PrimaryLabel', newLabel);
-                }
+                });
             },
 
             choosePrimaryLabel(label: string) {

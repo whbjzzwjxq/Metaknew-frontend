@@ -7,8 +7,7 @@
             :label="label"
             :placeholder="placeholder"
             :row-height="rowHeight"
-            :rows="rows"
-            :single-line="singleLine"
+            :rows="actualRows"
             :value="value"
             @blur="updateValue"
             @input="cacheText = $event"
@@ -38,7 +37,8 @@
         },
         data: function () {
             return {
-                cacheText: ''
+                cacheText: '',
+                actualRows: 0
             }
         },
         props: {
@@ -103,6 +103,11 @@
         record: {
             status: 'empty',
             description: 'Markdown文本两用编辑器'
+        },
+        created(): void {
+            this.singleLine
+                ? (this.actualRows = 1)
+                : (this.actualRows = this.rows)
         }
     })
 </script>

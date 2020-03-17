@@ -7,10 +7,11 @@
             dense
             flat
             hide-details
+            class="pr-2"
             v-if="editMode">
 
         </v-text-field>
-        <p class="title-text pt-2" v-else :style="fontCss">
+        <p class="title-text pt-2 pr-2" v-else :style="fontCss">
             {{ text }}
         </p>
     </div>

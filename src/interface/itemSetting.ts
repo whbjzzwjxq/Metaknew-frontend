@@ -4,7 +4,7 @@ import {
     MediaSettingPart,
     NodeSettingPart,
     NoteSettingPart,
-    SvgSettingPart
+    TextSettingPart
 } from "@/class/graphItem";
 import {mergeObject} from "@/utils/utils";
 
@@ -61,7 +61,7 @@ const size = () => {
         size: {
             type: 'Number',
             default: 0,
-            range: [6, 64],
+            range: [12, 128],
             tips: '不能为0',
             explain: '可视化尺寸'
         },
@@ -74,7 +74,7 @@ const scaleX = () => {
             default: 1,
             range: [0.2, 5],
             tips: '',
-            explain: '宽度与高度之比'
+            explain: '高度与宽度之比'
         },
     } as SettingGroup
 };
@@ -105,7 +105,7 @@ const rotate = () => {
         rotate: {
             type: 'Number',
             default: 0,
-            range: [0, 359],
+            range: [1, 360],
             tips: '旋转的角度',
             explain: '旋转的角度'
         },
@@ -504,8 +504,9 @@ const mediaSetting = () => {
         Base: BaseSettingGroup(),
         Border: BorderSettingGroup(),
         Show: mergeSetting(showAll(), showBorder(), showAppendText()),
-        Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup())
-    }
+        Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup()),
+        View: mergeSetting(isMain(), opacity())
+    };
     let replace = {
         Base: {
             size: {
@@ -540,7 +541,7 @@ const noteSetting = () => {
     return result as SettingAll
 };
 
-const svgSetting = () => {
+const textSetting = () => {
     let result = {
         Base: BaseSettingGroup(),
         Border: BorderSettingGroup(),
@@ -590,7 +591,7 @@ export const typeSetting: Record<AllType, SettingAll> = {
     'link': linkSetting,
     'document': documentSetting,
     'media': mediaSetting(),
-    'svg': svgSetting(),
+    'text': textSetting(),
     'note': noteSetting(),
     'fragment': fragmentSetting,
     'path': pathSetting
@@ -600,7 +601,7 @@ declare global {
     // 从视觉上来说是Node的对象
     type VisNodeSettingPart = NodeSettingPart | MediaSettingPart;
     // 从视觉上是一个区域的对象
-    type VisAreaSettingPart = VisNodeSettingPart | SvgSettingPart;
+    type VisAreaSettingPart = VisNodeSettingPart | TextSettingPart;
     // 所有Item对象
     type GraphSubItemSettingPart = VisAreaSettingPart | LinkSettingPart;
     // 所有Setting对象
@@ -743,9 +744,9 @@ declare global {
         _src: string; // url字符串或者 URL.createObjectUrl返回值
     }
 
-    interface compressLinkSetting extends GraphItemSetting, LinkStyleSetting {
-        _start: GraphItemSetting;
-        _end: GraphItemSetting;
+    interface BackendLinkSetting extends GraphItemSetting, LinkStyleSetting {
+        _start: VisNodeQuery;
+        _end: VisNodeQuery;
     }
 
     interface GraphSetting extends GraphItemSetting {
@@ -753,7 +754,7 @@ declare global {
         Base: Record<string, any>
     }
 
-    interface NoteSetting extends GraphItemSetting {
+    interface NoteSetting extends Setting {
         _type: 'note';
         _title: string;
         _content: string;
@@ -761,7 +762,7 @@ declare global {
         Base: BaseSize;
     }
 
-    type SvgLabel = 'polygon' | 'polyline' | 'rect' | 'ellipse'
+    type TextLabel = 'polygon' | 'polyline' | 'rect' | 'ellipse'
 
     interface SvgStyleSetting {
         Base: BaseSize;
@@ -788,9 +789,9 @@ declare global {
         }
     }
 
-    interface SvgSetting extends GraphItemSetting, SvgStyleSetting {
-        _type: 'svg',
-        _label: SvgLabel,
+    interface TextSetting extends GraphItemSetting, SvgStyleSetting {
+        _type: 'text',
+        _label: TextLabel,
         _points: PointObject[],
         _text: string
     }
@@ -800,7 +801,6 @@ declare global {
 
     interface BaseState {
         isDeleted: boolean; // 是否被删除;
-        isSelf: boolean; // 是否是自己的内容
         [prop: string]: boolean;
     }
 
@@ -824,13 +824,11 @@ declare global {
         isEditing: boolean; // 是否正在编辑
     }
 
-    interface SvgState extends GraphItemState {
+    interface TextState extends GraphItemState {
         isEditing: boolean;
     }
 
     interface GraphState extends BaseState {
-        isChanged: boolean; // 是否变化
-        isSavedIn5min: boolean; // 5分钟内是否保存
         isExplode: boolean; // 是否爆炸
     }
 }

@@ -3,11 +3,12 @@ import {SortProp} from "@/interface/interfaceInComponent";
 import {
     commitFileToken,
     commitGlobalIndexPlus,
-    commitLoginDialogChange, commitLoginOut,
+    commitLoginDialogChange,
+    commitLoginOut,
     commitUserLogin
 } from "@/store/modules/_mutations";
-import store from '@/store/index';
 import {AxiosResponse} from "axios";
+import {FieldType} from "@/utils/fieldResolve";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -198,25 +199,14 @@ export const getSrc = (src: string | undefined) => {
         : ''
 };
 
-export function mergeList<T>(list: Array<T[]>) {
-    let output: T[] = [];
-    list.map(value => {
-        value.map(item => {
-            output.push(item)
-        })
-    });
-    return output
-}
-
 let globalIndex = 0;
-export let localIdRegex = /\$_[0-9]*/;
-export let ctrlPropRegex = new RegExp("\\$.*");
+export let frontendIdRegex = /\$_[0-9]*/;
 export let crucialRegex = new RegExp("_.*");
 
 // 获取新内容id
 export const getIndex = () => {
-    let index = store.state.userIndex + 1;
-    commitGlobalIndexPlus(index);
+    let index = globalIndex;
+    globalIndex += 1;
     return '$_' + index as id
 };
 
@@ -229,8 +219,6 @@ export const findItem = (list: Array<GraphItemSettingPart>, _id: id, _type: Grap
     );
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");
-export const InfoToSetting = (payload: { _id: id; type: GraphItemType; PrimaryLabel: string; }) =>
-    ({_id: payload._id, _type: payload.type, _label: payload.PrimaryLabel} as Setting);
 
 // 区别远端id和客户端id
 export function idSort(idList: id[]): id[] {
@@ -240,7 +228,7 @@ export function idSort(idList: id[]): id[] {
         if (typeof _id === 'number') {
             remoteId.push(_id)
         } else {
-            localIdRegex.test(_id)
+            frontendIdRegex.test(_id)
                 ? localId.push(_id)
                 : remoteId.push(parseInt(_id))
         }
@@ -278,9 +266,9 @@ export const sortByTime = (a: InfoPart, b: InfoPart) => {
 };
 
 export const sortByLabel = (a: InfoPart, b: InfoPart) => {
-    return a.PrimaryLabel > b.PrimaryLabel
+    return a._label > b._label
         ? 1
-        : a.PrimaryLabel === b.PrimaryLabel
+        : a._label === b._label
             ? 0
             : -1
 };
@@ -293,10 +281,10 @@ export const sortByName = (a: InfoPart, b: InfoPart) => {
             : -1
 };
 
-export const sortByIsStar = (a: UserConcern, b: UserConcern) => {
-    return a.isStar > b.isStar
+export const sortByNumStar = (a: UserConcern, b: UserConcern) => {
+    return a.NumStar > b.NumStar
         ? 1
-        : a.isStar === b.isStar
+        : a.NumStar === b.NumStar
             ? 0
             : -1
 };
@@ -311,7 +299,7 @@ export const emptyContent = () => {
         nodes: [],
         links: [],
         medias: [],
-        svgs: []
+        texts: []
     } as DocumentContent
 };
 
@@ -346,6 +334,7 @@ export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays
     loginSevenDays
         ? day = 7
         : day = 1;
+    setCookie('user_id', data.userId.toString(), day);
     setCookie('user_name', data.userName, day);
     setCookie('token', data.token, day);
     commitUserLogin(data);
@@ -364,4 +353,19 @@ export const badResponse = (res: AxiosResponse) => {
 
 };
 
-export const doNothing = () => {};
+export const doNothing = () => {
+};
+
+export function settingToQuery<T>(setting: Setting) {
+    return {id: setting._id, type: setting._type, pLabel: setting._label} as unknown as T
+}
+
+export const fieldHandler = () => ({
+    "StringField": (value: any) => value.toString(),
+    "ArrayField": (value: any) => value.toString().split(";"),
+    "NumberField": (value: any) => parseFloat(value),
+    "JsonField": (value: any) => JSON.parse(value),
+    "TextField": (value: any) => ({"auto": value.toString()}),
+    "FileField": (value: any) => value.toString().split(";"),
+    "ImageField": (value: any) => value.toString()
+} as Record<FieldType, (value: any) => any>);

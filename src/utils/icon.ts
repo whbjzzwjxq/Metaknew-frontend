@@ -3,7 +3,7 @@ declare global {
         'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
         'i-eye' | 'i-media-type' | 'i-collapse' | 'i-arrow' | 'i-knowledge-level' |
         'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
-        'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge' | 'i-shape'
+        'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge' | 'i-shape' | 'i-save'
 
     type IconAlias = 'i-show' | 'i-normal'
 
@@ -46,7 +46,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         close: 'mdi-close',
         share: 'mdi-share-variant',
         search: 'mdi-magnify',
-        add: 'mdi-plus'
+        add: 'mdi-plus',
+        select: ''
     },
     'i-delete-able': {
         true: 'mdi-delete',
@@ -171,6 +172,12 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         ellipse: 'mdi-ellipse-outline',
         triangle: 'mdi-triangle-outline',
         polyline: 'mdi-vector-polyline',
+    },
+    'i-save': {
+        save: 'mdi-content-save',
+        saveAll: 'mdi-content-save-settings',
+        savePublish: 'mdi-content-save-move',
+        saveDraft: 'mdi-content-save-edit'
     }
 };
 
