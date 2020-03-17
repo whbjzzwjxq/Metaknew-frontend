@@ -2,7 +2,7 @@ import {
     GraphConf,
     LinkSettingPart,
     MediaSettingPart,
-    NodeSettingPart,
+    GraphNodeSettingPart,
     NoteSettingPart,
     TextSettingPart
 } from "@/class/graphItem";
@@ -599,7 +599,7 @@ export const typeSetting: Record<AllType, SettingAll> = {
 
 declare global {
     // 从视觉上来说是Node的对象
-    type VisNodeSettingPart = NodeSettingPart | MediaSettingPart;
+    type VisNodeSettingPart = GraphNodeSettingPart | MediaSettingPart;
     // 从视觉上是一个区域的对象
     type VisAreaSettingPart = VisNodeSettingPart | TextSettingPart;
     // 所有Item对象
@@ -633,7 +633,7 @@ declare global {
     type Color = string;
     type NodeViewType = 'rectangle' | 'rhombus' | 'ellipse';
 
-    interface NodeStyleSetting {
+    interface NodeStyleSettingGraph {
         Base: BaseSize;
         View: {
             color: Color;
@@ -665,11 +665,24 @@ declare global {
         }
     }
 
-    interface NodeSetting extends GraphItemSetting, NodeStyleSetting {
+    interface NodeStyleSettingPaper {
+
+    }
+
+    type NodeStyleSetting = NodeStyleSettingGraph | NodeStyleSettingPaper
+
+    interface NodeSettingBase extends GraphItemSetting {
         _type: 'node' | 'document';
         _name: string;
         _image: string;
     }
+    interface NodeSettingGraph extends NodeSettingBase, NodeStyleSettingGraph {
+
+    }
+    interface NodeSettingPaper extends NodeSettingBase, NodeStyleSettingPaper {
+
+    }
+    type NodeSetting = NodeSettingGraph | NodeSettingPaper
 
     type LinkViewType = 'linear' | 'curve' | 'polyline'
     type LinkPointLocation = 'top' | 'bottom' | 'left' | 'right' | 'center'

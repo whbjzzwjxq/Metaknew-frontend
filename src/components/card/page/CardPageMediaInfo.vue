@@ -33,7 +33,7 @@
                         @update-text="updateName"
                         v-show="showText"
                     ></field-title>
-                    <item-sharer :base-data="media">
+                    <item-sharer :base-data="media" :user-concern="userConcern">
 
                     </item-sharer>
                 </template>
@@ -91,6 +91,8 @@
     import {getSrc} from '@/utils/utils'
     import 'viewerjs/dist/viewer.css'
     import {mediaUpdate} from "@/api/subgraph/media";
+    import {userConcernTemplate} from "@/utils/template";
+    import {dispatchUserConcernQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "CardPageMediaInfo",
@@ -113,7 +115,8 @@
                 resizeBase: 100,
                 dialogDetailVisible: false,
                 dialogEdit: false,
-                rowWidth: 340
+                rowWidth: 340,
+                userConcern: userConcernTemplate()
             };
         },
         props: {
@@ -167,7 +170,7 @@
         },
         computed: {
             realSrc: function () {
-                return getSrc(this.media.Ctrl.FileName)
+                return this.media.realSrc
             },
             info: function () {
                 return this.media.Info;
@@ -184,9 +187,6 @@
                 return this.$store.state.userDataManager
             },
 
-            userConcern: function (): UserConcern {
-                return this.userDataManager.userConcernDict['media'][this.media._id]
-            },
             isSelf: function () {
                 return this.media.isSelf
             },
@@ -364,6 +364,18 @@
             status: "editing",
             description: "媒体信息卡片",
             //todo 编辑 比例 收藏 分享
+        },
+        mounted(): void {
+            if (this.media.isRemote) {
+                dispatchUserConcernQuery([this.media._id]).then(() => {
+                    let concern = this.userDataManager.userConcernDict[this.media._type][this.media._id];
+                    if (concern) {
+                        this.userConcern = concern
+                    }
+                })
+            } else {
+                //doNothing
+            }
         }
     });
 </script>

@@ -163,7 +163,7 @@
         },
         computed: {
             realSrc() {
-                return getSrc(this.media.Ctrl.FileName)
+                return this.media.realSrc
             },
             //markdown编辑器模式
             prop() {

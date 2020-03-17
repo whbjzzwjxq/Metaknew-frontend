@@ -369,3 +369,9 @@ export const fieldHandler = () => ({
     "FileField": (value: any) => value.toString().split(";"),
     "ImageField": (value: any) => value.toString()
 } as Record<FieldType, (value: any) => any>);
+
+export async function waitTime(_func: Function, payload: any, time: number = 5000) {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(_func(payload)), time)
+    })
+}

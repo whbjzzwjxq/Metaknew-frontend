@@ -184,7 +184,7 @@
         LinkSettingPart,
         MediaSettingPart,
         NodeInfoPart,
-        NodeSettingPart,
+        GraphNodeSettingPart,
         NoteSettingPart,
         TextSettingPart
     } from '@/class/graphItem'
@@ -376,7 +376,7 @@
             // 未被删除的Graph
             activeGraphList: function (): GraphSelfPart[] {
                 return [this.graph].concat(this.childDocumentList.filter(graph => graph &&
-                    !graph.Conf.State.isDeleted))
+                    !graph.Conf.isDeleted))
             },
 
             activeGraphIdList: function (): id[] {
@@ -455,13 +455,12 @@
             },
 
             // 包含所有的Nodes
-            nodes: function (): NodeSettingPart[] {
-                let result = this.graph.Content.nodes
-                    .filter(node => node._id === this.graph._id) as NodeSettingPart[];
-                // root Graph的节点显示
+            nodes: function (): GraphNodeSettingPart[] {
+                // root Graph自己的节点显示
+                let result = [this.graph.baseNode] as GraphNodeSettingPart[];
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Content.nodes.filter(node => node._id !== graph._id))
-                    // Graph底下的节点由父亲Graph中的Nodes代替
+                    // 其他Graph用不包含baseNode的list
+                    result = result.concat(graph.nodeListNoSelf)
                 });
                 return result
             },
@@ -481,7 +480,7 @@
                 this.activeGraphList.map(graph => {
                     result = result.concat(graph.Content.links.filter(link => {
                         return this.nodeIdList.includes(link.Setting._start._id) &&
-                            this.nodeIdList.includes(link.Setting._end._id) && !link.State.isDeleted
+                            this.nodeIdList.includes(link.Setting._end._id) && !link.isDeleted
                     }))
                 });
                 return result
@@ -489,7 +488,7 @@
 
             // 只有自身的medias
             medias: function (): MediaSettingPart[] {
-                return this.graph.Content.medias.filter(item => !item.State.isDeleted)
+                return this.graph.Content.medias.filter(item => !item.isDeleted)
             },
 
             mediaIdList: function (): id[] {
@@ -641,7 +640,7 @@
                         y: realY,
                         show: this.showMedia[index],
                         isSelected: media.State.isSelected,
-                        isDeleted: media.State.isDeleted
+                        isDeleted: media.isDeleted
                     }
                 })
             },
@@ -974,7 +973,7 @@
                 this.lastViewPoint.update(eventCopy);
             },
 
-            explode(node: NodeSettingPart) {
+            explode(node: GraphNodeSettingPart) {
                 dispatchNodeExplode({node, document: this.graph})
             },
 

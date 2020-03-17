@@ -130,14 +130,7 @@
                 currentFiles: this.baseFiles as id[],
                 fileInput: [],
                 statusIcon: {},
-                statusColor: {
-                    'new': 'todo',
-                    'success': 'success',
-                    'error': 'error',
-                    'uploading': 'accent',
-                    'pause': 'todo',
-                    'remote': 'primary'
-                },
+                statusColor: MediaInfoPart.statusDict,
                 guid: guid,
                 fileResolverProps: {
                     chips: true,
@@ -218,7 +211,7 @@
             uploadFile: function (index: number) {
                 let file = this.newFiles[index];
                 let storeName = 'userFileCache/' + this.guid() + '.' + file.Ctrl.Format;
-                file.file &&
+                (file.file && file.status !== 'uploading') &&
                 dispatchUploadFile({
                     item: file,
                     storeName,

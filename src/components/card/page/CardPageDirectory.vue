@@ -56,7 +56,7 @@
         commitItemChange,
         commitSnackbarOn
     } from "@/store/modules/_mutations";
-    import {GraphSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/class/graphItem";
+    import {GraphSelfPart, LinkSettingPart, MediaSettingPart, GraphNodeSettingPart} from "@/class/graphItem";
     import {getIcon} from "@/utils/icon";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
     import {frontendIdRegex} from "@/utils/utils";
@@ -116,7 +116,8 @@
             // 不包含自身
             activeDocumentList: function (): GraphSelfPart[] {
                 return this.childDocumentList.filter(graph => graph &&
-                    !graph.Conf.State.isDeleted) // 这里不要Explode是一次性加载完 不要重新构建目录
+                    !graph.Conf.isDeleted)
+                // 这里不要Explode是为了explode不影响构建目录
             },
 
             // 控制buildStructure
@@ -237,7 +238,7 @@
                 this.docLayerDict = docLayerDict;
             },
 
-            nodeToItem: (node: NodeSettingPart) => {
+            nodeToItem: (node: GraphNodeSettingPart) => {
                 return {
                     id: node._id,
                     type: 'node', //这里是目录意义上的节点
@@ -346,7 +347,7 @@
 
             async getDocument(nodeItem: DirectoryItem) {
                 if (!frontendIdRegex.test(String(nodeItem.id))) {
-                    let node = this.getOriginItem(nodeItem) as NodeSettingPart;
+                    let node = this.getOriginItem(nodeItem) as GraphNodeSettingPart;
                     let parent = node.parent;
                     return dispatchGraphQuery({_id: node._id, parent});
                 } else {
@@ -355,20 +356,20 @@
             },
 
             open(docList: DirectoryItemDocument[]) {
+                console.log(docList);
                 let idList = docList.map(item => item.id);
                 // 根专题不会缩回 其他的专题检查是否在list中
                 this.documents.map(doc => doc.explode(idList.includes(doc._id) || doc.Conf.parent === null))
             },
 
             getDocumentChildList(document: GraphSelfPart): DirectoryItem[] {
-                let nodes = document.Content.nodes.filter(item => !item.State.isDeleted)
-                    .map(node => this.nodeToItem(node))
-                    .filter(node => node.id !== node.parent);
+                let nodes = document.nodeListNoSelf.filter(item => !item.isDeleted)
+                    .map(node => this.nodeToItem(node));
 
-                let links = document.Content.links.filter(item => !item.State.isDeleted)
+                let links = document.Content.links.filter(item => !item.isDeleted)
                     .map(link => this.linkToItem(link));
 
-                let medias = document.Content.medias.filter(item => !item.State.isDeleted)
+                let medias = document.Content.medias.filter(item => !item.isDeleted)
                     .map(media => this.mediaToItem(media));
 
                 return nodes.concat(links).concat(medias)

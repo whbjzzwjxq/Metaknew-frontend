@@ -21,7 +21,6 @@ declare global {
         userConcernDict: Record<GraphItemType, Record<id, UserConcern>>, // 基础的数据仓库
         userConcernLoadingList: id[], // 正在加载的List
         timerForConcern?: number, // 计时器
-
         fragments: Array<FragmentInfoPart>, // user收集的碎片
         userNoteBook: NoteBook[], // 笔记本
         userNoteInDoc: NoteSettingPart[], // 所有专题的笔记， 通过father判断
@@ -142,55 +141,42 @@ const actions = {
 
     },
 
-    userConcernGet(context: ActionContext<UserDataManagerState, RootState>, payload: InfoPartInDataManager) {
-        let state = context.state;
-        let userConcern = state.userConcernDict[payload._type][payload._id];
-        // 远端请求
-        if (payload.isRemote) {
-            if (userConcern) {
-                // 加载完毕
-                return true
-            } else {
-                // 未加载 尝试加载
-                return dispatchUserConcernQuery([payload._id])
-            }
-        } else {
-            //error
-        }
-    },
-
-    userConcernQuery(context: ActionContext<UserDataManagerState, RootState>, payload: id[]) {
-        // 获取已有userConcern的id, 不管它是否是
+    async userConcernQuery(context: ActionContext<UserDataManagerState, RootState>, payload: id[]) {
+        // 获取已有userConcern的idList
         let idList: id[] = context.getters.userConcernKeyList.map((key: UserConcernKey) => key.id);
         let state = context.state;
-        // 添加那些没有在列表中的key
-        let newQueryList = payload.filter(key => !idList.includes(key));
-        let currentQueryList = state.userConcernLoadingList;
+        let loadingList = state.userConcernLoadingList;
+        // 添加那些没有在已有列表或加载列表中的key
+        let newQueryList = payload.filter(id => !idList.includes(id) && !loadingList.includes(id));
         if (newQueryList.length > 0) {
-            currentQueryList = currentQueryList.concat(newQueryList);
-            state.timerForConcern && clearTimeout(state.timerForConcern);
-            state.timerForConcern = setTimeout(() => {
-                userConcernQuery(currentQueryList).then(res => {
-                    let concernList = res.data;
-                    concernList.map(concern => {
-                        if (concern.userConcern) {
-                            concern.userConcern.isModeled = true;
-                            concern.strict = true;
-                            commitUserConcernAdd(concern);
-                        } else {
-                            let {id, type} = concern;
-                            let userConcern = userConcernTemplate();
-                            userConcern.isModeled = false;
-                            commitUserConcernAdd({id, type, userConcern, strict: true})
-                        }
-                        let {id} = concern;
-                        let index = state.userConcernLoadingList.indexOf(id);
-                        state.userConcernLoadingList.splice(index, 1)
-                    })
+            loadingList.push(...newQueryList);
+            return userConcernQuery(state.userConcernLoadingList).then(res => {
+                let concernList = res.data;
+                concernList.map(concern => {
+                    if (concern.userConcern) {
+                        concern.userConcern.isModeled = true;
+                        concern.userConcern.isConfirm = true;
+                        concern.strict = true;
+                        commitUserConcernAdd(concern);
+                    } else {
+                        let {id, type} = concern;
+                        let userConcern = userConcernTemplate();
+                        userConcern.isConfirm = true;
+                        commitUserConcernAdd({id, type, userConcern, strict: true})
+                    }
                 })
-            }, 5000)
+            }).finally(() => {
+                // 从loadingList 去除已经加载完成的内容
+                context.getters.userConcernKeyList.map((key: UserConcernKey) => {
+                    let concern = state.userConcernDict[key.type][key.id];
+                    if (concern) {
+                        let index = loadingList.indexOf(key.id);
+                        index >= 0 && loadingList.splice(index, 1)
+                    }
+                });
+            });
         } else {
-            // 没有新的需要请求的userConcern了
+            return true
         }
     },
 

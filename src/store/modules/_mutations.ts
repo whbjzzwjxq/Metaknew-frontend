@@ -1,7 +1,6 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
 import {DocumentSelfPart, GraphSelfPart, LinkInfoPart, NodeInfoPart, NoteSettingPart} from "@/class/graphItem";
-import {NoteBook} from "@/store/modules/userDataManager";
 
 export const commitUserLogin = (payload: userLoginPayload) => {
     return store.commit('loginSuccess', payload)
@@ -71,7 +70,7 @@ export const commitDocumentRemove = (payload: id) => {
     return store.commit('documentRemove', payload)
 };
 
-export const commitDocumentChangeId = (payload: {oldId: id, newId: id}) => {
+export const commitDocumentChangeId = (payload: { oldId: id, newId: id }) => {
     return store.commit('documentChangeId', payload)
 };
 

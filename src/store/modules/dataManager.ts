@@ -6,7 +6,7 @@ import {
     LinkInfoPart,
     MediaInfoPart,
     NodeInfoPart,
-    NodeSettingPart
+    GraphNodeSettingPart
 } from "@/class/graphItem";
 import {
     commitDocumentAdd,
@@ -225,7 +225,7 @@ const actions = {
         await documentQuery(_id).then(res => {
             let {data} = res;
             let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
-            dispatchNodeQuery(graph.Content.nodes.map(item => item.Setting));
+            dispatchNodeQuery(graph.nodeListNoSelf.map(item => item.Setting));
             dispatchLinkQuery(graph.Content.links.map(item => item.Setting));
             dispatchMediaQuery(graph.Content.medias.map(item => item._id));
         });
@@ -324,7 +324,7 @@ const actions = {
         } else return filePutBlob(fileToken, realFile, storeName);
     },
 
-    async nodeExplode(context: Context, payload: { node: NodeSettingPart, document: GraphSelfPart }) {
+    async nodeExplode(context: Context, payload: { node: GraphNodeSettingPart, document: GraphSelfPart }) {
         let {node, document} = payload;
         let _id = node._id;
         let subGraph = state.graphManager[_id];
@@ -334,7 +334,7 @@ const actions = {
                 parent: document,
             }).then(() => {
                 let subGraph = state.graphManager[_id];
-                subGraph.explode()
+                subGraph.explode(true)
             });
         } else {
             subGraph.explode()

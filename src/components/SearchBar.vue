@@ -65,7 +65,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search/search'
-    import {GraphSelfPart, MediaSettingPart, NodeSettingPart} from '@/class/graphItem'
+    import {GraphSelfPart, MediaSettingPart, GraphNodeSettingPart} from '@/class/graphItem'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
@@ -213,7 +213,7 @@
                 let unDuplicateItems = this.selection.filter(item => !this.currentGraph.checkExist(item.id, item.type));
                 let nodes = unDuplicateItems.filter(item => item.type !== 'media');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let nodeSettingList = nodes.map(node => NodeSettingPart.emptyNodeSetting(
+                let nodeSettingList = nodes.map(node => GraphNodeSettingPart.emptyNodeSetting(
                     node.id,
                     node.type,
                     node.PrimaryLabel,

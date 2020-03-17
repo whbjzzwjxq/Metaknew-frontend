@@ -24,7 +24,7 @@ export function settingTemplate(_type: AllType) {
 }
 
 export function nodeSettingTemplate(_id: id, _type: string, _label: string, _name: string, _image: string) {
-    let setting = <NodeSetting>{
+    let setting = <NodeSettingGraph>{
         _id,
         _type,
         _label,
@@ -197,7 +197,8 @@ export function userConcernTemplate() {
         NumBad: false,
         NumShared: false,
         Labels: [],
-        isModeled: false
+        isModeled: false,
+        isConfirm: false
     };
 }
 

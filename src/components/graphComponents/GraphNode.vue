@@ -87,7 +87,7 @@
     import {commitNewLabel} from '@/store/modules/_mutations'
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
-    import {GraphSelfPart, NodeSettingPart} from "@/class/graphItem";
+    import {GraphSelfPart, GraphNodeSettingPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: 'GraphNode',
@@ -98,7 +98,7 @@
         props: {
 
             node: {
-                type: Object as () => NodeSettingPart,
+                type: Object as () => GraphNodeSettingPart,
                 required: true
             },
 
@@ -131,7 +131,7 @@
                 return 'translate(' + this.point.x + ' ' + this.point.y + ')'
             },
 
-            setting: function (): NodeSetting {
+            setting: function (): NodeSettingGraph {
                 return this.node.Setting
             },
 

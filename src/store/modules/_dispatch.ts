@@ -2,12 +2,10 @@ import store from '../index';
 import {
     FragmentInfoPart,
     GraphSelfPart,
-    InfoPart,
     MediaInfoPart,
-    NodeSettingPart,
+    GraphNodeSettingPart,
     NoteSettingPart
 } from "@/class/graphItem";
-import {PropDescription} from "@/utils/fieldResolve";
 
 export function dispatchUploadFile(payload: {
     item?: MediaInfoPart,
@@ -22,7 +20,7 @@ export function dispatchGraphQuery(payload: { _id: id, parent: GraphSelfPart | n
     return store.dispatch('graphQuery', payload)
 }
 
-export function dispatchNodeExplode(payload: { node: NodeSettingPart, document: GraphSelfPart }) {
+export function dispatchNodeExplode(payload: { node: GraphNodeSettingPart, document: GraphSelfPart }) {
     return store.dispatch('nodeExplode', payload)
 }
 
@@ -56,10 +54,6 @@ export function dispatchMediaQuery(payload: id[]) {
 
 export function dispatchUserPropResolveChange(payload: PropDescriptionPayload) {
     return store.dispatch('changeUserPropResolve', payload)
-}
-
-export function dispatchUserConcernGet(payload: InfoPartInDataManager) {
-    return store.dispatch('userConcernGet', payload)
 }
 
 export function dispatchUserConcernQuery(payload: id[]) {

@@ -28,7 +28,7 @@
                         class="mt-n2">
 
                     </p-label-selector>
-                    <item-sharer :base-data="baseData" class="mt-n2">
+                    <item-sharer :base-data="baseData" :user-concern="userConcern" class="mt-n2">
 
                     </item-sharer>
                 </v-col>
@@ -183,8 +183,9 @@
     import {deepClone} from "@/utils/utils";
     import {commitInfoChangeId, commitSnackbarOn} from "@/store/modules/_mutations";
     import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
-    import {dispatchMediaQuery} from "@/store/modules/_dispatch";
+    import {dispatchMediaQuery, dispatchUserConcernQuery} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
+    import {userConcernTemplate} from "@/utils/template";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -211,7 +212,8 @@
                 topicItems: topicItems,
                 labelItems: labelItems,
                 loading: true,
-                plusIcon: getIcon('i-edit', 'add')
+                plusIcon: getIcon('i-edit', 'add'),
+                userConcern: userConcernTemplate()
             }
         },
         props: {
@@ -235,12 +237,13 @@
             ctrl: function (): BaseNodeCtrl {
                 return this.baseData.Ctrl
             },
-            userConcern: function (): UserConcern {
-                return this.$store.state.userDataManager.userConcernDict[this.type][this.baseData._id];
-            },
 
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
+            },
+
+            userDataManager: function (): UserDataManagerState {
+                return this.$store.state.userDataManager
             },
 
             type: function (): GraphItemType {
@@ -427,17 +430,26 @@
             }
         },
         watch: {},
-        created() {
+        created(): void {
             dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
                 this.loading = false
             });
-
         },
 
-        updated() {
+        mounted(): void {
             dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
                 this.loading = false
-            })
+            });
+            if (this.baseData.isRemote) {
+                dispatchUserConcernQuery([this.baseData._id]).then(() => {
+                    let concern = this.userDataManager.userConcernDict[this.baseData._type][this.baseData._id];
+                    if (concern) {
+                        this.userConcern = concern
+                    }
+                })
+            } else {
+                //doNothing
+            }
         },
         record: {
             status: 'done',
