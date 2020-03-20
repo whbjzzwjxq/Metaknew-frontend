@@ -169,6 +169,7 @@ export class NodeInfoPart extends InfoPart {
         super(info, ctrl, isDeleted);
         this.Info = info;
         this.Ctrl = ctrl;
+        this.synchronizationAll();
     }
 
     static emptyNodeInfoPart(payload: NodeQuery, commit: boolean = true, isDeleted: boolean = false) {
@@ -250,6 +251,7 @@ export class LinkInfoPart extends InfoPart {
         super(info, ctrl, isDeleted);
         this.Info = info;
         this.Ctrl = ctrl;
+        this.synchronizationAll();
     }
 
     static emptyLinkInfo(_id: id, _label: string, _start: VisNodeSettingPart, _end: VisNodeSettingPart, commit: boolean = true, isDeleted: boolean = true) {
@@ -303,8 +305,8 @@ export class LinkInfoPart extends InfoPart {
 
     synchronizationAll() {
         this.allSettingItem.map(link => {
-            link.updateCrucialProp("_start", this.Ctrl.Start);
-            link.updateCrucialProp("_end", this.Ctrl.End);
+            link.Setting._start._id !== this.Ctrl.Start._id && link.updateCrucialProp("_start", this.Ctrl.Start);
+            link.Setting._end._id !== this.Ctrl.End._id && link.updateCrucialProp("_end", this.Ctrl.End);
             link.updateCrucialProp('_label', this.Info.PrimaryLabel);
         });
     }
@@ -360,7 +362,8 @@ export class MediaInfoPart extends InfoPart {
         this.Ctrl = ctrl;
         this.currentUrl = file
             ? URL.createObjectURL(file)
-            : ''
+            : '';
+        this.synchronizationAll();
     }
 
     static emptyMediaInfo(_id: id, file?: File, commit: boolean = true, isDeleted: boolean = false) {

@@ -109,8 +109,6 @@
     import {nodeInfoTemplate} from "@/utils/template";
     import {nodeBulkCreate} from "@/api/subgraph/node";
     import {dispatchUserLabelProps} from "@/store/modules/_dispatch";
-    import {userEditDataQuery} from "@/api/user/dataApi";
-    import {commitUserEditDataLoadDone} from "@/store/modules/_mutations";
 
     interface HeaderItem {
         text: string,
@@ -198,7 +196,9 @@
                     "textTrans": /Text_[a-zA-Z]{2}/
                 },
 
-                fieldHandler: fieldHandler()
+                fieldHandler: fieldHandler(),
+
+                nodeTemplate: nodeInfoTemplate('$_-1', 'node', 'BaseNode')
             }
         },
         props: {},
@@ -240,14 +240,8 @@
             },
 
             //节点的模板
-            nodeTemplate: function (): FlatNodeInfo {
-                // id不是实际调用的
-                let node = nodeInfoTemplate('$_-1', 'node', this.pLabel);
-                Object.entries(nodeLabelToProp(this.pLabel)).map(([key, value]) => {
-                    let {type} = value;
-                    node[key] = fieldDefaultValue[type];
-                });
-                return node
+            extraProps: function (): string[] {
+                return this.$store.state.userDataManager.userEditData.PLabelExtraProps[this.pLabel]
             },
 
             //是否窄行距
@@ -360,14 +354,14 @@
                         node[key] = this.fieldHandler[fieldType](value)
                     } else {
                         //如果是非已有属性
-                        let trans = this.reg.trans.test(key);
-                        // key === Name_zh ......
-                        trans && (translate[key.substring(5, key.length)] = value);
-                        let texts = this.reg.textTrans.test(key);
-                        // key === Text_zh ......
-                        texts && (text[key.substring(5, key.length)] = value);
-                        // 否则
-                        if (!trans && !texts) {
+                        let title = key.split('_');
+                        if (title.length === 2) {
+                            if (['Translate', 'translate', 'Name', 'name'].includes(title[0])) {
+                                translate[title[1]] = value
+                            } else if (['Text', 'text', 'Description', 'description'].includes(title[0])) {
+                                text[title[1]] = value
+                            }
+                        } else {
                             let resolve: ResolveType;
                             let type: FieldType;
                             let propDescription = this.userDataManager.userEditData.UserPropResolve[key];
@@ -457,9 +451,26 @@
             // 合并两个Object
             mergeProp(propA: Record<string, any>, propB: Record<string, any>) {
                 Object.keys(propB).length !== 0 && Object.assign(propA, propB)
+            },
+
+            getNodeTemplate() {
+                let node = nodeInfoTemplate('$_-1', 'node', this.pLabel);
+                Object.entries(nodeLabelToProp(this.pLabel)).map(([key, value]) => {
+                    let {type} = value;
+                    node[key] = fieldDefaultValue[type];
+                });
+                this.nodeTemplate = node
             }
         },
-        watch: {},
+        watch: {
+            pLabel() {
+                this.getNodeTemplate()
+            },
+
+            extraProps () {
+                this.getNodeTemplate()
+            }
+        },
         record: {
             status: 'done'
         },
