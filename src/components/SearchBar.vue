@@ -14,6 +14,7 @@
                 height="32px"
                 hide-selected
                 item-text="Name.auto"
+                item-value="id"
                 multiple
                 no-filter
                 outlined
@@ -258,8 +259,9 @@
             },
             getTitle() {
                 let titleList = this.titleList;
-                titleList.map(key => {
+                titleList.map((key, index) => {
                     this.titleDict[key] = {
+                        id: -index,
                         name: key,
                         length: this.searchResult[key].length,
                         disabled: false,

@@ -153,9 +153,7 @@
         },
         watch: {},
         created(): void {
-            getCookie('token') && loginCookie().then(setLoginIn).catch().then(() => {
-                !this.$store.state.userDataManager.userEditDataLoad && userEditDataQuery()
-            })
+            getCookie('token') && loginCookie().then(setLoginIn).catch()
         },
         mounted(): void {
             this.screenResize()

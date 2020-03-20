@@ -9,6 +9,8 @@ import {
 } from "@/store/modules/_mutations";
 import {AxiosResponse} from "axios";
 import {FieldType} from "@/utils/fieldResolve";
+import {userEditDataQuery} from "@/api/user/dataApi";
+import store from '@/store/index'
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -341,6 +343,7 @@ export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays
     commitFileTokenRefresh(data.fileToken);
     commitGlobalIndexPlus(data.personalId);
     commitLoginDialogChange(false);
+    (store && !store.state.userDataManager.userEditDataLoad) && userEditDataQuery()
 };
 
 export const setLoginOut = () => {
