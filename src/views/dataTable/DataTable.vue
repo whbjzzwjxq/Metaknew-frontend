@@ -108,6 +108,9 @@
     import {getIcon} from "@/utils/icon";
     import {nodeInfoTemplate} from "@/utils/template";
     import {nodeBulkCreate} from "@/api/subgraph/node";
+    import {dispatchUserLabelProps} from "@/store/modules/_dispatch";
+    import {userEditDataQuery} from "@/api/user/dataApi";
+    import {commitUserEditDataLoadDone} from "@/store/modules/_mutations";
 
     interface HeaderItem {
         text: string,
@@ -367,7 +370,7 @@
                         if (!trans && !texts) {
                             let resolve: ResolveType;
                             let type: FieldType;
-                            let propDescription = this.userDataManager.userSetting.userPropResolve[key];
+                            let propDescription = this.userDataManager.userEditData.UserPropResolve[key];
                             if (propDescription) {
                                 resolve = propDescription.resolve;
                                 type = propDescription.type
@@ -394,6 +397,9 @@
                 this.mergeProp(node.Description, text);
                 this.mergeProp(node.Translate, translate);
                 this.mergeProp(node.ExtraProps, extraProps);
+                dispatchUserLabelProps({
+                    [node.PrimaryLabel]: Object.keys(node.ExtraProps)
+                });
                 let StandardProps: Record<string, ValueWithType<any>> = {};
                 Object.entries(nodeLabelToProp(this.pLabel)).map(([key, value]) => {
                     let {type, resolve} = value;
@@ -427,7 +433,10 @@
 
             //更新值
             updateProp(item: FlatNodeInfo, prop: string, value: any) {
-                this.$set(item, prop, value)
+                this.$set(item, prop, value);
+                prop === 'ExtraProps' && dispatchUserLabelProps({
+                    [item.PrimaryLabel]: Object.keys(item.ExtraProps)
+                });
             },
 
             //更新节点
@@ -453,6 +462,9 @@
         watch: {},
         record: {
             status: 'done'
+        },
+        created(): void {
+
         }
     })
 </script>

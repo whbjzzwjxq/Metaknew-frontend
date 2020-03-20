@@ -14,7 +14,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {commitNewLabel, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {commitLabelColorAdd, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
 
     export default Vue.extend({
         name: "GlobalChip",
@@ -77,7 +77,7 @@
                     return this.color
                 } else {
                     if (this.$store.getters.currentLabels.indexOf(this.label) < 0) {
-                        commitNewLabel([this.label]);
+                        commitLabelColorAdd([this.label]);
                     }
                     return this.$store.state.styleLabelColor[this.label].color
                 }

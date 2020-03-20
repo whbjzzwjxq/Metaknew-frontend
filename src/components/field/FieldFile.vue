@@ -21,7 +21,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <template v-if="showCurrent">
+                <template>
                     <tr v-if="currentFiles.length === 0">
                         <td colspan="12"></td>
                     </tr>
@@ -118,7 +118,7 @@
     import CardPageMediaInfo from '../card/page/CardPageMediaInfo.vue';
     import MediaResolver from '../media/MediaResolver.vue';
     import {MediaInfoPart} from '@/class/graphItem'
-    import {commitInfoAdd, commitInfoChangeId} from '@/store/modules/_mutations'
+    import {commitInfoAdd, commitInfoIdChange} from '@/store/modules/_mutations'
     import {dispatchUploadFile} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
@@ -151,16 +151,12 @@
             },
             width: {
                 type: Number as () => number,
-                default: 400
+                default: 600
             },
             // 规则组
             rules: {
                 type: Array as () => (() => {})[],
                 default: () => []
-            },
-            showCurrent: {
-                type: Boolean,
-                default: false
             },
             uploadMode: {
                 type: Boolean,
@@ -220,7 +216,7 @@
                 }).then(res => {
                     let idMap = res.data;
                     file.changeStatus('success');
-                    commitInfoChangeId({_type: 'media', idMap});
+                    commitInfoIdChange({_type: 'media', idMap});
                     this.currentFiles.push(file._id);
                     this.newFiles.splice(index, 1);
                     file.Ctrl.FileName = `userResource/${file._id}.${file.Ctrl.Format}`;

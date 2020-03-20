@@ -51,7 +51,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        commitChangeSubTab,
+        commitSubTabChange,
         commitGraphChange,
         commitItemChange,
         commitSnackbarOn
@@ -321,11 +321,11 @@
                 if (item.type === 'node') {
                     let info = this.dataManager.nodeManager[item.id];
                     commitItemChange(info);
-                    commitChangeSubTab('info');
+                    commitSubTabChange('info');
                 } else if (item.type === 'link') {
                     let info = this.dataManager.linkManager[item.id];
                     commitItemChange(info);
-                    commitChangeSubTab('info');
+                    commitSubTabChange('info');
                 } else if (item.type === 'media') {
                     // media编辑
                 } else if (item.type === 'text') {

@@ -100,10 +100,10 @@
     import {deepClone, fieldHandler} from '@/utils/utils';
     import {validGroup} from "@/utils/validation";
     import {Rule} from "@/interface/interfaceInComponent";
-    import {dispatchUserPropResolveChange} from "@/store/modules/_dispatch";
+    import {dispatchUserLabelProps, dispatchUserPropResolveChange} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
-        name: 'fieldJson',
+        name: 'FieldJson',
         data() {
             return {
                 cacheKey: '' as string,
@@ -114,7 +114,7 @@
                 ] as Rule<string>[],
                 fieldSetting: fieldSetting,
                 types: ['TextField', 'ArrayField', 'NumberField', 'StringField',
-                    'JsonField', 'FileField', 'ImageField', 'BooleanField'] as FieldType[],
+                    'JsonField', 'FileField', 'BooleanField'] as FieldType[],
                 resolves: ['name', 'time', 'location', 'normal'] as ResolveType[],
                 reg: new RegExp('[\\\\:*?"<>|]'),
                 stringHandler: fieldHandler()
@@ -194,7 +194,7 @@
                 let newValue: ValueWithType<any>;
                 if (newKey !== '') {
                     this.delProp(key);
-                    let propDescription = this.userDataManager.userPropResolve[newKey];
+                    let propDescription = this.userDataManager.userEditData.UserPropResolve[newKey];
                     if (propDescription) {
                         let {resolve, type} = propDescription;
                         newValue = {
@@ -203,7 +203,7 @@
                             type
                         }
                     } else {
-                        dispatchUserPropResolveChange({prop: newKey, resolve: item, strict: false});
+                        dispatchUserPropResolveChange({prop: newKey, resolve: item, strict: true});
                         newValue = item;
                     }
                     this.addProp(newKey, newValue);

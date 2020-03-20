@@ -10,7 +10,7 @@ declare global {
         toolBar: ToolBar,
         leftCard: LeftCard,
         bottomBar: BottomBar,
-        noteBook: NoteBook
+        noteBook: NoteBookSize
         bottomDynamicBar: RectByPoint,
         viewBox: RectByPoint,
     }
@@ -38,7 +38,7 @@ export interface ToolBar extends ComponentSize {
     height: number,
 }
 
-interface NoteBook extends ComponentSize {
+interface NoteBookSize extends ComponentSize {
     width: number,
     height: number
 }
@@ -67,7 +67,7 @@ const state: StyleManagerState = {
 };
 
 const mutations = {
-    resetScreen: (state: StyleManagerState) => {
+    screenRefresh: (state: StyleManagerState) => {
         state.screenX = document.documentElement.clientWidth;
         state.screenY = document.documentElement.clientHeight;
         state.leftCard.height = document.documentElement.clientHeight - 48;
@@ -75,21 +75,22 @@ const mutations = {
         commitBottomDynamicBarResize();
     },
 
-    resetLeftCard: (state: StyleManagerState, payload: number) => {
-        Vue.set(state.leftCard, 'width', payload);
+    leftCardReset: (state: StyleManagerState, payload: number) => {
+        state.leftCard.width = payload
     },
 
-    resetBottomBar: (state: StyleManagerState, payload: number) => {
-        Vue.set(state.bottomBar, 'height', payload);
+    bottomBarReset: (state: StyleManagerState, payload: number) => {
+        state.bottomBar.height = payload
     },
 
-    getViewBox: (state: StyleManagerState) => {
+    viewBoxRefresh: (state: StyleManagerState) => {
         // 计算ViewBox
         state.viewBox.start.update({x: state.leftCard.width, y: state.toolBar.height});
         state.viewBox.end.update({x: state.screenX, y: state.screenY - state.bottomBar.height})
     },
 
-    getBottomDynamicBar: (state: StyleManagerState, payload?: number) => {
+    bottomDynamicBarReset: (state: StyleManagerState, payload?: number) => {
+        // 改变底部动态Bar的高度
         if (payload) {
             payload <= (state.toolBar.height + 4) && (payload = state.toolBar.height + 4); // 最高
             payload >= state.screenY - bottomDynamicBarHeight && (payload = state.screenY - bottomDynamicBarHeight); // 最矮

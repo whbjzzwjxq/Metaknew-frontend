@@ -25,7 +25,7 @@ const state: State = {
 };
 
 const mutations = {
-    loginSuccess(state: State, payload: UserLoginResponse) {
+    loginSet(state: State, payload: UserLoginResponse) {
         state.userInfo = payload;
         state.isLogin = true
     },

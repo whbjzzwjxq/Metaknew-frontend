@@ -322,6 +322,8 @@ export class MediaInfoPart extends InfoPart {
     file: File | Blob | undefined;
     status: MediaStatus;
     currentUrl: string;
+    width?: number;
+    height?: number;
     Info: BaseMediaInfo;
     Ctrl: BaseMediaCtrl;
 

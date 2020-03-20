@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import Vuex, {StoreOptions} from 'vuex'
+import Vuex from 'vuex'
 import userInfo from "@/store/modules/userInfo";
 import componentSnackBar from "@/store/modules/componentSnackBar";
 import dataTextResolveCache from "@/store/modules/dataTextResolveCache";
@@ -9,6 +9,7 @@ import styleComponentSize from "@/store/modules/styleComponentSize";
 import userDataManager from "@/store/modules/userDataManager";
 import componentState from "@/store/modules/componentState";
 import {doNothing} from "@/utils/utils";
+
 Vue.use(Vuex);
 
 export interface NormalState {
@@ -22,6 +23,15 @@ export interface RootState {
     actions: any,
     modules: any
 }
+
+export const getMutationName = (baseName: string, ...props: string[]) => {
+    let result: Record<string, string> = {};
+    props.map(prop => {
+        result[prop] = baseName + prop
+    });
+    return result
+};
+
 export default new Vuex.Store({
     state: {
         userIndex: 0

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-row style="width: 210px" class="ma-0 ml-n1">
+        <v-row style="width: 180px" class="ma-0 ml-n1">
             <v-col v-for="icon in iconList" :key="icon.name" cols="3" class="pa-0 pr-2" style="align-content: normal">
                 <v-btn text
                        small

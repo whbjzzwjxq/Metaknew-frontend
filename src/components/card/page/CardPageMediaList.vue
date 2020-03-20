@@ -35,7 +35,7 @@
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
     import {NodeInfoPart, MediaInfoPart, MediaSettingPart} from "@/class/graphItem";
-    import {commitFileToken} from "@/store/modules/_mutations";
+    import {commitFileTokenRefresh} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import {SortProp} from "@/interface/interfaceInComponent";
     import {sortCtrl} from "@/utils/utils";
@@ -126,7 +126,7 @@
             if ((fileToken.Expiration * 1000 - now <= 0) || !fileToken.AccessKeyId) {
                 loginCookie().then(res => {
                     if (res.status === 200) {
-                        commitFileToken(res.data.fileToken);
+                        commitFileTokenRefresh(res.data.fileToken);
                     } else {
                         alert("与图片服务器连接暂时中断")
                     }

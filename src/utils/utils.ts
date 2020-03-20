@@ -1,11 +1,11 @@
 import {GraphItemSettingPart, InfoPart} from "@/class/graphItem";
 import {SortProp} from "@/interface/interfaceInComponent";
 import {
-    commitFileToken,
+    commitFileTokenRefresh,
     commitGlobalIndexPlus,
     commitLoginDialogChange,
     commitLoginOut,
-    commitUserLogin
+    commitLoginIn
 } from "@/store/modules/_mutations";
 import {AxiosResponse} from "axios";
 import {FieldType} from "@/utils/fieldResolve";
@@ -337,8 +337,8 @@ export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays
     setCookie('user_id', data.userId.toString(), day);
     setCookie('user_name', data.userName, day);
     setCookie('token', data.token, day);
-    commitUserLogin(data);
-    commitFileToken(data.fileToken);
+    commitLoginIn(data);
+    commitFileTokenRefresh(data.fileToken);
     commitGlobalIndexPlus(data.personalId);
     commitLoginDialogChange(false);
 };
@@ -367,11 +367,6 @@ export const fieldHandler = () => ({
     "JsonField": (value: any) => JSON.parse(value),
     "TextField": (value: any) => ({"auto": value.toString()}),
     "FileField": (value: any) => value.toString().split(";"),
-    "ImageField": (value: any) => value.toString()
+    "BooleanField": (value: any) => value === 'false' ? false : Boolean(value),
+    "ImageField": (value: any) => value.toString(),
 } as Record<FieldType, (value: any) => any>);
-
-export async function waitTime(_func: Function, payload: any, time: number = 5000) {
-    return new Promise((resolve) => {
-        setTimeout(() => resolve(_func(payload)), time)
-    })
-}

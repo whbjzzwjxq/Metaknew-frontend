@@ -1,7 +1,8 @@
 import {currentTime, getCookie, randomIntegerInRange, randomNumberInRange} from '@/utils/utils';
-import {fieldDefaultValue, nodeLabelToProp, ValueWithType} from "@/utils/fieldResolve";
+import {fieldDefaultValue, nodeLabelToProp, PropDescription, ValueWithType} from "@/utils/fieldResolve";
 import PDFJS from 'pdfjs-dist';
 import {typeSetting} from "@/interface/itemSetting";
+import store from '@/store/index';
 
 export function settingTemplate(_type: AllType) {
     let settingConf = typeSetting[_type];
@@ -204,10 +205,25 @@ export function userConcernTemplate() {
 
 export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: string) {
     let StandardProps: Record<string, ValueWithType<any>> = {};
+    let ExtraProps: Record<string, ValueWithType<any>> = {};
     Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
         let {type, resolve} = value;
         StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
+    if (store) {
+        let editData = store.state.userDataManager.userEditData;
+        editData.PLabelExtraProps[_label] as LabelProps | undefined
+            ? editData.PLabelExtraProps[_label].map((prop: string) => {
+                let value: PropDescription = editData.UserPropResolve[prop];
+                if (value) {
+                    let {type, resolve} = value;
+                    ExtraProps[prop] = {type, resolve, value: fieldDefaultValue[type]};
+                }
+            })
+            : ExtraProps = {};
+    } else {
+        //store 加载完毕
+    }
     let info = <BaseNodeInfo>{
         id: _id,
         type: _type,
@@ -219,8 +235,8 @@ export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: st
         Topic: [],
         Translate: {'auto': ''},
         Description: {'auto': ''},
-        ExtraProps: {},
-        StandardProps: StandardProps,
+        ExtraProps,
+        StandardProps,
         BaseImp: 0,
         BaseHardLevel: 0,
         BaseUseful: 0,

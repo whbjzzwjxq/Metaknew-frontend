@@ -118,6 +118,7 @@
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import TimeRender from "@/components/TimeRender.vue";
     import FieldTextRender from "@/components/field/FieldTextRender.vue";
+    import {dispatchNoteBookPush, dispatchNoteInDocPush} from '@/store/modules/_dispatch';
 
     export default Vue.extend({
         name: "PersonalNote",
@@ -262,8 +263,10 @@
                     }
                 } as NoteBook;
                 //todo
+                // 加入到现有note里面
                 let removed = this.pushNoteInShowed(note);
-                this.pushNoteInMore(removed)
+                this.pushNoteInMore(removed);
+                dispatchNoteBookPush({note})
             },
 
             deleteNote: function () {

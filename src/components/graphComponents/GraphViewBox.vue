@@ -200,7 +200,7 @@
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting, isVisNodeSetting} from "@/utils/typeCheck";
     import {
-        commitChangeSubTab,
+        commitSubTabChange,
         commitGraphChange,
         commitItemChange,
         commitSnackbarOn
@@ -793,7 +793,7 @@
             dbClickNode(node: VisAreaSettingPart) {
                 this.selectItem([node]);
                 if (this.isLinking && isVisNodeSetting(node) && this.startNode) {
-                    commitChangeSubTab('info');
+                    commitSubTabChange('info');
                     if (node.parent._id === this.startNode.parent._id) {
                         // 如果是同一张图里的
                         let document = node.parent;

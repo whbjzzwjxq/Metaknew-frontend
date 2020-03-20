@@ -6,6 +6,7 @@ import {
     GraphNodeSettingPart,
     NoteSettingPart
 } from "@/class/graphItem";
+import {NoteBook} from "@/store/modules/userDataManager";
 
 export function dispatchUploadFile(payload: {
     item?: MediaInfoPart,
@@ -53,7 +54,7 @@ export function dispatchMediaQuery(payload: id[]) {
 }
 
 export function dispatchUserPropResolveChange(payload: PropDescriptionPayload) {
-    return store.dispatch('changeUserPropResolve', payload)
+    return store.dispatch('userPropResolvePush', payload)
 }
 
 export function dispatchUserConcernQuery(payload: id[]) {
@@ -64,6 +65,14 @@ export function dispatchInfoDraftSaveAll(payload: {isAuto: boolean}) {
     return store.dispatch('draftSaveAll', payload)
 }
 
+export const dispatchUserLabelProps = (payload: LabelProps) => {
+    return store.dispatch('userLabelPropsPush', payload)
+};
+
 export function dispatchNoteInDocPush(payload: {note: NoteSettingPart}) {
     return store.dispatch('noteInDocPush', payload)
+}
+
+export function dispatchNoteBookPush(payload: {note: NoteBook}) {
+    return store.dispatch('noteBookPush', payload)
 }

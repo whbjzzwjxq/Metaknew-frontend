@@ -84,7 +84,7 @@
 </template>
 
 <script lang="ts">
-    import {commitNewLabel} from '@/store/modules/_mutations'
+    import {commitLabelColorAdd} from '@/store/modules/_mutations'
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
     import {GraphSelfPart, GraphNodeSettingPart} from "@/class/graphItem";
@@ -176,7 +176,7 @@
                     return this.setting.View.color
                 } else {
                     this.$store.state.styleLabelColor[this.node._type] ||
-                    commitNewLabel([this.node._type]);
+                    commitLabelColorAdd([this.node._type]);
                     return this.$store.state.styleLabelColor[this.node._type]
                 }
             },
@@ -188,7 +188,7 @@
                     color = this.setting.Border.color
                 } else {
                     this.$store.state.styleLabelColor[this.node._label] ||
-                    commitNewLabel([this.node._label]);
+                    commitLabelColorAdd([this.node._label]);
                     color = this.$store.state.styleLabelColor[this.node._label]
                 }
                 return {

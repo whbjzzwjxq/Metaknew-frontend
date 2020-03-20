@@ -10,11 +10,11 @@ import {
 } from "@/class/graphItem";
 import {
     commitDocumentAdd,
-    commitDocumentChangeId,
+    commitDocumentIdChange,
     commitDocumentRemove,
-    commitFileToken,
+    commitFileTokenRefresh,
     commitInfoAdd,
-    commitInfoChangeId,
+    commitInfoIdChange,
     commitInfoRemove,
     commitItemChange,
     commitSnackbarOn
@@ -165,7 +165,7 @@ const mutations = {
         Vue.delete(state.graphManager, payload)
     },
 
-    documentChangeId(state: DataManagerState, payload: { oldId: id, newId: id }) {
+    documentIdChange(state: DataManagerState, payload: { oldId: id, newId: id }) {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
         if (oldGraph) {
@@ -193,7 +193,7 @@ const mutations = {
         delete manager[payload._id]
     },
 
-    infoChangeId(state: DataManagerState, payload: { _type: ItemType, idMap: IdMap }) {
+    infoIdChange(state: DataManagerState, payload: { _type: ItemType, idMap: IdMap }) {
         let {_type, idMap} = payload;
         let manager = getManager(_type);
         Object.keys(idMap).map(oldId => {
@@ -206,11 +206,11 @@ const mutations = {
             }
             // 额外检查一下Graph
             (_type === 'document' || _type === 'node') &&
-            commitDocumentChangeId({oldId, newId})
+            commitDocumentIdChange({oldId, newId})
         });
     },
 
-    updateFileToken(state: DataManagerState, payload: FileToken) {
+    fileTokenRefresh(state: DataManagerState, payload: FileToken) {
         state.fileToken = payload
     }
 
@@ -300,7 +300,7 @@ const actions = {
         // 先判断Token情况
         if ((fileToken.Expiration * 1000 - now <= 0) || !fileToken.AccessKeyId) {
             await loginCookie().then(res => {
-                commitFileToken(res.data.fileToken);
+                commitFileTokenRefresh(res.data.fileToken);
                 fileToken = res.data.fileToken;
             })
                 .catch(() => {
@@ -347,7 +347,7 @@ const actions = {
         if (nodeList.length + mediaList.length > 0) {
             return visNodeBulkCreate(nodeList, mediaList).then(res => {
                 Object.entries(res.data).map(([_type, idMap]) => {
-                    idMap && commitInfoChangeId({_type, idMap})
+                    idMap && commitInfoIdChange({_type, idMap})
                 })
             })
         } else {
@@ -359,7 +359,7 @@ const actions = {
         if (payload.length > 0) {
             return linkBulkCreate(payload, 'USER').then(res => {
                 let idMap = res.data;
-                idMap && commitInfoChangeId({_type: 'link', idMap})
+                idMap && commitInfoIdChange({_type: 'link', idMap})
             })
         } else {
             return true
