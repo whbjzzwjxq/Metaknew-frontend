@@ -84,10 +84,10 @@
 </template>
 
 <script lang="ts">
-    import {commitNewLabel} from '@/store/modules/_mutations'
+    import {commitLabelColorAdd} from '@/store/modules/_mutations'
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
-    import {GraphSelfPart, NodeSettingPart} from "@/class/graphItem";
+    import {GraphSelfPart, GraphNodeSettingPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: 'GraphNode',
@@ -98,7 +98,7 @@
         props: {
 
             node: {
-                type: Object as () => NodeSettingPart,
+                type: Object as () => GraphNodeSettingPart,
                 required: true
             },
 
@@ -131,7 +131,7 @@
                 return 'translate(' + this.point.x + ' ' + this.point.y + ')'
             },
 
-            setting: function (): NodeSetting {
+            setting: function (): NodeSettingGraph {
                 return this.node.Setting
             },
 
@@ -176,7 +176,7 @@
                     return this.setting.View.color
                 } else {
                     this.$store.state.styleLabelColor[this.node._type] ||
-                    commitNewLabel([this.node._type]);
+                    commitLabelColorAdd([this.node._type]);
                     return this.$store.state.styleLabelColor[this.node._type]
                 }
             },
@@ -188,7 +188,7 @@
                     color = this.setting.Border.color
                 } else {
                     this.$store.state.styleLabelColor[this.node._label] ||
-                    commitNewLabel([this.node._label]);
+                    commitLabelColorAdd([this.node._label]);
                     color = this.$store.state.styleLabelColor[this.node._label]
                 }
                 return {

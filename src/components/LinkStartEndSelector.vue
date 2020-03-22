@@ -81,7 +81,7 @@
                 return this.$store.state.dataManager
             },
             nodes: function (): VisNodeSettingPart[] {
-                return this.document.Content.nodes
+                return this.document.visualNodeList
             },
             nodeIdList: function (): id[] {
                 return this.nodes.map(node => node._id)

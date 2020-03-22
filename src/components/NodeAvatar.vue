@@ -9,13 +9,13 @@
                 <div style="height: 40px"></div>
                 <p>upload main image</p>
             </template>
-            <v-btn @click="clearMainPic" icon absolute x-small style="bottom: 10px; right: 22px;">
+            <v-btn @click="clearMainPic" icon absolute x-small style="bottom: 10px; right: 22px;" v-show="editMode">
                 <v-icon>
                     {{ deleteIcon }}
                 </v-icon>
             </v-btn>
             <v-edit-dialog>
-                <v-btn icon absolute x-small style="bottom: 10px; right: 6px;">
+                <v-btn icon absolute x-small style="bottom: 10px; right: 6px;" v-show="editMode">
                     <v-icon>
                         {{ uploadIcon }}
                     </v-icon>
@@ -114,6 +114,10 @@
             imageList: {
                 type: Array as () => string[],
                 required: true
+            },
+            editMode: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -162,7 +166,7 @@
             },
             clearMainPic() {
                 this.currentFile = null;
-                this.$emit('clear-main-image')
+                this.$emit('new-main-image', '')
             }
         },
         watch: {},

@@ -45,9 +45,10 @@
     import SearchBar from '@/components/SearchBar.vue';
     import GlobalLoginRegister from "@/components/global/GlobalLoginRegister.vue";
     import {getCookie, setLoginIn, setLoginOut} from "@/utils/utils"
-    import {commitLoginDialogOn, commitScreenResize} from '@/store/modules/_mutations'
+    import {commitLoginDialogOn, commitScreenRefresh} from '@/store/modules/_mutations'
     import {ToolBar} from "@/store/modules/styleComponentSize";
     import {loginCookie} from "@/api/user/loginApi";
+    import {userEditDataQuery} from "@/api/user/dataApi";
 
     export default Vue.extend({
         name: "App",
@@ -147,7 +148,7 @@
                 commitLoginDialogOn(1)
             },
             screenResize() {
-                commitScreenResize()
+                commitScreenRefresh()
             }
         },
         watch: {},

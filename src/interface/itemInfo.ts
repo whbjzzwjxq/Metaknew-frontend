@@ -5,7 +5,7 @@ import {
     MediaInfoPart,
     MediaSettingPart,
     NodeInfoPart,
-    NodeSettingPart,
+    GraphNodeSettingPart,
     TextSettingPart
 } from "@/class/graphItem";
 import {PathNodeSettingPart} from "@/class/path";
@@ -105,13 +105,13 @@ declare global {
     }
 
     interface BaseLinkCtrl extends PublicCtrl {
-        Start: NodeSettingPart;
-        End: NodeSettingPart;
+        Start: GraphNodeSettingPart;
+        End: GraphNodeSettingPart;
     }
 
     //Graph
     interface DocumentContent {
-        nodes: Array<NodeSettingPart>;
+        nodes: Array<GraphNodeSettingPart>;
         links: Array<LinkSettingPart>;
         medias: Array<MediaSettingPart>;
         texts: Array<TextSettingPart>;

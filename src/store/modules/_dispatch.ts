@@ -2,12 +2,11 @@ import store from '../index';
 import {
     FragmentInfoPart,
     GraphSelfPart,
-    InfoPart,
     MediaInfoPart,
-    NodeSettingPart,
+    GraphNodeSettingPart,
     NoteSettingPart
 } from "@/class/graphItem";
-import {PropDescription} from "@/utils/fieldResolve";
+import {NoteBook} from "@/store/modules/userDataManager";
 
 export function dispatchUploadFile(payload: {
     item?: MediaInfoPart,
@@ -22,7 +21,7 @@ export function dispatchGraphQuery(payload: { _id: id, parent: GraphSelfPart | n
     return store.dispatch('graphQuery', payload)
 }
 
-export function dispatchNodeExplode(payload: { node: NodeSettingPart, document: GraphSelfPart }) {
+export function dispatchNodeExplode(payload: { node: GraphNodeSettingPart, document: GraphSelfPart }) {
     return store.dispatch('nodeExplode', payload)
 }
 
@@ -55,11 +54,7 @@ export function dispatchMediaQuery(payload: id[]) {
 }
 
 export function dispatchUserPropResolveChange(payload: PropDescriptionPayload) {
-    return store.dispatch('changeUserPropResolve', payload)
-}
-
-export function dispatchUserConcernGet(payload: InfoPartInDataManager) {
-    return store.dispatch('userConcernGet', payload)
+    return store.dispatch('userPropResolvePush', payload)
 }
 
 export function dispatchUserConcernQuery(payload: id[]) {
@@ -70,6 +65,14 @@ export function dispatchInfoDraftSaveAll(payload: {isAuto: boolean}) {
     return store.dispatch('draftSaveAll', payload)
 }
 
+export const dispatchUserLabelProps = (payload: LabelProps) => {
+    return store.dispatch('userLabelPropsPush', payload)
+};
+
 export function dispatchNoteInDocPush(payload: {note: NoteSettingPart}) {
     return store.dispatch('noteInDocPush', payload)
+}
+
+export function dispatchNoteBookPush(payload: {note: NoteBook}) {
+    return store.dispatch('noteBookPush', payload)
 }

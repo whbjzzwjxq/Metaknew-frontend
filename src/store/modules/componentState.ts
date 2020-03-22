@@ -51,14 +51,14 @@ const state = {
 } as ComponentState;
 
 const mutations = {
-    changeRootTab: (state: ComponentState, payload: RootTabName | number) => {
+    rootTabChange: (state: ComponentState, payload: RootTabName | number) => {
         typeof payload === 'number'
             ? state.leftCardTab.root = payload
             : state.leftCardTab.root = rootTabIndex.indexOf(payload);
         state.leftCardTab.sub = 0
     },
 
-    changeSubTab: (state: ComponentState, payload: SubTabName) => {
+    subTabChange: (state: ComponentState, payload: SubTabName) => {
         let root = 'document' as RootTabName;
         let sub = 0;
         Object.entries(tabDict).map(([key, nameList]) => {
@@ -78,11 +78,11 @@ const mutations = {
         state.loginDialogOn = payload
     },
 
-    loginDialogTab: (state: ComponentState, payload: 0 | 1) => {
+    loginDialogTabOn: (state: ComponentState, payload: 0 | 1) => {
         state.loginTab.root = payload;
         state.loginDialogOn = true;
     },
-    changeEditMode: (state: ComponentState, payload: boolean) => {
+    editModeChange: (state: ComponentState, payload: boolean) => {
         state.editMode = payload
     },
 };

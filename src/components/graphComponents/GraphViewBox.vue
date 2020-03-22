@@ -25,7 +25,7 @@
             <graph-node
                 v-for="(node, index) in nodes"
                 v-show="showNode[index]"
-                :key="node._id"
+                :key="index"
                 :node="node"
                 :size="impScaleRadius[index]"
                 :scale="realScale"
@@ -180,11 +180,11 @@
         DocumentSelfPart,
         GraphConf,
         GraphItemSettingPart,
+        GraphNodeSettingPart,
         GraphSelfPart,
         LinkSettingPart,
         MediaSettingPart,
         NodeInfoPart,
-        NodeSettingPart,
         NoteSettingPart,
         TextSettingPart
     } from '@/class/graphItem'
@@ -200,10 +200,10 @@
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting, isVisNodeSetting} from "@/utils/typeCheck";
     import {
-        commitChangeSubTab,
         commitGraphChange,
         commitItemChange,
-        commitSnackbarOn
+        commitSnackbarOn,
+        commitSubTabChange
     } from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
@@ -376,7 +376,7 @@
             // 未被删除的Graph
             activeGraphList: function (): GraphSelfPart[] {
                 return [this.graph].concat(this.childDocumentList.filter(graph => graph &&
-                    !graph.Conf.State.isDeleted))
+                    !graph.Conf.isDeleted))
             },
 
             activeGraphIdList: function (): id[] {
@@ -455,13 +455,12 @@
             },
 
             // 包含所有的Nodes
-            nodes: function (): NodeSettingPart[] {
-                let result = this.graph.Content.nodes
-                    .filter(node => node._id === this.graph._id) as NodeSettingPart[];
-                // root Graph的节点显示
+            nodes: function (): GraphNodeSettingPart[] {
+                // root Graph自己的节点显示
+                let result = [this.graph.baseNode] as GraphNodeSettingPart[];
                 this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Content.nodes.filter(node => node._id !== graph._id))
-                    // Graph底下的节点由父亲Graph中的Nodes代替
+                    // 其他Graph用不包含baseNode的list
+                    result = result.concat(graph.nodeListNoSelf)
                 });
                 return result
             },
@@ -481,7 +480,7 @@
                 this.activeGraphList.map(graph => {
                     result = result.concat(graph.Content.links.filter(link => {
                         return this.nodeIdList.includes(link.Setting._start._id) &&
-                            this.nodeIdList.includes(link.Setting._end._id) && !link.State.isDeleted
+                            this.nodeIdList.includes(link.Setting._end._id) && !link.isDeleted
                     }))
                 });
                 return result
@@ -489,7 +488,7 @@
 
             // 只有自身的medias
             medias: function (): MediaSettingPart[] {
-                return this.graph.Content.medias.filter(item => !item.State.isDeleted)
+                return this.graph.Content.medias.filter(item => !item.isDeleted)
             },
 
             mediaIdList: function (): id[] {
@@ -617,7 +616,11 @@
             nodeSettingList: function (): VisualNodeSetting[] {
                 return this.nodes.map((node, index) => {
                     let {x, y, width, height} = this.nodeLocation[index].positiveRect();
+                    let id = node._id;
+                    let parentId = node.parent._id;
                     return {
+                        id,
+                        parentId,
                         height,
                         width,
                         x,
@@ -631,17 +634,21 @@
 
             mediaSettingList: function (): VisualNodeSetting[] {
                 return this.medias.map((media, index) => {
+                    let id = media._id;
+                    let parentId = media.parent._id;
                     let {x, y, width, height} = this.mediaLocation[index].positiveRect();
                     let realX = x + width / 2;
                     let realY = y + height / 2;
                     return {
+                        id,
+                        parentId,
                         height,
                         width,
                         x: realX,
                         y: realY,
                         show: this.showMedia[index],
                         isSelected: media.State.isSelected,
-                        isDeleted: media.State.isDeleted
+                        isDeleted: media.isDeleted
                     }
                 })
             },
@@ -794,7 +801,7 @@
             dbClickNode(node: VisAreaSettingPart) {
                 this.selectItem([node]);
                 if (this.isLinking && isVisNodeSetting(node) && this.startNode) {
-                    commitChangeSubTab('info');
+                    commitSubTabChange('info');
                     if (node.parent._id === this.startNode.parent._id) {
                         // 如果是同一张图里的
                         let document = node.parent;
@@ -932,13 +939,17 @@
             },
 
             //取得link所用数据
-            getTargetInfo(item: VisNodeSettingPart | null) {
+            getTargetInfo(node: VisNodeSettingPart | null) {
                 //注意这里index肯定不能是-1
                 let result;
-                item
-                    ? isMediaSetting(item)
-                    ? result = this.mediaSettingList[this.mediaIdList.indexOf(item._id)]
-                    : result = this.nodeSettingList[this.nodeIdList.indexOf(item._id)]
+                const equal = (nodePart: VisNodeSettingPart, nodeSetting: VisualNodeSetting) =>
+                    (nodePart._id === nodeSetting.id) &&
+                    (nodePart.parent._id === nodeSetting.parentId || nodePart._type === 'document')
+                // 不仅id相同 必须是同一个专题下 或者node本身就是专题节点
+                node
+                    ? isMediaSetting(node)
+                    ? result = this.mediaSettingList.filter(item => equal(node, item))[0]
+                    : result = this.nodeSettingList.filter(item => equal(node, item))[0]
                     : result = {x: 0, y: 0, show: true};
                 return result
             },
@@ -974,7 +985,7 @@
                 this.lastViewPoint.update(eventCopy);
             },
 
-            explode(node: NodeSettingPart) {
+            explode(node: GraphNodeSettingPart) {
                 dispatchNodeExplode({node, document: this.graph})
             },
 
@@ -983,17 +994,20 @@
             },
 
             updateGraphSize: function (start: PointMixed, end: PointMixed, index: number) {
+                // 视觉上的更新尺寸start, end 右下为正 左上为负
                 let graph = this.activeGraphRectList[index].self;
-                // 视觉上的更新尺寸start, end
+                //现有的矩阵长宽
+                let {width, height} = graph.rect;
                 let setting = graph.baseNode.Setting;
                 let scale = this.realScale;
-                // 更新起始点
-                setting.Base.x += start.x / (this.containerRect.width * scale);
-                setting.Base.y += start.y / (this.containerRect.height * scale);
-                //更新长宽
-                let delta = getPoint(end).decrease(start).divide(this.realScale);
-                graph.rect.width += delta.x;
-                graph.rect.height += delta.y;
+                //更新矩形长宽
+                let deltaRect = getPoint(end).decrease(start).divide(scale);
+                graph.rect.width += deltaRect.x;
+                graph.rect.height += deltaRect.y;
+                // 更新起始点相当于是更新起点
+                let {x, y} = setting.Base;
+                setting.Base.x = (width * x - start.x / scale) / (graph.rect.width);
+                setting.Base.y = (height * y - start.y / scale) / (graph.rect.height);
             },
 
             updateSize: function (start: PointMixed, end: PointMixed, setting: Setting) {

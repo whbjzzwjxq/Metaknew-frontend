@@ -14,6 +14,7 @@
                 height="32px"
                 hide-selected
                 item-text="Name.auto"
+                item-value="id"
                 multiple
                 no-filter
                 outlined
@@ -65,7 +66,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search/search'
-    import {GraphSelfPart, MediaSettingPart, NodeSettingPart} from '@/class/graphItem'
+    import {GraphSelfPart, MediaSettingPart, GraphNodeSettingPart} from '@/class/graphItem'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
@@ -213,7 +214,7 @@
                 let unDuplicateItems = this.selection.filter(item => !this.currentGraph.checkExist(item.id, item.type));
                 let nodes = unDuplicateItems.filter(item => item.type !== 'media');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let nodeSettingList = nodes.map(node => NodeSettingPart.emptyNodeSetting(
+                let nodeSettingList = nodes.map(node => GraphNodeSettingPart.emptyNodeSetting(
                     node.id,
                     node.type,
                     node.PrimaryLabel,
@@ -258,8 +259,9 @@
             },
             getTitle() {
                 let titleList = this.titleList;
-                titleList.map(key => {
+                titleList.map((key, index) => {
                     this.titleDict[key] = {
+                        id: -index,
                         name: key,
                         length: this.searchResult[key].length,
                         disabled: false,

@@ -86,7 +86,7 @@
         <v-chip
             label outlined
             small :color="status">
-            {{ status }}
+            {{ baseValue.length }}
         </v-chip>
         <template v-slot:input>
             <field-file
@@ -97,6 +97,25 @@
                 upload-mode>
 
             </field-file>
+        </template>
+    </v-edit-dialog>
+
+    <v-edit-dialog v-else-if="fieldType === 'ImageField'">
+        <v-chip
+            label outlined
+            small :color="status">
+            {{ baseValue ? 'done' : 'empty' }}
+        </v-chip>
+        <template v-slot:input>
+            <node-avatar
+                :image-list="[]"
+                :source-url="baseValue"
+                @new-main-image="update(propName, arguments[0])"
+                edit-mode
+                v-bind="setting[propName]"
+            >
+
+            </node-avatar>
         </template>
     </v-edit-dialog>
 
@@ -116,6 +135,7 @@
     import FieldFile from '@/components/field/FieldFile.vue';
     import FieldJson from '@/components/field/FieldJson.vue';
     import FieldNumber from '@/components/field/FieldNumber.vue';
+    import NodeAvatar from "@/components/NodeAvatar.vue";
     import {indexToColor} from "@/utils/utils"
 
     export default Vue.extend({
@@ -126,7 +146,8 @@
             FieldArray,
             FieldNumber,
             FieldJson,
-            FieldFile
+            FieldFile,
+            NodeAvatar
         },
         data() {
             return {
@@ -173,7 +194,7 @@
         },
 
         methods: {
-            update(propName: string, value: any, status: string) {
+            update(propName: string, value: any, status: string = 'default') {
                 this.status = status;
                 this.$emit("update", value);
             },

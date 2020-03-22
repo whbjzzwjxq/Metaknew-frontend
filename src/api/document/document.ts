@@ -3,7 +3,7 @@ import {BackendNodeInfoPart} from "@/api/subgraph/node";
 
 export interface BackendGraph {
     Content: {
-        nodes: Array<NodeSetting>;
+        nodes: Array<NodeSettingGraph>;
         links: Array<BackendLinkSetting>;
         medias: Array<MediaSetting>;
         texts: Array<TextSetting>;

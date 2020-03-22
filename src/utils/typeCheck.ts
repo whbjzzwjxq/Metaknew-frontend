@@ -5,7 +5,7 @@ import {
     LinkSettingPart,
     MediaInfoPart,
     MediaSettingPart,
-    NodeSettingPart,
+    GraphNodeSettingPart,
     TextSettingPart
 } from "@/class/graphItem";
 import {PathNode, PathNodeExist} from "@/class/path";
@@ -40,8 +40,8 @@ export function isMediaSetting(item: GraphItemSettingPart): item is MediaSetting
     return (item as MediaSettingPart)._type === 'media'
 }
 
-export function isNodeSetting(item: GraphItemSettingPart): item is NodeSettingPart {
-    return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
+export function isNodeSetting(item: GraphItemSettingPart): item is GraphNodeSettingPart {
+    return (item as GraphNodeSettingPart)._type === 'node' || (item as GraphNodeSettingPart)._type === 'document'
 }
 
 export function isVisNodeSetting(item: GraphItemSettingPart): item is VisNodeSettingPart {

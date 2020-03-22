@@ -37,6 +37,7 @@
     import FragmentList from "@/components/FragmentList.vue";
     import PersonalNote from "@/components/PersonalNote.vue";
     import {leftCardPadding} from "@/store/modules/styleComponentSize";
+    import {commitBottomBarCollapse} from "@/store/modules/_mutations";
     export default Vue.extend({
         name: "ToolbarBottom",
         components: {
@@ -86,7 +87,7 @@
                 this.toolbarOn
                     ? height = 8
                     : height = 108;
-                this.$store.commit('resetBottomBar', height);
+                commitBottomBarCollapse(height);
                 this.toolbarOn = !this.toolbarOn
             },
 

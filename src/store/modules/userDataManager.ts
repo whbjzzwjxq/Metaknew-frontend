@@ -5,15 +5,34 @@ import Vue from 'vue';
 import {userConcernQuery} from "@/api/user/queryInfo";
 import {userConcernTemplate} from "@/utils/template";
 import {PropDescription, PropDescriptionDict} from "@/utils/fieldResolve";
-import {fragmentAdd, fragmentDelete, fragmentUpdate} from "@/api/user/dataApi";
-import {commitNoteInDocAdd, commitSnackbarOn, commitUserConcernAdd} from "@/store/modules/_mutations";
-import {dispatchUserConcernQuery} from "@/store/modules/_dispatch";
+import {
+    fragmentAdd,
+    fragmentDelete,
+    fragmentUpdate,
+    userPLabelPropsUpdate,
+    userPropResolveUpdate
+} from "@/api/user/dataApi";
+import {
+    commitNoteBookAdd,
+    commitNoteInDocAdd,
+    commitSnackbarOn,
+    commitUserConcernAdd, commitUserLabelPropsChange,
+    commitUserPropResolveAdd
+} from "@/store/modules/_mutations";
 
 declare global {
     interface UserSetting {
-        userPropResolve: PropDescriptionDict // 用户对key的解释
-        pLabelExtraProps: Record<string, string[]> // 用户对某个属性的额外属性
-        fragmentCollect: any // 碎片采集设置
+        FragmentCollect: {
+            ByGood: boolean, // 点赞是否收集
+            ByShare: boolean, // 分享是否收集
+            AutoCollect: boolean // 是否自动收集
+        }
+        HelperOn: boolean // 是否打开提示
+    }
+
+    interface UserEditData {
+        UserPropResolve: PropDescriptionDict // 用户对key的解释
+        PLabelExtraProps: LabelProps // 用户对某个标签的额外属性
     }
 
     interface UserDataManagerState {
@@ -21,11 +40,12 @@ declare global {
         userConcernDict: Record<GraphItemType, Record<id, UserConcern>>, // 基础的数据仓库
         userConcernLoadingList: id[], // 正在加载的List
         timerForConcern?: number, // 计时器
-
         fragments: Array<FragmentInfoPart>, // user收集的碎片
         userNoteBook: NoteBook[], // 笔记本
         userNoteInDoc: NoteSettingPart[], // 所有专题的笔记， 通过father判断
         userSetting: UserSetting,
+        userEditData: UserEditData,
+        userEditDataLoad: boolean
     }
 
     interface UserConcernKey {
@@ -46,6 +66,8 @@ declare global {
         resolve: PropDescription,
         strict?: boolean
     }
+
+    type LabelProps = Record<string, string[]> //label下的属性
 }
 
 interface NoteBookState extends BaseState {
@@ -72,10 +94,18 @@ const state: UserDataManagerState = {
     timerForConcern: undefined,
     fragments: [],
     userSetting: {
-        fragmentCollect: {},
-        pLabelExtraProps: {},
-        userPropResolve: {}
+        FragmentCollect: {
+            AutoCollect: true,
+            ByGood: true,
+            ByShare: true
+        },
+        HelperOn: false
     },
+    userEditData: {
+        PLabelExtraProps: {},
+        UserPropResolve: {},
+    },
+    userEditDataLoad: false,
     userNoteBook: [],
     userNoteInDoc: [],
 };
@@ -111,15 +141,31 @@ const mutations = {
     userPropResolveAdd(state: UserDataManagerState, payload: PropDescriptionPayload) {
         let {prop, resolve, strict} = payload;
         strict === undefined && (strict = false);
-        (strict || !state.userSetting.userPropResolve[prop]) && Vue.set(state.userSetting.userPropResolve, prop, resolve);
+        (strict || !state.userEditData.UserPropResolve[prop]) && Vue.set(state.userEditData.UserPropResolve, prop, resolve);
     },
+
+    userLabelPropsChange(state: UserDataManagerState, payload: LabelProps) {
+        Object.entries(payload).map(([label, props]) => {
+            state.userEditData.PLabelExtraProps[label] = props
+        })
+    },
+
+    userEditDataChange(state: UserDataManagerState, payload: UserEditData) {
+        state.userEditData = payload;
+        state.userEditDataLoad = true
+    }
 };
 
 const actions = {
     fragmentPush(context: ActionContext<UserDataManagerState, RootState>, payload: FragmentInfoPart) {
         context.state.fragments.push(payload);
         fragmentAdd().then(() => {
-            let payload = {actionName: 'fragmentAdd', content: '为您收集了碎片', color: 'success', once: false} as SnackBarStatePayload;
+            let payload = {
+                actionName: 'fragmentAdd',
+                content: '为您收集了碎片',
+                color: 'success',
+                once: false
+            } as SnackBarStatePayload;
             commitSnackbarOn(payload)
         })
     },
@@ -138,72 +184,80 @@ const actions = {
         })
     },
 
-    userConcernUpdate(context: ActionContext<UserDataManagerState, RootState>, payload: {prop: any, value: any}) {
+    userConcernUpdate(context: ActionContext<UserDataManagerState, RootState>, payload: { prop: any, value: any }) {
 
-    },
-
-    userConcernGet(context: ActionContext<UserDataManagerState, RootState>, payload: InfoPartInDataManager) {
-        let state = context.state;
-        let userConcern = state.userConcernDict[payload._type][payload._id];
-        // 远端请求
-        if (payload.isRemote) {
-            if (userConcern) {
-                // 加载完毕
-                return true
-            } else {
-                // 未加载 尝试加载
-                return dispatchUserConcernQuery([payload._id])
-            }
-        } else {
-            //error
-        }
     },
 
     userConcernQuery(context: ActionContext<UserDataManagerState, RootState>, payload: id[]) {
-        // 获取已有userConcern的id, 不管它是否是
+        // 获取已有userConcern的idList
         let idList: id[] = context.getters.userConcernKeyList.map((key: UserConcernKey) => key.id);
         let state = context.state;
-        // 添加那些没有在列表中的key
-        let newQueryList = payload.filter(key => !idList.includes(key));
-        let currentQueryList = state.userConcernLoadingList;
+        let loadingList = state.userConcernLoadingList;
+        // 添加那些没有在已有列表或加载列表中的key
+        let newQueryList = payload.filter(id => !idList.includes(id) && !loadingList.includes(id));
         if (newQueryList.length > 0) {
-            currentQueryList = currentQueryList.concat(newQueryList);
-            state.timerForConcern && clearTimeout(state.timerForConcern);
-            state.timerForConcern = setTimeout(() => {
-                userConcernQuery(currentQueryList).then(res => {
-                    let concernList = res.data;
-                    concernList.map(concern => {
-                        if (concern.userConcern) {
-                            concern.userConcern.isModeled = true;
-                            concern.strict = true;
-                            commitUserConcernAdd(concern);
-                        } else {
-                            let {id, type} = concern;
-                            let userConcern = userConcernTemplate();
-                            userConcern.isModeled = false;
-                            commitUserConcernAdd({id, type, userConcern, strict: true})
-                        }
-                        let {id} = concern;
-                        let index = state.userConcernLoadingList.indexOf(id);
-                        state.userConcernLoadingList.splice(index, 1)
-                    })
+            loadingList.push(...newQueryList);
+            return userConcernQuery(state.userConcernLoadingList).then(res => {
+                let concernList = res.data;
+                concernList.map(concern => {
+                    if (concern.userConcern) {
+                        concern.userConcern.isModeled = true;
+                        concern.userConcern.isConfirm = true;
+                        concern.strict = true;
+                        commitUserConcernAdd(concern);
+                    } else {
+                        let {id, type} = concern;
+                        let userConcern = userConcernTemplate();
+                        userConcern.isConfirm = true;
+                        commitUserConcernAdd({id, type, userConcern, strict: true})
+                    }
                 })
-            }, 5000)
+            }).finally(() => {
+                // 从loadingList 去除已经加载完成的内容
+                context.getters.userConcernKeyList.map((key: UserConcernKey) => {
+                    let concern = state.userConcernDict[key.type][key.id];
+                    if (concern) {
+                        let index = loadingList.indexOf(key.id);
+                        index >= 0 && loadingList.splice(index, 1)
+                    }
+                });
+            });
         } else {
-            // 没有新的需要请求的userConcern了
+            return true
         }
     },
 
-    userPropResolveUpdate(context: ActionContext<UserDataManagerState, RootState>, payload: PropDescriptionPayload) {
-        //todo
+    userPropResolvePush(context: ActionContext<UserDataManagerState, RootState>, payload: PropDescriptionPayload) {
+        commitUserPropResolveAdd(payload);
+        return userPropResolveUpdate([payload])
     },
 
-    noteInDocPush(context: ActionContext<UserDataManagerState, RootState>, payload: {note: NoteSettingPart}) {
+    userLabelPropsPush(context: ActionContext<UserDataManagerState, RootState>, payload: LabelProps) {
+        let unDuplicate: LabelProps = {};
+        let propDict = context.state.userEditData.PLabelExtraProps;
+        Object.entries(payload).map(([label, props]) => {
+            if (propDict[label] !== props && (props !== [] && propDict[label] !== undefined)) {
+                unDuplicate[label] = props.filter(prop => !/\$_*/.test(prop))
+            }
+        });
+        if (Object.keys(unDuplicate).length > 0) {
+            commitUserLabelPropsChange(unDuplicate);
+            return userPLabelPropsUpdate(unDuplicate)
+        } else {
+            return true
+        }
+    },
+
+    noteInDocPush(context: ActionContext<UserDataManagerState, RootState>, payload: { note: NoteSettingPart }) {
         commitNoteInDocAdd(payload)
     },
 
     noteInDocDelete() {
 
+    },
+
+    noteBookPush(context: ActionContext<UserDataManagerState, RootState>, payload: {note: NoteBook}) {
+        commitNoteBookAdd(payload)
     }
 
 };

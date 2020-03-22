@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-row style="width: 210px" class="ma-0 ml-n1">
+        <v-row style="width: 180px" class="ma-0 ml-n1">
             <v-col v-for="icon in iconList" :key="icon.name" cols="3" class="pa-0 pr-2" style="align-content: normal">
                 <v-btn text
                        small
@@ -18,7 +18,7 @@
     import Vue from 'vue'
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
-    import {LinkInfoPart, MediaInfoPart, NodeInfoPart, FragmentInfoPart} from "@/class/graphItem";
+    import {FragmentInfoPart, LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
     import {dispatchFragmentAdd} from "@/store/modules/_dispatch";
     import {getIndex} from "@/utils/utils";
 
@@ -28,11 +28,17 @@
             IconGroup
         },
         data: function () {
-            return {}
+            return {
+
+            }
         },
         props: {
             baseData: {
                 type: Object as () => NodeInfoPart | MediaInfoPart | LinkInfoPart,
+                required: true
+            },
+            userConcern: {
+                type: Object as () => UserConcern,
                 required: true
             }
         },
@@ -41,36 +47,41 @@
                 return this.$store.state.userDataManager
             },
 
-            userConcern: function (): UserConcern {
-                return this.userDataManager.userConcernDict[this.baseData._type][this.baseData._id]
+            disabled: function (): boolean {
+                return !this.baseData.isRemote || !this.userConcern.isConfirm
             },
 
             iconList: function (): IconItem[] {
                 let {NumShared, NumGood, NumBad, NumStar} = this.userConcern;
+                let disabled = this.disabled;
                 return [
                     {
                         name: getIcon('i-edit', 'share'),
                         color: NumShared ? 'blue' : 'grey',
                         _func: this.shareItem,
-                        num: this.ctrl.NumShared
+                        num: this.ctrl.NumShared,
+                        disabled,
                     },
                     {
                         name: getIcon('i-good', NumGood),
                         color: NumGood ? 'green' : 'grey',
                         _func: this.goodItem,
-                        num: this.ctrl.NumGood
+                        num: this.ctrl.NumGood,
+                        disabled,
                     },
                     {
                         name: getIcon('i-bad', NumBad),
                         color: NumBad ? 'red' : 'grey',
                         _func: this.badItem,
-                        num: this.ctrl.NumBad
+                        num: this.ctrl.NumBad,
+                        disabled,
                     },
                     {
                         name: getIcon('i-star', NumStar),
                         color: NumStar ? 'yellow' : 'grey',
                         _func: this.starItem,
-                        num: this.ctrl.NumStar
+                        num: this.ctrl.NumStar,
+                        disabled,
                     },
                 ]
             },
@@ -126,7 +137,8 @@
         record: {
             status: 'empty',
             description: ''
-        }
+        },
+        mounted(): void {}
     })
 </script>
 

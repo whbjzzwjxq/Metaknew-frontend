@@ -6,8 +6,8 @@
                     <node-avatar
                         :source-url="mainImage"
                         :imageList="imageList"
-                        @new-main-image="mainImage = arguments[0]"
-                        @clear-main-image="mainImage = ''">
+                        :edit-mode="editable"
+                        @new-main-image="mainImage = arguments[0]">
 
                     </node-avatar>
                 </v-col>
@@ -16,7 +16,7 @@
                         v-model="name"
                         class="pr-2 font-weight-bold"
                         :style="simplifySetting.titleSize"
-                        :disabled="!editMode"
+                        :disabled="!editable"
                         label="Name"
                         dense>
 
@@ -28,9 +28,12 @@
                         class="mt-n2">
 
                     </p-label-selector>
-                    <item-sharer :base-data="baseData" class="mt-n2">
+                    <item-sharer :base-data="baseData" :user-concern="userConcern" class="mt-n2">
 
                     </item-sharer>
+                    <icon-group :icon-list="editIcon" v-show="!editMode">
+
+                    </icon-group>
                 </v-col>
             </template>
         </card-sub-row>
@@ -38,7 +41,7 @@
         <card-sub-row :text="nameTrans[type] + '的别名与翻译'">
             <template v-slot:content>
                 <v-text-field
-                    :disabled="!editMode"
+                    :disabled="!editable"
                     class="pt-2 font-weight-bold"
                     dense
                     label="Alias"
@@ -68,7 +71,7 @@
 
                     <v-edit-dialog>
                         <v-chip
-                            v-if="editMode"
+                            v-if="editable"
                             :small="simplifySetting.chipSize === 'small'"
                             :x-small="simplifySetting.chipSize === 'xSmall'">
                             <v-icon small>mdi-pencil</v-icon>
@@ -125,7 +128,7 @@
                 <field-json
                     :base-props="editProps"
                     :change-type="false"
-                    :editable="editMode"
+                    :editable="editable"
                     :prop-name="'Info'"
                     :p-label="info.PrimaryLabel"
                     @update-value="editProps = arguments[1]">
@@ -140,7 +143,7 @@
                     class="pa-1"
                     :base-text="info.Description"
                     :prop-name="'Description'"
-                    :editable="editMode"
+                    :editable="editable"
                     @update-value="updateValue"
                 >
 
@@ -148,7 +151,7 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="'保存与记录'" v-if="editMode">
+        <card-sub-row :text="'保存与记录'" v-if="editable">
             <template v-slot:content>
                 <v-menu offset-y>
                     <template v-slot:activator="{ on }">
@@ -178,13 +181,15 @@
     import ItemSharer from "@/components/ItemSharer.vue";
     import ItemMarker from "@/components/ItemMarker.vue";
     import PLabelSelector from "@/components/PLabelSelector.vue";
+    import IconGroup from "@/components/IconGroup.vue";
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/fieldResolve";
     import {LabelGroup} from "@/interface/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
-    import {commitInfoChangeId, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
-    import {dispatchMediaQuery} from "@/store/modules/_dispatch";
+    import {dispatchMediaQuery, dispatchUserConcernQuery, dispatchUserLabelProps} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
+    import {userConcernTemplate} from "@/utils/template";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -199,7 +204,8 @@
             GlobalChip,
             ItemSharer,
             ItemMarker,
-            PLabelSelector
+            PLabelSelector,
+            IconGroup
         },
         data() {
             return {
@@ -211,7 +217,9 @@
                 topicItems: topicItems,
                 labelItems: labelItems,
                 loading: true,
-                plusIcon: getIcon('i-edit', 'add')
+                plusIcon: getIcon('i-edit', 'add'),
+                userConcern: userConcernTemplate(),
+                editBase: false
             }
         },
         props: {
@@ -235,12 +243,13 @@
             ctrl: function (): BaseNodeCtrl {
                 return this.baseData.Ctrl
             },
-            userConcern: function (): UserConcern {
-                return this.$store.state.userDataManager.userConcernDict[this.type][this.baseData._id];
-            },
 
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
+            },
+
+            userDataManager: function (): UserDataManagerState {
+                return this.$store.state.userDataManager
             },
 
             type: function (): GraphItemType {
@@ -263,6 +272,19 @@
                         chipSize: 'small',
                         renderAlias: true
                     }
+            },
+
+            editable: function (): boolean {
+                return this.editMode || this.editBase
+            },
+
+            editIcon: function (): IconItem[] {
+                return [{
+                    name: getIcon('i-edit', this.baseData.isSelf),
+                    disabled: !this.baseData.isSelf,
+                    _func: this.edit,
+                    toolTip: '编辑内容'
+                }]
             },
 
             name: {
@@ -317,12 +339,15 @@
                     this.updateValue('ExtraProps', value.ExtraProps.value);
                     let StandardProps = deepClone(value);
                     delete StandardProps.ExtraProps;
-                    this.updateValue('StandardProps', StandardProps)
+                    this.updateValue('StandardProps', StandardProps);
+                    dispatchUserLabelProps({
+                        [this.baseData._label]: Object.keys(this.baseData.Info.ExtraProps)
+                    })
                 }
             },
 
             labelGroup: function (): LabelGroup[] {
-                return this.editMode
+                return this.editable
                     ? [
                         {
                             "name": "作者的标注",
@@ -375,8 +400,7 @@
                     })
                 }
                 return result;
-            }
-
+            },
         },
         methods: {
             updateValue(prop: string, value: any) {
@@ -420,24 +444,37 @@
                     } else {
                         nodeBulkCreate(data).then(res => {
                             let idMap = res.data;
-                            commitInfoChangeId({_type: this.type, idMap});
+                            commitInfoIdChange({_type: this.type, idMap});
                         })
                     }
                 }
+            },
+
+            edit() {
+                this.editBase = !this.editBase
             }
         },
         watch: {},
-        created() {
+        created(): void {
             dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
                 this.loading = false
             });
-
         },
 
-        updated() {
+        mounted(): void {
             dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
                 this.loading = false
-            })
+            });
+            if (this.baseData.isRemote) {
+                dispatchUserConcernQuery([this.baseData._id]).then(() => {
+                    let concern = this.userDataManager.userConcernDict[this.baseData._type][this.baseData._id];
+                    if (concern) {
+                        this.userConcern = concern
+                    }
+                })
+            } else {
+                //doNothing
+            }
         },
         record: {
             status: 'done',

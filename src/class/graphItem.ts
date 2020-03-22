@@ -37,7 +37,7 @@ import {
     isMediaInfoPart,
     isMediaSetting,
     isNodeSetting,
-    isSvgSetting
+    isSvgSetting,
 } from "@/utils/typeCheck";
 import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
 import {commitDocumentAdd, commitInfoAdd, commitSnackbarOn} from "@/store/modules/_mutations";
@@ -161,7 +161,7 @@ export class NodeInfoPart extends InfoPart {
     }
 
     get allSettingItem() {
-        let list = NodeSettingPart.list;
+        let list = GraphNodeSettingPart.list;
         return list.filter(node => node._id === this._id)
     }
 
@@ -169,6 +169,7 @@ export class NodeInfoPart extends InfoPart {
         super(info, ctrl, isDeleted);
         this.Info = info;
         this.Ctrl = ctrl;
+        this.synchronizationAll();
     }
 
     static emptyNodeInfoPart(payload: NodeQuery, commit: boolean = true, isDeleted: boolean = false) {
@@ -250,6 +251,7 @@ export class LinkInfoPart extends InfoPart {
         super(info, ctrl, isDeleted);
         this.Info = info;
         this.Ctrl = ctrl;
+        this.synchronizationAll();
     }
 
     static emptyLinkInfo(_id: id, _label: string, _start: VisNodeSettingPart, _end: VisNodeSettingPart, commit: boolean = true, isDeleted: boolean = true) {
@@ -303,8 +305,8 @@ export class LinkInfoPart extends InfoPart {
 
     synchronizationAll() {
         this.allSettingItem.map(link => {
-            link.updateCrucialProp("_start", this.Ctrl.Start);
-            link.updateCrucialProp("_end", this.Ctrl.End);
+            link.Setting._start._id !== this.Ctrl.Start._id && link.updateCrucialProp("_start", this.Ctrl.Start);
+            link.Setting._end._id !== this.Ctrl.End._id && link.updateCrucialProp("_end", this.Ctrl.End);
             link.updateCrucialProp('_label', this.Info.PrimaryLabel);
         });
     }
@@ -322,6 +324,8 @@ export class MediaInfoPart extends InfoPart {
     file: File | Blob | undefined;
     status: MediaStatus;
     currentUrl: string;
+    width?: number;
+    height?: number;
     Info: BaseMediaInfo;
     Ctrl: BaseMediaCtrl;
 
@@ -358,7 +362,8 @@ export class MediaInfoPart extends InfoPart {
         this.Ctrl = ctrl;
         this.currentUrl = file
             ? URL.createObjectURL(file)
-            : ''
+            : '';
+        this.synchronizationAll();
     }
 
     static emptyMediaInfo(_id: id, file?: File, commit: boolean = true, isDeleted: boolean = false) {
@@ -571,22 +576,22 @@ export class GraphItemSettingPart extends ItemSettingPart {
     }
 }
 
-export class NodeSettingPart extends GraphItemSettingPart {
-    Setting: NodeSetting;
+export class GraphNodeSettingPart extends GraphItemSettingPart {
+    Setting: NodeSettingGraph;
     State: NodeState;
     parent: GraphSelfPart;
-    static list: Array<NodeSettingPart> = [];
+    static list: Array<GraphNodeSettingPart> = [];
 
     get _type() {
         return this.Setting._type
     }
 
-    protected constructor(Setting: NodeSetting, State: NodeState, parent: GraphSelfPart) {
+    protected constructor(Setting: NodeSettingGraph, State: NodeState, parent: GraphSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
         this.parent = parent;
-        NodeSettingPart.list.push(this);
+        GraphNodeSettingPart.list.push(this);
     }
 
     static emptyNodeSetting(
@@ -599,18 +604,18 @@ export class NodeSettingPart extends GraphItemSettingPart {
     ) {
         let setting = nodeSettingTemplate(_id, _type, _label, _name, _image);
         let state = nodeStateTemplate();
-        return new NodeSettingPart(setting, state, parent)
+        return new GraphNodeSettingPart(setting, state, parent)
     }
 
-    static resolveBackend(setting: NodeSetting, parent: GraphSelfPart) {
+    static resolveBackend(setting: NodeSettingGraph, parent: GraphSelfPart) {
         let state = nodeStateTemplate();
-        return new NodeSettingPart(setting, state, parent)
+        return new GraphNodeSettingPart(setting, state, parent)
     }
 
     deepCloneSelf() {
         let setting = deepClone(this.Setting);
         let state = deepClone(this.State);
-        return new NodeSettingPart(setting, state, this.parent)
+        return new GraphNodeSettingPart(setting, state, this.parent)
     }
 
     select(value?: boolean) {
@@ -670,7 +675,7 @@ export class LinkSettingPart extends GraphItemSettingPart {
 
     static get visualNodeList() {
         let result: VisNodeSettingPart[] = [];
-        result.push(...NodeSettingPart.list);
+        result.push(...GraphNodeSettingPart.list);
         result.push(...MediaSettingPart.list);
         return result
     }
@@ -819,6 +824,21 @@ export abstract class DocumentSelfPart {
         this.Conf._id = newId
     }
 
+    get visualNodeList() {
+        let result: VisNodeSettingPart[] = [];
+        result.push(...this.Content.nodes);
+        result.push(...this.Content.medias);
+        return result
+    }
+
+    get nodeListNoSelf() {
+        return this.Content.nodes.filter(node => node._id !== this._id)
+    }
+
+    get baseNode() {
+        return this.Content.nodes.filter(node => node._id === this._id)[0]
+    }
+
     get rootList() {
         return this.Conf.findRoot()
     }
@@ -842,11 +862,7 @@ export abstract class DocumentSelfPart {
     get backendDocument() {
         let Content: Record<string, GraphItemSetting[]> = {};
         Object.entries(this.Content).map(([key, items]) => {
-            Content[key] = items.filter((item: GraphItemSettingPart) =>
-                isLinkSetting(item)
-                    ? !item.State.isDeleted
-                    : !item.State.isDeleted)
-                .map((item: GraphItemSettingPart) => item.compress)
+            Content[key] = items.filter((item: GraphItemSettingPart) => !item.isDeleted).map((item: GraphItemSettingPart) => item.compress)
         });
         return {
             Content,
@@ -903,8 +919,17 @@ export abstract class DocumentSelfPart {
         return list.filter(item => item._id === _id)[0]
     }
 
-    draftSave() {
+    allItems(): GraphSubItemSettingPart[] {
+        let {nodes, links, medias, texts} = this.Content;
+        let result: GraphSubItemSettingPart[];
+        result = [];
+        return result.concat(nodes).concat(links).concat(medias).concat(texts)
+    }
 
+    removeItem(id: id, type: GraphItemType) {
+        let list = this.getItemListByName(type);
+        let index = list.map(item => item._id).indexOf(id);
+        index !== -1 && (list.splice(index, 1))
     }
 }
 
@@ -915,10 +940,6 @@ export class GraphSelfPart extends DocumentSelfPart {
     Conf: GraphConf;
     // 图形尺寸
     rect: RectObject;
-    protected _baseNode: NodeSettingPart;
-    get baseNode() {
-        return this._baseNode
-    }
 
     get rootList() {
         return this.Conf.findRoot()
@@ -936,18 +957,10 @@ export class GraphSelfPart extends DocumentSelfPart {
         this.Conf.State.isExplode = value
     }
 
-    get visualNodeList() {
-        let result: VisNodeSettingPart[] = [];
-        result.push(...this.Content.nodes);
-        result.push(...this.Content.medias);
-        return result
-    }
-
     protected constructor(
         graph: DocumentContent,
         conf: GraphConf,
         isRemote: boolean,
-        baseNode?: NodeSetting,
         draftId?: number,
         rect: RectObject = {width: 600, height: 400}
     ) {
@@ -962,11 +975,12 @@ export class GraphSelfPart extends DocumentSelfPart {
         // 记录所有实例
         GraphSelfPart.list.push(this);
         // baseNode部分
-        if (!baseNode) {
+        if (this.baseNode === undefined) {
             let {_id, _type, _label} = conf;
-            this._baseNode = NodeSettingPart.emptyNodeSetting(_id, _type, _label, 'NewDoc' + _id, '', this)
+            let node = GraphNodeSettingPart.emptyNodeSetting(_id, _type, _label, 'NewDoc' + _id, '', this)
+            this.Content.nodes.push(node);
         } else {
-            this._baseNode = NodeSettingPart.resolveBackend(baseNode, this)
+            // 检查完成
         }
     }
 
@@ -974,7 +988,6 @@ export class GraphSelfPart extends DocumentSelfPart {
         let graphContent = emptyContent();
         let setting = GraphConf.emptyGraphSetting(_id, parent);
         let graph = new GraphSelfPart(graphContent, setting, false);
-        graph.addItems([graph.baseNode.deepCloneSelf()]);
         let nodeQuery = {id: _id, type: 'document', pLabel: 'DocGraph'} as DocumentQuery;
         let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
         let payload = {graph, info};
@@ -986,11 +999,10 @@ export class GraphSelfPart extends DocumentSelfPart {
         GraphSelfPart.baseList.push(data);
         let setting = GraphConf.resolveBackend(data.Conf, parent);
         let graphContent = emptyContent();
-        let baseNodeSetting = data.Content.nodes.filter(setting => setting._id === data.Conf._id)[0];
-        let graph = new GraphSelfPart(graphContent, setting, true, baseNodeSetting);
+        let graph = new GraphSelfPart(graphContent, setting, true);
         let info = NodeInfoPart.resolveBackend(data.Base, commitToVuex);
         let {nodes, links, medias, texts} = data.Content;
-        graph.Content.nodes = nodes.map(setting => NodeSettingPart.resolveBackend(setting, graph));
+        graph.Content.nodes = nodes.map(setting => GraphNodeSettingPart.resolveBackend(setting, graph));
         graph.Content.medias = medias.map(setting => MediaSettingPart.resolveBackend(setting, graph));
         graph.Content.links = links.map(setting => LinkSettingPart.resolveBackend(setting, graph));
         graph.Content.texts = texts.map(setting => new TextSettingPart(setting, textStateTemplate(), graph));
@@ -1007,12 +1019,6 @@ export class GraphSelfPart extends DocumentSelfPart {
             }
         });
         return result
-    }
-
-    allItems(): GraphSubItemSettingPart[] {
-        let {nodes, links, medias, texts} = this.Content;
-        // @ts-ignore
-        return nodes.concat(links).concat(medias).concat(texts)
     }
 
     addItems(items: GraphItemSettingPart[]) {
@@ -1047,7 +1053,7 @@ export class GraphSelfPart extends DocumentSelfPart {
         return list.filter(item => item.State[state])
     }
 
-    explode(value: boolean = true) {
+    explode(value?: boolean) {
         this.Conf.updateState('isExplode', value)
     }
 
@@ -1061,7 +1067,7 @@ export class GraphSelfPart extends DocumentSelfPart {
         let _id = getIndex();
         let nodeQuery = {id: _id, type: _type, pLabel: _label} as NodeQuery;
         let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
-        let setting = NodeSettingPart.emptyNodeSetting(_id, _type, _label, 'NewNode' + _id, '', this);
+        let setting = GraphNodeSettingPart.emptyNodeSetting(_id, _type, _label, 'NewNode' + _id, '', this);
         this.addItems([setting]);
         return {setting, info}
     }
@@ -1087,10 +1093,7 @@ export class GraphSelfPart extends DocumentSelfPart {
 
     removeFromParent() {
         if (this.Conf.parent) {
-            //@ts-ignore
-            let node: NodeSettingPart = this.Conf.parent.getSubItemById(this._id, 'document');
-            let index = this.Conf.parent.Content.nodes.indexOf(node);
-            this.Conf.parent.Content.nodes.splice(index, 1)
+            this.Conf.parent.removeItem(this._id, 'document')
         }
         Vue.set(this.Conf, 'parent', null)
     }

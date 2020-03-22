@@ -1,11 +1,11 @@
 import {mainNationRegionEn} from '@/utils/nation';
 
-// 不同种类的属性
+// 不同种类的属性类型 注意和后端是对应的
 export type FieldType = 'TextField' | 'ArrayField' | 'NumberField' | 'StringField' |
-    'JsonField' | 'FileField' | 'ImageField' | 'BooleanField'
+    'JsonField' | 'FileField' | 'BooleanField' | 'ImageField'
 
 // 不同属性的resolve方式 名字 时间 地点 不resolve
-export type ResolveType = 'name' | 'time' | 'location' | 'normal'
+export type ResolveType = 'name' | 'time' | 'location' | 'normal' | 'event'
 
 // 各种Field默认值
 export let fieldDefaultValue: Record<FieldType, string | number | Object | boolean> = {
@@ -15,14 +15,15 @@ export let fieldDefaultValue: Record<FieldType, string | number | Object | boole
     'StringField': '',
     'JsonField': {},
     'FileField': [],
-    'ImageField': '',
-    'BooleanField': true
+    'BooleanField': true,
+    'ImageField': ''
 };
 
 // 描述属性的方式
 export interface PropDescription {
     type: FieldType,
     resolve: ResolveType,
+    source?: string
 }
 
 // 将已有value转化为描述形式
@@ -108,7 +109,7 @@ export const baseNodeProp: () => PropDescriptionDict = () => ({
         resolve: 'normal'
     },
     MainPic: {
-        type: "FileField",
+        type: "ImageField",
         resolve: 'normal'
     }
 });

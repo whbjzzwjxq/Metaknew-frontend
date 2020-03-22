@@ -66,7 +66,7 @@
     import {GraphSelfPart, LinkInfoPart, NodeInfoPart} from "@/class/graphItem";
     import {getIcon} from "@/utils/icon";
     import {TabContent} from "@/interface/interfaceInComponent";
-    import {commitChangeRootTab, commitChangeSubTab} from "@/store/modules/_mutations";
+    import {commitRootTabChange, commitSubTabChange} from "@/store/modules/_mutations";
     import CardPageDirectory from "@/components/card/page/CardPageDirectory.vue";
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
@@ -212,7 +212,7 @@
                     return this.componentState.leftCardTab.root
                 },
                 set: function (value: number) {
-                    commitChangeRootTab(value)
+                    commitRootTabChange(value)
                 }
             },
 
@@ -221,7 +221,7 @@
                     return this.componentState.leftCardTab.sub
                 },
                 set: function (value: SubTabName) {
-                    commitChangeSubTab(value)
+                    commitSubTabChange(value)
                 }
             }
         },

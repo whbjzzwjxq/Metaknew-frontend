@@ -1,14 +1,16 @@
 import {GraphItemSettingPart, InfoPart} from "@/class/graphItem";
 import {SortProp} from "@/interface/interfaceInComponent";
 import {
-    commitFileToken,
+    commitFileTokenRefresh,
     commitGlobalIndexPlus,
     commitLoginDialogChange,
     commitLoginOut,
-    commitUserLogin
+    commitLoginIn
 } from "@/store/modules/_mutations";
 import {AxiosResponse} from "axios";
 import {FieldType} from "@/utils/fieldResolve";
+import {userEditDataQuery} from "@/api/user/dataApi";
+import store from '@/store/index'
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -337,10 +339,11 @@ export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays
     setCookie('user_id', data.userId.toString(), day);
     setCookie('user_name', data.userName, day);
     setCookie('token', data.token, day);
-    commitUserLogin(data);
-    commitFileToken(data.fileToken);
+    commitLoginIn(data);
+    commitFileTokenRefresh(data.fileToken);
     commitGlobalIndexPlus(data.personalId);
     commitLoginDialogChange(false);
+    (store && !store.state.userDataManager.userEditDataLoad) && userEditDataQuery()
 };
 
 export const setLoginOut = () => {
@@ -367,5 +370,6 @@ export const fieldHandler = () => ({
     "JsonField": (value: any) => JSON.parse(value),
     "TextField": (value: any) => ({"auto": value.toString()}),
     "FileField": (value: any) => value.toString().split(";"),
-    "ImageField": (value: any) => value.toString()
+    "BooleanField": (value: any) => value === 'false' ? false : Boolean(value),
+    "ImageField": (value: any) => value.toString(),
 } as Record<FieldType, (value: any) => any>);

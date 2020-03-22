@@ -47,6 +47,7 @@ export interface ListDoc extends ListText {
 }
 
 export interface ListTitle {
+    id: id,
     isTitle: true,
     isInfo: boolean,
     isCollapse: boolean,

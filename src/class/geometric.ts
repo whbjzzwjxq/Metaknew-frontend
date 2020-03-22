@@ -22,6 +22,8 @@ declare global {
     }
 
     interface VisualNodeSetting extends AreaRect {
+        id: id,
+        parentId: id,
         height: number,
         width: number,
         x: number,

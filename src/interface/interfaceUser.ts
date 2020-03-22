@@ -11,6 +11,7 @@ declare global {
         NumBad: boolean;
         Labels: Array<string>;
         isModeled: boolean; // 远端是否有模型
+        isConfirm: boolean; // 是否确认了状态
     }
 }
 
