@@ -517,7 +517,7 @@ const mediaSetting = () => {
                 default: 0.6
             }
         }
-    }
+    };
     mergeObject(result, replace);
     return result as SettingAll
 };

@@ -354,11 +354,6 @@
                 // containerRect形式
                 return this.viewBox.positiveRect()
             },
-            containerStyle: function (): CSSProp {
-                return this.viewBox.getDivCSS(
-                    {borderWidth: 0, overflow: "hidden"}
-                )
-            },
             // 所有的孩子Document
             childDocumentList: function (): GraphSelfPart[] {
                 let docList = this.$store.getters.documentList as GraphSelfPart[];

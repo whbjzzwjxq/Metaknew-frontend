@@ -1,5 +1,4 @@
 import Vue, {ComputedOptions} from 'vue'
-import {DefaultComputed, DefaultData, DefaultMethods, DefaultProps, PropsDefinition} from 'vue/types/options'
 
 type ComponentStatus = 'editing' | 'done' | 'empty' | 'done-old'
 

@@ -60,6 +60,7 @@ export type ListItem = ListText | ListTitle | ListDoc
 
 export type Rule<T> = (v: T) => string | boolean
 type InputType = 'text' | 'password'
+
 export interface TextFieldSetting {
     rules: Rule<string>[],
     label: string,

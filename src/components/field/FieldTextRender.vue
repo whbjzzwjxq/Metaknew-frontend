@@ -17,23 +17,28 @@
             v-show="showArea">
 
         </v-textarea>
-        <vue-markdown
-            v-show="!showArea"
-            :source="value"
-            @onselect="select"
-            @select="select">
+<!--        <vue-markdown-->
+<!--            v-show="!showArea"-->
+<!--            :source="value"-->
+<!--            @onselect="select"-->
+<!--            @select="select">-->
 
-        </vue-markdown>
+<!--        </vue-markdown>-->
+        <markdown-preview :initialValue="'### test'">
+
+        </markdown-preview>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import vueMarkdown from "vue-markdown";
+    import {MarkdownPreview} from "vue-meditor";
     export default Vue.extend({
         name: "FieldTextRender",
         components: {
-            vueMarkdown
+            vueMarkdown,
+            MarkdownPreview
         },
         data: function () {
             return {
