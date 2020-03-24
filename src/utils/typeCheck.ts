@@ -48,8 +48,12 @@ export function isVisNodeSetting(item: GraphItemSettingPart): item is VisNodeSet
     return isNodeSetting(item) || isMediaSetting(item)
 }
 
-export function isSvgSetting(item: GraphItemSettingPart): item is TextSettingPart {
+export function isTextSetting(item: GraphItemSettingPart): item is TextSettingPart {
     return (item as TextSettingPart)._type === 'text'
+}
+
+export function isVisAreaSetting(item: GraphItemSettingPart): item is VisAreaSettingPart {
+    return isVisNodeSetting(item as VisAreaSettingPart) || isTextSetting(item as VisAreaSettingPart)
 }
 
 export function isGraphSelfPart(item: DocumentSelfPart): item is GraphSelfPart {

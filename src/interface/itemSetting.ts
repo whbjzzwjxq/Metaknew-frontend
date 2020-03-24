@@ -60,7 +60,7 @@ const size = () => {
     return {
         size: {
             type: 'Number',
-            default: 0,
+            default: 12,
             range: [12, 128],
             tips: '不能为0',
             explain: '可视化尺寸'

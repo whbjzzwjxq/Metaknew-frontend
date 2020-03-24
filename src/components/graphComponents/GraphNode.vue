@@ -84,10 +84,9 @@
 </template>
 
 <script lang="ts">
-    import {commitLabelColorAdd} from '@/store/modules/_mutations'
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
-    import {GraphSelfPart, GraphNodeSettingPart} from "@/class/graphItem";
+    import {RectByPoint} from "@/class/geometric";
 
     export default Vue.extend({
         name: 'GraphNode',
@@ -97,15 +96,19 @@
         },
         props: {
 
-            node: {
-                type: Object as () => GraphNodeSettingPart,
+            setting: {
+                type: Object as () => NodeSettingGraph,
                 required: true
             },
 
-            // 默认半径
-            size: {
-                type: Number as () => number,
-                default: 12
+            state: {
+                type: Object as () => NodeState,
+                required: true
+            },
+
+            _id: {
+                type: [String, Number],
+                required: true
             },
 
             //缩放情况
@@ -113,30 +116,16 @@
                 type: Number as () => number,
                 default: 1
             },
-
-            // 所处位置
-            point: {
-                type: Object as () => PointMixed,
+            //位置
+            position: {
+                type: Object as () => RectByPoint,
                 required: true
-            },
-
-            // 模式
-            mode: {
-                type: String as () => string,
-                default: 'normal'
-            },
+            }
         },
         computed: {
             transform: function (): string {
-                return 'translate(' + this.point.x + ' ' + this.point.y + ')'
-            },
-
-            setting: function (): NodeSettingGraph {
-                return this.node.Setting
-            },
-
-            state: function (): NodeState {
-                return this.node.State
+                let rect = this.position.positiveRect();
+                return 'translate(' + rect.x + ' ' + rect.y + ')'
             },
 
             isSelected: function (): boolean {
@@ -149,9 +138,7 @@
 
             //注意是实际二分之一的高度
             width: function (): number {
-                return this.setting.Base.size !== 0
-                    ? this.setting.Base.size * this.scale
-                    : this.size * this.scale
+                return this.setting.Base.size * this.scale
             },
 
             //注意是实际二分之一的宽度
@@ -161,7 +148,7 @@
 
             colorStyle: function (): CSSProp {
                 return {
-                    'fill': this.fillColor,
+                    'fill': this.setting.View.color,
                     'fillOpacity': !this.showPicture ? this.setting.View.opacity : 0,
                     'stroke': this.borderSetting.color,
                     'strokeWidth': this.borderSetting.width,
@@ -170,27 +157,9 @@
                 }
             },
 
-            //填充的颜色
-            fillColor: function (): string {
-                if (this.setting.View.color !== '') {
-                    return this.setting.View.color
-                } else {
-                    this.$store.state.styleLabelColor[this.node._type] ||
-                    commitLabelColorAdd([this.node._type]);
-                    return this.$store.state.styleLabelColor[this.node._type]
-                }
-            },
-
             //border的形式
             borderSetting: function (): Record<string, any> {
-                let color;
-                if (this.setting.Border.color !== '') {
-                    color = this.setting.Border.color
-                } else {
-                    this.$store.state.styleLabelColor[this.node._label] ||
-                    commitLabelColorAdd([this.node._label]);
-                    color = this.$store.state.styleLabelColor[this.node._label]
-                }
+                let color = this.setting.Border.color;
                 return {
                     color,
                     width: this.isSelected
@@ -218,8 +187,7 @@
             showPicture: function (): boolean {
                 return this.setting._image !== '' &&
                     this.setting.Show.showAll &&
-                    this.setting.Show.showImage &&
-                    this.height >= 12
+                    this.setting.Show.showImage
             },
             showFill: function (): boolean {
                 return this.setting.Show.showAll &&
@@ -243,7 +211,7 @@
             hoverColor: function (): string {
                 return this.setting.View.isMain
                     ? '#FFCA28'
-                    : this.fillColor
+                    : this.setting.View.color
             },
             hoverOpacity: function (): number {
                 return this.setting.Show.showAll
@@ -254,11 +222,9 @@
                             : 0
                     : 0
             },
-
             hoverHeight: function (): number {
                 return this.height + this.borderSetting.width + 5
             },
-
             hoverWidth: function (): number {
                 return this.width + this.borderSetting.width + 5
             },
@@ -330,7 +296,7 @@
                 return getSrc(this.setting._image)
             },
             getClipId: function (): string {
-                return 'clipPath_' + this.node._id
+                return 'clipPath_' + this._id
             },
             rhombusPath: function (): string {
                 let loc = [-this.width + ',0', '0,' + -this.height, this.width + ',0', '0,' + this.height];
@@ -342,10 +308,6 @@
             },
             geometryType: function (): NodeViewType {
                 return this.setting.View.viewType
-            },
-
-            boundGraph: function (): GraphSelfPart {
-                return this.$store.state.dataManager.graphManager[this.node._id]
             }
         },
         methods: {},

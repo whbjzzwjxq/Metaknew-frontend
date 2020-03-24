@@ -37,7 +37,7 @@ import {
     isMediaInfoPart,
     isMediaSetting,
     isNodeSetting,
-    isSvgSetting,
+    isTextSetting,
 } from "@/utils/typeCheck";
 import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
 import {commitDocumentAdd, commitInfoAdd, commitSnackbarOn} from "@/store/modules/_mutations";
@@ -1043,7 +1043,7 @@ export class GraphSelfPart extends DocumentSelfPart {
             ? this.Content.medias.push(item)
             : isNodeSetting(item)
             ? this.Content.nodes.push(item)
-            : isSvgSetting(item)
+            : isTextSetting(item)
                 ? this.Content.texts.push(item)
                 : isLinkSetting(item) && this.Content.links.push(item)
     }

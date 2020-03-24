@@ -60,10 +60,10 @@ const state: StyleManagerState = {
         width: 520,
         height: 720,
     },
-    bottomDynamicBar: new RectByPoint({x: 0, y: document.documentElement.clientHeight - bottomDynamicBarHeight}, {x: 0, y: 0}, 0),
+    bottomDynamicBar: new RectByPoint({x: 0, y: document.documentElement.clientHeight - bottomDynamicBarHeight}, {x: 0, y: 0}),
     screenX: document.documentElement.clientWidth,
     screenY: document.documentElement.clientHeight,
-    viewBox: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}, 2),
+    viewBox: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}),
 };
 
 const mutations = {

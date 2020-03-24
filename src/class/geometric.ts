@@ -142,7 +142,7 @@ export class RectByPoint {
         return this._end
     }
 
-    constructor(_start: PointMixed, _end: PointMixed, border?: number) {
+    constructor(_start: PointMixed, _end: PointMixed) {
         let {x, y} = _start;
         this._start = new Point(x, y);
         x = _end.x;
@@ -179,7 +179,15 @@ export class RectByPoint {
     }
 
     static emptyRect() {
-        return new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}, 1)
+        return new RectByPoint({x: 0, y: 0}, {x: 0, y: 0})
+    }
+
+    static fromBase(base: BaseSize) {
+        let {x, y, size, scaleX} = base;
+        let height = size * scaleX;
+        let _start = new Point(x - size / 2, x + size / 2);
+        let _end = new Point(y - height / 2, y + height / 2);
+        return new RectByPoint(_start, _end)
     }
 }
 
@@ -247,7 +255,7 @@ export const transformBorderToRect = (rect: RectByPoint, border: number, inner: 
             top = 0;
             bottom = 0;
         }
-        let rect = new RectByPoint({x: x1, y: y1}, {x: x2, y: y2}, 0);
+        let rect = new RectByPoint({x: x1, y: y1}, {x: x2, y: y2});
         result[borderType] = {
             css: Object.assign({
                 borderLeftWidth: left + 'px',
@@ -280,6 +288,17 @@ export const getPositiveRect = (pointA: PointMixed, pointB: PointMixed) => {
         y: height > 0 ? y : y + height,
         width: Math.abs(width),
         height: Math.abs(height)
+    } as AreaRect
+};
+
+export const getPostRectFromBase = (base: BaseSize) => {
+    let {x, y, size, scaleX} = base;
+    let height = size * scaleX;
+    return {
+        x: x - size / 2,
+        y: y - height / 2,
+        width: size,
+        height
     } as AreaRect
 };
 
