@@ -26,10 +26,9 @@
                 v-for="(node, index) in nodes"
                 v-show="showNode[index]"
                 :key="index"
+                :node="node"
                 :setting="nodeRewriteSettingList[index]"
-                :state="node.State"
                 :position="nodeLocation[index]"
-                :_id="node._id"
                 :scale="realScale"
                 @mouseenter.native="mouseEnter(node)"
                 @mouseleave.native="mouseLeave(node)"
@@ -189,8 +188,8 @@
         NoteSettingPart,
         TextSettingPart
     } from '@/class/graphItem'
-    import {maxN, mergeObject, minN} from "@/utils/utils"
-    import {getPoint, getPostRectFromBase, Point, RectByPoint} from '@/class/geometric'
+    import {maxN, minN} from "@/utils/utils"
+    import {getPoint, Point, RectByPoint} from '@/class/geometric'
     import GraphNode from './GraphNode.vue';
     import GraphLink from './GraphLink.vue';
     import GraphMedia from './GraphMedia.vue';
@@ -284,7 +283,7 @@
                 isLinking: false,
 
                 // 各种选项设置
-                importanceOn: false, // importance 模式
+                importanceOn: true, // importance 模式
                 labelColorOn: false, // 标签颜色 模式
                 reWriteHide: false // 显示隐藏模式
             }
@@ -482,47 +481,32 @@
                     let size = this.importanceOn ? this.impScaleRadius[index] : setting.Base.size;
                     // 根据重要度比例重写尺度
                     let Base = {
+                        ...setting.Base,
                         size
-                    };
+                    } as BaseSize;
 
                     // 根据标签种类重写颜色
                     let View = {
-                        color: this.labelColorOn ? '#000000' : undefined
+                        ...setting.View,
+                        color: this.labelColorOn ? '#000000' : setting.View.color
                     };
-
-                    // 根据labelDict等重写可视性
-                    let showAll = setting.Show.showAll &&
-                        ((node.isFatherExplode && this.labelViewDict[node._type][node._label] && !node.isDeleted) ||
-                            node._id === this.graph._id);
-                    let Show = {
-                        showAll,
-                    };
-                    return mergeObject(node.Setting, {Base, View, Show})
+                    return {
+                        ...setting,
+                        Base,
+                        View
+                    } as NodeSettingGraph
                 })
             },
 
             mediaRewriteSettingList: function (): MediaSetting[] {
                 return this.medias.map((media) => {
-                    let setting = media.Setting;
-                    let Base = {};
-                    // 根据标签种类重写颜色
-                    let View = {
-                        color: this.labelColorOn ? '#000000' : undefined
-                    };
-                    let showAll = setting.Show.showAll &&
-                        this.labelViewDict.media[media._label] &&
-                        !media.isDeleted;
-                    let Show = {showAll};
-                    return mergeObject(media.Setting, {Base, View, Show})
+                    return media.Setting
                 })
             },
 
             textRewriteSettingList: function (): TextSetting[] {
                 return this.texts.map((text) => {
-                    let Base = {};
-                    let showAll = !text.isDeleted && text.Setting.Show.showAll;
-                    let Show = {showAll};
-                    return mergeObject(text.Setting, {Base, Show})
+                    return text.Setting
                 })
             },
 
@@ -583,7 +567,7 @@
                     let k = (maxRadius - minRadius) / (max - min);
                     return impList.map(imp => {
                         let radius = ((imp - min) * k + minRadius) * this.realScale;
-                        radius < 12 && (radius = 12);
+                        radius < 8 && (radius = 8);
                         return radius
                     });
                 } else {
@@ -661,7 +645,7 @@
                 return this.medias.map((media, index) => {
                     let id = media._id;
                     let parentId = media.parent._id;
-                    let {x, y, width, height} = getPostRectFromBase(this.mediaRewriteSettingList[index].Base);
+                    let {x, y, width, height} = this.mediaLocation[index].positiveRect();
                     let realX = x + width / 2;
                     let realY = y + height / 2;
                     return {
@@ -680,7 +664,9 @@
 
             //显示节点
             showNode: function (): boolean[] {
-                return this.nodes.map((node, index) => this.nodeRewriteSettingList[index].Show.showAll)
+                return this.nodes.map((node) => (node.isFatherExplode && this.labelViewDict[node._type][node._label]) ||
+                    node._id === this.graph._id
+                )
             },
 
             //显示边
@@ -694,11 +680,11 @@
             },
 
             showMedia: function (): boolean[] {
-                return this.medias.map((media, index) => this.mediaRewriteSettingList[index].Show.showAll)
+                return this.medias.map((media) => this.labelViewDict.media[media._label])
             },
 
             showText: function (): boolean[] {
-                return this.texts.map((text, index) => this.textRewriteSettingList[index].Show.showAll)
+                return this.texts.map(() => true)
             },
 
             //选择框的相关设置
@@ -925,7 +911,7 @@
                 }
             },
 
-            clickSvg($event: MouseEvent) {
+            clickSvg() {
                 this.isLinking = false;
                 this.clearSelected('all')
             },
@@ -1023,7 +1009,7 @@
                 setting.Base.y = (height * y - start.y / scale) / (graph.rect.height);
             },
 
-            updateSize: function (start: PointMixed, end: PointMixed, setting: Setting) {
+            updateSize: function (start: PointMixed, end: PointMixed, setting: NodeSettingGraph | MediaSetting) {
                 // 视觉上的更新尺寸start, end
                 let scale = this.realScale;
                 // 更新起始点

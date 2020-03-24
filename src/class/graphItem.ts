@@ -50,6 +50,7 @@ import {BackendGraph, BackendGraphWithNode} from "@/api/document/document";
 import {BackendLinkInfoPart} from "@/api/subgraph/link";
 import {DocumentDraft, Draft, draftUpdate} from "@/api/subgraph/commonApi";
 import {dispatchNoteInDocPush} from "@/store/modules/_dispatch";
+import {PaperConf} from "@/class/paperItem";
 
 export abstract class InfoPart {
     Info: BaseInfo;
@@ -810,7 +811,7 @@ export abstract class DocumentSelfPart {
     static baseList: Array<BackendGraphWithNode> = [];
     DocumentData: DocumentData;
     Content: DocumentContent;
-    Conf: ItemSettingPart;
+    Conf: GraphConf | PaperConf;
 
     get _id() {
         return this.Conf._id
@@ -818,10 +819,6 @@ export abstract class DocumentSelfPart {
 
     get _name() {
         return this.Conf.Setting._name
-    }
-
-    set _id(newId) {
-        this.Conf._id = newId
     }
 
     get visualNodeList() {
@@ -879,7 +876,7 @@ export abstract class DocumentSelfPart {
         }
     }
 
-    protected constructor(Content: DocumentContent, Conf: ItemSettingPart, isRemote: boolean, draftId?: number) {
+    protected constructor(Content: DocumentContent, Conf: GraphConf | PaperConf, isRemote: boolean, draftId?: number) {
         this.Conf = Conf;
         this.Content = Content;
         this.DocumentData = {

@@ -169,7 +169,7 @@ const mutations = {
         let {oldId, newId} = payload;
         let oldGraph = state.graphManager[oldId];
         if (oldGraph) {
-            oldGraph._id = newId;
+            oldGraph.Conf._id = newId;
             commitDocumentAdd({document: oldGraph});
             commitDocumentRemove(oldId);
         } else {

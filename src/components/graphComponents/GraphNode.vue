@@ -87,6 +87,7 @@
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
     import {RectByPoint} from "@/class/geometric";
+    import {GraphNodeSettingPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: 'GraphNode',
@@ -95,19 +96,8 @@
             return {}
         },
         props: {
-
-            setting: {
-                type: Object as () => NodeSettingGraph,
-                required: true
-            },
-
-            state: {
-                type: Object as () => NodeState,
-                required: true
-            },
-
-            _id: {
-                type: [String, Number],
+            node: {
+                type: Object as () => GraphNodeSettingPart,
                 required: true
             },
 
@@ -116,13 +106,23 @@
                 type: Number as () => number,
                 default: 1
             },
+
             //位置
             position: {
                 type: Object as () => RectByPoint,
                 required: true
+            },
+
+            setting: {
+                type: Object as () => NodeSettingGraph,
+                required: true
             }
         },
         computed: {
+            state: function (): NodeState {
+                return this.node.State
+            },
+
             transform: function (): string {
                 let rect = this.position.positiveRect();
                 return 'translate(' + rect.x + ' ' + rect.y + ')'
@@ -136,9 +136,9 @@
                 return 'normalNode' + this.setting._id
             },
 
-            //注意是实际二分之一的高度
+            //注意是实际二分之一的高度 已经乘过scale了
             width: function (): number {
-                return this.setting.Base.size * this.scale
+                return this.setting.Base.size
             },
 
             //注意是实际二分之一的宽度
@@ -185,13 +185,10 @@
                 return this.setting.Show.showAll && this.setting.Show.showInlineText
             },
             showPicture: function (): boolean {
-                return this.setting._image !== '' &&
-                    this.setting.Show.showAll &&
-                    this.setting.Show.showImage
+                return this.setting._image !== '' && this.setting.Show.showAll && this.setting.Show.showImage
             },
             showFill: function (): boolean {
-                return this.setting.Show.showAll &&
-                    this.setting.Show.showBackground
+                return this.setting.Show.showAll && this.setting.Show.showBackground
             },
 
             //是否显示边
@@ -296,7 +293,7 @@
                 return getSrc(this.setting._image)
             },
             getClipId: function (): string {
-                return 'clipPath_' + this._id
+                return 'clipPath_' + this.node._id
             },
             rhombusPath: function (): string {
                 let loc = [-this.width + ',0', '0,' + -this.height, this.width + ',0', '0,' + this.height];
@@ -310,7 +307,9 @@
                 return this.setting.View.viewType
             }
         },
-        methods: {},
+        methods: {
+
+        },
         watch: {},
         record: {
             status: 'done',

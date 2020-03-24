@@ -129,7 +129,7 @@
             },
             unShow() {
                 let current = this.node.Setting.Show.showAll;
-                this.$set(this.node.Setting.Show, 'showAll', !current);
+                this.node.updateSetting('Show', 'showAll', !current);
             },
 
             addLink() {
