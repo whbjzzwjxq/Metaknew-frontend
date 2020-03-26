@@ -283,8 +283,8 @@
                     if (this.singleSelect && this.selection.length > 0) {
                         if (this.selection[0].PrimaryLabel === 'DocGraph') {
                             this.$router.push({
-                                name: "graph",
-                                path: "graph/id=:id",
+                                name: "graph-normal",
+                                path: "graph/id=:id/normal",
                                 params: {id: this.selection[0].id.toString()}
                             })
                         }

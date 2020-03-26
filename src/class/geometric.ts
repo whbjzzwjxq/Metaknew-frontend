@@ -142,6 +142,14 @@ export class RectByPoint {
         return this._end
     }
 
+    get width() {
+        return Math.abs(this.end.x - this.start.x)
+    }
+
+    get height() {
+        return Math.abs(this.end.y - this.start.y)
+    }
+
     constructor(_start: PointMixed, _end: PointMixed) {
         let {x, y} = _start;
         this._start = new Point(x, y);

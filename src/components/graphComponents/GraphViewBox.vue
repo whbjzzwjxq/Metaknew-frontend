@@ -1,6 +1,5 @@
 <template>
-    <div @wheel="onScroll" style="width: 100%; height: 100%; position: absolute">
-
+    <div @wheel="onScroll" style="width: 100%; height: 100%; position: relative" v-resize="onResize" ref="viewBox">
         <!--        基础的Graph-->
         <svg
             width="100%"
@@ -8,8 +7,7 @@
             @dblclick="clickSvg"
             @mousedown.self="startSelect"
             @mousemove="selecting"
-            @mouseup="endSelect"
-            @wheel="onScroll">
+            @mouseup="endSelect">
 
             <graph-link
                 v-for="(link, index) in links"
@@ -26,7 +24,8 @@
                 v-for="(node, index) in nodes"
                 v-show="showNode[index]"
                 :key="index"
-                :node="node"
+                :state="node.State"
+                :id="node._id"
                 :setting="nodeRewriteSettingList[index]"
                 :position="nodeLocation[index]"
                 :scale="realScale"
@@ -122,31 +121,16 @@
 
         </graph-text>
 
-        <graph-note
-            v-for="note in notes"
-            :note="note"
-            :container="viewBox"
-            :key="note._id"
-        >
+        <!--        <graph-note-->
+        <!--            v-for="note in notes"-->
+        <!--            :note="note"-->
+        <!--            :container="viewBox"-->
+        <!--            :key="note._id"-->
+        <!--        >-->
 
-        </graph-note>
+        <!--        </graph-note>-->
 
-        <div :style="topNavigationStyle" class="unselected">
-            <v-breadcrumbs
-                :items="navigationList"
-                :divider="'->'">
-                <template v-slot:item="{item}">
-                    <v-breadcrumbs-item
-                        :disabled="item.disabled"
-                        :style="{'color': item.color}"
-                        @click="gotoDocument(item.document)"
-                        large>
-                        {{ item.text }}
-                    </v-breadcrumbs-item>
-                </template>
-            </v-breadcrumbs>
-        </div>
-        <div :style="viewBoxToolStyle" class="d-flex flex-row">
+        <div class="d-flex flex-row" style="position: absolute; left: 80%; top: 65%">
             <graph-label-selector
                 v-if="renderLabelSelector"
                 :label-view-dict="labelViewDict"
@@ -177,7 +161,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        DocumentSelfPart,
         GraphConf,
         GraphItemSettingPart,
         GraphNodeSettingPart,
@@ -207,15 +190,6 @@
     } from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
-
-    type GraphMode = 'normal' | 'geo' | 'timeline';
-
-    interface NavigationItem {
-        disabled: boolean;
-        document: DocumentSelfPart;
-        text: string;
-        color: string
-    }
 
     export default Vue.extend({
         name: "GraphViewBox",
@@ -283,19 +257,20 @@
                 isLinking: false,
 
                 // 各种选项设置
-                importanceOn: true, // importance 模式
-                labelColorOn: false, // 标签颜色 模式
-                reWriteHide: false // 显示隐藏模式
+                // importance 模式
+                importanceOn: true,
+                // 标签颜色 模式
+                labelColorOn: false,
+                // 显示隐藏模式
+                showHide: false,
+
+                //视窗
+                viewBox: new RectByPoint({x: 404, y: 102}, {x: 960, y: 540}),
             }
         },
         props: {
             graph: {
                 type: Object as () => GraphSelfPart,
-                required: true
-            },
-
-            viewBox: {
-                type: Object as () => RectByPoint,
                 required: true
             },
 
@@ -329,12 +304,6 @@
                 default: false
             },
 
-            //模式
-            mode: {
-                type: String as () => GraphMode,
-                default: "normal",
-            },
-
             //是否是编辑模式
             editMode: {
                 type: Boolean,
@@ -363,15 +332,6 @@
             childDocumentList: function (): GraphSelfPart[] {
                 let docList = this.$store.getters.documentList as GraphSelfPart[];
                 return docList.filter(doc => doc.root && doc.root._id === this.graph._id)
-            },
-            navigationList: function (): NavigationItem[] {
-                let result: DocumentSelfPart[] = (this.graph.rootList).concat([this.graph]);
-                return result.map(doc => ({
-                    disabled: doc._id === this.graph._id,
-                    document: doc,
-                    text: this.dataManager.nodeManager[doc._id].Info.Name,
-                    color: doc._id === this.graph._id ? 'grey' : 'royalblue'
-                }) as NavigationItem)
             },
             // 未被删除的Graph
             activeGraphList: function (): GraphSelfPart[] {
@@ -478,7 +438,8 @@
             nodeRewriteSettingList: function (): NodeSettingGraph[] {
                 return this.nodes.map((node, index) => {
                     let setting = node.Setting;
-                    let size = this.importanceOn ? this.impScaleRadius[index] : setting.Base.size;
+                    let size = (this.importanceOn ? this.impScaleRadius[index] : setting.Base.size) * this.realScale;
+                    size <= 8 && (size = 8);
                     // 根据重要度比例重写尺度
                     let Base = {
                         ...setting.Base,
@@ -500,7 +461,17 @@
 
             mediaRewriteSettingList: function (): MediaSetting[] {
                 return this.medias.map((media) => {
-                    return media.Setting
+                    let setting = media.Setting;
+                    let size = (setting.Base.size) * this.realScale;
+                    size <= 50 && (size = 50);
+                    let Base = {
+                        ...setting.Base,
+                        size
+                    } as BaseSize;
+                    return {
+                        ...setting,
+                        Base
+                    } as MediaSetting
                 })
             },
 
@@ -566,12 +537,10 @@
                     const maxRadius = 36;
                     let k = (maxRadius - minRadius) / (max - min);
                     return impList.map(imp => {
-                        let radius = ((imp - min) * k + minRadius) * this.realScale;
-                        radius < 8 && (radius = 8);
-                        return radius
+                        return ((imp - min) * k + minRadius)
                     });
                 } else {
-                    return impList.map(() => 16 * this.realScale)
+                    return impList.map(() => 16)
                 }
             },
 
@@ -697,24 +666,6 @@
                     "stroke": "#000000",
                     "strokeWidth": "1px",
                     "display": this.isSelecting ? "inline" : "none",
-                }
-            },
-
-            viewBoxToolStyle: function (): CSSProp {
-                return {
-                    position: 'absolute',
-                    left: this.containerRect.width * 0.85 + 'px',
-                    top: this.containerRect.height * 0.7 + 'px',
-                }
-            },
-
-            topNavigationStyle: function (): CSSProp {
-                return {
-                    position: 'absolute',
-                    left: '0px',
-                    top: '0px',
-                    width: '100%',
-                    height: '60px'
                 }
             },
 
@@ -852,8 +803,8 @@
                     this.moveStartPoint.update($event);
                 } else {
                     if (this.renderSelector) {
-                        this.$set(this, 'isSelecting', true);
-                        let start = getPoint($event).decrease(this.containerRect);
+                        this.isSelecting = true;
+                        let start = this.getPointInBox($event);
                         this.selectRect.start.update(start);
                         this.selectRect.end.update(start)
                     }
@@ -861,7 +812,7 @@
             },
 
             selecting($event: MouseEvent) {
-                let end = getPoint($event).decrease(this.containerRect);
+                let end = this.getPointInBox($event);
                 //选择集
                 if ($event.ctrlKey && this.isMoving) {
                     this.lastViewPoint.add($event).decrease(this.moveStartPoint);
@@ -976,12 +927,16 @@
                 this.scale += delta;
                 this.scale < 20 && (this.scale = 20);
                 this.scale > 500 && (this.scale = 500);
-                let event = getPoint($event).decrease(this.containerRect);
+                let event = this.getPointInBox($event);
                 let eventCopy = event.copy();
                 // 先后顺序很重要
                 event.decrease(this.lastViewPoint).divide(oldScale);
                 this.viewPoint.add(event);
                 this.lastViewPoint.update(eventCopy);
+            },
+
+            getPointInBox($event: MouseEvent | WheelEvent) {
+                return getPoint($event).decrease(this.viewBox.start)
             },
 
             explode(node: GraphNodeSettingPart) {
@@ -1035,10 +990,6 @@
                             : this.nodes
             },
 
-            gotoDocument(graph: GraphSelfPart) {
-                commitGraphChange({graph})
-            },
-
             setLabel(_type: GraphItemType, _label: string) {
                 let value = this.labelViewDict[_type][_label];
                 this.$set(this.labelViewDict[_type], _label, !value)
@@ -1058,6 +1009,20 @@
                 let list: GraphItemSettingPart[] = this.getItemList(_type);
                 list.filter(item => item._label === _label).map(item => item.updateState('isSelected'))
             },
+
+            onResize() {
+                //@ts-ignore
+                //todo 把组件改成一个基础组件
+                let viewBox: HTMLElement = this.$refs.viewBox;
+                let rect = viewBox.getBoundingClientRect();
+                this.viewBox.updateFromArea(rect);
+                this.initViewPoint();
+            },
+
+            initViewPoint() {
+                this.viewPoint.update(this.viewBox.midPoint());
+                this.lastViewPoint.update(this.viewBox.midPoint())
+            }
         },
 
         watch: {
@@ -1066,10 +1031,11 @@
             }
         },
         created: function (): void {
-            this.getLabelViewDict()
+            this.getLabelViewDict();
         },
         mounted: function (): void {
-            this.getLabelViewDict()
+            this.getLabelViewDict();
+            this.onResize()
         },
         record: {
             status: 'editing'

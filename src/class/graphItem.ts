@@ -818,7 +818,7 @@ export abstract class DocumentSelfPart {
     }
 
     get _name() {
-        return this.Conf.Setting._name
+        return this.baseNode.Setting._name
     }
 
     get visualNodeList() {

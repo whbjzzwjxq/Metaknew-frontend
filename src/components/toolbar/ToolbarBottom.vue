@@ -27,7 +27,13 @@
                 </v-btn>
             </div>
         </div>
-        <slot name="subTool"></slot>
+        <div style="width: 100%; height: 100%" class="d-flex flex-row">
+            <div style="width: 80px; height: 100%">
+            </div>
+            <div class="d-flex flex-row flex-grow-1">
+            <slot name="subTool"></slot>
+            </div>
+        </div>
     </v-card>
 </template>
 
@@ -58,9 +64,6 @@
             },
             toolbarStyle: function (): CSSProp {
                 return {
-                    position: "absolute",
-                    left: (this.styleManager.leftCard.width + 1) + 'px',
-                    bottom: 0,
                     height: this.styleManager.bottomBar.height + 'px',
                     width: this.styleManager.bottomBar.width,
                     backgroundColor: 'white',

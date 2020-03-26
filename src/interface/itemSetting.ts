@@ -767,7 +767,6 @@ declare global {
 
     interface GraphSetting extends GraphItemSetting {
         _type: 'document';
-        _name: string;
         Base: Record<string, any>
     }
 

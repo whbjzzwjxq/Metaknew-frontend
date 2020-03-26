@@ -96,11 +96,6 @@
             return {}
         },
         props: {
-            node: {
-                type: Object as () => GraphNodeSettingPart,
-                required: true
-            },
-
             //缩放情况
             scale: {
                 type: Number as () => number,
@@ -116,13 +111,19 @@
             setting: {
                 type: Object as () => NodeSettingGraph,
                 required: true
+            },
+
+            state: {
+                type: Object as () => NodeState,
+                required: true
+            },
+
+            id: {
+                type: [String, Number],
+                required: true
             }
         },
         computed: {
-            state: function (): NodeState {
-                return this.node.State
-            },
-
             transform: function (): string {
                 let rect = this.position.positiveRect();
                 return 'translate(' + rect.x + ' ' + rect.y + ')'
@@ -293,7 +294,7 @@
                 return getSrc(this.setting._image)
             },
             getClipId: function (): string {
-                return 'clipPath_' + this.node._id
+                return 'clipPath_' + this.id
             },
             rhombusPath: function (): string {
                 let loc = [-this.width + ',0', '0,' + -this.height, this.width + ',0', '0,' + this.height];

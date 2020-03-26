@@ -9,6 +9,8 @@ declare global {
             root: number
         },
         editMode: boolean,
+        bottomDynamicBarOn: boolean,
+        bottomDynamicBarType: BottomDynamicBarType
     }
 
     type RootTabName = 'ecoSystem' | 'document' | 'metaKnowledge';
@@ -16,6 +18,7 @@ declare global {
     type DocumentTabName = 'directory' | 'historyBranch' | 'comments';
     type MetaKnowledgeTabName = 'info' | 'mediaList' | 'relative'
     type SubTabName = EcoTabName | DocumentTabName | MetaKnowledgeTabName
+    type BottomDynamicBarType = 'path'
 }
 
 export const tabDict: Record<RootTabName, string[]> = {
@@ -48,6 +51,8 @@ const state = {
         root: 0
     },
     editMode: false,
+    bottomDynamicBarOn: false,
+    bottomDynamicBarType: 'path'
 } as ComponentState;
 
 const mutations = {
@@ -85,6 +90,12 @@ const mutations = {
     editModeChange: (state: ComponentState, payload: boolean) => {
         state.editMode = payload
     },
+
+    bottomDynamicBarChange: (state: ComponentState, payload: {on?: boolean, type?: BottomDynamicBarType}) => {
+        let {type, on} = payload;
+        on !== undefined && (state.bottomDynamicBarOn = on);
+        type !== undefined && (state.bottomDynamicBarType = type)
+    }
 };
 const actions = {};
 const getters = {};

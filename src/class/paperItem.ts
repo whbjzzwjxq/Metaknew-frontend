@@ -6,6 +6,7 @@ import {
 import {paperSettingTemplate} from "@/utils/template";
 import {emptyContent} from "@/utils/utils";
 import {commitDocumentAdd} from "@/store/modules/_mutations";
+import store from "@/store";
 
 export class PaperConf extends ItemSettingPart {
     State: PaperState;
@@ -32,6 +33,10 @@ export class PaperSelfPart extends DocumentSelfPart {
     static list: PaperSelfPart[] = [];
     Content: DocumentContent;
     Conf: PaperConf;
+
+    get _name() {
+        return store.state.dataManager.paperManager[this._id].Info.Name
+    }
 
     constructor(paper: DocumentContent, conf: PaperConf, isRemote: boolean, draftId?: number) {
         super(paper, conf, isRemote, draftId);
