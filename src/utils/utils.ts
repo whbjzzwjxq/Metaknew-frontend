@@ -307,10 +307,11 @@ export const emptyContent = () => {
 
 const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];
 
-export function mergeObject<T extends Record<string, any>, K extends keyof T>(target: T, source: any, passive?: boolean) {
+export function mergeObject<T extends Record<string, any>>(target: T, source: any, passive?: boolean, deepClone?: boolean) {
     // 递归对象
     // source里有target没有的值是否强制覆盖
     passive || (passive = false);
+    deepClone || (deepClone = false);
     Object.entries(source).map(([key, value]) => {
         if (target[key] === undefined) {
             //@ts-ignore
@@ -327,7 +328,8 @@ export function mergeObject<T extends Record<string, any>, K extends keyof T>(ta
                 mergeObject(target[key], value, passive)
             }
         }
-    })
+    });
+    return target
 }
 
 export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays?: boolean) => {

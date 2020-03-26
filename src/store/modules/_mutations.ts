@@ -127,3 +127,7 @@ export const commitUserEditDataLoadDone = (payload: UserEditData) => {
 export const commitNoteBookAdd = (payload: {note: NoteBook}) => {
     return store.commit('noteBookAdd', payload)
 };
+
+export const commitBottomDynamicBarChange = (payload: {on?: boolean, type?: BottomDynamicBarType}) => {
+    return store.commit('bottomDynamicBarChange', payload)
+};

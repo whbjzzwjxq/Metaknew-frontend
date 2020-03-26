@@ -1,6 +1,5 @@
 import Vue from 'vue'
-import VueRouter, {Route} from 'vue-router'
-import {commitEditModeChange} from "@/store/modules/_mutations";
+import VueRouter from 'vue-router'
 
 Vue.use(VueRouter);
 export const IndexUrl = '/index';
@@ -16,9 +15,6 @@ const routes = [
     {
         path: IndexUrl + '/about',
         name: 'about',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "group-index" */ '@/views/index/About.vue')
     },
     {
@@ -37,19 +33,63 @@ const routes = [
         component: () => import('@/views/result/Result.vue'),
         children: [
             {
-                path: 'graph/id=:id',
+                path: 'graph',
                 name: 'graph',
-                component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocGraph.vue'),
-                props: true
-            },
-            {
-                path: 'graph/edit',
-                name: 'graph-edit',
-                beforeRouteEnter(to: Route, from: Route, next: Function) {
-                    commitEditModeChange(true);
-                    next()
-                },
-                component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocGraph.vue'),
+                component: () => import(/* webpackChunkName: "result-graph" */ '@/views/result/ResultDocGraph.vue'),
+                children: [
+                    {
+                        path: 'id=:id/normal',
+                        name: 'graph-normal',
+                        components: {
+                            content: () => import(/* webpackChunkName: "result-graph" */ '@/components/graphComponents/GraphViewBox.vue'),
+                            toolbarBottom: () => import(/* webpackChunkName: "result-graph" */ '@/components/toolbar/ToolbarBottomGraphNormal.vue')
+                        },
+                        props: {
+                            content: {
+                                renderMedia: true,
+                                renderNotes: true,
+                                renderSelector: true,
+                                renderLabelSelector: true,
+                                renderCard: true,
+                                editMode: false
+                            },
+                            toolbarBottom: {}
+                        },
+                        alias: 'id=:id'
+                    },
+                    {
+                        path: 'id=:id/timeline',
+                        name: 'graph-timeline',
+                        components: {
+                            content: () => import(/* webpackChunkName: "result-graph" */ '@/components/graphComponents/GraphTimeline.vue'),
+                            toolbarBottom: () => import(/* webpackChunkName: "result-graph" */ '@/components/toolbar/ToolbarBottomGraphNormal.vue')
+                        },
+                        props: {
+                            content: {
+
+                            }
+                        }
+                    },
+                    {
+                        path: 'edit',
+                        name: 'graph-edit',
+                        components: {
+                            content: () => import(/* webpackChunkName: "result-graph" */ '@/components/graphComponents/GraphViewBox.vue'),
+                            toolbarBottom: () => import(/* webpackChunkName: "result-graph" */ '@/components/toolbar/ToolbarBottomGraphEdit.vue')
+                        },
+                        props: {
+                            content: {
+                                renderMedia: true,
+                                renderNotes: true,
+                                renderSelector: true,
+                                renderLabelSelector: true,
+                                renderCard: true,
+                                editMode: true
+                            },
+                            toolbarBottom: {}
+                        },
+                    }
+                ]
             },
             {
                 path: 'paper/id=:id',

@@ -12,7 +12,7 @@ declare global {
         bottomBar: BottomBar,
         noteBook: NoteBookSize
         bottomDynamicBar: RectByPoint,
-        viewBox: RectByPoint,
+        viewBox: RectByPoint, // 指的是全部的ViewBox 也就是去除左边card的内容
     }
 
     interface ComponentSize {
@@ -60,17 +60,17 @@ const state: StyleManagerState = {
         width: 520,
         height: 720,
     },
-    bottomDynamicBar: new RectByPoint({x: 0, y: document.documentElement.clientHeight - bottomDynamicBarHeight}, {x: 0, y: 0}, 0),
+    bottomDynamicBar: new RectByPoint({x: 0, y: document.documentElement.clientHeight - bottomDynamicBarHeight}, {x: 0, y: 0}),
     screenX: document.documentElement.clientWidth,
     screenY: document.documentElement.clientHeight,
-    viewBox: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}, 2),
+    viewBox: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}),
 };
 
 const mutations = {
     screenRefresh: (state: StyleManagerState) => {
         state.screenX = document.documentElement.clientWidth;
         state.screenY = document.documentElement.clientHeight;
-        state.leftCard.height = document.documentElement.clientHeight - 48;
+        state.leftCard.height = document.documentElement.clientHeight - state.toolBar.height;
         commitViewBoxResize();
         commitBottomDynamicBarResize();
     },
@@ -86,7 +86,7 @@ const mutations = {
     viewBoxRefresh: (state: StyleManagerState) => {
         // 计算ViewBox
         state.viewBox.start.update({x: state.leftCard.width, y: state.toolBar.height});
-        state.viewBox.end.update({x: state.screenX, y: state.screenY - state.bottomBar.height})
+        state.viewBox.end.update({x: state.screenX, y: state.screenY})
     },
 
     bottomDynamicBarReset: (state: StyleManagerState, payload?: number) => {

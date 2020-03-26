@@ -6,6 +6,7 @@ import {
 import {paperSettingTemplate} from "@/utils/template";
 import {emptyContent} from "@/utils/utils";
 import {commitDocumentAdd} from "@/store/modules/_mutations";
+import store from "@/store";
 
 export class PaperConf extends ItemSettingPart {
     State: PaperState;
@@ -33,6 +34,10 @@ export class PaperSelfPart extends DocumentSelfPart {
     Content: DocumentContent;
     Conf: PaperConf;
 
+    get _name() {
+        return store.state.dataManager.paperManager[this._id].Info.Name
+    }
+
     constructor(paper: DocumentContent, conf: PaperConf, isRemote: boolean, draftId?: number) {
         super(paper, conf, isRemote, draftId);
         this.Content = paper;
@@ -47,14 +52,6 @@ export class PaperSelfPart extends DocumentSelfPart {
         let paper = new PaperSelfPart(paperContent, setting, false);
         let info = NodeInfoPart.emptyNodeInfoPart(query, commitToVuex);
         let payload = {paper, info};
-        if (commitToVuex) {
-            paper.commitPaperToVuex(payload)
-        }
         return payload
-    }
-
-    commitPaperToVuex(payload: { paper: PaperSelfPart, info: NodeInfoPart }) {
-        let {paper, info} = payload;
-        commitDocumentAdd({document: paper});
     }
 }

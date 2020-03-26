@@ -60,7 +60,7 @@ const size = () => {
     return {
         size: {
             type: 'Number',
-            default: 0,
+            default: 12,
             range: [12, 128],
             tips: '不能为0',
             explain: '可视化尺寸'
@@ -517,7 +517,7 @@ const mediaSetting = () => {
                 default: 0.6
             }
         }
-    }
+    };
     mergeObject(result, replace);
     return result as SettingAll
 };
@@ -613,8 +613,7 @@ declare global {
         _id: id;
         _type: AllType;
         _label: string;
-
-        [propName: string]: any;
+        [prop: string]: any
     }
 
     interface GraphItemSetting extends Setting {
@@ -665,6 +664,8 @@ declare global {
         }
     }
 
+    type RewriteObj<T> = Record<keyof T, any>
+
     interface NodeStyleSettingPaper {
 
     }
@@ -676,9 +677,11 @@ declare global {
         _name: string;
         _image: string;
     }
+
     interface NodeSettingGraph extends NodeSettingBase, NodeStyleSettingGraph {
 
     }
+
     interface NodeSettingPaper extends NodeSettingBase, NodeStyleSettingPaper {
 
     }
@@ -765,6 +768,10 @@ declare global {
     interface GraphSetting extends GraphItemSetting {
         _type: 'document';
         Base: Record<string, any>
+    }
+
+    interface PaperSetting extends GraphSetting {
+        _type: 'document';
     }
 
     interface NoteSetting extends Setting {

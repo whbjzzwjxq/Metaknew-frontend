@@ -88,7 +88,6 @@
     import IconGroup from "@/components/IconGroup.vue";
     import MediaDetail from "../../media/MediaDetail.vue"
     import ItemSharer from "@/components/ItemSharer.vue";
-    import {getSrc} from '@/utils/utils'
     import 'viewerjs/dist/viewer.css'
     import {mediaUpdate} from "@/api/subgraph/media";
     import {userConcernTemplate} from "@/utils/template";
@@ -169,17 +168,17 @@
             }
         },
         computed: {
-            realSrc: function () {
+            realSrc: function (): string {
                 return this.media.realSrc
             },
-            info: function () {
+            info: function (): BaseMediaInfo {
                 return this.media.Info;
             },
-            ctrl: function () {
+            ctrl: function (): BaseMediaCtrl {
                 return this.media.Ctrl;
             },
 
-            dataManager: function () {
+            dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager;
             },
 
@@ -187,7 +186,7 @@
                 return this.$store.state.userDataManager
             },
 
-            isSelf: function () {
+            isSelf: function (): boolean {
                 return this.media.isSelf
             },
             labelGroup: function (): LabelGroup[] {
@@ -232,7 +231,7 @@
             buttonGroupStyle: function (): CSSProp {
                 return {}
             },
-            showText: function () {
+            showText: function (): boolean {
                 return this.height >= 100
             },
             //能够删除 在画布中删除是从画布中删除 在节点中删除是从节点删除
@@ -267,11 +266,6 @@
                     {name: getIcon('i-delete-able', deleteAble), _func: vm.deleteMedia, disabled: !deleteAble},
                     {name: "mdi-arrow-right-bold-circle-outline", _func: vm.addMediaToGraph, render: vm.showExportIcon}
                 ];
-            },
-
-            viewer(): Vue & { validate: () => boolean } {
-                return this.$refs.viewer as Vue
-                    & { validate: () => boolean }
             }
         },
         methods: {

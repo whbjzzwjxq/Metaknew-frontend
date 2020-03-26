@@ -24,7 +24,7 @@ export function settingTemplate(_type: AllType) {
     return result
 }
 
-export function nodeSettingTemplate(_id: id, _type: string, _label: string, _name: string, _image: string) {
+export function nodeSettingTemplate(_id: id, _type: string = 'node', _label: string = 'BaseNode', _name: string = '', _image: string = '') {
     let setting = <NodeSettingGraph>{
         _id,
         _type,

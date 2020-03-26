@@ -1,31 +1,31 @@
 <template>
-    <v-container
-        v-if="!loading"
-        fluid
-        fill-height
-        class="d-flex flex-row ma-0 pa-0">
-        <card-root
-            :document="currentDocument"
-            :edit-mode="editMode">
+    <div v-if="!loading" class="d-flex flex-row">
+        <card-root :document="currentDocument" :edit-mode="editMode">
 
         </card-root>
-        <router-view :edit-mode="editMode"></router-view>
-    </v-container>
+        <div class="d-flex flex-column flex-grow-1">
+            <graph-top-navigation :document="currentDocument"></graph-top-navigation>
+            <router-view class="flex-grow-1"></router-view>
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
+    import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
     import {commitGraphChange, commitRootGraph} from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
     import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
     import {PaperSelfPart} from "@/class/paperItem";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
+    import {RectByPoint} from "@/class/geometric";
 
     export default Vue.extend({
         name: "Result",
         components: {
-            CardRoot
+            CardRoot,
+            GraphTopNavigation
         },
         data() {
             return {
@@ -52,7 +52,16 @@
             },
             editMode: function (): boolean {
                 return this.editRegex.test(String(this.$route.name))
-            }
+            },
+            allComponentsStyle: function (): StyleManagerState {
+                return this.$store.state.styleComponentSize
+            },
+            viewBox: function (): RectByPoint {
+                return this.allComponentsStyle.viewBox
+            },
+            viewBoxStyle: function (): CSSProp {
+                return this.viewBox.getDivCSS({overflow: "hidden"})
+            },
         },
         methods: {},
         watch: {},

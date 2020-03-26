@@ -1,6 +1,5 @@
 <template>
-    <div @wheel="onScroll" style="width: 100%; height: 100%; position: absolute">
-
+    <div @wheel="onScroll" style="width: 100%; height: 100%; position: relative" v-resize="onResize" ref="viewBox">
         <!--        基础的Graph-->
         <svg
             width="100%"
@@ -8,8 +7,7 @@
             @dblclick="clickSvg"
             @mousedown.self="startSelect"
             @mousemove="selecting"
-            @mouseup="endSelect"
-            @wheel="onScroll">
+            @mouseup="endSelect">
 
             <graph-link
                 v-for="(link, index) in links"
@@ -26,10 +24,11 @@
                 v-for="(node, index) in nodes"
                 v-show="showNode[index]"
                 :key="index"
-                :node="node"
-                :size="impScaleRadius[index]"
+                :state="node.State"
+                :id="node._id"
+                :setting="nodeRewriteSettingList[index]"
+                :position="nodeLocation[index].positiveRect()"
                 :scale="realScale"
-                :point="nodeLocation[index].positiveRect()"
                 @mouseenter.native="mouseEnter(node)"
                 @mouseleave.native="mouseLeave(node)"
                 @mousedown.native="dragStart"
@@ -90,11 +89,11 @@
         <graph-media
             v-for="(media, index) in medias"
             :key="media._id"
-            :setting="media"
+            :setting="mediaRewriteSettingList[index]"
+            :state="media.State"
             :container="mediaLocation[index]"
             :scale="realScale"
             :index="index"
-            :view-box="containerRect"
             @mouseenter.native="mouseEnter(media)"
             @mouseleave.native="mouseLeave(media)"
             @mousedown.native="dragStart"
@@ -111,7 +110,7 @@
             v-for="(svg, index) in texts"
             :key="svg._id"
             :svg="svg"
-            :container="svgLocation[index]"
+            :container="textLocation[index]"
             @mouseenter.native="mouseEnter(svg)"
             @mouseleave.native="mouseLeave(svg)"
             @mousedown.native="dragStart"
@@ -122,31 +121,16 @@
 
         </graph-text>
 
-        <graph-note
-            v-for="note in notes"
-            :note="note"
-            :container="viewBox"
-            :key="note._id"
-        >
+        <!--        <graph-note-->
+        <!--            v-for="note in notes"-->
+        <!--            :note="note"-->
+        <!--            :container="viewBox"-->
+        <!--            :key="note._id"-->
+        <!--        >-->
 
-        </graph-note>
+        <!--        </graph-note>-->
 
-        <div :style="topNavigationStyle" class="unselected">
-            <v-breadcrumbs
-                :items="navigationList"
-                :divider="'->'">
-                <template v-slot:item="{item}">
-                    <v-breadcrumbs-item
-                        :disabled="item.disabled"
-                        :style="{'color': item.color}"
-                        @click="gotoDocument(item.document)"
-                        large>
-                        {{ item.text }}
-                    </v-breadcrumbs-item>
-                </template>
-            </v-breadcrumbs>
-        </div>
-        <div :style="viewBoxToolStyle" class="d-flex flex-row">
+        <div class="d-flex flex-row" style="position: absolute; left: 80%; top: 65%">
             <graph-label-selector
                 v-if="renderLabelSelector"
                 :label-view-dict="labelViewDict"
@@ -177,7 +161,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        DocumentSelfPart,
         GraphConf,
         GraphItemSettingPart,
         GraphNodeSettingPart,
@@ -198,7 +181,7 @@
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
     import GraphText from "@/components/graphComponents/GraphText.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
-    import {isLinkSetting, isMediaSetting, isNodeSetting, isVisNodeSetting} from "@/utils/typeCheck";
+    import {isLinkSetting, isMediaSetting, isNodeSetting, isVisAreaSetting, isVisNodeSetting} from "@/utils/typeCheck";
     import {
         commitGraphChange,
         commitItemChange,
@@ -207,15 +190,6 @@
     } from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
-
-    type GraphMode = 'normal' | 'geo' | 'timeline' | 'imp';
-
-    interface NavigationItem {
-        disabled: boolean;
-        document: DocumentSelfPart;
-        text: string;
-        color: string
-    }
 
     export default Vue.extend({
         name: "GraphViewBox",
@@ -231,9 +205,6 @@
         },
         data() {
             return {
-
-                // ------ drag ------
-                dragAble: true,
                 //drag起始位置
                 dragStartPoint: new Point(0, 0) as Point,
                 //正在drag
@@ -255,17 +226,6 @@
                 isSelecting: false as boolean,
                 selectRect: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}),
 
-                // ------card-------
-                showCardId: 0 as number,
-                closeCardId: 0 as number,
-                mouseOnCard: false,
-                //card属性
-                card: {
-                    width: 240,
-                    height: 300
-                },
-                //card的位置
-                cardLocList: [] as any[],
                 //控制可视的标签
                 labelViewDict: {
                     "node": {},
@@ -281,16 +241,22 @@
                 startNode: null as null | VisNodeSettingPart,
                 newLinkEndPoint: new Point(0, 0),
                 isLinking: false,
+
+                // 各种选项设置
+                // importance 模式
+                importanceOn: true,
+                // 标签颜色 模式
+                labelColorOn: false,
+                // 显示隐藏模式
+                showHide: false,
+
+                //视窗
+                viewBox: new RectByPoint({x: 404, y: 102}, {x: 960, y: 540}),
             }
         },
         props: {
             graph: {
                 type: Object as () => GraphSelfPart,
-                required: true
-            },
-
-            viewBox: {
-                type: Object as () => RectByPoint,
                 required: true
             },
 
@@ -324,17 +290,17 @@
                 default: false
             },
 
-            //模式
-            mode: {
-                type: String as () => GraphMode,
-                default: "normal",
-            },
-
             //是否是编辑模式
             editMode: {
                 type: Boolean,
                 default: false
             },
+
+            //可以拖动
+            dragAble: {
+                type: Boolean,
+                default: false
+            }
 
         },
         computed: {
@@ -354,24 +320,10 @@
                 // containerRect形式
                 return this.viewBox.positiveRect()
             },
-            containerStyle: function (): CSSProp {
-                return this.viewBox.getDivCSS(
-                    {borderWidth: 0, overflow: "hidden"}
-                )
-            },
             // 所有的孩子Document
             childDocumentList: function (): GraphSelfPart[] {
                 let docList = this.$store.getters.documentList as GraphSelfPart[];
                 return docList.filter(doc => doc.root && doc.root._id === this.graph._id)
-            },
-            navigationList: function (): NavigationItem[] {
-                let result: DocumentSelfPart[] = (this.graph.rootList).concat([this.graph]);
-                return result.map(doc => ({
-                    disabled: doc._id === this.graph._id,
-                    document: doc,
-                    text: this.dataManager.nodeManager[doc._id].Info.Name,
-                    color: doc._id === this.graph._id ? 'grey' : 'royalblue'
-                }) as NavigationItem)
             },
             // 未被删除的Graph
             activeGraphList: function (): GraphSelfPart[] {
@@ -389,7 +341,7 @@
                 let baseContainer = new RectByPoint({x: 0, y: 0}, {
                     x: this.containerRect.width,
                     y: this.containerRect.height
-                }, 0); // 起始坐标置为(0,0)
+                }); // 起始坐标置为(0,0)
 
                 let basePoint = getPoint(this.graph.baseNode.Setting.Base).multiRect(this.containerRect);
                 // 基础点就是Graph.baseNode点
@@ -475,6 +427,52 @@
                 return this.nodes.map(node => this.dataManager.nodeManager[node._id])
             },
 
+            nodeRewriteSettingList: function (): NodeSettingGraph[] {
+                return this.nodes.map((node, index) => {
+                    let setting = node.Setting;
+                    let size = (this.importanceOn ? this.impScaleRadius[index] : setting.Base.size) * this.realScale;
+                    size <= 8 && (size = 8);
+                    // 根据重要度比例重写尺度
+                    let Base = {
+                        ...setting.Base,
+                        size
+                    } as BaseSize;
+
+                    // 根据标签种类重写颜色
+                    let View = {
+                        ...setting.View,
+                        color: this.labelColorOn ? '#000000' : setting.View.color
+                    };
+                    return {
+                        ...setting,
+                        Base,
+                        View
+                    } as NodeSettingGraph
+                })
+            },
+
+            mediaRewriteSettingList: function (): MediaSetting[] {
+                return this.medias.map((media) => {
+                    let setting = media.Setting;
+                    let size = (setting.Base.size) * this.realScale;
+                    size <= 50 && (size = 50);
+                    let Base = {
+                        ...setting.Base,
+                        size
+                    } as BaseSize;
+                    return {
+                        ...setting,
+                        Base
+                    } as MediaSetting
+                })
+            },
+
+            textRewriteSettingList: function (): TextSetting[] {
+                return this.texts.map((text) => {
+                    return text.Setting
+                })
+            },
+
             links: function (): LinkSettingPart[] {
                 let result: LinkSettingPart[] = [];
                 this.activeGraphList.map(graph => {
@@ -489,10 +487,6 @@
             // 只有自身的medias
             medias: function (): MediaSettingPart[] {
                 return this.graph.Content.medias.filter(item => !item.isDeleted)
-            },
-
-            mediaIdList: function (): id[] {
-                return this.medias.map(media => media._id)
             },
 
             notes: function (): NoteSettingPart[] {
@@ -523,63 +517,39 @@
             },
 
             selectedItems: function (): GraphItemSettingPart[] {
-                return this.nodes.filter(item => item.State.isSelected)
+                return this.allItems.filter(item => item.State.isSelected)
             },
 
-            impList(): number[] {
-                return this.nodeInfoList.map(info => info.Ctrl.Imp)
-            },
-            impMax(): number {
-                return maxN(this.impList)[0]
-            },
-            impMin(): number {
-                return minN(this.impList)[0]
-            },
+            //重要度尺寸比例
             impScaleRadius(): number[] {
-                if (this.impMax !== this.impMin) {
+                let impList = this.nodeInfoList.map(info => info ? info.Ctrl.Imp : 0);
+                let [min, max] = [maxN(impList)[0], minN(impList)[0]];
+                if (min !== max) {
                     const minRadius = 16;
-                    const maxRadius = 24;
-                    let k = (maxRadius - minRadius) / (this.impMax - this.impMin);
-                    return this.impList.map(imp => {
-                        let radius = ((imp - this.impMin) * k + minRadius) * this.realScale;
-                        radius < 12 && (radius = 12);
-                        return radius
+                    const maxRadius = 36;
+                    let k = (maxRadius - minRadius) / (max - min);
+                    return impList.map(imp => {
+                        return ((imp - min) * k + minRadius)
                     });
                 } else {
-                    return this.impList.map(() => 16)
+                    return impList.map(() => 16)
                 }
             },
+
             realScale(): number {
                 return this.scale / 100
             },
 
-            //节点locationX
             nodeLocation: function (): RectByPoint[] {
-                return this.nodes.map((node, index) => {
-                    let width = node.Setting.Base.size !== 0
-                        ? node.Setting.Base.size * this.realScale
-                        : this.impScaleRadius[index] * this.realScale;
-                    let height = width * node.Setting.Base.scaleX;
-                    return this.getRectByPoint(width, height, node)
-                })
+                return this.nodes.map((node, index) => this.getRectByPoint(this.nodeRewriteSettingList[index].Base, node.parent));
             },
 
             mediaLocation: function (): RectByPoint[] {
-                return this.medias.map(media => {
-                    let width = media.Setting.Base.size * this.realScale >= 50
-                        ? media.Setting.Base.size * this.realScale
-                        : 50;
-                    let height = width * media.Setting.Base.scaleX;
-                    return this.getRectByPoint(width, height, media)
-                })
+                return this.medias.map((media, index) => this.getRectByPoint(this.mediaRewriteSettingList[index].Base, media.parent))
             },
 
-            svgLocation: function (): RectByPoint[] {
-                return this.texts.map(svg => {
-                    let width = svg.Setting.Base.size * this.realScale;
-                    let height = width * svg.Setting.Base.scaleX;
-                    return this.getRectByPoint(width, height, svg)
-                })
+            textLocation: function (): RectByPoint[] {
+                return this.texts.map((text, index) => this.getRectByPoint(this.textRewriteSettingList[index].Base, text.parent))
             },
 
             //关系midX
@@ -655,9 +625,7 @@
 
             //显示节点
             showNode: function (): boolean[] {
-                return this.nodes.map(node =>
-                    // 父组件要炸开
-                    (node.isFatherExplode && this.labelViewDict[node._type][node._label] && !node.isDeleted) ||
+                return this.nodes.map((node) => (node.isFatherExplode && this.labelViewDict[node._type][node._label]) ||
                     node._id === this.graph._id
                 )
             },
@@ -667,22 +635,17 @@
                 return this.links.map(link =>
                     link.isFatherExplode && // 父组件要炸开
                     this.labelViewDict.link[link._label] &&
-                    !link.isDeleted &&
                     this.getTargetInfo(link.Setting._start).show &&
                     this.getTargetInfo(link.Setting._end).show
                 )
             },
 
             showMedia: function (): boolean[] {
-                return this.medias.map(media =>
-                    this.labelViewDict.media[media._label] &&
-                    !media.isDeleted &&
-                    media.Setting.Show.showAll
-                )
+                return this.medias.map((media) => this.labelViewDict.media[media._label])
             },
 
-            showSvg: function (): boolean[] {
-                return this.texts.map(svg => !svg.isDeleted && svg.Setting.Show.showAll)
+            showText: function (): boolean[] {
+                return this.texts.map(() => true)
             },
 
             //选择框的相关设置
@@ -698,44 +661,30 @@
                 }
             },
 
-            viewBoxToolStyle: function (): CSSProp {
-                return {
-                    position: 'absolute',
-                    left: this.containerRect.width * 0.85 + 'px',
-                    top: this.containerRect.height * 0.7 + 'px',
-                }
-            },
-
-            topNavigationStyle: function (): CSSProp {
-                return {
-                    position: 'absolute',
-                    left: '0px',
-                    top: '0px',
-                    width: '100%',
-                    height: '60px'
-                }
-            },
-
             selectorRect: function (): AreaRect {
                 return this.selectRect.positiveRect()
             },
 
+            allItems: function (): GraphItemSettingPart[] {
+                let result = [] as GraphItemSettingPart[];
+                result.push(...this.nodes, ...this.links, ...this.medias, ...this.texts);
+                return result
+            },
+
         },
         methods: {
-            getRectByPoint(width: number, height: number, setting: VisAreaSettingPart) {
+            getRectByPoint(base: BaseSize, parent: GraphSelfPart) {
                 // 将绝对的坐标点转化为矩形
                 //width,height: 从源点引申的尺寸，源点在左上角
-                let graphMeta = this.getGraphMetaData(setting.parent._id);
-                const getAbsPointFromParent = (node: VisAreaSettingPart, parentMetaData: GraphMetaData) => {
-                    let delta = getPoint(node.Setting.Base)
-                        .decrease(node.parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
-                        .multiRect(parentMetaData.rect.positiveRect()); // 乘以矩形 e.g. -0.2 * 1000 = -200
-                    delta.add(parentMetaData.absolute); // 加上绝对坐标 e.g. -100 + 320 = 220
-                    return delta
-                };
-                let startPoint = this.pointMoveComputed(getAbsPointFromParent(setting, graphMeta));
+                let [width, height] = [base.size, base.size * base.scaleX];
+                let graphMeta = this.getGraphMetaData(parent._id);
+                let point = getPoint(base)
+                    .decrease(parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
+                    .multiRect(graphMeta.rect.positiveRect()); // 乘以矩形 e.g. -0.2 * 1000 = -200
+                point.add(graphMeta.absolute); // 加上绝对坐标 e.g. -100 + 320 = 220
+                let startPoint = this.pointMoveComputed(point);
                 let endPoint = startPoint.copy().addRect({width, height});
-                return new RectByPoint(startPoint, endPoint)
+                return new RectByPoint(startPoint, endPoint);
             },
 
             getSubGraphByRect(absRect: RectByPoint) {
@@ -771,9 +720,7 @@
                         this.$set(node.Setting.Base, 'y', node.Setting.Base.y + delta.y);
                     };
                     if (this.selectedItems.length > 0) {
-                        this.selectedItems.filter(item => {
-                            isNodeSetting(item);
-                        });
+                        this.selectedItems.map(item => isVisAreaSetting(item) && moveFunc(item))
                     } else {
                         moveFunc(target)
                     }
@@ -848,8 +795,8 @@
                     this.moveStartPoint.update($event);
                 } else {
                     if (this.renderSelector) {
-                        this.$set(this, 'isSelecting', true);
-                        let start = getPoint($event).decrease(this.containerRect);
+                        this.isSelecting = true;
+                        let start = this.getPointInBox($event);
                         this.selectRect.start.update(start);
                         this.selectRect.end.update(start)
                     }
@@ -857,7 +804,7 @@
             },
 
             selecting($event: MouseEvent) {
-                let end = getPoint($event).decrease(this.containerRect);
+                let end = this.getPointInBox($event);
                 //选择集
                 if ($event.ctrlKey && this.isMoving) {
                     this.lastViewPoint.add($event).decrease(this.moveStartPoint);
@@ -892,7 +839,7 @@
                         this.selectRect.checkInRect(this.mediaLocation[index].midPoint()) && this.showMedia[index]
                     );
                     let texts = this.texts.filter((svg, index) =>
-                        this.selectRect.checkInRect(this.svgLocation[index].midPoint()) && this.showSvg[index]
+                        this.selectRect.checkInRect(this.textLocation[index].midPoint()) && this.showText[index]
                     );
                     nodes.map(node => {
                             //如果选中了Document 对应的Node
@@ -907,7 +854,7 @@
                 }
             },
 
-            clickSvg($event: MouseEvent) {
+            clickSvg() {
                 this.isLinking = false;
                 this.clearSelected('all')
             },
@@ -916,14 +863,9 @@
                 if (items === 'all') {
                     Object.values(this.dataManager.graphManager).map(document => document.selectAll('isSelected', false));
                 } else {
-                    items.map(item => this.$set(item.State, 'isSelected', false));
+                    items.map(item => item.updateState('isSelected', false));
                 }
                 this.isDragging = false;
-            },
-
-            subMoveEnd($event: MouseEvent) {
-                this.selecting($event);
-                this.isMoving = false
             },
 
             getLabelViewDict: function () {
@@ -944,7 +886,7 @@
                 let result;
                 const equal = (nodePart: VisNodeSettingPart, nodeSetting: VisualNodeSetting) =>
                     (nodePart._id === nodeSetting.id) &&
-                    (nodePart.parent._id === nodeSetting.parentId || nodePart._type === 'document')
+                    (nodePart.parent._id === nodeSetting.parentId || nodePart._type === 'document');
                 // 不仅id相同 必须是同一个专题下 或者node本身就是专题节点
                 node
                     ? isMediaSetting(node)
@@ -977,12 +919,16 @@
                 this.scale += delta;
                 this.scale < 20 && (this.scale = 20);
                 this.scale > 500 && (this.scale = 500);
-                let event = getPoint($event).decrease(this.containerRect);
+                let event = this.getPointInBox($event);
                 let eventCopy = event.copy();
                 // 先后顺序很重要
                 event.decrease(this.lastViewPoint).divide(oldScale);
                 this.viewPoint.add(event);
                 this.lastViewPoint.update(eventCopy);
+            },
+
+            getPointInBox($event: MouseEvent | WheelEvent) {
+                return getPoint($event).decrease(this.viewBox.start)
             },
 
             explode(node: GraphNodeSettingPart) {
@@ -1010,7 +956,7 @@
                 setting.Base.y = (height * y - start.y / scale) / (graph.rect.height);
             },
 
-            updateSize: function (start: PointMixed, end: PointMixed, setting: Setting) {
+            updateSize: function (start: PointMixed, end: PointMixed, setting: NodeSettingGraph | MediaSetting) {
                 // 视觉上的更新尺寸start, end
                 let scale = this.realScale;
                 // 更新起始点
@@ -1036,10 +982,6 @@
                             : this.nodes
             },
 
-            gotoDocument(graph: GraphSelfPart) {
-                commitGraphChange({graph})
-            },
-
             setLabel(_type: GraphItemType, _label: string) {
                 let value = this.labelViewDict[_type][_label];
                 this.$set(this.labelViewDict[_type], _label, !value)
@@ -1059,6 +1001,20 @@
                 let list: GraphItemSettingPart[] = this.getItemList(_type);
                 list.filter(item => item._label === _label).map(item => item.updateState('isSelected'))
             },
+
+            onResize() {
+                //@ts-ignore
+                //todo 把组件改成一个基础组件
+                let viewBox: HTMLElement = this.$refs.viewBox;
+                let rect = viewBox.getBoundingClientRect();
+                this.viewBox.updateFromArea(rect);
+                this.initViewPoint();
+            },
+
+            initViewPoint() {
+                this.viewPoint.update(this.viewBox.midPoint());
+                this.lastViewPoint.update(this.viewBox.midPoint())
+            }
         },
 
         watch: {
@@ -1067,10 +1023,11 @@
             }
         },
         created: function (): void {
-            this.getLabelViewDict()
+            this.getLabelViewDict();
         },
         mounted: function (): void {
-            this.getLabelViewDict()
+            this.getLabelViewDict();
+            this.onResize()
         },
         record: {
             status: 'editing'

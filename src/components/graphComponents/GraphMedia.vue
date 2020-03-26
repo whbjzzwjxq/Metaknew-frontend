@@ -1,7 +1,7 @@
 <template>
     <rect-container
         :container="container"
-        :is-selected="setting.isSelected"
+        :is-selected="state.isSelected"
         @update-size="updateSize"
         class="media"
         expand
@@ -23,9 +23,9 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {MediaInfoPart, MediaSettingPart} from "@/class/graphItem";
+    import {MediaInfoPart} from "@/class/graphItem";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {getPoint, Point, RectByPoint} from "@/class/geometric";
+    import {getPostRectFromBase, Point, RectByPoint} from "@/class/geometric";
     import RectContainer from "@/components/container/RectContainer.vue";
 
     export default Vue.extend({
@@ -40,20 +40,20 @@
         props: {
             //基础数据
             setting: {
-                type: Object as () => MediaSettingPart,
+                type: Object as () => MediaSetting,
                 required: true,
             },
 
             //范围框
-            container: {
-                type: Object as () => RectByPoint,
+            state: {
+                type: Object as () => NodeState,
                 required: true
             },
 
             //缩放情况
             scale: {
                 type: Number as () => number,
-                required: true
+                default: 1
             },
 
             index: {
@@ -61,9 +61,8 @@
                 required: true
             },
 
-            // GraphViewBox
-            viewBox: {
-                type: Object as () => AreaRect,
+            container: {
+                type: Object as () => RectByPoint,
                 required: true
             }
         },
@@ -86,14 +85,14 @@
         },
         methods: {
             updateSize(start: PointMixed, end: PointMixed) {
-                this.$emit('update-size', start, end, this.setting.Setting)
+                this.$emit('update-size', start, end, this.setting)
             },
 
             updateSizeByNumber(newWidth: number): void {
                 let {width, height} = this.containerRect;
                 // 成比例更新
                 let x = newWidth - width;
-                let y = this.setting.Setting.Base.scaleX * newWidth - height;
+                let y = this.setting.Base.scaleX * newWidth - height;
                 let delta = new Point(x, y).multi(0.5);
                 this.updateSize(delta.copy().multi(-1), delta);
             },
@@ -109,7 +108,6 @@
         record: {
             status: 'editing',
             description: '在ViewBox中的Media'
-            //todo 尺寸调节
         },
     })
 </script>

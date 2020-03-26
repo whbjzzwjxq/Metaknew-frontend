@@ -3,7 +3,8 @@ declare global {
         'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
         'i-eye' | 'i-media-type' | 'i-collapse' | 'i-arrow' | 'i-knowledge-level' |
         'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
-        'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge' | 'i-shape' | 'i-save'
+        'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge' | 'i-shape' | 'i-save' |
+        'i-mode'
 
     type IconAlias = 'i-show' | 'i-normal'
 
@@ -47,7 +48,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         share: 'mdi-share-variant',
         search: 'mdi-magnify',
         add: 'mdi-plus',
-        select: ''
+        select: '',
+        mode: 'mdi-state-machine'
     },
     'i-delete-able': {
         true: 'mdi-delete',
@@ -178,6 +180,13 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         saveAll: 'mdi-content-save-settings',
         savePublish: 'mdi-content-save-move',
         saveDraft: 'mdi-content-save-edit'
+    },
+    'i-mode': {
+        state: 'mdi-state-machine',
+        normal: 'mdi-graph-outline',
+        timeline: 'mdi-chart-timeline-variant',
+        geo: 'mdi-map-marker-circle',
+        edit: 'mdi-pencil'
     }
 };
 

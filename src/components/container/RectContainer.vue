@@ -105,7 +105,7 @@
             borderDict: function (): Record<string, { css: CSSProp }> {
                 // 这里要把开始点置为0,0 重画一个矩形
                 let reGroupRect = new RectByPoint({x: 0, y: 0},
-                    this.container.end.copy().decrease(this.container.start), 0);
+                    this.container.end.copy().decrease(this.container.start));
                 return transformBorderToRect(
                     reGroupRect,
                     this.listenBorder,

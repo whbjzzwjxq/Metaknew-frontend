@@ -162,4 +162,14 @@ declare global {
         type: 'document'
         pLabel: DocumentLabel
     }
+
+    type ExtractType<O, T> = { [K in keyof O]: O[K] extends T ? O[K] : unknown }
+
+    type Diff<T extends string, U> = ({ [P in T]: P } &
+        { [P in keyof U]: U[P] extends string ? string : never } & {
+        [x: string]: never
+    })[T]
+
+    type ExtractStringKey<A> = Diff<Extract<keyof A, string>, ExtractType<A, string>>
+
 }
