@@ -22,7 +22,18 @@
                 </template>
             </v-range-slider>
         </div>
+        <svg style="width: 100%; height: 100%">
+            <graph-node
+                v-for="(node, index) in nodes"
+                v-show="showItems[index] && position[index].x >= 0"
+                :key="index"
+                :setting="node.Setting"
+                :state="node.State"
+                :position="position[index]"
+            >
 
+            </graph-node>
+        </svg>
     </div>
 </template>
 
@@ -35,18 +46,31 @@
         MediaSettingPart,
         NodeInfoPart
     } from "@/class/graphItem";
-    import {TimelineItem} from "@/interface/interfaceTimeline";
+    import {FakeNodeSettingPart, Rate, Time, TimelineItem} from "@/interface/interfaceTimeline";
     import moment from "moment";
     import {getPoint, RectByPoint} from "@/class/geometric";
+    import {isNodeInfoPart} from "@/utils/typeCheck";
+    import {nodeSettingTemplate, nodeStateTemplate} from "@/utils/template";
+    import GraphNode from "@/components/graphComponents/GraphNode.vue";
 
+    const divide = 5; // 分成10部分
+    const getLocationDict = (divide: number) => {
+        let result: Record<number, any[]> = {};
+        for (let i = 0; i < divide; i++) {
+            result[i] = []
+        }
+        return result
+    };
     export default Vue.extend({
         name: "GraphTimeline",
-        components: {},
+        components: {
+            GraphNode
+        },
         data: function () {
             return {
                 scale: 100,
                 //两个标签占据百分之多少的时间轴
-                rangeBase: [0, 0.5],
+                range: [0, 1000] as [Time, Time],
                 //视觉Box
                 viewBox: new RectByPoint({x: 404, y: 102}, {x: 960, y: 540}),
                 // 允许重复
@@ -58,8 +82,8 @@
                 // 不选择的属性
                 unSelectKeys: [] as string[],
                 // 占据比例
-                currentMin: 0,
-                currentMax: 1
+                currentMin: 0 as Rate,
+                currentMax: 1 as Rate,
             }
         },
         props: {},
@@ -83,9 +107,15 @@
             originMediaInfo: function (): MediaInfoPart[] {
                 return this.originMedias.map(media => this.dataManager.mediaManager[media._id])
             },
+            infoList: function (): (NodeInfoPart | MediaInfoPart)[] {
+                let result = [];
+                result.push(...this.originNodeInfo);
+                result.push(...this.originMediaInfo);
+                return result
+            },
             allTimeItems: function (): Record<id, TimelineItem[]> {
                 let result: Record<id, TimelineItem[]> = {};
-                this.originNodeInfo.map(info => {
+                this.infoList.map(info => {
                     result[info._id] = this.infoToTimeItem(info)
                 });
                 return result
@@ -93,39 +123,80 @@
             // 所有可用项目
             availableTimeItems: function (): TimelineItem[] {
                 let result: TimelineItem[] = [];
-                Object.entries(this.allTimeItems).map(([id, items]) => {
-                    // 屏蔽key 和 值不为-Infinity
+                Object.values(this.allTimeItems).map((items) => {
+                    // 屏蔽同一id 和 值不为-Infinity
                     let availableItems = items.filter(item => item.time !== -Infinity);
-                    result.push(...availableItems)
+                    this.oneInfoOneItem && availableItems[0]
+                        ? result.push(availableItems[0])
+                        : result.push(...availableItems)
                 });
                 result.sort((a, b) => a.time - b.time);
                 return result
             },
+            showItems: function (): boolean[] {
+                return this.availableTimeItems.map((item) => {
+                    let result = [
+                        // 排除key
+                        !this.unSelectKeys.includes(item.key),
+                        // 排除范围外的内容
+                        this.checkInRange(item.time)
+                    ];
+                    return !result.includes(false)
+                });
+            },
+            nodes: function (): FakeNodeSettingPart[] {
+                return this.availableTimeItems.map(item => {
+                    let image = isNodeInfoPart(item.info.Info)
+                        ? item.info.Info.MainPic
+                        : item.info.Ctrl.Thumb;
+                    let name = item.info.Info.Name;
+                    let {_id, _type, _label} = item.info;
+                    return {
+                        State: nodeStateTemplate(),
+                        Setting: nodeSettingTemplate(_id, _type, _label, name, image)
+                    }
+                })
+            },
+            position: function (): PointObject[] {
+                let locationDict = getLocationDict(divide);
+                return this.availableTimeItems.map((item, index) => {
+                    let x = this.currentRateCount(item.time); // 屏幕上的 0 - 1
+                    let location = Math.floor(x * divide); // 位置区间
+                    location === divide && (location = divide - 1); // 处理边界情况
+                    // 屏幕外和本就不渲染的内容不渲染
+                    if (x < 0 || x > 1 || !this.showItems[index]) {
+                        return {x: -100, y: -100}
+                    } else {
+                        locationDict[location].push(item);
+                        let index = locationDict[location].length;
+                        if (this.scale > 100) {
+                            // 时间轴是满的
+                            return {x: x * this.viewBox.width, y: index * 54 + 24}
+                        } else {
+                            // 时间轴没有铺满屏幕
+                            return {
+                                x: (1 / 2 + (x - 1 / 2) * (this.scale / 100)) * this.viewBox.width,
+                                y: index * 54 + 24
+                            }
+                        }
+                    }
+                })
+            },
             // 所有项目的最小值
-            min: function (): number {
-                return this.availableTimeItems[0]
-                    ? this.availableTimeItems[0].time
+            min: function (): Time {
+                let min = this.availableTimeItems[0];
+                return min
+                    ? min.time - Math.abs(min.time * 0.2) //min再小一些 防止边界情况
                     : 0
             },
             // 所有项目的最大值
-            max: function (): number {
-                let m = this.availableTimeItems[this.availableTimeItems.length - 1];
-                return m
-                    ? m.time
-                    : 1000 * 60 * 30 * 365 // 一秒
+            max: function (): Time {
+                let max = this.availableTimeItems[this.availableTimeItems.length - 1];
+                return max && max.time !== this.min
+                    ? max.time + Math.abs(max.time * 0.2) // max 再大一些 防止边界情况
+                    : 1000 * 60 * 30 * 365 // 一年
             },
 
-            range: {
-                get(): [number, number] {
-                    let [a, b] = this.rangeBase;
-                    return [this.totalRangeCount(a), this.totalRangeCount(b)]
-                },
-                set(value: [number, number]): void {
-                    const backCount = (v: number) => (v - this.min) / (this.delta);
-                    let [a, b] = value;
-                    this.rangeBase = [backCount(a), backCount(b)]
-                }
-            },
             sliderStyle: function (): CSSProp {
                 let addition: CSSProp;
                 this.scale > 100
@@ -142,14 +213,12 @@
                     ...addition
                 }
             },
-            delta: function(): number {
+            delta: function (): number {
                 return this.max - this.min <= 0
                     ? 1000
                     : this.max - this.min
             },
-            showDelta: function(): number {
-                return (this.currentMax - this.currentMin) * this.delta
-            },
+
             step: function (): number {
                 return (this.delta) / this.ticks
             }
@@ -158,7 +227,7 @@
             onScroll($event: WheelEvent) {
                 let oldScale = this.scale;
                 let delta;
-                let [min, max] = [80, 1000];
+                let [min, max] = [60, 1000];
                 $event.deltaY < 0
                     ? delta = 20
                     : delta = -20;
@@ -173,8 +242,8 @@
                 let newMin = currentValue - (currentValue - this.currentMin) / this.scale * oldScale;
                 let newMax = currentValue + (this.currentMax - currentValue) / this.scale * oldScale;
                 // 边界处理
-                (newMin < 0 || this.scale < 100) && (newMin = 0);
-                (newMax > 1 || this.scale < 100) && (newMax = 1);
+                (newMin < 0 || this.scale <= 100) && (newMin = 0);
+                (newMax > 1 || this.scale <= 100) && (newMax = 1);
                 this.currentMin = newMin;
                 this.currentMax = newMax;
             },
@@ -211,18 +280,31 @@
             },
 
             //根据比例计算min max之间的值
-            rangeCount(a: number, b: number, v: number) {
+            rangeCount(a: Time, b: Time, v: Rate): Time {
                 return (a - b) * v + b
             },
 
             //总的计算
-            totalRangeCount(v: number) {
-                  return this.rangeCount(this.max, this.min, v)
+            totalRangeCount(v: Rate) {
+                return this.rangeCount(this.max, this.min, v)
             },
 
             //现有的计算
-            currentRangeCount(v: number) {
+            currentRangeCount(v: Rate) {
                 return this.rangeCount(this.currentMax, this.currentMin, v)
+            },
+
+            //计算全局比例
+            totalRateCount(v: Time) {
+                return (v - this.min) / (this.delta) as Rate;
+            },
+
+            //计算屏幕内比例
+            currentRateCount(v: Time) {
+                let min = this.totalRangeCount(this.currentMin);
+                let max = this.totalRangeCount(this.currentMax);
+                let delta = max - min;
+                return (v - min) / (delta) as Rate;
             },
 
             onResize() {
@@ -230,14 +312,22 @@
                 let viewBox: HTMLElement = this.$refs.viewBox;
                 let rect = viewBox.getBoundingClientRect();
                 this.viewBox.updateFromArea(rect);
+            },
+            checkInRange(value: number) {
+                return value >= this.range[0] && this.range[1] >= value
             }
         },
         record: {
-            status: 'empty',
+            status: 'editing',
             description: ''
+            //todo 1. 碰撞检测系统 2. 重写画图组件 timeline和graph可以用同一组件 3. 更多条件 4. 时间显示更细致
+        },
+        created(): void {
+            this.range[0] = this.min;
+            this.range[1] = this.max;
         },
         mounted(): void {
-            this.onResize()
+            this.onResize();
         }
     })
 </script>

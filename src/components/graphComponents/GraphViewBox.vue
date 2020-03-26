@@ -27,7 +27,7 @@
                 :state="node.State"
                 :id="node._id"
                 :setting="nodeRewriteSettingList[index]"
-                :position="nodeLocation[index]"
+                :position="nodeLocation[index].positiveRect()"
                 :scale="realScale"
                 @mouseenter.native="mouseEnter(node)"
                 @mouseleave.native="mouseLeave(node)"
@@ -205,9 +205,6 @@
         },
         data() {
             return {
-
-                // ------ drag ------
-                dragAble: true,
                 //drag起始位置
                 dragStartPoint: new Point(0, 0) as Point,
                 //正在drag
@@ -229,17 +226,6 @@
                 isSelecting: false as boolean,
                 selectRect: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0}),
 
-                // ------card-------
-                showCardId: 0 as number,
-                closeCardId: 0 as number,
-                mouseOnCard: false,
-                //card属性
-                card: {
-                    width: 240,
-                    height: 300
-                },
-                //card的位置
-                cardLocList: [] as any[],
                 //控制可视的标签
                 labelViewDict: {
                     "node": {},
@@ -309,6 +295,12 @@
                 type: Boolean,
                 default: false
             },
+
+            //可以拖动
+            dragAble: {
+                type: Boolean,
+                default: false
+            }
 
         },
         computed: {

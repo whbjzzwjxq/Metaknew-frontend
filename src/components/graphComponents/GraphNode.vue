@@ -87,7 +87,6 @@
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
     import {RectByPoint} from "@/class/geometric";
-    import {GraphNodeSettingPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: 'GraphNode',
@@ -104,7 +103,7 @@
 
             //位置
             position: {
-                type: Object as () => RectByPoint,
+                type: Object as () => PointMixed,
                 required: true
             },
 
@@ -117,16 +116,14 @@
                 type: Object as () => NodeState,
                 required: true
             },
-
-            id: {
-                type: [String, Number],
-                required: true
-            }
         },
         computed: {
+            id: function(): id {
+                return this.setting._id
+            },
             transform: function (): string {
-                let rect = this.position.positiveRect();
-                return 'translate(' + rect.x + ' ' + rect.y + ')'
+                let {x, y} = this.position;
+                return 'translate(' + x + ' ' + y + ')'
             },
 
             isSelected: function (): boolean {
