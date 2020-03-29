@@ -4,7 +4,12 @@
 
         </card-root>
         <div class="d-flex flex-column flex-grow-1">
-            <graph-top-navigation :document="currentDocument"></graph-top-navigation>
+            <graph-top-navigation
+                :document="currentDocument"
+                :style="navigationStyle"
+                class="unselected">
+
+            </graph-top-navigation>
             <router-view class="flex-grow-1"></router-view>
         </div>
     </div>
@@ -30,7 +35,7 @@
         data() {
             return {
                 loading: true,
-                graphRouteRegex: new RegExp('graph.*'),
+                graphRouteRegex: /graph.*/,
                 editRegex: /.*-edit/
             }
         },
@@ -56,12 +61,15 @@
             allComponentsStyle: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            viewBox: function (): RectByPoint {
-                return this.allComponentsStyle.viewBox
-            },
-            viewBoxStyle: function (): CSSProp {
-                return this.viewBox.getDivCSS({overflow: "hidden"})
-            },
+            navigationStyle: function (): CSSProp {
+                let {width} = this.allComponentsStyle.leftCard;
+                let {height} = this.allComponentsStyle.toolBar;
+                return {
+                    position: 'absolute',
+                    left: width + 'px',
+                    top: height + 'px'
+                }
+            }
         },
         methods: {},
         watch: {},

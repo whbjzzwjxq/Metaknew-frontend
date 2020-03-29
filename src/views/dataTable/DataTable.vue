@@ -97,7 +97,8 @@
         fieldSetting,
         FieldType,
         nodeLabelToProp,
-        PropDescriptionDict, ResolveType,
+        PropDescriptionDict,
+        ResolveType,
         ValueWithType,
     } from "@/utils/fieldResolve"
     import {deepClone, fieldHandler, getIndex} from "@/utils/utils"
@@ -109,6 +110,7 @@
     import {nodeInfoTemplate} from "@/utils/template";
     import {nodeBulkCreate} from "@/api/subgraph/node";
     import {dispatchUserLabelProps} from "@/store/modules/_dispatch";
+    import {commitSnackbarOn} from "@/store/modules/_mutations";
 
     interface HeaderItem {
         text: string,
@@ -420,6 +422,12 @@
                         for (let i in nodes) {
                             this.nodes.splice(_this.idList.indexOf(nodes[i].id), 1);
                             this.selected.splice(_this.idList.indexOf(nodes[i].id), 1)
+                            let payload = {
+                                actionName: 'nodeBulkCreate',
+                                color: 'success',
+                                content: '节点保存成功'
+                            } as SnackBarStatePayload;
+                            commitSnackbarOn(payload)
                         }
                     }
                 })
@@ -467,7 +475,7 @@
                 this.getNodeTemplate()
             },
 
-            extraProps () {
+            extraProps() {
                 this.getNodeTemplate()
             }
         },

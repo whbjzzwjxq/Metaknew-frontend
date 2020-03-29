@@ -1,5 +1,8 @@
 <template>
-    <div @wheel="onScroll" style="width: 100%; height: 100%; position: relative" v-resize="onResize" ref="viewBox">
+    <div @wheel="onScroll"
+         style="width: 100%; height: 100%; position: relative; overflow: hidden"
+         v-resize="onResize"
+         ref="viewBox">
         <!--        基础的Graph-->
         <svg
             width="100%"
@@ -131,17 +134,24 @@
         <!--        </graph-note>-->
 
         <div class="d-flex flex-row" style="position: absolute; left: 80%; top: 65%">
-            <graph-label-selector
-                v-if="renderLabelSelector"
-                :label-view-dict="labelViewDict"
-                @select-label="selectLabel"
-                @reset-label="resetLabel"
-                @set-label="setLabel"
-                class="justify-end">
-            </graph-label-selector>
-            <div>
+            <div class="d-flex flex-column align-end">
+                <div class="py-2">
+                <graph-label-selector
+                    v-if="renderLabelSelector"
+                    :label-view-dict="labelViewDict"
+                    @select-label="selectLabel"
+                    @reset-label="resetLabel"
+                    @set-label="setLabel">
+                </graph-label-selector>
+                </div>
+                <div class="py-2">
+                <v-chip @click="importanceOn = !importanceOn" class="unselected">
+                    {{importanceChipText}}
+                </v-chip>
+                </div>
+            </div>
+            <div class="pa-4">
                 <v-slider
-                    class="pl-3 pt-2"
                     v-model="scale"
                     :min="20"
                     :max="500"
@@ -182,12 +192,7 @@
     import GraphText from "@/components/graphComponents/GraphText.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting, isVisAreaSetting, isVisNodeSetting} from "@/utils/typeCheck";
-    import {
-        commitGraphChange,
-        commitItemChange,
-        commitSnackbarOn,
-        commitSubTabChange
-    } from "@/store/modules/_mutations";
+    import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
 
@@ -671,6 +676,10 @@
                 return result
             },
 
+            importanceChipText: function (): string {
+                return this.importanceOn ? '重要度模式: 开' : '重要度模式: 关'
+            },
+
         },
         methods: {
             getRectByPoint(base: BaseSize, parent: GraphSelfPart) {
@@ -719,7 +728,7 @@
                         this.$set(node.Setting.Base, 'x', node.Setting.Base.x + delta.x);
                         this.$set(node.Setting.Base, 'y', node.Setting.Base.y + delta.y);
                     };
-                    if (this.selectedItems.length > 0) {
+                    if (this.selectedItems.length >= 1) {
                         this.selectedItems.map(item => isVisAreaSetting(item) && moveFunc(item))
                     } else {
                         moveFunc(target)
