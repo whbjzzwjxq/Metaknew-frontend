@@ -51,7 +51,8 @@ const routes = [
                                 renderSelector: true,
                                 renderLabelSelector: true,
                                 renderCard: true,
-                                editMode: false
+                                editMode: false,
+                                dragAble: true
                             },
                             toolbarBottom: {}
                         },
@@ -84,7 +85,8 @@ const routes = [
                                 renderSelector: true,
                                 renderLabelSelector: true,
                                 renderCard: true,
-                                editMode: true
+                                editMode: true,
+                                dragAble: true
                             },
                             toolbarBottom: {}
                         },

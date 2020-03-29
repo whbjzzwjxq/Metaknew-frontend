@@ -1,6 +1,5 @@
 <template>
-    <div class="d-flex flex-column">
-        <v-menu offset-y open-on-click top :close-on-content-click="false">
+    <v-menu offset-y open-on-click top :close-on-content-click="false">
             <template v-slot:activator="{ on: menu }">
                 <v-chip v-on="{...menu}" :style="chipStyle">label selector</v-chip>
             </template>
@@ -51,7 +50,6 @@
                 </v-list-item>
             </v-list>
         </v-menu>
-    </div>
 </template>
 
 <script lang="ts">

@@ -435,7 +435,13 @@ const actions = {
                 idList.map(id => {
                     let graph = state.graphManager[id];
                     graph && (graph.updateStateSave())
-                })
+                });
+                let payload: SnackBarStatePayload = {
+                    color: 'success',
+                    actionName: 'documentCreate',
+                    content: '专题保存成功',
+                };
+                commitSnackbarOn(payload)
             })
         }
     }

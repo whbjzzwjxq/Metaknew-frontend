@@ -38,12 +38,12 @@
                         payload: {isDraft: false, isAuto: false},
                         toolTip: '保存所有专题'
                     },
-                    {
-                        name: this.saveGroup.saveDraft,
-                        _func: this.saveDocument,
-                        payload: {isDraft: true, isAuto: false},
-                        toolTip: '保存所有专题(草稿)'
-                    },
+                    // {
+                    //     name: this.saveGroup.saveDraft,
+                    //     _func: this.saveDocument,
+                    //     payload: {isDraft: true, isAuto: false},
+                    //     toolTip: '保存所有专题(草稿)'
+                    // },
                 ]
             },
 

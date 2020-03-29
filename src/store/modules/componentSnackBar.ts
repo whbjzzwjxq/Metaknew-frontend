@@ -2,11 +2,11 @@ declare global {
     interface SnackBarStatePayload {
         color: string,
         content: string,
+        actionName: string,
         buttonText?: string,
         action?: Function,
         actionObject?: Object,
-        actionName: string,
-        once: boolean,
+        once?: boolean,
         timeout?: number,
     }
 
@@ -34,10 +34,11 @@ const state: SnackBarState = {
 
 const mutations = {
     snackBarOn(state: SnackBarState, payload: SnackBarStatePayload) {
-        let name = payload.actionName;
-        if (!payload.once || !state.oncePool[name]) {
+        let {actionName, once} = payload;
+        once === undefined && (once = false);
+        if (!once || !state.oncePool[actionName]) {
             state.on = true;
-            state.oncePool[name] = true;
+            state.oncePool[actionName] = true;
             payload.timeout || (payload.timeout = 2000);
             payload.buttonText || (payload.buttonText = '');
             state.payload = payload;
