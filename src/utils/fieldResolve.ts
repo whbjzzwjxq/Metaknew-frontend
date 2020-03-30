@@ -115,7 +115,7 @@ export const baseNodeProp: () => PropDescriptionDict = () => ({
 });
 
 // node的属性
-export const nodePropType: PLabelPropsDict = {
+export const nodeWithLabelProp: () => PLabelPropsDict = () => ({
     DocGraph:
         {},
     ArchProject:
@@ -190,9 +190,8 @@ export const nodePropType: PLabelPropsDict = {
                 type: 'ArrayField',
                 resolve: 'name'
             }
-        },
-    BaseNode: {},
-};
+        }
+});
 
 // link的属性
 export const linkPropType: PLabelPropsDict = {
@@ -212,9 +211,11 @@ export const mediaPropType: PLabelPropsDict = {
     // todo 媒体属性获取
 };
 
-export function nodeLabelToProp(pLabel: string) {
-    return nodePropType[pLabel]
-        ? Object.assign({}, nodePropType[pLabel])
+export function nodeLabelToStandardProps(pLabel: string) {
+    // 返回标准的属性
+    let propGroup = nodeWithLabelProp()[pLabel];
+    return propGroup !== undefined
+        ? propGroup
         : {};
 }
 

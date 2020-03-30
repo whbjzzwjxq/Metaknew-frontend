@@ -162,7 +162,7 @@
             },
 
             removeItem: function (removedLabel: string, prop: string) {
-                this.$set(this.baseData, 'isEdit', true);
+                //pass
             },
 
             addItem: function (value: string[], prop: string) {

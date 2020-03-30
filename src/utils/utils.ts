@@ -4,13 +4,14 @@ import {
     commitFileTokenRefresh,
     commitGlobalIndexPlus,
     commitLoginDialogChange,
-    commitLoginOut,
-    commitLoginIn
+    commitLoginIn,
+    commitLoginOut
 } from "@/store/modules/_mutations";
 import {AxiosResponse} from "axios";
-import {FieldType} from "@/utils/fieldResolve";
+import {ExtraProps, fieldDefaultValue, FieldType, nodeLabelToStandardProps} from "@/utils/fieldResolve";
 import {userEditDataQuery} from "@/api/user/dataApi";
 import store from '@/store/index'
+import Vue from "vue";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -375,3 +376,31 @@ export const fieldHandler = () => ({
     "BooleanField": (value: any) => value === 'false' ? false : Boolean(value),
     "ImageField": (value: any) => value.toString(),
 } as Record<FieldType, (value: any) => any>);
+
+export function infoChangePLabel(info: BaseNodeInfo, newLabel: string) {
+    let {StandardProps, ExtraProps} = info;
+    let standKeys = Object.keys(StandardProps);
+    let extraKeys = Object.keys(ExtraProps);
+    let newProps: ExtraProps = {};
+    Object.entries(nodeLabelToStandardProps(newLabel)).map(([prop, description]) => {
+        let {resolve, type} = description;
+        let value;
+        if (standKeys.indexOf(prop) >= 0) {
+            // 继承值
+            value = StandardProps[prop].value;
+            delete StandardProps[prop]
+        } else if (extraKeys.indexOf(prop) >= 0) {
+            // 从extraProps里取出来
+            value = ExtraProps[prop].value;
+            delete ExtraProps[prop]
+        } else {
+            // 默认值
+            value = fieldDefaultValue[type]
+        }
+        newProps[prop] = {resolve, type, value};
+    });
+    //把剩下的属性移到ExtraProps里
+    Object.assign(ExtraProps, StandardProps);
+    Vue.set(info, "StandardProps", newProps);
+    info.PrimaryLabel = newLabel;
+}

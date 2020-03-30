@@ -102,7 +102,7 @@
                 return [
                     {
                         name: getIcon("i-delete-able", deleteIcon),
-                        _func: this.deleteItem,
+                        _func: this.delSingleNode,
                         disabled: !deleteIcon,
                         render: editMode
                     },
@@ -118,7 +118,7 @@
             }
         },
         methods: {
-            deleteItem() {
+            delSingleNode() {
                 this.node.updateState('isDeleted');
                 let graph = this.dataManager.graphManager[this.node._id];
                 if (graph) {

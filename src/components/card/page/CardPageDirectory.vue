@@ -290,7 +290,7 @@
                 } as DirectoryItemDocument;
             },
 
-            deleteItem(item: DirectoryItem) {
+            delSingleNode(item: DirectoryItem) {
                 this.getOriginItem(item).updateState('isDeleted', true);
                 let graph = this.dataManager.graphManager[item.id];
                 if (item.type === 'document' && graph) {

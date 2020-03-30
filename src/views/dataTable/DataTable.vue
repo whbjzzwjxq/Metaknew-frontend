@@ -13,7 +13,7 @@
                 </div>
             </v-col>
             <v-col cols="3">
-                <p-label-selector :label="pLabel" @update-label="choosePrimaryLabel"></p-label-selector>
+                <p-label-selector :label="pLabel" @update-label="changePrimaryLabel"></p-label-selector>
             </v-col>
             <v-col class="col-xl-6 col-md-5 col-sm-5">
                 <v-text-field
@@ -53,10 +53,10 @@
 
                     <template v-slot:item.$_action="{ item }">
                         <div>
-                            <v-icon class="mr-2" small @click="copyItem(item)" style="display: inline-block"> {{
+                            <v-icon class="mr-2" small @click="copyNode(item)" style="display: inline-block"> {{
                                 editIcon['copy'] }}
                             </v-icon>
-                            <v-icon class="mr-2" small @click="deleteItem(item)" style="display: inline-block">{{
+                            <v-icon class="mr-2" small @click="delSingleNode(item)" style="display: inline-block">{{
                                 editIcon['delete'] }}
                             </v-icon>
                         </div>
@@ -66,16 +66,16 @@
                         <span>{{item.id}}</span>
                     </template>
 
-                    <template v-for="(setting, prop) in headerSlot" v-slot:[getName(prop)]="{ item }">
+                    <template v-for="(setting, prop) in labelDict" v-slot:[getName(prop)]="{ item }">
                         <data-table-field
                             :key="prop"
                             :prop-name="prop"
-                            :base-value="item[prop]"
+                            :base-value="getValue(item, prop)"
                             :setting="fieldSetting"
                             :p-label="pLabel"
                             :field-type="setting.type"
                             :resolve="setting.resolve"
-                            @update="updateProp(item, prop, $event)">
+                            @update="setValue(item, prop, $event)">
 
                         </data-table-field>
                     </template>
@@ -96,12 +96,12 @@
         FieldSetting,
         fieldSetting,
         FieldType,
-        nodeLabelToProp,
+        nodeLabelToStandardProps,
         PropDescriptionDict,
         ResolveType,
         ValueWithType,
     } from "@/utils/fieldResolve"
-    import {deepClone, fieldHandler, getIndex} from "@/utils/utils"
+    import {deepClone, fieldHandler, getIndex, infoChangePLabel, mergeObject} from "@/utils/utils"
     import DataTableImporter from '@/components/DataTableImporter.vue';
     import PLabelSelector from '@/components/PLabelSelector.vue';
     import DataTableButtonGroup from '@/components/DataTableButtonGroup.vue';
@@ -119,10 +119,6 @@
         value: any,
         divider: boolean,
         width: number
-    }
-
-    interface FlatNodeInfo extends BaseNodeInfo {
-
     }
 
     export default Vue.extend({
@@ -153,9 +149,9 @@
                     "IsOpenSource": "OpenSource"
                 } as Record<string, string>,
                 //全部的节点
-                nodes: [] as FlatNodeInfo[],
+                nodes: [] as BaseNodeInfo[],
                 //被选中的节点
-                selected: [] as FlatNodeInfo[],
+                selected: [] as BaseNodeInfo[],
                 //不需要编辑值的属性
                 unShowProps: ["id", "type", "PrimaryLabel"],
                 //数据表底部插槽
@@ -205,12 +201,12 @@
         },
         props: {},
         computed: {
-            // 需要的标签--属性Dict
+            // 需要解析的所有属性
             labelDict: function (): PropDescriptionDict {
-                return Object.assign(baseNodeProp(), nodeLabelToProp(this.pLabel))
+                return Object.assign(baseNodeProp(), nodeLabelToStandardProps(this.pLabel))
             },
             standardPropKeys: function (): string[] {
-                return Object.keys(nodeLabelToProp(this.pLabel))
+                return Object.keys(nodeLabelToStandardProps(this.pLabel))
             },
             // 属性的keys
             propList: function (): string[] {
@@ -234,16 +230,6 @@
                     } as HeaderItem;
                 }));
                 return result
-            },
-
-            //基本插槽
-            headerSlot: function (): PropDescriptionDict {
-                return Object.assign({}, this.labelDict);
-            },
-
-            //节点的模板
-            extraProps: function (): string[] {
-                return this.$store.state.userDataManager.userEditData.PLabelExtraProps[this.pLabel]
             },
 
             //是否窄行距
@@ -295,7 +281,7 @@
             },
 
             //添加已经解析好的节点 也可以是后端导入
-            addNodeResolved(nodeList: FlatNodeInfo[]) {
+            addNodeResolved(nodeList: BaseNodeInfo[]) {
                 this.nodes = this.nodes.concat(nodeList);
             },
 
@@ -304,18 +290,17 @@
                 let result = [];
                 let base = this.nodes.length;
                 for (let i = 0; i < num; i++) {
-                    let newObj = deepClone(this.nodeTemplate);
+                    let newObj = this.getEmptyNode();
                     newObj.Name = "***" + (i + base).toString();
-                    newObj.id = getIndex();
                     result.push(newObj)
                 }
                 this.addNodeResolved(result);
             },
 
             //复制行元素
-            copyItem(item: FlatNodeInfo) {
+            copyNode(item: BaseNodeInfo) {
                 let index = this.nodes.indexOf(item);
-                let newItem = deepClone(item) as FlatNodeInfo;
+                let newItem = deepClone(item) as BaseNodeInfo;
                 newItem.id = getIndex();
                 this.nodes.splice(index + 1, 0, newItem);
             },
@@ -332,28 +317,27 @@
             },
 
             //删除行元素
-            deleteItem(item: FlatNodeInfo) {
-                if (confirm('确定要删除此项吗?')) {
-                    let index = this.nodes.indexOf(item);
-                    this.nodes.splice(index, 1);
-                    index = this.selected.indexOf(item);
-                    this.selected.splice(index, 1);
-                }
+            delSingleNode(item: BaseNodeInfo) {
+                let index = this.nodes.indexOf(item);
+                this.nodes.splice(index, 1);
+                index = this.selected.indexOf(item);
+                this.selected.splice(index, 1);
             },
 
             //解析属性
-            resolveProp(item: Record<string, string>): FlatNodeInfo {
+            resolveProp(item: Record<string, string>): BaseNodeInfo {
                 //注意这里resolve了item的所有属性
                 let translate = {} as Record<string, string>;
                 let text = {} as Record<string, string>;
                 let extraProps = {} as ExtraProps;
-                let node = {} as FlatNodeInfo;
+                let node = this.getEmptyNode() as BaseNodeInfo;
                 Object.entries(item).map(([key, value]) => {
-                    if (this.propList.indexOf(key) >= 0) {
+                    if (this.propList.includes(key)) {
                         // 如果是已有属性
                         let fieldType = this.labelDict[key].type;
                         //注意这里源数据都是字符串
-                        node[key] = this.fieldHandler[fieldType](value)
+                        let resolvedValue = this.fieldHandler[fieldType](value);
+                        this.setValue(node, key, resolvedValue)
                     } else {
                         //如果是非已有属性
                         let title = key.split('_');
@@ -368,9 +352,11 @@
                             let type: FieldType;
                             let propDescription = this.userDataManager.userEditData.UserPropResolve[key];
                             if (propDescription) {
+                                //如果以前登记过这个属性
                                 resolve = propDescription.resolve;
                                 type = propDescription.type
                             } else {
+                                //没有登记过
                                 [resolve, type] = ['normal', 'StringField']
                             }
                             extraProps[key] = {
@@ -382,22 +368,23 @@
                     }
                     // 补充那些没有的属性
                     for (let i of this.propList) {
-                        let hasNeededProp = Object.prototype.hasOwnProperty.call(node, i);
-                        hasNeededProp || (node[i] = deepClone(this.nodeTemplate[i]));
+                        let hasNeededProp = this.getValue(node, i);
+                        if (hasNeededProp === undefined) {
+                            let type = this.labelDict[i].type;
+                            this.setValue(node, i, fieldDefaultValue[type])
+                        }
                     }
                 });
                 node.id = getIndex();
                 node.type = 'node';
                 node.PrimaryLabel = this.pLabel;
                 // 合并Prop
-                this.mergeProp(node.Description, text);
-                this.mergeProp(node.Translate, translate);
-                this.mergeProp(node.ExtraProps, extraProps);
-                dispatchUserLabelProps({
-                    [node.PrimaryLabel]: Object.keys(node.ExtraProps)
-                });
+                mergeObject(node.Description, text);
+                mergeObject(node.Translate, translate);
+                mergeObject(node.ExtraProps, extraProps);
+                this.updateExtraPropsKeyList(node);
                 let StandardProps: Record<string, ValueWithType<any>> = {};
-                Object.entries(nodeLabelToProp(this.pLabel)).map(([key, value]) => {
+                Object.entries(nodeLabelToStandardProps(this.pLabel)).map(([key, value]) => {
                     let {type, resolve} = value;
                     StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
                 });
@@ -410,13 +397,8 @@
                 return "item." + prop.toString()
             },
 
-            saveNodes(nodes: FlatNodeInfo[]) {
+            saveNodes(nodes: BaseNodeInfo[]) {
                 let _this = this;
-                nodes.map(node => {
-                    Object.keys(node).map(prop => {
-                        this.standardPropKeys.includes(prop) && (node.StandardProps[prop]['value'] = node[prop])
-                    })
-                });
                 nodeBulkCreate(nodes).then(res => {
                     if (res.status === 200) {
                         for (let i in nodes) {
@@ -434,48 +416,49 @@
             },
 
             //更新值
-            updateProp(item: FlatNodeInfo, prop: string, value: any) {
-                this.$set(item, prop, value);
-                prop === 'ExtraProps' && dispatchUserLabelProps({
-                    [item.PrimaryLabel]: Object.keys(item.ExtraProps)
-                });
+            setValue(item: BaseNodeInfo, prop: string, value: any) {
+                this.standardPropKeys.includes(prop)
+                    ? (item.StandardProps[prop] = value)
+                    : item[prop] = value;
+                prop === 'ExtraProps' && this.updateExtraPropsKeyList(item)
             },
 
-            //更新节点
-            updateNode(node: FlatNodeInfo, oldLabel: string, newLabel: string) {
-                //参数解构使用for of
-                Object.entries(nodeLabelToProp(newLabel)).map(([prop, setting]) => {
-                    Object.prototype.hasOwnProperty.call(node, prop) ||
-                    (this.updateProp(node, prop, fieldDefaultValue[setting.type]));
-                    this.updateProp(node, 'PrimaryLabel', newLabel);
-                });
+            //获取值
+            getValue(item: BaseNodeInfo, prop: string) {
+                return this.standardPropKeys.includes(prop)
+                    ? item.StandardProps[prop].value
+                    : item[prop]
             },
 
-            choosePrimaryLabel(label: string) {
-                this.nodes.map(node => this.updateNode(node, this.pLabel, label));
-                this.pLabel = label;
-            },
-
-            // 合并两个Object
-            mergeProp(propA: Record<string, any>, propB: Record<string, any>) {
-                Object.keys(propB).length !== 0 && Object.assign(propA, propB)
+            changePrimaryLabel(newLabel: string) {
+                this.nodes.map(node => infoChangePLabel(node, newLabel));
+                this.pLabel = newLabel;
             },
 
             getNodeTemplate() {
-                let node = nodeInfoTemplate('$_-1', 'node', this.pLabel);
-                Object.entries(nodeLabelToProp(this.pLabel)).map(([key, value]) => {
-                    let {type} = value;
-                    node[key] = fieldDefaultValue[type];
+                this.nodeTemplate = nodeInfoTemplate('$_-1', 'node', this.pLabel);
+            },
+
+            getEmptyNode() {
+                let newObj = deepClone(this.nodeTemplate);
+                newObj.Name = "***" + this.nodes.length.toString();
+                newObj.id = getIndex();
+                return newObj
+            },
+
+            updateExtraPropsKeyList(node: BaseNodeInfo) {
+                //更新额外属性
+                dispatchUserLabelProps({
+                    [node.PrimaryLabel]: Object.keys(node.ExtraProps)
                 });
-                this.nodeTemplate = node
-            }
+            },
         },
         watch: {
-            pLabel() {
+            pLabel: function(): void {
                 this.getNodeTemplate()
             },
 
-            extraProps() {
+            extraProps: function(): void {
                 this.getNodeTemplate()
             }
         },

@@ -1,12 +1,15 @@
 <template>
     <v-card flat class="subCard">
+        <v-img>
 
+        </v-img>
     </v-card>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import {NodeInfoPart} from "@/class/graphItem";
+    import {getSrc} from "@/utils/utils";
 
     export default Vue.extend({
         name: "CardNodeSimp",
@@ -20,7 +23,11 @@
                 required: true
             }
         },
-        computed: {},
+        computed: {
+            realSrc: function (): string {
+                return getSrc(this.node.Info.MainPic)
+            }
+        },
         methods: {},
         record: {
             status: 'empty',

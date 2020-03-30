@@ -8,7 +8,7 @@ import {
     getCookie,
     getIndex,
     getIsSelf,
-    getSrc,
+    getSrc, infoChangePLabel,
     itemEqual,
 } from "@/utils/utils";
 import Vue from "vue";
@@ -39,7 +39,7 @@ import {
     isNodeSetting,
     isTextSetting,
 } from "@/utils/typeCheck";
-import {ExtraProps, fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
+import {ExtraProps, fieldDefaultValue, nodeLabelToStandardProps} from "@/utils/fieldResolve";
 import {commitDocumentAdd, commitInfoAdd, commitSnackbarOn} from "@/store/modules/_mutations";
 import {FragmentCtrl, FragmentInfo} from "@/interface/interfaceUser";
 import store from '@/store'
@@ -194,31 +194,7 @@ export class NodeInfoPart extends InfoPart {
     }
 
     changePrimaryLabel(newLabel: string) {
-        let {StandardProps, ExtraProps} = this.Info;
-        let standKeys = Object.keys(StandardProps);
-        let extraKeys = Object.keys(ExtraProps);
-        let newProps: ExtraProps = {};
-        Object.entries(nodeLabelToProp(newLabel)).map(([prop, description]) => {
-            let {resolve, type} = description;
-            let value;
-            if (standKeys.indexOf(prop) >= 0) {
-                 // 继承值
-                value = StandardProps[prop].value;
-                delete StandardProps[prop]
-            } else if (extraKeys.indexOf(prop) >= 0) {
-                // 从extraProps里取出来
-                value = ExtraProps[prop].value;
-                delete ExtraProps[prop]
-            } else {
-                // 默认值
-                value = fieldDefaultValue[type]
-            }
-            newProps[prop] = {resolve, type, value};
-        });
-        //把剩下的属性移到ExtraProps里
-        Object.assign(ExtraProps, StandardProps);
-        Vue.set(this.Info, "StandardProps", newProps);
-        this.Info.PrimaryLabel = newLabel;
+        infoChangePLabel(this.Info, newLabel);
         this.synchronizationSource("_label", newLabel);
     }
 

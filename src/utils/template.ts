@@ -1,5 +1,5 @@
 import {currentTime, getCookie, randomIntegerInRange, randomNumberInRange} from '@/utils/utils';
-import {fieldDefaultValue, nodeLabelToProp, PropDescription, ValueWithType} from "@/utils/fieldResolve";
+import {fieldDefaultValue, nodeLabelToStandardProps, PropDescription, ValueWithType} from "@/utils/fieldResolve";
 import PDFJS from 'pdfjs-dist';
 import {typeSetting} from "@/interface/itemSetting";
 import store from '@/store/index';
@@ -206,7 +206,7 @@ export function userConcernTemplate() {
 export function nodeInfoTemplate(_id: id, _type: 'node' | 'document', _label: string) {
     let StandardProps: Record<string, ValueWithType<any>> = {};
     let ExtraProps: Record<string, ValueWithType<any>> = {};
-    Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
+    Object.entries(nodeLabelToStandardProps(_label)).map(([key, value]) => {
         let {type, resolve} = value;
         StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
@@ -306,7 +306,7 @@ export function mediaCtrlTemplate(file?: File) {
 
 export function linkInfoTemplate(_id: id, _label: string) {
     let StandardProps: Record<string, ValueWithType<any>> = {};
-    Object.entries(nodeLabelToProp(_label)).map(([key, value]) => {
+    Object.entries(nodeLabelToStandardProps(_label)).map(([key, value]) => {
         let {type, resolve} = value;
         StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
     });
