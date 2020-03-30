@@ -39,7 +39,7 @@ import {
     isNodeSetting,
     isTextSetting,
 } from "@/utils/typeCheck";
-import {fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
+import {ExtraProps, fieldDefaultValue, nodeLabelToProp} from "@/utils/fieldResolve";
 import {commitDocumentAdd, commitInfoAdd, commitSnackbarOn} from "@/store/modules/_mutations";
 import {FragmentCtrl, FragmentInfo} from "@/interface/interfaceUser";
 import store from '@/store'
@@ -97,6 +97,10 @@ export abstract class InfoPart {
             Content: this.Info,
             VersionId: this.State.draftId
         } as Draft;
+    }
+
+    get allProps() {
+        return Object.assign({}, this.Info.StandardProps, this.Info.ExtraProps)
     }
 
     protected constructor(info: BaseInfo, ctrl: BaseCtrl, remoteNotFound: boolean, draftId?: number) {
@@ -190,14 +194,30 @@ export class NodeInfoPart extends InfoPart {
     }
 
     changePrimaryLabel(newLabel: string) {
-        let StandardProps = this.Info.StandardProps;
-        Object.entries(nodeLabelToProp(newLabel)).map(([prop, value]) => {
-            let {resolve, type} = value;
-            Object.keys(StandardProps).indexOf(prop) === -1
-                ? (StandardProps[prop] = {resolve, type, value: fieldDefaultValue[type]})
-                : (StandardProps[prop] = deepClone(StandardProps[prop]));
+        let {StandardProps, ExtraProps} = this.Info;
+        let standKeys = Object.keys(StandardProps);
+        let extraKeys = Object.keys(ExtraProps);
+        let newProps: ExtraProps = {};
+        Object.entries(nodeLabelToProp(newLabel)).map(([prop, description]) => {
+            let {resolve, type} = description;
+            let value;
+            if (standKeys.indexOf(prop) >= 0) {
+                 // 继承值
+                value = StandardProps[prop].value;
+                delete StandardProps[prop]
+            } else if (extraKeys.indexOf(prop) >= 0) {
+                // 从extraProps里取出来
+                value = ExtraProps[prop].value;
+                delete ExtraProps[prop]
+            } else {
+                // 默认值
+                value = fieldDefaultValue[type]
+            }
+            newProps[prop] = {resolve, type, value};
         });
-        Vue.set(this.Info, "StandardProps", StandardProps);
+        //把剩下的属性移到ExtraProps里
+        Object.assign(ExtraProps, StandardProps);
+        Vue.set(this.Info, "StandardProps", newProps);
         this.Info.PrimaryLabel = newLabel;
         this.synchronizationSource("_label", newLabel);
     }
