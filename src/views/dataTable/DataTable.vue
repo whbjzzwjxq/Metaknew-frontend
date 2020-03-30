@@ -375,13 +375,10 @@
                         }
                     }
                 });
-                node.id = getIndex();
-                node.type = 'node';
-                node.PrimaryLabel = this.pLabel;
                 // 合并Prop
-                mergeObject(node.Description, text);
-                mergeObject(node.Translate, translate);
-                mergeObject(node.ExtraProps, extraProps);
+                mergeObject(node.Description, text, true);
+                mergeObject(node.Translate, translate, true);
+                mergeObject(node.ExtraProps, extraProps, true);
                 this.updateExtraPropsKeyList(node);
                 let StandardProps: Record<string, ValueWithType<any>> = {};
                 Object.entries(nodeLabelToStandardProps(this.pLabel)).map(([key, value]) => {

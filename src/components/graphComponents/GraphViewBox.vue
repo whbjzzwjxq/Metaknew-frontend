@@ -527,17 +527,17 @@
 
             //重要度尺寸比例
             impScaleRadius(): number[] {
+                const minRadius = 12;
+                const maxRadius = 36;
                 let impList = this.nodeInfoList.map(info => info ? info.Ctrl.Imp : 0);
-                let [min, max] = [maxN(impList)[0], minN(impList)[0]];
+                let [max, min] = [maxN(impList)[0], minN(impList)[0]];
                 if (min !== max) {
-                    const minRadius = 16;
-                    const maxRadius = 36;
                     let k = (maxRadius - minRadius) / (max - min);
                     return impList.map(imp => {
-                        return ((imp - min) * k + minRadius)
+                        return ((imp - min) * k + min)
                     });
                 } else {
-                    return impList.map(() => 16)
+                    return impList.map(() => minRadius)
                 }
             },
 
@@ -1017,7 +1017,6 @@
                 let viewBox: HTMLElement = this.$refs.viewBox;
                 let rect = viewBox.getBoundingClientRect();
                 this.viewBox.updateFromArea(rect);
-                this.initViewPoint();
             },
 
             initViewPoint() {
@@ -1036,7 +1035,8 @@
         },
         mounted: function (): void {
             this.getLabelViewDict();
-            this.onResize()
+            this.onResize();
+            this.initViewPoint();
         },
         record: {
             status: 'editing'
