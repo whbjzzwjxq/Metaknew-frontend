@@ -433,7 +433,7 @@
                 let result = [this.graph.baseNode] as GraphNodeSettingPart[];
                 this.activeGraphList.map(graph => {
                     // 其他Graph用不包含baseNode的list
-                    result = result.concat(graph.nodeListNoSelf)
+                    result = result.concat(graph.nodeListNoSelf).filter(node => !node.isDeleted)
                 });
                 return result
             },

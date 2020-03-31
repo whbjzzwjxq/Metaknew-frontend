@@ -691,7 +691,7 @@ export class LinkSettingPart extends GraphItemSettingPart {
 
     get isDeleted() {
         let {_start, _end} = this.Setting;
-        return this.State.isDeleted && _start.isDeleted && _end.isDeleted
+        return this.State.isDeleted || _start.isDeleted || _end.isDeleted
     }
 
     protected constructor(Setting: LinkSetting, State: LinkState, parent: GraphSelfPart) {
