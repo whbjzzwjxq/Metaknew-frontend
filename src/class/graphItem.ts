@@ -997,7 +997,8 @@ export class GraphSelfPart extends DocumentSelfPart {
         let {nodes, links, medias, texts} = data.Content;
         graph.Content.nodes = nodes.map(setting => GraphNodeSettingPart.resolveBackend(setting, graph));
         graph.Content.medias = medias.map(setting => MediaSettingPart.resolveBackend(setting, graph));
-        graph.Content.links = links.map(setting => LinkSettingPart.resolveBackend(setting, graph));
+        graph.Content.links = links.map(setting => LinkSettingPart.resolveBackend(setting, graph))
+            .filter(link => link.Setting._start && link.Setting._end);
         graph.Content.texts = texts.map(setting => new TextSettingPart(setting, textStateTemplate(), graph));
         commitToVuex && commitDocumentAdd({document: graph, strict: false});
         return {graph, info}

@@ -20,6 +20,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
+    import {leftCardWidth} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
         name: "CardSubRow",
@@ -40,7 +41,7 @@
             },
             width: {
                 type: Number,
-                default: 400
+                default: leftCardWidth
             }
         },
         computed: {

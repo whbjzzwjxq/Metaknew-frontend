@@ -11,6 +11,17 @@ export function linkBulkCreate(linkList: CompressLinkInfo[], createType: string 
     })
 }
 
+export function linkBulkUpdate(linkList: CompressLinkInfo[], createType: string = 'USER') {
+    return instance.request({
+        method: 'POST',
+        url: '/item/link/bulk_update',
+        data: {
+            Links: linkList,
+            CreateType: createType
+        }
+    })
+}
+
 export interface BackendLinkCtrl extends PublicCtrl {
     Start: QueryObject;
     End: QueryObject;

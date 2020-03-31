@@ -2,6 +2,7 @@ import Vue from 'vue'
 import {RectByPoint} from "@/class/geometric";
 import {commitBottomDynamicBarResize, commitViewBoxResize} from "@/store/modules/_mutations";
 export const leftCardPadding = 4;
+export const leftCardWidth = 360;
 export const bottomDynamicBarHeight = 360;
 declare global {
     interface StyleManagerState {
@@ -49,7 +50,7 @@ const state: StyleManagerState = {
         height: 48
     },
     leftCard: {
-        width: 400 + leftCardPadding, // 4px的边距
+        width: leftCardWidth + leftCardPadding, // 4px的边距
         height: document.documentElement.clientHeight - 48
     },
     bottomBar: {
@@ -73,10 +74,6 @@ const mutations = {
         state.leftCard.height = document.documentElement.clientHeight - state.toolBar.height;
         commitViewBoxResize();
         commitBottomDynamicBarResize();
-    },
-
-    leftCardReset: (state: StyleManagerState, payload: number) => {
-        state.leftCard.width = payload
     },
 
     bottomBarReset: (state: StyleManagerState, payload: number) => {

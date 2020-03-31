@@ -61,14 +61,14 @@
                 required: true
             },
 
-            container: {
+            position: {
                 type: Object as () => RectByPoint,
                 required: true
             }
         },
         computed: {
             containerRect: function (): AreaRect {
-                return this.container.positiveRect()
+                return this.position.positiveRect()
             },
             containerStyle: function (): CSSProp {
                 return {

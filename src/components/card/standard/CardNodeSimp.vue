@@ -1,8 +1,13 @@
 <template>
-    <v-card flat class="subCard">
-        <v-img>
+    <v-card flat tile outlined class="subCard">
+        <v-img
+            class="white--text align-end"
+            :src="realSrc">
 
         </v-img>
+        <v-card-title>
+            {{ info.Name }}
+        </v-card-title>
     </v-card>
 </template>
 
@@ -24,9 +29,13 @@
             }
         },
         computed: {
+            info: function (): BaseNodeInfo {
+                return this.node.Info
+            },
+
             realSrc: function (): string {
-                return getSrc(this.node.Info.MainPic)
-            }
+                return getSrc(this.info.MainPic)
+            },
         },
         methods: {},
         record: {

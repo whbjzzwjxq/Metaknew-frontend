@@ -63,6 +63,20 @@
                 </field-text>
             </template>
         </card-sub-row>
+
+        <card-sub-row :text="'保存与记录'" v-if="editable">
+            <template v-slot:content>
+                <v-menu offset-y>
+                    <template v-slot:activator="{ on }">
+                        <v-btn text v-on="on" coor="primary">Save</v-btn>
+                    </template>
+                    <v-list>
+                        <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
+                        <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft</v-list-item>
+                    </v-list>
+                </v-menu>
+            </template>
+        </card-sub-row>
     </div>
 </template>
 
@@ -77,6 +91,8 @@
     import {EditProps, FieldType, labelItems, ResolveType} from "@/utils/fieldResolve";
     import {deepClone} from "@/utils/utils";
     import {LabelGroup} from "@/interface/interfaceInComponent";
+    import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
+    import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
 
     export default Vue.extend({
         name: "CardPageLinkInfo",
@@ -90,7 +106,8 @@
         data() {
             return {
                 titleSize: "font-size: 18px",
-                labelItems: labelItems
+                labelItems: labelItems,
+                editMode: false
             }
         },
         props: {
@@ -102,7 +119,7 @@
                 type: Object as () => GraphSelfPart,
                 required: true
             },
-            editMode: {
+            editBase: {
                 type: Boolean,
                 default: false
             }
@@ -148,7 +165,11 @@
                 return [
                     {"name": "作者的标注", "labels": this.info.Labels, "closeable": false, "editable": true, 'prop': 'Info'}
                 ]
-            }
+            },
+
+            editable: function (): boolean {
+                return this.editMode || this.editBase
+            },
         },
         methods: {
             //更换Link start / end
@@ -168,6 +189,31 @@
             addItem: function (value: string[], prop: string) {
                 this.baseData.updateValue('Labels', value)
             },
+
+            saveItem(isDraft: boolean, isAuto: boolean = false) {
+                if (isDraft) {
+                    this.baseData.draftSave(isAuto)
+                } else {
+                    let data = [this.info];
+                    if (this.baseData.isRemote) {
+                        nodeBulkUpdate(data).then(res => {
+                            let payload = {
+                                actionName: 'nodeBulkUpdate',
+                                color: 'success',
+                                once: false,
+                                content: '更新成功'
+                            } as SnackBarStatePayload;
+                            commitSnackbarOn(payload)
+                        })
+                    } else {
+                        nodeBulkCreate(data).then(res => {
+                            let idMap = res.data;
+                            commitInfoIdChange({_type: this.type, idMap});
+                        })
+                    }
+                }
+            },
+
         },
         watch: {},
         record: {

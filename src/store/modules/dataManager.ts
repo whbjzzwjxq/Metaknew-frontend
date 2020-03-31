@@ -389,14 +389,17 @@ const actions = {
 
     async documentSave(context: Context, payload: { isDraft: boolean, isAuto: boolean }) {
         let {isDraft, isAuto} = payload;
+        // 保存Link和Node
         await dispatchVisNodeCreate();
         await dispatchLinkBulkCreate(
             Object.values(state.linkManager).filter(link => !link.isRemote).map(item => item.compress())
         );
+        //处理专题 分成需要update和需要create的内容
         let documentList: DocumentSelfPart[] = context.getters.documentList;
         let dataList = documentList.filter(document => !document.DocumentData.isRemote)
             .map(document => document.backendDocument);
         let updateDataList = documentList.filter(document => document.DocumentData.isRemote);
+        //
         if (isDraft) {
             dispatchInfoDraftSaveAll({isAuto}).then()
         } else {

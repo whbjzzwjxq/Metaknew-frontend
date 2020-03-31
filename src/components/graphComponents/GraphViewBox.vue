@@ -32,7 +32,7 @@
                 :setting="nodeRewriteSettingList[index]"
                 :position="nodeLocation[index].positiveRect()"
                 :scale="realScale"
-                @mouseenter.native="mouseEnter(node)"
+                @mouseenter.native="mouseEnter(node, index)"
                 @mouseleave.native="mouseLeave(node)"
                 @mousedown.native="dragStart"
                 @mousemove.native="drag(node, $event)"
@@ -63,6 +63,10 @@
             </line>
         </svg>
 
+        <card-all-simp v-show="showCard">
+
+        </card-all-simp>
+
         <rect-container
             @update-size="updateGraphSize(arguments[0], arguments[1], index)"
             :container="getSubGraphByRect(metaData.rect)"
@@ -76,12 +80,12 @@
         </rect-container>
 
         <graph-node-button
-            v-for="(node, index) in nodes"
+            v-for="(node, index) in renderButtons"
             :key="index"
             :node-setting="getTargetInfo(node)"
             :node="node"
             :hide="!(node.State.isMouseOn && showNode[index])"
-            @mouseenter.native="mouseEnter(node)"
+            @mouseenter.native="mouseEnter(node, index)"
             @mouseleave.native="mouseLeave(node)"
             @add-link="addLink(node)"
             @explode="explode"
@@ -94,7 +98,7 @@
             :key="media._id"
             :setting="mediaRewriteSettingList[index]"
             :state="media.State"
-            :container="mediaLocation[index]"
+            :position="mediaLocation[index]"
             :scale="realScale"
             :index="index"
             @mouseenter.native="mouseEnter(media)"
@@ -136,18 +140,23 @@
         <div class="d-flex flex-row" style="position: absolute; left: 80%; top: 65%">
             <div class="d-flex flex-column align-end">
                 <div class="py-2">
-                <graph-label-selector
-                    v-if="renderLabelSelector"
-                    :label-view-dict="labelViewDict"
-                    @select-label="selectLabel"
-                    @reset-label="resetLabel"
-                    @set-label="setLabel">
-                </graph-label-selector>
+                    <graph-label-selector
+                        v-if="renderLabelSelector"
+                        :label-view-dict="labelViewDict"
+                        @select-label="selectLabel"
+                        @reset-label="resetLabel"
+                        @set-label="setLabel">
+                    </graph-label-selector>
                 </div>
                 <div class="py-2">
-                <v-chip @click="importanceOn = !importanceOn" class="unselected">
-                    {{importanceChipText}}
-                </v-chip>
+                    <v-chip @click="importanceOn = !importanceOn" class="unselected">
+                        {{importanceChipText}}
+                    </v-chip>
+                </div>
+                <div class="py-2">
+                    <v-chip @click="initViewPoint" class="unselected">
+                        视角重置
+                    </v-chip>
                 </div>
             </div>
             <div class="pa-4">
@@ -190,6 +199,7 @@
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
     import GraphText from "@/components/graphComponents/GraphText.vue";
+    import CardAllSimp from "@/components/card/standard/CardAllSimp.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSetting, isVisAreaSetting, isVisNodeSetting} from "@/utils/typeCheck";
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
@@ -206,7 +216,8 @@
             GraphLabelSelector,
             RectContainer,
             GraphNote,
-            GraphText
+            GraphText,
+            CardAllSimp
         },
         data() {
             return {
@@ -257,6 +268,11 @@
 
                 //视窗
                 viewBox: new RectByPoint({x: 404, y: 102}, {x: 960, y: 540}),
+
+                //卡片左上角的位置
+                cardPosition: {x: 0, y: 0},
+                //鼠标在什么东西上面
+                isMouseOn: false
             }
         },
         props: {
@@ -420,6 +436,18 @@
                     result = result.concat(graph.nodeListNoSelf)
                 });
                 return result
+            },
+
+            //渲染按钮
+            renderButtons: function (): GraphNodeSettingPart[] {
+                return this.editMode
+                    ? this.nodes
+                    : []
+            },
+
+            //是否渲染卡片
+            showCard: function(): boolean {
+                return this.renderCard && !this.isDragging && !this.editMode && this.isMouseOn
             },
 
             // nodesIdList
@@ -744,13 +772,16 @@
             },
 
             //node的原生事件
-            mouseEnter(node: VisAreaSettingPart) {
-                this.$set(node.State, "isMouseOn", true);
+            mouseEnter(node: VisAreaSettingPart, index: number) {
+                node.State.isMouseOn = true;
+                let {x, y} = this.nodeLocation[index].end;
+                this.cardPosition.x = x + 12;
+                this.cardPosition.y = y + 12;
             },
 
             //node的原生事件
             mouseLeave(node: VisAreaSettingPart) {
-                this.$set(node.State, "isMouseOn", false);
+                node.State.isMouseOn = false;
                 this.isDragging = false;
             },
 
@@ -1020,8 +1051,15 @@
             },
 
             initViewPoint() {
-                this.viewPoint.update(this.viewBox.midPoint());
-                this.lastViewPoint.update(this.viewBox.midPoint())
+                let point = this.nodeLocation[0].midPoint();
+                point || (point = this.viewBox.midPoint());
+                this.viewPoint.update(point);
+                this.lastViewPoint.update(point)
+            },
+
+            //显示节点或者关系卡片
+            cardOn(node: GraphNodeSettingPart | LinkSettingPart, location: PointObject) {
+
             }
         },
 

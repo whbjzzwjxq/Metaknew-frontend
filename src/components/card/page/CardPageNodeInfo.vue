@@ -11,7 +11,7 @@
 
                     </node-avatar>
                 </v-col>
-                <v-col cols="7" class="pa-0 ma-0 pt-2">
+                <v-col cols="7" class="pa-0 ma-0 pt-2 pl-2">
                     <v-text-field
                         v-model="name"
                         class="pr-2 font-weight-bold"

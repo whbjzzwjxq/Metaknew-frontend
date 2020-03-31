@@ -125,8 +125,6 @@
                 return {
                     width: (this.allComponentSize.leftCard.width) + 'px',
                     height: this.allComponentSize.leftCard.height + 'px',
-                    overflowY: "hidden",
-                    overflowX: "hidden"
                 }
             },
             subCardStyle: function (): CSSProp {
