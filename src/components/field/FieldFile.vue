@@ -161,6 +161,10 @@
             uploadMode: {
                 type: Boolean,
                 default: false
+            },
+            editable: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {

@@ -9,7 +9,7 @@
                     :color="indexToColor(index)"
                     label
                     outlined
-                    :close="editMode"
+                    :close="editable"
                     tile
                     @click:close="removeTag(item)">
                     {{ item }}
@@ -27,7 +27,7 @@
             </v-chip-group>
         </v-card-text>
 
-        <v-card-text v-if="editMode">
+        <v-card-text v-if="editable">
             <span class="subheading">Rollback delete</span>
             <v-chip-group column active-class="primary--text">
                 <v-chip v-for="(item, index) in removedTags" :key="item" label tile>
@@ -37,7 +37,7 @@
             </v-chip-group>
         </v-card-text>
 
-        <v-card-text v-if="editMode">
+        <v-card-text v-if="editable">
             <span class="subheading">Tips</span>
             <v-icon @click="checkTags">mdi-magnify-outline</v-icon>
             <p style="font-weight: bolder; color: darkred">
@@ -45,7 +45,7 @@
             </p>
         </v-card-text>
 
-        <v-card-text v-if="editMode">
+        <v-card-text v-if="editable">
             <v-textarea
                 :value="tagsToString"
                 @input="updateValue"
@@ -108,7 +108,7 @@
                     return []
                 }
             },
-            editMode: {
+            editable: {
                 type: Boolean,
                 default: true
             },
@@ -144,7 +144,7 @@
 
             //推荐的标签
             recommendTags: function () {
-                return this.editMode
+                return this.editable
                     ? this.availableTags
                     : {}
             },

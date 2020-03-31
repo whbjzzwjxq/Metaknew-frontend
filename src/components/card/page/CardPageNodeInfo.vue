@@ -31,10 +31,26 @@
                     <item-sharer :base-data="baseData" :user-concern="userConcern" class="mt-n2">
 
                     </item-sharer>
-                    <icon-group :icon-list="editIcon" v-show="!editMode">
-
-                    </icon-group>
                 </v-col>
+            </template>
+        </card-sub-row>
+
+        <card-sub-row :text="'保存与记录'" v-if="isUserControl">
+            <template v-slot:content>
+                <div class="d-flex flex-row">
+                <v-menu offset-y>
+                    <template v-slot:activator="{ on }">
+                        <v-btn text v-on="on" coor="primary">Save</v-btn>
+                    </template>
+                    <v-list>
+                        <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
+                        <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft</v-list-item>
+                    </v-list>
+                </v-menu>
+                <icon-group :icon-list="editIcon" v-show="!editMode">
+
+                </icon-group>
+                </div>
             </template>
         </card-sub-row>
 
@@ -64,7 +80,7 @@
                         :small="simplifySetting.chipSize === 'small'"
                         :x-small="simplifySetting.chipSize === 'xSmall'"
                         :index="index"
-                        :closeable="baseData.isSelf"
+                        :closeable="isUserControl"
                         @close-chip="removeTopic">
 
                     </global-chip>
@@ -151,19 +167,6 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="'保存与记录'" v-if="editable">
-            <template v-slot:content>
-                <v-menu offset-y>
-                    <template v-slot:activator="{ on }">
-                        <v-btn text v-on="on" coor="primary">Save</v-btn>
-                    </template>
-                    <v-list>
-                        <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
-                        <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft</v-list-item>
-                    </v-list>
-                </v-menu>
-            </template>
-        </card-sub-row>
     </div>
 </template>
 
@@ -274,14 +277,19 @@
                     }
             },
 
+            isUserControl: function (): boolean {
+                return this.baseData.isSelf
+            },
+
             editable: function (): boolean {
-                return this.editMode || this.editBase
+                // 既处于
+                return this.isUserControl && (this.editMode || this.editBase)
             },
 
             editIcon: function (): IconItem[] {
                 return [{
-                    name: getIcon('i-edit', this.baseData.isSelf),
-                    disabled: !this.baseData.isSelf,
+                    name: getIcon('i-edit', this.isUserControl),
+                    disabled: !this.isUserControl,
                     _func: this.edit,
                     toolTip: '编辑内容'
                 }]

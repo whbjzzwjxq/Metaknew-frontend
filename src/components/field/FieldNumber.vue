@@ -3,11 +3,12 @@
         <v-card-title style="font-size: 14px"> Current {{ propName }}</v-card-title>
         <v-card-text>
             <v-text-field
-                v-model="number"
+                :disabled="!editable"
+                :rules="rules"
                 hide-details
                 single-line
                 type="number"
-                :rules="rules">
+                v-model="number">
 
             </v-text-field>
         </v-card-text>
@@ -59,6 +60,10 @@
             defaultValue: {
                 type: Number,
                 default: 1
+            },
+            editable: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
