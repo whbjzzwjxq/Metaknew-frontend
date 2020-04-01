@@ -33,12 +33,12 @@ export function dispatchVisNodeCreate() {
     return store.dispatch('visNodeCreate')
 }
 
-export function dispatchDocumentSave(payload: {isDraft: boolean, isAuto: boolean}) {
-    return store.dispatch('documentSave', payload)
+export function dispatchAllInfoUpdate(payload: {isDraft: boolean, isAuto: boolean}) {
+    return store.dispatch('allInfoUpdate', payload)
 }
 
-export function dispatchLinkBulkCreate(payload: CompressLinkInfo[]) {
-    return store.dispatch('linkBulkCreate', payload)
+export function dispatchDocumentSave(payload: {isDraft: boolean, isAuto: boolean}) {
+    return store.dispatch('documentSave', payload)
 }
 
 export function dispatchNodeQuery(payload: NodeSetting[]) {

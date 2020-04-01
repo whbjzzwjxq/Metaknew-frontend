@@ -71,7 +71,7 @@
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
     import CardPageLinkInfo from "@/components/card/page/CardPageLinkInfo.vue";
-    import {leftCardPadding, ToolBar} from "@/store/modules/styleComponentSize";
+    import {ToolBar} from "@/store/modules/styleComponentSize";
 
     export default Vue.extend({
         name: "CardRoot",

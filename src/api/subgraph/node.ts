@@ -1,24 +1,47 @@
 import {instance} from "@/api/main";
+import {NodeInfoPart} from "@/class/graphItem";
+import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
+
 export interface BackendNodeInfoPart {
     Info: BaseNodeInfo;
     Ctrl: BaseNodeCtrl;
 }
 
-export function nodeBulkUpdate(nodes: BaseNodeInfo[]) {
-    return instance.request({
+export async function nodeBulkUpdate(nodes: NodeInfoPart[]) {
+    let updateNodes = nodes.filter(node => node.State.isEdit && node.isRemote);
+    let result = await instance.request({
         url: '/item/node/bulk_update',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
         data: {
-            Data: nodes,
+            Data: updateNodes.map(node => node.Info),
             CreateType: 'USER'
         }
-    })
+    });
+    let payload = {
+        actionName: 'nodeBulkUpdate',
+        color: 'success',
+        once: false,
+        content: '更新节点成功'
+    } as SnackBarStatePayload;
+    commitSnackbarOn(payload);
+    updateNodes.map(node => {
+        node.State.isEdit = false
+    });
+    return result
 }
 
-export function nodeBulkCreate(nodes: BaseNodeInfo[]) {
+export async function nodeBulkCreate(nodes: NodeInfoPart[]) {
+    let createNodes = nodes.filter(node => !node.isRemote).map(node => node.Info);
+    let result = await nodeBulkCreateInDataTable(createNodes);
+    let idMap = result.data;
+    commitInfoIdChange({_type: 'node', idMap});
+    return result
+}
+
+export function nodeBulkCreateInDataTable(nodes: BaseNodeInfo[]) {
     return instance.request<IdMap>({
         url: '/item/node/bulk_create',
         method: 'post',
@@ -29,7 +52,7 @@ export function nodeBulkCreate(nodes: BaseNodeInfo[]) {
             Data: nodes,
             CreateType: 'USER'
         }
-    })
+    });
 }
 
 export function visNodeBulkCreate(nodeList: BaseNodeInfo[], mediaList: BaseMediaInfo[]) {

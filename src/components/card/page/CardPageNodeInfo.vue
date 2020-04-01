@@ -288,10 +288,10 @@
 
             editIcon: function (): IconItem[] {
                 return [{
-                    name: getIcon('i-edit', this.isUserControl),
+                    name: getIcon('i-edit-able', !this.editBase),
                     disabled: !this.isUserControl,
                     _func: this.edit,
-                    toolTip: '编辑内容'
+                    toolTip: !this.editBase ? '编辑内容' : '停止编辑'
                 }]
             },
 
@@ -438,22 +438,11 @@
                 if (isDraft) {
                     this.baseData.draftSave(isAuto)
                 } else {
-                    let data = [this.info];
+                    let data = [this.baseData];
                     if (this.baseData.isRemote) {
-                        nodeBulkUpdate(data).then(res => {
-                            let payload = {
-                                actionName: 'nodeBulkUpdate',
-                                color: 'success',
-                                once: false,
-                                content: '更新成功'
-                            } as SnackBarStatePayload;
-                            commitSnackbarOn(payload)
-                        })
+                        nodeBulkUpdate(data)
                     } else {
-                        nodeBulkCreate(data).then(res => {
-                            let idMap = res.data;
-                            commitInfoIdChange({_type: this.type, idMap});
-                        })
+                        nodeBulkCreate(data)
                     }
                 }
             },

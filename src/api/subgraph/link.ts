@@ -1,25 +1,46 @@
 import {instance} from "@/api/main";
+import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
+import {LinkInfoPart} from "@/class/graphItem";
 
-export function linkBulkCreate(linkList: CompressLinkInfo[], createType: string = 'USER') {
-    return instance.request<IdMap | null>({
-        method: 'POST',
-        url: '/item/link/bulk_create',
-        data: {
-            Links: linkList,
-            CreateType: createType
-        }
-    })
+export async function linkBulkCreate(links: LinkInfoPart[], createType: string = 'USER') {
+    let linkList = links.filter(link => !link.isRemote);
+    let Links = linkList.map(link => link.compress());
+    if (linkList.length > 0) {
+        let result = await instance.request<IdMap>({
+            method: 'POST',
+            url: '/item/link/bulk_create',
+            data: {
+                Links,
+                CreateType: createType
+            }
+        });
+        let idMap = result.data;
+        idMap && commitInfoIdChange({_type: 'link', idMap});
+        return result
+    } else {
+        return {}
+    }
 }
 
-export function linkBulkUpdate(linkList: CompressLinkInfo[], createType: string = 'USER') {
-    return instance.request({
+export async function linkBulkUpdate(links: LinkInfoPart[], createType: string = 'USER') {
+    let linkList = links.filter(link => link.isRemote && link.State.isEdit);
+    let Links = linkList.map(link => link.compress());
+    let result = await instance.request({
         method: 'POST',
         url: '/item/link/bulk_update',
         data: {
-            Links: linkList,
+            Links,
             CreateType: createType
         }
-    })
+    });
+    let payload = {
+        actionName: 'linkBulkUpdate',
+        color: 'success',
+        once: false,
+        content: '更新关系成功'
+    } as SnackBarStatePayload;
+    commitSnackbarOn(payload);
+    return result
 }
 
 export interface BackendLinkCtrl extends PublicCtrl {

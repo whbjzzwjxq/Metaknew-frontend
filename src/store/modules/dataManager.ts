@@ -2,11 +2,11 @@ import Vue from 'vue'
 import {filePutBlob} from '@/api/fileUpload';
 import {
     DocumentSelfPart,
+    GraphNodeSettingPart,
     GraphSelfPart,
     LinkInfoPart,
     MediaInfoPart,
-    NodeInfoPart,
-    GraphNodeSettingPart
+    NodeInfoPart
 } from "@/class/graphItem";
 import {
     commitDocumentAdd,
@@ -22,8 +22,9 @@ import {
 import {Commit, Dispatch} from "vuex";
 import {isGraphSelfPart} from "@/utils/typeCheck";
 import {
-    dispatchGraphQuery, dispatchInfoDraftSaveAll,
-    dispatchLinkBulkCreate,
+    dispatchAllInfoUpdate,
+    dispatchGraphQuery,
+    dispatchInfoDraftSaveAll,
     dispatchLinkQuery,
     dispatchMediaQuery,
     dispatchNodeQuery,
@@ -33,9 +34,8 @@ import {PathSelfPart} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
 import {loginCookie} from "@/api/user/loginApi";
 import {settingToQuery} from "@/utils/utils";
-import {userConcernTemplate} from "@/utils/template";
-import {nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
-import {linkBulkCreate, linkQueryBulk} from "@/api/subgraph/link";
+import {nodeBulkUpdate, nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
+import {linkBulkCreate, linkBulkUpdate, linkQueryBulk} from "@/api/subgraph/link";
 import {documentBulkCreate, documentBulkUpdate, documentQuery} from "@/api/document/document";
 import {mediaCreate, mediaQueryMulti} from "@/api/subgraph/media";
 import {draftUpdate} from "@/api/subgraph/commonApi";
@@ -72,7 +72,18 @@ declare global {
         state: DataManagerState,
         commit: Commit,
         dispatch: Dispatch,
-        getters: any
+        getters: DataManagerGetters
+    }
+
+    interface DataManagerGetters {
+        nodes: NodeInfoPart[],
+        links: LinkInfoPart[],
+        medias: MediaInfoPart[],
+        graphs: GraphSelfPart[],
+        papers: PaperSelfPart[],
+        currentGraphInfo: NodeInfoPart,
+        documentList: DocumentSelfPart[],
+        allInfoPart: InfoPartInDataManager[]
     }
 }
 
@@ -96,22 +107,42 @@ const state: DataManagerState = {
     newIdRegex: new RegExp('\\$_[0-9]*')
 };
 const getters = {
+    nodes: (state: DataManagerState) => {
+        return Object.values(state.nodeManager)
+    },
+
+    links: (state: DataManagerState) => {
+        return Object.values(state.linkManager)
+    },
+
+    medias: (state: DataManagerState) => {
+        return Object.values(state.mediaManager)
+    },
+
+    graphs: (state: DataManagerState) => {
+        return Object.values(state.graphManager)
+    },
+
+    papers: (state: DataManagerState) => {
+        return Object.values(state.paperManager)
+    },
+
     currentGraphInfo: (state: DataManagerState) => {
         return state.nodeManager[state.currentGraph._id]
     },
 
-    documentList: (state: DataManagerState) => {
+    documentList: (state: DataManagerState, getters: DataManagerGetters) => {
         let result = [] as DocumentSelfPart[];
-        result.push(...Object.values(state.graphManager));
-        result.push(...Object.values(state.paperManager));
+        result.push(...getters.graphs);
+        result.push(...getters.papers);
         return result
     },
 
-    allInfoPart: (state: DataManagerState) => {
+    allInfoPart: (state: DataManagerState, getters: DataManagerGetters) => {
         let result = [] as InfoPartInDataManager[];
-        result.push(...Object.values(state.nodeManager));
-        result.push(...Object.values(state.linkManager));
-        result.push(...Object.values(state.mediaManager));
+        result.push(...getters.nodes);
+        result.push(...getters.links);
+        result.push(...getters.medias);
         return result
     }
 };
@@ -342,24 +373,14 @@ const actions = {
     },
 
     async visNodeCreate(context: Context) {
-        let nodeList = Object.values(state.nodeManager).filter(node => !node.isRemote).map(item => item.Info);
-        let mediaList = Object.values(state.mediaManager).filter(media => !media.isRemote).map(item => item.Info);
+        let {getters} = context;
+        let nodeList = getters.nodes.filter(node => !node.isRemote).map(item => item.Info);
+        let mediaList = getters.medias.filter(media => !media.isRemote).map(item => item.Info);
         if (nodeList.length + mediaList.length > 0) {
             return visNodeBulkCreate(nodeList, mediaList).then(res => {
                 Object.entries(res.data).map(([_type, idMap]) => {
                     idMap && commitInfoIdChange({_type, idMap})
                 })
-            })
-        } else {
-            return true
-        }
-    },
-
-    async linkBulkCreate(context: Context, payload: CompressLinkInfo[]) {
-        if (payload.length > 0) {
-            return linkBulkCreate(payload, 'USER').then(res => {
-                let idMap = res.data;
-                idMap && commitInfoIdChange({_type: 'link', idMap})
             })
         } else {
             return true
@@ -388,14 +409,14 @@ const actions = {
     },
 
     async documentSave(context: Context, payload: { isDraft: boolean, isAuto: boolean }) {
+        let {state, getters} = context;
         let {isDraft, isAuto} = payload;
         // 保存Link和Node
         await dispatchVisNodeCreate();
-        await dispatchLinkBulkCreate(
-            Object.values(state.linkManager).filter(link => !link.isRemote).map(item => item.compress())
-        );
+        await linkBulkCreate(getters.links);
+        dispatchAllInfoUpdate(payload).then();
         //处理专题 分成需要update和需要create的内容
-        let documentList: DocumentSelfPart[] = context.getters.documentList;
+        let documentList: DocumentSelfPart[] = getters.documentList;
         let dataList = documentList.filter(document => !document.DocumentData.isRemote)
             .map(document => document.backendDocument);
         let updateDataList = documentList.filter(document => document.DocumentData.isRemote);
@@ -446,6 +467,20 @@ const actions = {
                 };
                 commitSnackbarOn(payload)
             })
+        }
+    },
+
+    async allInfoUpdate(context: Context, payload: { isDraft: boolean, isAuto: boolean }) {
+        let {isDraft, isAuto} = payload;
+        let {getters} = context;
+        let draftUpdate = isDraft || isAuto; // 如果是自动保存 那么也是草稿
+        let {nodes, links, medias} = getters;
+        if (!draftUpdate) {
+            nodeBulkUpdate(nodes).then();
+            linkBulkUpdate(links).then();
+            //todo media update
+        } else {
+            //todo draft update
         }
     }
 };

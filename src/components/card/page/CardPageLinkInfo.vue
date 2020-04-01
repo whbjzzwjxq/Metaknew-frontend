@@ -7,12 +7,12 @@
                         :current-start="start"
                         :current-end="end"
                         :document="document"
-                        :edit-mode="editMode"
+                        :edit-mode="!baseData.isRemote"
                         @select-item-link="changeNode">
 
                     </link-start-end-selector>
                     <v-text-field
-                        :disabled="!editMode"
+                        :disabled="!editable"
                         :style="titleSize"
                         class="pr-2 font-weight-bold"
                         dense
@@ -21,6 +21,25 @@
 
                     </v-text-field>
                 </v-col>
+            </template>
+        </card-sub-row>
+        <card-sub-row :text="'保存与记录'" v-if="isUserControl">
+            <template v-slot:content>
+                <div class="d-flex flex-row">
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on }">
+                            <v-btn text v-on="on" coor="primary">Save</v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
+                            <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                    <icon-group :icon-list="editIcon">
+
+                    </icon-group>
+                </div>
             </template>
         </card-sub-row>
         <card-sub-row text="关系标签">
@@ -45,7 +64,7 @@
                     :p-label="'link'"
                     :base-props="editProps"
                     :prop-name="'Info'"
-                    :editable="editMode"
+                    :editable="editable"
                     @update-value="editProps = arguments[1]">
 
                 </field-json>
@@ -87,12 +106,14 @@
     import FieldJson from "@/components/field/FieldJson.vue";
     import CardSubLabelGroup from "@/components/card/subComp/CardSubLabelGroup.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
+    import IconGroup from "@/components/IconGroup.vue";
     import {GraphSelfPart, LinkInfoPart} from "@/class/graphItem";
     import {EditProps, FieldType, labelItems, ResolveType} from "@/utils/fieldResolve";
     import {deepClone} from "@/utils/utils";
     import {LabelGroup} from "@/interface/interfaceInComponent";
-    import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
     import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
+    import {getIcon} from "@/utils/icon";
+    import {linkBulkCreate, linkBulkUpdate} from '@/api/subgraph/link';
 
     export default Vue.extend({
         name: "CardPageLinkInfo",
@@ -101,13 +122,14 @@
             FieldText,
             FieldJson,
             CardSubLabelGroup,
-            LinkStartEndSelector
+            LinkStartEndSelector,
+            IconGroup
         },
         data() {
             return {
                 titleSize: "font-size: 18px",
                 labelItems: labelItems,
-                editMode: false
+                editBase: false
             }
         },
         props: {
@@ -119,7 +141,7 @@
                 type: Object as () => GraphSelfPart,
                 required: true
             },
-            editBase: {
+            editMode: {
                 type: Boolean,
                 default: false
             }
@@ -170,6 +192,19 @@
             editable: function (): boolean {
                 return this.editMode || this.editBase
             },
+
+            isUserControl: function (): boolean {
+                return this.baseData.isSelf
+            },
+
+            editIcon: function (): IconItem[] {
+                return [{
+                    name: getIcon('i-edit-able', !this.editBase),
+                    disabled: !this.isUserControl,
+                    _func: this.edit,
+                    toolTip: !this.editBase ? '编辑内容' : '停止编辑'
+                }]
+            },
         },
         methods: {
             //更换Link start / end
@@ -194,25 +229,18 @@
                 if (isDraft) {
                     this.baseData.draftSave(isAuto)
                 } else {
-                    let data = [this.info];
+                    let data = [this.baseData];
                     if (this.baseData.isRemote) {
-                        nodeBulkUpdate(data).then(res => {
-                            let payload = {
-                                actionName: 'nodeBulkUpdate',
-                                color: 'success',
-                                once: false,
-                                content: '更新成功'
-                            } as SnackBarStatePayload;
-                            commitSnackbarOn(payload)
-                        })
+                        linkBulkUpdate(data)
                     } else {
-                        nodeBulkCreate(data).then(res => {
-                            let idMap = res.data;
-                            commitInfoIdChange({_type: this.type, idMap});
-                        })
+                        linkBulkCreate(data)
                     }
                 }
             },
+
+            edit() {
+                this.editBase = !this.editBase
+            }
 
         },
         watch: {},

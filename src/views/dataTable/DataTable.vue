@@ -108,7 +108,7 @@
     import DataTableField from '@/components/DataTableField.vue';
     import {getIcon} from "@/utils/icon";
     import {nodeInfoTemplate} from "@/utils/template";
-    import {nodeBulkCreate} from "@/api/subgraph/node";
+    import {nodeBulkCreate, nodeBulkCreateInDataTable} from "@/api/subgraph/node";
     import {dispatchUserLabelProps} from "@/store/modules/_dispatch";
     import {commitSnackbarOn} from "@/store/modules/_mutations";
 
@@ -396,18 +396,16 @@
 
             saveNodes(nodes: BaseNodeInfo[]) {
                 let _this = this;
-                nodeBulkCreate(nodes).then(res => {
-                    if (res.status === 200) {
-                        for (let i in nodes) {
-                            this.nodes.splice(_this.idList.indexOf(nodes[i].id), 1);
-                            this.selected.splice(_this.idList.indexOf(nodes[i].id), 1)
-                            let payload = {
-                                actionName: 'nodeBulkCreate',
-                                color: 'success',
-                                content: '节点保存成功'
-                            } as SnackBarStatePayload;
-                            commitSnackbarOn(payload)
-                        }
+                nodeBulkCreateInDataTable(nodes).then(res => {
+                    for (let i in nodes) {
+                        this.nodes.splice(_this.idList.indexOf(nodes[i].id), 1);
+                        this.selected.splice(_this.idList.indexOf(nodes[i].id), 1);
+                        let payload = {
+                            actionName: 'nodeBulkCreate',
+                            color: 'success',
+                            content: '节点保存成功'
+                        } as SnackBarStatePayload;
+                        commitSnackbarOn(payload)
                     }
                 })
             },
@@ -451,11 +449,11 @@
             },
         },
         watch: {
-            pLabel: function(): void {
+            pLabel: function (): void {
                 this.getNodeTemplate()
             },
 
-            extraProps: function(): void {
+            extraProps: function (): void {
                 this.getNodeTemplate()
             }
         },
