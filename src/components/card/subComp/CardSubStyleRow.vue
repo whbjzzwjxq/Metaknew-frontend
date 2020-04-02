@@ -161,7 +161,7 @@
             },
 
             updateCache(prop: string, value: any) {
-                this.$set(this.cache, prop, value)
+                this.cache.prop = value
             },
 
             saveValue(prop: string, type: settingType) {

@@ -401,6 +401,7 @@ export function infoChangePLabel(info: BaseNodeInfo, newLabel: string) {
     });
     //把剩下的属性移到ExtraProps里
     Object.assign(ExtraProps, StandardProps);
+    //Vue.set检查过
     Vue.set(info, "StandardProps", newProps);
     info.PrimaryLabel = newLabel;
 }

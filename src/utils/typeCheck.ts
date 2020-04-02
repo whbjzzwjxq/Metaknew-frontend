@@ -10,7 +10,7 @@ import {
 } from "@/class/graphItem";
 import {PathNode, PathNodeExist} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
-import {ListItem, ListText, ListTitle} from "@/interface/interfaceInComponent";
+import {ListText, ListTitle} from "@/interface/interfaceInComponent";
 import {BackendNodeInfoPart} from "@/api/subgraph/node";
 import {BackendLinkInfoPart} from "@/api/subgraph/link";
 

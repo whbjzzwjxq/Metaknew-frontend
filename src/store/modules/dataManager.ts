@@ -152,7 +152,7 @@ const mutations = {
     currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
         let _id = graph._id; // 这里payload是document
-        graph.isExplode = true;
+        graph.explode(true);
         state.currentGraph = graph;
         let node = state.nodeManager[_id];
         commitItemChange(node);
@@ -166,7 +166,7 @@ const mutations = {
 
     rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
-        graph.isExplode = true;
+        graph.explode(true);
         state.rootGraph = graph
     },
 
@@ -188,6 +188,7 @@ const mutations = {
         let manager = getDocumentManager(document);
         strict || (strict = true);
         strict
+            //Vue.set检查过
             ? Vue.set(manager, document._id, document)
             : !manager[document._id] && Vue.set(manager, document._id, document)
     },
@@ -215,6 +216,7 @@ const mutations = {
         let manager = getManager(_type);
         strict || (strict = true);
         strict
+            //Vue.set检查过
             ? Vue.set(manager, _id, item)
             : !manager[_id] && Vue.set(manager, _id, item);
     },
@@ -256,9 +258,9 @@ const actions = {
         await documentQuery(_id).then(res => {
             let {data} = res;
             let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
-            dispatchNodeQuery(graph.nodeListNoSelf.map(item => item.Setting));
-            dispatchLinkQuery(graph.Content.links.map(item => item.Setting));
-            dispatchMediaQuery(graph.Content.medias.map(item => item._id));
+            dispatchNodeQuery(graph.nodesWithoutSelf.map(item => item.Setting));
+            dispatchLinkQuery(graph.links.map(item => item.Setting));
+            dispatchMediaQuery(graph.medias.map(item => item._id));
         });
     },
 
@@ -418,7 +420,7 @@ const actions = {
         //处理专题 分成需要update和需要create的内容
         let documentList: DocumentSelfPart[] = getters.documentList;
         let dataList = documentList.filter(document => !document.DocumentData.isRemote)
-            .map(document => document.backendDocument);
+            .map(document => document.dataBackendDocument);
         let updateDataList = documentList.filter(document => document.DocumentData.isRemote);
         //
         if (isDraft) {
@@ -428,7 +430,7 @@ const actions = {
         }
         if (updateDataList.length > 0) {
             if (isDraft) {
-                let data = updateDataList.map(doc => doc.draftObject);
+                let data = updateDataList.map(doc => doc.dataDraftObject);
                 draftUpdate(data, isAuto).then(res => {
                     let {DraftIdMap} = res.data;
                     updateDataList.map(doc => {
@@ -444,7 +446,7 @@ const actions = {
                     commitSnackbarOn(payload)
                 })
             } else {
-                documentBulkUpdate(updateDataList.map(doc => doc.backendDocument)).then(res => {
+                documentBulkUpdate(updateDataList.map(doc => doc.dataBackendDocument)).then(res => {
                     let idList = res.data;
                     idList.map(id => {
                         let graph = state.graphManager[id];

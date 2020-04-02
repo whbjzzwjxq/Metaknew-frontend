@@ -331,8 +331,8 @@ export function linkCtrlTemplate(_start: VisNodeSettingPart, _end: VisNodeSettin
         UpdateTime: currentTime(),
         CreateUser: getCookie("user_id"),
         CreateType: 'User',
-        Start: _start,
-        End: _end
+        Start: _start.queryObject,
+        End: _end.queryObject
     };
 }
 

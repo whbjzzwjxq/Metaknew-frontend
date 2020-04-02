@@ -116,8 +116,7 @@ export const baseNodeProp: () => PropDescriptionDict = () => ({
 
 // node的属性
 export const nodeWithLabelProp: () => PLabelPropsDict = () => ({
-    DocGraph:
-        {},
+    DocGraph: {},
     ArchProject:
         {
             PeriodStart: {

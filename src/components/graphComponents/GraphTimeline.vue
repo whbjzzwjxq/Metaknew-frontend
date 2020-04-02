@@ -96,10 +96,10 @@
             },
 
             originNodes: function (): GraphNodeSettingPart[] {
-                return this.document.Content.nodes.filter(item => !item.isDeleted)
+                return this.document.nodesAllSubDoc
             },
             originMedias: function (): MediaSettingPart[] {
-                return this.document.Content.medias.filter(item => !item.isDeleted)
+                return this.document.medias
             },
             originNodeInfo: function (): NodeInfoPart[] {
                 return this.originNodes.map(node => this.dataManager.nodeManager[node._id])
@@ -249,7 +249,7 @@
             },
             infoToTimeItem(info: NodeInfoPart | MediaInfoPart) {
                 let result: TimelineItem[] = [];
-                let props = Object.assign({}, info.Info.StandardProps, info.Info.ExtraProps);
+                let props = info.allProps;
                 Object.entries(props).map(([key, prop]) => {
                     if (prop.resolve === 'time') {
                         let item = {

@@ -115,6 +115,7 @@ const mutations = {
     userConcernAdd(state: UserDataManagerState, payload: UserConcernPayload) {
         let {id, type, userConcern, strict} = payload;
         strict === undefined && (strict = false);
+        //Vue.set检查过
         (strict || state.userConcernDict[type][id] === undefined) && Vue.set(state.userConcernDict[type], id, userConcern)
     },
 
@@ -141,6 +142,7 @@ const mutations = {
     userPropResolveAdd(state: UserDataManagerState, payload: PropDescriptionPayload) {
         let {prop, resolve, strict} = payload;
         strict === undefined && (strict = false);
+        //Vue.set检查过
         (strict || !state.userEditData.UserPropResolve[prop]) && Vue.set(state.userEditData.UserPropResolve, prop, resolve);
     },
 

@@ -99,7 +99,6 @@
         nodeLabelToStandardProps,
         PropDescriptionDict,
         ResolveType,
-        ValueWithType,
     } from "@/utils/fieldResolve"
     import {deepClone, fieldHandler, getIndex, infoChangePLabel, mergeObject} from "@/utils/utils"
     import DataTableImporter from '@/components/DataTableImporter.vue';
@@ -108,7 +107,7 @@
     import DataTableField from '@/components/DataTableField.vue';
     import {getIcon} from "@/utils/icon";
     import {nodeInfoTemplate} from "@/utils/template";
-    import {nodeBulkCreate, nodeBulkCreateInDataTable} from "@/api/subgraph/node";
+    import {nodeBulkCreateInDataTable} from "@/api/subgraph/node";
     import {dispatchUserLabelProps} from "@/store/modules/_dispatch";
     import {commitSnackbarOn} from "@/store/modules/_mutations";
 
@@ -138,7 +137,7 @@
                 //每页的行数
                 rowNum: 10,
                 //选中的标签
-                pLabel: "BaseNode",
+                pLabel: "",
                 //属性简写
                 propSimply: {
                     'IncludedMedia': "Medias",
@@ -380,12 +379,6 @@
                 mergeObject(node.Translate, translate, true);
                 mergeObject(node.ExtraProps, extraProps, true);
                 this.updateExtraPropsKeyList(node);
-                let StandardProps: Record<string, ValueWithType<any>> = {};
-                Object.entries(nodeLabelToStandardProps(this.pLabel)).map(([key, value]) => {
-                    let {type, resolve} = value;
-                    StandardProps[key] = {type, resolve, value: fieldDefaultValue[type]};
-                });
-                node.StandardProps = StandardProps;
                 return node
             },
 
@@ -396,7 +389,7 @@
 
             saveNodes(nodes: BaseNodeInfo[]) {
                 let _this = this;
-                nodeBulkCreateInDataTable(nodes).then(res => {
+                nodeBulkCreateInDataTable(nodes).then(() => {
                     for (let i in nodes) {
                         this.nodes.splice(_this.idList.indexOf(nodes[i].id), 1);
                         this.selected.splice(_this.idList.indexOf(nodes[i].id), 1);
@@ -413,7 +406,7 @@
             //更新值
             setValue(item: BaseNodeInfo, prop: string, value: any) {
                 this.standardPropKeys.includes(prop)
-                    ? (item.StandardProps[prop] = value)
+                    ? (item.StandardProps[prop].value = value)
                     : item[prop] = value;
                 prop === 'ExtraProps' && this.updateExtraPropsKeyList(item)
             },

@@ -179,13 +179,14 @@
         },
         methods: {
             updateText(key: string, value: string) {
-                this.$set(this.text, key, value);
+                this.text[key] = value;
                 this.$emit('update-value', this.propName, this.text, this.status)
             },
 
             createNewText() {
                 if (this.newLang) {
-                    this.$set(this.text, this.newLang, '');
+                    //Vue.set检查过
+                    Vue.set(this.text, this.newLang, '');
                     this.$emit('update-value', this.propName, this.text, this.status);
                     this.newLang = ''
                 }

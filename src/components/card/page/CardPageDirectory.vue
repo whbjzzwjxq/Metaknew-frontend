@@ -50,13 +50,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {
-        commitSubTabChange,
-        commitGraphChange,
-        commitItemChange,
-        commitSnackbarOn
-    } from "@/store/modules/_mutations";
-    import {GraphSelfPart, LinkSettingPart, MediaSettingPart, GraphNodeSettingPart} from "@/class/graphItem";
+    import {commitGraphChange, commitItemChange, commitSubTabChange} from "@/store/modules/_mutations";
+    import {GraphNodeSettingPart, GraphSelfPart, LinkSettingPart, MediaSettingPart} from "@/class/graphItem";
     import {getIcon} from "@/utils/icon";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
     import {frontendIdRegex} from "@/utils/utils";
@@ -111,7 +106,7 @@
             // 不包含自身
             childDocumentList: function (): GraphSelfPart[] {
                 let docList = this.$store.getters.documentList as GraphSelfPart[];
-                return docList.filter(doc => doc.root && doc.root._id === this.document._id)
+                return docList.filter(doc => doc.docRoot && doc.docRoot._id === this.document._id)
             },
             // 不包含自身
             activeDocumentList: function (): GraphSelfPart[] {
@@ -165,7 +160,7 @@
             selection: {
                 get(): DirectoryItem[] {
                     let root: DirectoryItem[] = this.directory[1].filter(docItem =>
-                        this.documents.filter(doc => doc._id === docItem.id)[0].baseNode.State.isSelected
+                        this.documents.filter(doc => doc._id === docItem.id)[0].nodeSelf.State.isSelected
                     );
                     let sub = this.itemList.filter(item => this.getOriginItem(item).State.isSelected);
                     return root.concat(sub)
@@ -176,7 +171,7 @@
                         item => item.updateState('isSelected', idList.includes(item._id))
                     );
                     this.directory[1].map(docItem =>
-                        this.documents.filter(doc => doc._id === docItem.id)[0].baseNode).map(
+                        this.documents.filter(doc => doc._id === docItem.id)[0].nodeSelf).map(
                         item => item.updateState('isSelected', idList.includes(item._id))
                     )
                 }
@@ -185,7 +180,7 @@
             activeList: {
                 get(): DirectoryItem[] {
                     let root: DirectoryItem[] = this.directory[1].filter(docItem =>
-                        this.documents.filter(doc => doc._id === docItem.id)[0].baseNode.State.isMouseOn
+                        this.documents.filter(doc => doc._id === docItem.id)[0].nodeSelf.State.isMouseOn
                     );
                     let sub = this.itemList.filter(item => this.getOriginItem(item).State.isMouseOn);
                     return root.concat(sub)
@@ -196,7 +191,7 @@
                         item => item.updateState('isMouseOn', idList.includes(item._id))
                     );
                     this.directory[1].map(docItem =>
-                        this.documents.filter(doc => doc._id === docItem.id)[0].baseNode).map(
+                        this.documents.filter(doc => doc._id === docItem.id)[0].nodeSelf).map(
                         item => item.updateState('isMouseOn', idList.includes(item._id))
                     )
                 }
@@ -213,7 +208,7 @@
                         self: document,
                         childDoc: [],
                     } as DirectoryNode;
-                    let layer = document.rootList.length;
+                    let layer = document.docsRootList.length;
                     docLayerDict[layer] || (docLayerDict[layer] = []);
                     docLayerDict[layer].push(document);
                     layer > max && (max = layer)
@@ -279,9 +274,9 @@
                 return {
                     id: document._id,
                     type: 'document',
-                    label: document.baseNode._label,
-                    name: document.baseNode.Setting._name,
-                    icon: getIcon('i-item', document.baseNode._label),
+                    label: document.nodeSelf._label,
+                    name: document.nodeSelf.Setting._name,
+                    icon: getIcon('i-item', document.nodeSelf._label),
                     deletable: document._id !== this.document._id,
                     editable: document.isSelf,
                     children: [], // 注意这里的children是空的
@@ -290,31 +285,8 @@
                 } as DirectoryItemDocument;
             },
 
-            delSingleNode(item: DirectoryItem) {
-                this.getOriginItem(item).updateState('isDeleted', true);
-                let graph = this.dataManager.graphManager[item.id];
-                if (item.type === 'document' && graph) {
-                    graph.removeFromParent()
-                }
-                let payload = {
-                    timeout: 3000,
-                    color: 'warning',
-                    content: '删除了' + item.type,
-                    buttonText: '撤销',
-                    action: this.rollBackDelete,
-                    actionObject: item,
-                    actionName: 'deleteItemFromGraph',
-                    once: false
-                } as SnackBarStatePayload;
-                commitSnackbarOn(payload)
-            },
-
-            rollBackDelete(item: DirectoryItem) {
-                this.getOriginItem(item).updateState('isDeleted', false);
-                let graph = this.dataManager.graphManager[item.id];
-                if (item.type === 'document' && graph) {
-                    graph.addToDocument(graph.baseNode.parent)
-                }
+            deleteItem(item: DirectoryItem) {
+                this.getOriginItem(item).parent.deleteItem({_id: item.id, _type: item.type})
             },
 
             changeItem(item: DirectoryItem) {
@@ -342,7 +314,7 @@
                 item.parent !== '$_-1'
                     ? document = this.dataManager.graphManager[item.parent]
                     : document = this.document;
-                return document.getSubItemById(item.id, item.type)
+                return document.getItemById(item.id, item.type)
             },
 
             async getDocument(nodeItem: DirectoryItem) {
@@ -362,13 +334,13 @@
             },
 
             getDocumentChildList(document: GraphSelfPart): DirectoryItem[] {
-                let nodes = document.nodeListNoSelf.filter(item => !item.isDeleted)
+                let nodes = document.nodesWithoutSelf.filter(item => !item.isDeleted)
                     .map(node => this.nodeToItem(node));
 
-                let links = document.Content.links.filter(item => !item.isDeleted)
+                let links = document.links
                     .map(link => this.linkToItem(link));
 
-                let medias = document.Content.medias.filter(item => !item.isDeleted)
+                let medias = document.medias
                     .map(media => this.mediaToItem(media));
 
                 return nodes.concat(links).concat(medias)

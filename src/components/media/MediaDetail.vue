@@ -242,7 +242,7 @@
                     let updateValue = [];
                     updateValue.push(currentValue);
                     let newUrl = URL.createObjectURL(new Blob(updateValue, {type: "‘text/markdown,charset=UTF-8"}));
-                    this.$set(this.media.Ctrl, 'FileName', newUrl)
+                    this.media.Ctrl.FileName = newUrl
                 } else {
                     this.doNothing()
                 }

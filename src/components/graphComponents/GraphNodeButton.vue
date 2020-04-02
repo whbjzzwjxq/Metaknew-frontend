@@ -119,13 +119,7 @@
         },
         methods: {
             delSingleNode() {
-                this.node.updateState('isDeleted');
-                let graph = this.dataManager.graphManager[this.node._id];
-                if (graph) {
-                    this.node.isDeleted
-                        ? Vue.set(graph.Conf, 'parent', null)
-                        : Vue.set(graph.Conf, 'parent', this.node.parent)
-                }
+                this.node.parent.deleteItem(this.node)
             },
             unShow() {
                 let current = this.node.Setting.Show.showAll;

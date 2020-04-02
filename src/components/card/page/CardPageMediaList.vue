@@ -91,7 +91,7 @@
         methods: {
             addMediaToNode: function (mediaIdList: id[]) {
                 if (this.baseData.isRemote) {
-                    let node = this.baseData.queryObject;
+                    let node = this.baseData.dataQueryObject;
                     mediaAppendToNode(node, mediaIdList).then(res => {
                         let num = res.data.length;
                         num === 0

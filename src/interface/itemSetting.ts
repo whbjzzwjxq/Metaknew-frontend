@@ -818,7 +818,7 @@ declare global {
 
     type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
     type AllStateProp = 'isLock' | 'isDark' | 'isLoading' | 'isChanged' | 'isExplode' | 'isSavedIn5min' | GraphStateProp
-
+    type AllCrucialProp = '_id' | '_type' | '_label' | '_image' | '_name' | '_src' | '_start' | '_end'
     interface BaseState {
         isDeleted: boolean; // 是否被删除;
         [prop: string]: boolean;

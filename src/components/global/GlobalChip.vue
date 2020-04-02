@@ -119,7 +119,7 @@
                 commitSnackbarOff()
             },
             resetChip() {
-                this.$set(this, 'show', true);
+                this.show = true;
                 clearTimeout(this.closeChip)
             },
 

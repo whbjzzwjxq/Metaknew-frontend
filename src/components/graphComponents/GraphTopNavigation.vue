@@ -48,7 +48,7 @@
         },
         computed: {
             navigationList: function (): NavigationItem[] {
-                let result: DocumentSelfPart[] = (this.document.rootList).concat([this.document]);
+                let result: DocumentSelfPart[] = (this.document.docsRootList).concat([this.document]);
                 return result.map(doc => ({
                     disabled: doc._id === this.document._id,
                     document: doc,

@@ -416,18 +416,18 @@
             },
 
             removeItem(removedLabel: string, prop: string) {
-                this.$set(this.baseData, 'isEdit', true);
+                this.baseData.isEdit = true
             },
 
             removeTopic(index: number) {
                 this.info.Topic.splice(index, 1);
-                this.$set(this.baseData, 'isEdit', true)
+                this.baseData.isEdit = true
             },
 
             addItem(value: string[], prop: string) {
                 prop === 'Info'
                     ? this.baseData.updateValue('Labels', value)
-                    : this.$set(this.userConcern, 'Labels', value)
+                    : (this.userConcern.Labels = value)
             },
 
             updateRating(prop: LevelConcern, rating: number) {

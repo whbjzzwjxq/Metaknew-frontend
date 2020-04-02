@@ -341,15 +341,10 @@
                 // containerRect形式
                 return this.viewBox.positiveRect()
             },
-            // 所有的孩子Document
-            childDocumentList: function (): GraphSelfPart[] {
-                let docList = this.$store.getters.documentList as GraphSelfPart[];
-                return docList.filter(doc => doc.root && doc.root._id === this.graph._id)
-            },
-            // 未被删除的Graph
+
+            // 未被删除的孩子Graph
             activeGraphList: function (): GraphSelfPart[] {
-                return [this.graph].concat(this.childDocumentList.filter(graph => graph &&
-                    !graph.Conf.isDeleted))
+                return [this.graph].concat(this.graph.docsChild)
             },
 
             activeGraphIdList: function (): id[] {
@@ -364,7 +359,7 @@
                     y: this.containerRect.height
                 }); // 起始坐标置为(0,0)
 
-                let basePoint = getPoint(this.graph.baseNode.Setting.Base).multiRect(this.containerRect);
+                let basePoint = getPoint(this.graph.nodeSelf.Setting.Base).multiRect(this.containerRect);
                 // 基础点就是Graph.baseNode点
                 let root: GraphMetaData = {
                     parent: null,
@@ -377,7 +372,7 @@
                 const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
                     // 加上父亲GraphBaseNode的绝对位置
                     return getPoint(node.Setting.Base) // 自己的位置比例
-                        .decrease(node.parent.baseNode.Setting.Base) // 父亲GraphBaseNode的位置比例
+                        .decrease(node.parent.nodeSelf.Setting.Base) // 父亲GraphBaseNode的位置比例
                         .multiRect(parentMetaData.rect.positiveRect()) // 乘以父亲Graph的宽高
                         .add(parentMetaData.absolute)
                 };
@@ -386,7 +381,7 @@
                 const getRectFromAbsPoint = (document: GraphSelfPart, parentPoint: Point) => {
                     let {width, height} = document.rect;
                     // 自身baseNode在自己矩形的位置
-                    let delta = getPoint(document.baseNode.Setting.Base).multiRect({width, height});
+                    let delta = getPoint(document.nodeSelf.Setting.Base).multiRect({width, height});
                     // 起点与parentNode的位置差为delta，可以算出起点(左上角)
                     let start = delta.multi(-1).add(parentPoint);
                     // 终点就是起点加长宽
@@ -430,12 +425,7 @@
             // 包含所有的Nodes
             nodes: function (): GraphNodeSettingPart[] {
                 // root Graph自己的节点显示
-                let result = [this.graph.baseNode] as GraphNodeSettingPart[];
-                this.activeGraphList.map(graph => {
-                    // 其他Graph用不包含baseNode的list
-                    result = result.concat(graph.nodeListNoSelf).filter(node => !node.isDeleted)
-                });
-                return result
+                return this.graph.nodesAllSubDoc
             },
 
             //渲染按钮
@@ -507,19 +497,12 @@
             },
 
             links: function (): LinkSettingPart[] {
-                let result: LinkSettingPart[] = [];
-                this.activeGraphList.map(graph => {
-                    result = result.concat(graph.Content.links.filter(link => {
-                        return this.nodeIdList.includes(link.Setting._start._id) &&
-                            this.nodeIdList.includes(link.Setting._end._id) && !link.isDeleted
-                    }))
-                });
-                return result
+                return this.graph.linksAllSubDoc
             },
 
             // 只有自身的medias
             medias: function (): MediaSettingPart[] {
-                return this.graph.Content.medias.filter(item => !item.isDeleted)
+                return this.graph.medias
             },
 
             notes: function (): NoteSettingPart[] {
@@ -628,7 +611,7 @@
                         width,
                         x,
                         y,
-                        show: this.showNode[index],
+                        show: this.showNode[index] && node.Setting.Show.showAll,
                         isSelected: node.State.isSelected,
                         isDeleted: node.isDeleted
                     }
@@ -658,7 +641,9 @@
 
             //显示节点
             showNode: function (): boolean[] {
-                return this.nodes.map((node) => (node.isFatherExplode && this.labelViewDict[node._type][node._label]) ||
+                return this.nodes.map((node) => (
+                    node.isFatherExplode &&
+                    this.labelViewDict[node._type][node._label]) ||
                     node._id === this.graph._id
                 )
             },
@@ -716,7 +701,7 @@
                 let [width, height] = [base.size, base.size * base.scaleX];
                 let graphMeta = this.getGraphMetaData(parent._id);
                 let point = getPoint(base)
-                    .decrease(parent.baseNode.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
+                    .decrease(parent.nodeSelf.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
                     .multiRect(graphMeta.rect.positiveRect()); // 乘以矩形 e.g. -0.2 * 1000 = -200
                 point.add(graphMeta.absolute); // 加上绝对坐标 e.g. -100 + 320 = 220
                 let startPoint = this.pointMoveComputed(point);
@@ -753,8 +738,8 @@
                     delta.decrease(this.dragStartPoint).divideRect(rect).divide(this.realScale);
                     this.dragStart($event);
                     let moveFunc = (node: VisAreaSettingPart) => {
-                        this.$set(node.Setting.Base, 'x', node.Setting.Base.x + delta.x);
-                        this.$set(node.Setting.Base, 'y', node.Setting.Base.y + delta.y);
+                        node.Setting.Base.x += delta.x;
+                        node.Setting.Base.y += delta.y;
                     };
                     if (this.selectedItems.length >= 1) {
                         this.selectedItems.map(item => isVisAreaSetting(item) && moveFunc(item))
@@ -787,8 +772,8 @@
 
             dbClickNode(node: VisAreaSettingPart) {
                 this.selectItem([node]);
+                !this.isLinking && commitSubTabChange('info');
                 if (this.isLinking && isVisNodeSetting(node) && this.startNode) {
-                    commitSubTabChange('info');
                     if (node.parent._id === this.startNode.parent._id) {
                         // 如果是同一张图里的
                         let document = node.parent;
@@ -914,7 +899,8 @@
                     let type: GraphItemType = _type;
                     labels.map(label => {
                         if (this.labelViewDict[type][label] === undefined) {
-                            this.$set(this.labelViewDict[type], label, true)
+                            //Vue.set检查过
+                            Vue.set(this.labelViewDict[type], label, true)
                         }
                     })
                 })
@@ -984,7 +970,7 @@
                 let graph = this.activeGraphRectList[index].self;
                 //现有的矩阵长宽
                 let {width, height} = graph.rect;
-                let setting = graph.baseNode.Setting;
+                let setting = graph.nodeSelf.Setting;
                 let scale = this.realScale;
                 //更新矩形长宽
                 let deltaRect = getPoint(end).decrease(start).divide(scale);
@@ -1024,7 +1010,8 @@
 
             setLabel(_type: GraphItemType, _label: string) {
                 let value = this.labelViewDict[_type][_label];
-                this.$set(this.labelViewDict[_type], _label, !value)
+                //Vue.set检查过
+                Vue.set(this.labelViewDict[_type], _label, !value)
             },
 
             resetLabel() {

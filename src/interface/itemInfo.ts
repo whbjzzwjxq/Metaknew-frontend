@@ -105,8 +105,8 @@ declare global {
     }
 
     interface BaseLinkCtrl extends PublicCtrl {
-        Start: GraphNodeSettingPart;
-        End: GraphNodeSettingPart;
+        Start: QueryObject;
+        End: QueryObject;
     }
 
     //Graph

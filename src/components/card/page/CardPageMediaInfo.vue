@@ -349,7 +349,7 @@
             addItem(value: string[], prop: string) {
                 prop === 'Info'
                     ? this.media.updateValue('Labels', value)
-                    : this.$set(this.userConcern, 'Labels', value)
+                    : this.userConcern.Labels = value
             },
 
         },

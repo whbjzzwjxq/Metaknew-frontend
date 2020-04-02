@@ -215,7 +215,7 @@
             },
 
             updateValue(item: string, value: any) {
-                this.$set(this.dict[item], 'value', value);
+                this.dict[item]['value'] = value;
                 this.update()
             },
 
@@ -225,7 +225,8 @@
             },
 
             addProp(key: string, item: any) {
-                this.$set(this.dict, key, item);
+                //Vue.set检查过
+                Vue.set(this.dict, key, item);
                 this.update()
             },
 

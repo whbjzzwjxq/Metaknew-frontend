@@ -65,40 +65,44 @@
             },
             graph: function (): GraphSelfPart {
                 return this.dataManager.currentGraph
-            },
+            }
         },
         methods: {
-            newNode: function (_label: string, graph?: GraphSelfPart) {
-                graph || (graph = this.graph);
+            defaultGraph: function (graph?: GraphSelfPart): GraphSelfPart {
+                return graph === undefined
+                    ? this.graph
+                    : graph
+            },
+
+            newNode: function (_label: string, payload?: GraphSelfPart) {
+                let graph = this.defaultGraph(payload);
                 //Info Ctrl部分
                 return graph.addEmptyNode('node', _label);
             },
-            newLink: function (start: VisNodeSettingPart, end: VisNodeSettingPart, graph?: GraphSelfPart) {
-                graph || (graph = this.graph);
+            newLink: function (start: VisNodeSettingPart, end: VisNodeSettingPart, payload?: GraphSelfPart) {
+                let graph = this.defaultGraph(payload);
                 //Info Ctrl部分
                 return graph.addEmptyLink(start, end);
             },
 
-            newNote: function (graph?: GraphSelfPart) {
-                graph || (graph = this.graph);
+            newNote: function (payload?: GraphSelfPart) {
+                let graph = this.defaultGraph(payload);
                 NoteSettingPart.emptyNoteSetting('note', '', '', graph._id, true)
             },
 
-            addMedia: function (mediaIdList: id[], graph?: GraphSelfPart) {
-                let defaultDoc = this.graph;
-                graph || (graph = defaultDoc);
+            addMedia: function (mediaIdList: id[], payload?: GraphSelfPart) {
+                let graph = this.defaultGraph(payload);
                 let mediaSettingList = mediaIdList.map(_id => this.dataManager.mediaManager[_id])
                     .map(info => {
-                        graph || (graph = defaultDoc);
                         return MediaSettingPart.emptyMediaSettingFromInfo(info, graph)
                     });
                 graph.addItems(mediaSettingList);
                 return mediaSettingList
             },
 
-            addDocument: function (_label: 'DocGraph' | 'DocPaper', graph?: GraphSelfPart) {
-                graph || (graph = this.graph);
-                return graph.addSubGraph();
+            addDocument: function (_label: 'DocGraph' | 'DocPaper', payload?: GraphSelfPart) {
+                let graph = this.defaultGraph(payload);
+                return graph.addEmptyGraph()
             },
 
             openCurrent: function () {
