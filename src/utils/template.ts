@@ -257,7 +257,7 @@ export function nodeCtrlTemplate() {
     return {
         CreateUser: getCookie("user_id"),
         UpdateTime: currentTime(),
-        Imp: randomIntegerInRange(0, 100),
+        Imp: 50,
         HardLevel: 50,
         Useful: 50,
         NumStar: 0,
@@ -331,8 +331,8 @@ export function linkCtrlTemplate(_start: VisNodeSettingPart, _end: VisNodeSettin
         UpdateTime: currentTime(),
         CreateUser: getCookie("user_id"),
         CreateType: 'User',
-        Start: _start.queryObject,
-        End: _end.queryObject
+        Start: _start,
+        End: _end
     };
 }
 

@@ -105,9 +105,11 @@ declare global {
     }
 
     interface BaseLinkCtrl extends PublicCtrl {
-        Start: QueryObject;
-        End: QueryObject;
+        Start: VisNodeSettingPart;
+        End: VisNodeSettingPart;
     }
+
+    type VisualNodeInfoPart = NodeInfoPart | MediaInfoPart
 
     //Graph
     interface DocumentContent {

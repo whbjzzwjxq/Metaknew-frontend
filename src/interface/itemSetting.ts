@@ -407,8 +407,8 @@ const linkSetting: SettingAll = {
     Arrow: {
         arrowLength: {
             type: 'Number',
-            default: 14,
-            range: [8, 24],
+            default: 18,
+            range: [12, 24],
             tips: '',
             explain: '箭头长度'
         },

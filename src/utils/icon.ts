@@ -49,7 +49,9 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         search: 'mdi-magnify',
         add: 'mdi-plus',
         select: '',
-        mode: 'mdi-state-machine'
+        mode: 'mdi-state-machine',
+        collect: '',
+        newOne: 'mdi-new-box'
     },
     'i-delete-able': {
         true: 'mdi-delete',

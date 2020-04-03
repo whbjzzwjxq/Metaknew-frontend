@@ -314,7 +314,7 @@
                 item.parent !== '$_-1'
                     ? document = this.dataManager.graphManager[item.parent]
                     : document = this.document;
-                return document.getItemById(item.id, item.type)
+                return document.getItemById({_id: item.id, _type: item.type})
             },
 
             async getDocument(nodeItem: DirectoryItem) {

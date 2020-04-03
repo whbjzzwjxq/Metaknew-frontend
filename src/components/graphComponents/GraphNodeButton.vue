@@ -27,7 +27,7 @@
         },
         props: {
             nodeSetting: {
-                type: Object as () => VisualNodeSetting,
+                type: Object as () => NodeSettingSimply,
                 required: true
             },
 

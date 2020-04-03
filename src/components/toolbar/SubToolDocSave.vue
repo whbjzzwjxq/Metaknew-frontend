@@ -16,7 +16,7 @@
     import Vue from 'vue'
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon, iconMap} from "@/utils/icon";
-    import {dispatchDocumentSave} from "@/store/modules/_dispatch";
+    import {dispatchAllInfoUpdate, dispatchDocumentSave} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "SubToolDocSave",
@@ -57,6 +57,7 @@
             },
             saveAll(payload: {isDraft: boolean, isAuto: boolean}) {
                 this.saveDocument(payload);
+                dispatchAllInfoUpdate(payload);
             }
         },
         record: {

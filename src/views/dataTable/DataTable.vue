@@ -264,10 +264,6 @@
                 }
                 return result;
             },
-            //现在的index
-            idList: function (): id[] {
-                return this.nodes.map(node => node.id)
-            },
 
             userDataManager: function (): UserDataManagerState {
                 return this.$store.state.userDataManager
@@ -388,11 +384,14 @@
             },
 
             saveNodes(nodes: BaseNodeInfo[]) {
-                let _this = this;
-                nodeBulkCreateInDataTable(nodes).then(() => {
-                    for (let i in nodes) {
-                        this.nodes.splice(_this.idList.indexOf(nodes[i].id), 1);
-                        this.selected.splice(_this.idList.indexOf(nodes[i].id), 1);
+                //必须深拷贝一下 否则会对象引用问题
+                let deepCloneNodes: BaseNodeInfo[] = [];
+                deepCloneNodes.push(...nodes);
+                nodeBulkCreateInDataTable(deepCloneNodes).then(() => {
+                    this.selected = [];
+                    for (let i in deepCloneNodes) {
+                        let index = this.nodes.indexOf(deepCloneNodes[i]);
+                        this.nodes.splice(index, 1);
                         let payload = {
                             actionName: 'nodeBulkCreate',
                             color: 'success',

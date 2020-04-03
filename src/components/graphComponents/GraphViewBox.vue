@@ -8,7 +8,7 @@
             width="100%"
             height="100%"
             @dblclick="clickSvg"
-            @mousedown.self="startSelect"
+            @mousedown="startSelect"
             @mousemove="selecting"
             @mouseup="endSelect">
 
@@ -32,11 +32,11 @@
                 :setting="nodeRewriteSettingList[index]"
                 :position="nodeLocation[index].positiveRect()"
                 :scale="realScale"
-                @mouseenter.native="mouseEnter(node, index)"
-                @mouseleave.native="mouseLeave(node)"
-                @mousedown.native="dragStart"
-                @mousemove.native="drag(node, $event)"
-                @mouseup.native="dragEnd(node, $event)"
+                @mouseenter.native.stop="mouseEnter(node, index)"
+                @mouseleave.native.stop="mouseLeave(node)"
+                @mousedown.native.stop="dragStart"
+                @mousemove.native.stop="drag(node, $event)"
+                @mouseup.native.stop="dragEnd(node, $event)"
                 @dblclick.native.stop="dbClickNode(node)">
 
             </graph-node>
@@ -351,6 +351,10 @@
                 return this.activeGraphList.map(graph => graph._id)
             },
 
+            lang: function (): string {
+                return this.$store.state.userBaseModule.lang
+            },
+
             //graph的元数据List 就是计算各个SubGraph的绝对坐标
             activeGraphMetaDataList: function (): GraphMetaData[] {
                 let vm = this;
@@ -466,8 +470,12 @@
                         ...setting.View,
                         color: this.labelColorOn ? '#000000' : setting.View.color
                     };
+                    let {_name} = setting;
+                    let trans = this.nodeInfoList[index].Info.Translate[this.lang];
+                    trans && (_name = trans);
                     return {
                         ...setting,
+                        _name,
                         Base,
                         View
                     } as NodeSettingGraph
@@ -510,7 +518,7 @@
             },
 
             texts: function (): TextSettingPart[] {
-                return this.graph.Content.texts
+                return this.graph.texts
             },
 
             labelDict: function (): Record<GraphItemType, string[]> {
@@ -530,6 +538,10 @@
                     'media': getLabels(this.medias),
                     'document': docLabel
                 } as Record<GraphItemType, string[]>
+            },
+
+            allItems: function (): GraphItemSettingPart[] {
+                return this.graph.itemsAllSubDoc
             },
 
             selectedItems: function (): GraphItemSettingPart[] {
@@ -599,7 +611,7 @@
             },
 
             //压缩版本的nodeSetting
-            nodeSettingList: function (): VisualNodeSetting[] {
+            nodeSettingList: function (): NodeSettingSimply[] {
                 return this.nodes.map((node, index) => {
                     let {x, y, width, height} = this.nodeLocation[index].positiveRect();
                     let id = node._id;
@@ -618,7 +630,7 @@
                 });
             },
 
-            mediaSettingList: function (): VisualNodeSetting[] {
+            mediaSettingList: function (): NodeSettingSimply[] {
                 return this.medias.map((media, index) => {
                     let id = media._id;
                     let parentId = media.parent._id;
@@ -681,12 +693,6 @@
 
             selectorRect: function (): AreaRect {
                 return this.selectRect.positiveRect()
-            },
-
-            allItems: function (): GraphItemSettingPart[] {
-                let result = [] as GraphItemSettingPart[];
-                result.push(...this.nodes, ...this.links, ...this.medias, ...this.texts);
-                return result
             },
 
             importanceChipText: function (): string {
@@ -757,11 +763,13 @@
             },
 
             //node的原生事件
-            mouseEnter(node: VisAreaSettingPart, index: number) {
+            mouseEnter(node: VisAreaSettingPart, index?: number) {
                 node.State.isMouseOn = true;
-                let {x, y} = this.nodeLocation[index].end;
-                this.cardPosition.x = x + 12;
-                this.cardPosition.y = y + 12;
+                if (index) {
+                    let {x, y} = this.nodeLocation[index].end;
+                    this.cardPosition.x = x + 12;
+                    this.cardPosition.y = y + 12;
+                }
             },
 
             //node的原生事件
@@ -870,7 +878,7 @@
                             //如果选中了Document 对应的Node
                             let index = this.activeGraphIdList.indexOf(node._id);
                             if (node._type === 'document' && index > -1) {
-                                this.activeGraphList[index].selectAll('isSelected', true)
+                                this.activeGraphList[index].selectAll(true)
                             }
                         }
                     );
@@ -886,7 +894,7 @@
 
             clearSelected(items: 'all' | GraphItemSettingPart[]) {
                 if (items === 'all') {
-                    Object.values(this.dataManager.graphManager).map(document => document.selectAll('isSelected', false));
+                    Object.values(this.dataManager.graphManager).map(document => document.selectAll(false));
                 } else {
                     items.map(item => item.updateState('isSelected', false));
                 }
@@ -910,7 +918,7 @@
             getTargetInfo(node: VisNodeSettingPart | null) {
                 //注意这里index肯定不能是-1
                 let result;
-                const equal = (nodePart: VisNodeSettingPart, nodeSetting: VisualNodeSetting) =>
+                const equal = (nodePart: VisNodeSettingPart, nodeSetting: NodeSettingSimply) =>
                     (nodePart._id === nodeSetting.id) &&
                     (nodePart.parent._id === nodeSetting.parentId || nodePart._type === 'document');
                 // 不仅id相同 必须是同一个专题下 或者node本身就是专题节点

@@ -389,6 +389,15 @@ const actions = {
         }
     },
 
+    async linkCreate(context: Context, payload?: LinkInfoPart[]) {
+        let {getters} = context;
+        let links = payload === undefined
+            ? getters.links
+            : payload;
+        let linkList = links.filter(link => !link.isRemote);
+        let Links = linkList.map(link => link.compress());
+    },
+
     draftSaveAll(context: Context, payload: { isAuto: boolean }) {
         let infoList: InfoPartInDataManager[] = context.getters.allInfoPart;
         let data = infoList.filter(info => info.isRemote && info.State.isEdit).map(info => info.draftObject);
@@ -416,7 +425,6 @@ const actions = {
         // 保存Link和Node
         await dispatchVisNodeCreate();
         await linkBulkCreate(getters.links);
-        dispatchAllInfoUpdate(payload).then();
         //处理专题 分成需要update和需要create的内容
         let documentList: DocumentSelfPart[] = getters.documentList;
         let dataList = documentList.filter(document => !document.DocumentData.isRemote)
@@ -451,7 +459,13 @@ const actions = {
                     idList.map(id => {
                         let graph = state.graphManager[id];
                         graph && (graph.updateStateUpdate())
-                    })
+                    });
+                    let payload: SnackBarStatePayload = {
+                        color: 'success',
+                        actionName: 'documentCreate',
+                        content: '专题更新成功',
+                    };
+                    commitSnackbarOn(payload)
                 });
             }
         }
@@ -480,9 +494,7 @@ const actions = {
         if (!draftUpdate) {
             nodeBulkUpdate(nodes).then();
             linkBulkUpdate(links).then();
-            //todo media update
         } else {
-            //todo draft update
         }
     }
 };

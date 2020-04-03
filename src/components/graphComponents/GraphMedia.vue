@@ -1,6 +1,6 @@
 <template>
     <rect-container
-        :container="container"
+        :container="position"
         :is-selected="state.isSelected"
         @update-size="updateSize"
         class="media"

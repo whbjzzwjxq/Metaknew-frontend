@@ -23,24 +23,31 @@ export async function linkBulkCreate(links: LinkInfoPart[], createType: string =
 }
 
 export async function linkBulkUpdate(links: LinkInfoPart[], createType: string = 'USER') {
-    let linkList = links.filter(link => link.isRemote && link.State.isEdit);
+    let linkList = links.filter(link => link.isRemote && link.isEdit);
     let Links = linkList.map(link => link.compress());
-    let result = await instance.request({
-        method: 'POST',
-        url: '/item/link/bulk_update',
-        data: {
-            Links,
-            CreateType: createType
-        }
-    });
-    let payload = {
-        actionName: 'linkBulkUpdate',
-        color: 'success',
-        once: false,
-        content: '更新关系成功'
-    } as SnackBarStatePayload;
-    commitSnackbarOn(payload);
-    return result
+    if (Links.length > 0) {
+        let result = await instance.request({
+            method: 'POST',
+            url: '/item/link/bulk_update',
+            data: {
+                Links,
+                CreateType: createType
+            }
+        });
+        let payload = {
+            actionName: 'linkBulkUpdate',
+            color: 'success',
+            once: false,
+            content: '更新关系成功'
+        } as SnackBarStatePayload;
+        commitSnackbarOn(payload);
+        links.map(link => {
+            link.isEdit = false
+        });
+        return result
+    } else {
+        return true
+    }
 }
 
 export interface BackendLinkCtrl extends PublicCtrl {

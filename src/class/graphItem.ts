@@ -242,6 +242,13 @@ export class LinkInfoPart extends InfoPart {
     Info: BaseLinkInfo;
     Ctrl: BaseLinkCtrl;
 
+    static get visualNodeSetting () {
+        let result: VisNodeSettingPart[] = [];
+        result.push(...GraphNodeSettingPart.list);
+        result.push(...MediaSettingPart.list);
+        return result
+    }
+
     get _type() {
         return this.Info.type
     }
@@ -266,7 +273,12 @@ export class LinkInfoPart extends InfoPart {
 
     static resolveBackend(link: BackendLinkInfoPart, commit: boolean = true) {
         let {Info, Ctrl} = link;
-        let item = new LinkInfoPart(Info, Ctrl, false);
+        let ctrl = {
+            ...Ctrl,
+            Start: LinkInfoPart.visualNodeSetting.filter(item => item._id === Ctrl.Start.id)[0],
+            End: LinkInfoPart.visualNodeSetting.filter(item => item._id === Ctrl.End.id)[0]
+        } as BaseLinkCtrl;
+        let item = new LinkInfoPart(Info, ctrl, false);
         commit && commitInfoAdd({item, strict: true});
         item.synchronizationAll();
         item.State.isEdit = false;
@@ -280,33 +292,29 @@ export class LinkInfoPart extends InfoPart {
 
     changeNode(start: VisNodeSettingPart | null, end: VisNodeSettingPart | null) {
         if (!this.isRemote) {
-            if (start && this.Ctrl.Start.id !== start._id) {
-                this.Ctrl.Start = start.queryObject;
-                this.synchronizationSource("_start", start._id);
+            if (start && this.Ctrl.Start._id !== start._id) {
+                this.Ctrl.Start = start;
+                this.allSettingItem.map(link => link.reBoundNode("_start", start))
             }
 
-            if (end && this.Ctrl.End.id !== end._id) {
-                this.Ctrl.End = end.queryObject;
-                this.synchronizationSource("_end", end._id);
+            if (end && this.Ctrl.End._id !== end._id) {
+                this.Ctrl.End = end;
+                this.allSettingItem.map(link => link.reBoundNode("_end", end))
             }
         } else {
             // "远端关系不能改变了"
         }
     }
 
-    synchronizationSource(prop: '_start' | '_end' | '_label', value: id | string) {
-        if (prop === '_label') {
-            this.allSettingItem.map(link => link.updateCrucialProp(prop, value));
-        } else {
-            this.allSettingItem.map(link => link.reBoundNode(value, prop))
-        }
+    synchronizationSource(prop: '_label', value: string) {
+        this.allSettingItem.map(link => link.updateCrucialProp(prop, value));
         this.isEdit = true
     }
 
     synchronizationAll() {
         this.allSettingItem.map(link => {
-            link.reBoundNode(this.Ctrl.Start.id, "_start");
-            link.reBoundNode(this.Ctrl.End.id, "_end");
+            link.reBoundNode("_start", this.Ctrl.Start);
+            link.reBoundNode("_end", this.Ctrl.End);
             link.updateCrucialProp('_label', this.Info.PrimaryLabel);
         });
     }
@@ -314,8 +322,8 @@ export class LinkInfoPart extends InfoPart {
     compress() {
         return {
             ...this.Info,
-            Start: this.Ctrl.Start,
-            End: this.Ctrl.End
+            Start: this.Ctrl.Start.queryObject,
+            End: this.Ctrl.End.queryObject
         } as CompressLinkInfo
     }
 }
@@ -742,12 +750,25 @@ export class LinkSettingPart extends GraphItemSettingPart {
         return new LinkSettingPart(setting, state, parent);
     }
 
-    reBoundNode(_id: id, node: '_start' | '_end', parent?: GraphSelfPart) {
-        parent === undefined && (parent = this.parent);
-        if (node === '_start') {
-            this._start._id !== _id && (this._start = parent.getLinkNode(_id))
+    reBoundNode(target: '_start' | '_end', node: VisNodeSettingPart) {
+        // 没有特别指定parent就是自己的父亲
+        let parent = this.parent;
+        let targetItem: VisNodeSettingPart;
+        // 如果没有目标节点就添加进去
+        let targetInParent: VisNodeSettingPart | undefined = parent.getVisNodeById(node);
+        if (targetInParent === undefined) {
+            //如果没有已有项目那么新增一个内容 并且target是新内容
+            parent.addItems([node]);
+            targetItem = node
         } else {
-            this._end._id !== _id && (this._end = parent.getLinkNode(_id))
+            // parent里已有该内容 那么就用该graph中的
+            targetItem = targetInParent
+        }
+        //
+        if (target === '_start') {
+            this._start._id !== targetItem._id && (this._start = targetItem)
+        } else {
+            this._end._id !== targetItem._id && (this._end = targetItem)
         }
     }
 }
@@ -909,6 +930,22 @@ export abstract class DocumentSelfPart {
         return result
     }
 
+    //text
+    get textsAll() {
+        return this.Content.texts
+    }
+
+    get texts() {
+        return this.Content.texts.filter(item => !item.isDeleted)
+    }
+
+    //所有内容 包含子专题的节点和关系
+    get itemsAllSubDoc() {
+        let result = [] as GraphItemSettingPart[];
+        result.push(...this.nodesAllSubDoc, ...this.linksAllSubDoc, ...this.medias, ...this.texts);
+        return result
+    }
+
     //doc
     get docsRootList() {
         return this.Conf.findRoot()
@@ -991,18 +1028,26 @@ export abstract class DocumentSelfPart {
         return itemList
     }
 
-    getItemById(_id: id, _type: GraphItemType) {
+    getItemById(payload: {_id: id, _type: GraphItemType}) {
+        let {_id, _type} = payload;
         let list = this.getItemListByName(_type);
         return list.filter(item => item._id === _id)[0]
     }
 
-    checkExist(_id: id, _type: GraphItemType) {
+    getVisNodeById(payload: {_id: id, _type: 'node' | 'document' | 'media'}) {
+        let {_id, _type} = payload;
+        let list = this.getItemListByName(_type);
+        return list.filter(item => item._id === _id)[0] as VisNodeSettingPart
+    }
+
+    checkExistByIdType(payload: {_id: id, _type: GraphItemType}) {
+        let {_id, _type} = payload;
         let itemList = this.getItemListByName(_type);
         return findItem(itemList, _id, _type).length > 0
     }
 
     checkExistByItem(item: GraphItemSettingPart) {
-        return this.checkExist(item._id, item._type)
+        return this.checkExistByIdType(item)
     }
 
     getItemByState(name: GraphTypeS | GraphItemType, state: BaseStateKey) {
@@ -1087,7 +1132,11 @@ export class GraphSelfPart extends DocumentSelfPart {
     addItems(items: GraphItemSettingPart[]) {
         items.filter(item => !this.checkExistByItem(item)).map(item => {
             item.State.isAdd = true;
-            this.pushItem(item)
+            this.pushItem(item);
+            if (item._type === 'document') {
+                let graph = store.state.dataManager.graphManager[item._id];
+                graph && (graph.Conf.parent = this)
+            }
         })
     }
 
@@ -1110,9 +1159,11 @@ export class GraphSelfPart extends DocumentSelfPart {
         this.Conf.updateState('isExplode', value)
     }
 
-    selectAll(state: 'isSelected', value: boolean) {
+    selectAll(value: boolean) {
         this.allItems().filter(item => item.State.isSelected !== value)
-            .map(item => Vue.set(item.State, state, value));
+            .map(item => {
+                item.State.isSelected = value
+            });
     }
 
     addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex: boolean = true) {
@@ -1151,7 +1202,7 @@ export class GraphSelfPart extends DocumentSelfPart {
 
     deleteItem(payload: { _id: id, _type: GraphItemType }) {
         let {_id, _type} = payload;
-        let item = this.getItemById(_id, _type);
+        let item = this.getItemById(payload);
         item.updateState('isDeleted', true);
         if (_type === 'document') {
             let graph = this.docsChildAll.filter(item => item._id === _id)[0];
@@ -1172,7 +1223,7 @@ export class GraphSelfPart extends DocumentSelfPart {
     rollBackDelete(payload: { _id: id, _type: GraphItemType }) {
         return () => {
             let {_id, _type} = payload;
-            let item = this.getItemById(_id, _type);
+            let item = this.getItemById(payload);
             item.updateState('isDeleted', false);
             if (_type === 'document') {
                 let graph = this.docsChildAll.filter(item => item._id === _id)[0];
@@ -1180,5 +1231,9 @@ export class GraphSelfPart extends DocumentSelfPart {
             }
             commitSnackbarOff()
         }
+    }
+
+    collectItemsToNewGraph(deleteSource: boolean) {
+
     }
 }

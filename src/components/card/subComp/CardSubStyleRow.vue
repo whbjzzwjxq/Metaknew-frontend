@@ -2,9 +2,9 @@
     <v-simple-table dense style="width: 100%">
         <template v-slot:default>
             <thead class="pl-4">
-            <th class="text-left">Name</th>
-            <th class="text-left">Explain</th>
-            <th class="text-left">Value</th>
+                <th class="text-left">Name</th>
+                <th class="text-left">Explain</th>
+                <th class="text-left">Value</th>
             </thead>
             <tbody>
             <tr v-for="(item, prop) in settingItem" :key="prop">
@@ -31,7 +31,7 @@
                                     <v-color-picker
                                         v-if="item.type === 'Color'"
                                         :mode="'hexa'"
-                                        :value="manyValue(prop)"
+                                        :value="manyValue(prop, item)"
                                         @update:color="updateCache(item.type, $event.hex)"
                                         show-swatches
                                         hide-mode-switch>
@@ -42,7 +42,7 @@
                                         <card-sub-style-number
                                             :min="item.range[0]"
                                             :max="item.range[1]"
-                                            :value="manyValue(prop)"
+                                            :value="manyValue(prop, item)"
                                             :prop-name="prop"
                                             @update="updateCache(item.type, $event)">
 
@@ -51,7 +51,7 @@
 
                                     <v-select
                                         v-else-if="item.type === 'String'"
-                                        :value="manyValue(prop)"
+                                        :value="manyValue(prop, item)"
                                         :items="item.range"
                                         @input="updateCache(item.type, $event)">
 
@@ -59,14 +59,14 @@
 
                                     <v-switch
                                         v-else-if="item.type === 'Boolean'"
-                                        :input-value="manyValue(prop)"
+                                        :input-value="manyValue(prop, item)"
                                         @change="updateValue(prop, $event)"
-                                        :label="manyValue(prop) ? 'Yes' : 'No'">
+                                        :label="manyValue(prop, item) ? 'Yes' : 'No'">
                                     </v-switch>
 
                                     <v-text-field
                                         v-else-if="item.type === 'Text'"
-                                        :input-value="manyValue(prop)"
+                                        :input-value="manyValue(prop, item)"
                                         @change="updateCache(item.type, $event)"
                                         @blur="saveValue(prop, item.type)"
                                     >
@@ -90,7 +90,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {GraphItemSettingPart} from "@/class/graphItem";
-    import {SettingGroup} from "@/interface/itemSetting";
+    import {BaseSettingConf, SettingGroup} from "@/interface/itemSetting";
     import CardSubStyleNumber from "@/components/card/subComp/CardSubStyleNumber.vue";
 
     type settingType = 'Color' | 'Number' | 'Boolean' | 'String' | 'Text'
@@ -148,10 +148,10 @@
                 ? list[0]
                 : list.join(",").substring(0, 7) + "...",
 
-            manyValue(prop: string) {
-                return this.selectionValue[prop].length === 1
+            manyValue(prop: string, item: BaseSettingConf) {
+                return this.selectionValue[prop].length >= 1
                     ? this.selectionValue[prop][0]
-                    : 0
+                    : item.default
             },
 
             updateValue(prop: string, value: string | number) {
@@ -160,8 +160,8 @@
                 })
             },
 
-            updateCache(prop: string, value: any) {
-                this.cache.prop = value
+            updateCache(type: settingType, value: any) {
+                this.cache[type] = value
             },
 
             saveValue(prop: string, type: settingType) {

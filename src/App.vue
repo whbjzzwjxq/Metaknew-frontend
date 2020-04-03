@@ -1,28 +1,59 @@
 <template>
     <v-app id="page" v-resize="screenResize">
         <v-content class="d-flex flex-nowrap">
-            <v-card :style="toolBarStyle">
-                <div :style="toolbarLeftStyle">
-                    <p class="font-weight-bold pl-4 ma-0">META-KNEW</p>
+            <v-card :style="toolBarStyle" class="d-flex flex-row flex-nowrap">
+                <div :style="toolbarLeftStyle" class="flex-shrink-0">
+                    <v-btn text block href="/index" :style="buttonStyle" class="px-2 pt-2">
+                        Meta-Knew
+                    </v-btn>
                 </div>
-                <div :style="toolbarMidStyle">
+                <div class="flex-grow-1">
                     <search-bar edit-mode v-if="toolBarSearch">
 
                     </search-bar>
                 </div>
-                <div :style="toolbarRightStyle">
-                    <div class="pt-2">
-                        <v-btn text href="/index">Home</v-btn>
-                        <v-btn text href="/index/about">About</v-btn>
-                        <template v-if="isLogin">
-                            <v-btn text href="/index/user-center">{{userName}}</v-btn>
-                            <v-btn text @click="logout">Sign Out</v-btn>
+                <div class="pt-2 flex-nowrap">
+                    <v-menu offset-y>
+                        <template v-slot:activator="{on}">
+                            <v-btn text v-on="on" class="px-sm-1 px-xs-1 px-md-2 px-lg-4">
+                                {{ 'Lang: ' + lang }}
+                            </v-btn>
                         </template>
-                        <template v-else>
-                            <v-btn text @click="logIn">Sign in</v-btn>
-                            <v-btn text @click="signUp">Sign up</v-btn>
-                        </template>
-                    </div>
+                        <v-list>
+                            <v-list-item
+                                v-for="item in supportedLang"
+                                :key="item"
+                                @click="langChange(item)">
+                                <v-list-item-title>
+                                    {{ item }}
+                                </v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                    <template v-if="isLogin">
+                        <v-menu offset-y>
+                            <template v-slot:activator="{on}">
+                                <v-btn text v-on="on" class="px-sm-1 px-xs-1 px-md-2 px-lg-4">
+                                    {{ userNameShow }}
+                                </v-btn>
+                            </template>
+                            <v-list>
+                                <v-list-item href="/userCenter">
+                                    <v-list-item-title>
+                                        用户中心
+                                    </v-list-item-title>
+                                </v-list-item>
+                                <v-list-item @click="logout">
+                                    <v-list-item-title>
+                                        退出登录
+                                    </v-list-item-title>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </template>
+                    <template v-else>
+                        <v-btn text @click="logIn">Sign in/up</v-btn>
+                    </template>
                 </div>
             </v-card>
             <div :style="spaceStyle"></div>
@@ -45,10 +76,10 @@
     import SearchBar from '@/components/SearchBar.vue';
     import GlobalLoginRegister from "@/components/global/GlobalLoginRegister.vue";
     import {getCookie, setLoginIn, setLoginOut} from "@/utils/utils"
-    import {commitLoginDialogOn, commitScreenRefresh} from '@/store/modules/_mutations'
+    import {commitLangChange, commitLoginDialogOn, commitScreenRefresh} from '@/store/modules/_mutations'
     import {ToolBar} from "@/store/modules/styleComponentSize";
     import {loginCookie} from "@/api/user/loginApi";
-    import {userEditDataQuery} from "@/api/user/dataApi";
+    import {supportedLang} from "@/store/modules/userInfo";
 
     export default Vue.extend({
         name: "App",
@@ -60,7 +91,8 @@
         data() {
             return {
                 buttonNum: 5,
-                rightWidth: 480
+                rightWidth: 480,
+                supportedLang: supportedLang
             }
         },
         props: {},
@@ -70,6 +102,9 @@
             },
             userInfo: function (): UserLoginResponse {
                 return this.$store.state.userBaseModule.userInfo
+            },
+            lang: function (): string {
+                return this.$store.state.userBaseModule.lang
             },
             userName: function (): string {
                 return this.userInfo.userName
@@ -105,35 +140,33 @@
                     height: this.allComponentSize.screenY - this.toolBar.height + "px"
                 }
             },
+            screenX: function (): number {
+                return this.allComponentSize.screenX
+            },
+            isMiddle: function (): boolean {
+                return this.screenX >= 960
+            },
             toolbarLeftStyle: function (): CSSProp {
                 return {
                     height: this.toolBar.height + 'px',
-                    width: this.allComponentSize.leftCard.width + 'px',
+                    width: this.isMiddle ? this.allComponentSize.leftCard.width + 'px' : '180px',
                     textAlign: "start",
                     textJustify: "auto",
                     display: "inline-block",
-                    verticalAlign: "top",
-                    fontSize: Math.floor(this.toolBar.height / 1.5) + 'px'
-                }
-            },
-
-            toolbarRightStyle: function (): CSSProp {
-                return {
-                    height: this.toolBar.height + 'px',
-                    width: this.rightWidth + 'px',
-                    display: "inline-block",
-                    verticalAlign: "top",
-                    textAlign: "right",
-                }
-            },
-
-            toolbarMidStyle: function (): CSSProp {
-                return {
-                    height: this.toolBar.height + 'px',
-                    width: (this.allComponentSize.screenX - this.rightWidth - this.allComponentSize.leftCard.width) + 'px',
-                    display: "inline-block",
                     verticalAlign: "top"
                 }
+            },
+            buttonStyle: function (): CSSProp {
+                return {
+                    fontWeight: "bolder",
+                    fontSize: this.isMiddle ? 'xx-large' : 'x-large'
+                }
+            },
+            userNameShow: function (): string {
+                let userName = this.userName;
+                return this.isMiddle
+                    ? userName
+                    : userName.length > 9 ? userName.substring(0, 6) + '...' : userName
             }
 
         },
@@ -144,11 +177,11 @@
             logIn() {
                 commitLoginDialogOn(0)
             },
-            signUp() {
-                commitLoginDialogOn(1)
-            },
             screenResize() {
                 commitScreenRefresh()
+            },
+            langChange(payload: string) {
+                commitLangChange(payload);
             }
         },
         watch: {},

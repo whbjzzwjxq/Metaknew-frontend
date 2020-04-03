@@ -1,10 +1,7 @@
-import {loginCookie} from '@/api/user/loginApi'
-import {setLoginIn} from '@/utils/utils'
-import {Commit, Dispatch} from "vuex";
-
 export type userId = number;
 export type userName = string;
 export type userLoginPayload = UserLoginResponse;
+export const supportedLang = ['auto', 'en', 'zh'];
 
 export interface UserInfo {
     userName: userName,
@@ -14,6 +11,7 @@ export interface UserInfo {
 export interface State {
     isLogin: boolean,
     userInfo: UserInfo,
+    lang: string
 }
 
 const state: State = {
@@ -22,6 +20,7 @@ const state: State = {
         userName: '',
         userId: 0
     } as UserInfo,
+    lang: 'auto'
 };
 
 const mutations = {
@@ -32,6 +31,12 @@ const mutations = {
 
     loginOut(state: State) {
         state.isLogin = false
+    },
+
+    langChange(state: State, payload: string) {
+        if (supportedLang.includes(payload)) {
+            state.lang = payload
+        }
     }
 };
 

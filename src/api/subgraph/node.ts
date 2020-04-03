@@ -9,28 +9,32 @@ export interface BackendNodeInfoPart {
 
 export async function nodeBulkUpdate(nodes: NodeInfoPart[]) {
     let updateNodes = nodes.filter(node => node.State.isEdit && node.isRemote);
-    let result = await instance.request({
-        url: '/item/node/bulk_update',
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        data: {
-            Data: updateNodes.map(node => node.Info),
-            CreateType: 'USER'
-        }
-    });
-    let payload = {
-        actionName: 'nodeBulkUpdate',
-        color: 'success',
-        once: false,
-        content: '更新节点成功'
-    } as SnackBarStatePayload;
-    commitSnackbarOn(payload);
-    updateNodes.map(node => {
-        node.State.isEdit = false
-    });
-    return result
+    if (updateNodes.length > 0) {
+        let result = await instance.request({
+            url: '/item/node/bulk_update',
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: {
+                Data: updateNodes.map(node => node.Info),
+                CreateType: 'USER'
+            }
+        });
+        let payload = {
+            actionName: 'nodeBulkUpdate',
+            color: 'success',
+            once: false,
+            content: '更新节点成功'
+        } as SnackBarStatePayload;
+        commitSnackbarOn(payload);
+        updateNodes.map(node => {
+            node.isEdit = false
+        });
+        return result
+    } else {
+        return true
+    }
 }
 
 export async function nodeBulkCreate(nodes: NodeInfoPart[]) {

@@ -1,6 +1,6 @@
 <template>
     <div class="d-flex flex-row" style="width: 100%; height: 100%">
-        <v-col cols="11" class="pa-0 pt-1 pl-4 pr-2">
+        <div class="pa-0 pt-1 flex-grow-1">
             <v-autocomplete
                 :dense="editMode"
                 :items="activeItems"
@@ -54,19 +54,19 @@
                     </template>
                 </template>
             </v-autocomplete>
-        </v-col>
-        <v-col class="pl-2 pr-2">
+        </div>
+        <div class="pa-2 pt-3 px-sm-1 px-xs-1">
             <icon-group :icon-list="appendIconList" :small="editMode">
 
             </icon-group>
-        </v-col>
+        </div>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search/search'
-    import {GraphSelfPart, MediaSettingPart, GraphNodeSettingPart} from '@/class/graphItem'
+    import {GraphNodeSettingPart, GraphSelfPart, MediaSettingPart} from '@/class/graphItem'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
@@ -151,8 +151,16 @@
 
             appendIconList: function (): IconItem[] {
                 return [
-                    {name: getIcon('i-edit', this.editMode ? 'add' : 'search'), _func: this.addItemToGraph},
-                    {name: getIcon('i-edit', 'close'), _func: this.clear}
+                    {
+                        name: getIcon('i-edit', this.editMode ? 'add' : 'search'),
+                        _func: this.addItemToGraph,
+                        toolTip: '添加选中的内容到专题中'
+                    },
+                    {
+                        name: getIcon('i-edit', 'close'),
+                        _func: this.clear,
+                        toolTip: '清除选择集'
+                    }
                 ]
             },
 
@@ -211,7 +219,10 @@
             },
 
             addItemToGraph() {
-                let unDuplicateItems = this.selection.filter(item => !this.currentGraph.checkExist(item.id, item.type));
+                let unDuplicateItems = this.selection.filter(item => !this.currentGraph.checkExistByIdType({
+                    _id: item.id,
+                    _type: item.type
+                }));
                 let nodes = unDuplicateItems.filter(item => item.type !== 'media');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
                 let nodeSettingList = nodes.map(node => GraphNodeSettingPart.emptyNodeSetting(
@@ -232,7 +243,8 @@
                     this.currentGraph
                 ));
                 dispatchMediaQuery(medias.map(media => media.id));
-                this.currentGraph.addItems(mediaSettingList)
+                this.currentGraph.addItems(mediaSettingList);
+                this.selection = []
             },
 
             getHeaderNameHtml(name: string, length: number) {

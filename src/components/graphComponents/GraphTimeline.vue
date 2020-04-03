@@ -221,6 +221,15 @@
 
             step: function (): number {
                 return (this.delta) / this.ticks
+            },
+
+            props: function (): string[] {
+                let result: string[] = [];
+                this.availableTimeItems.map(item => {
+                    let prop = item.key;
+                    !result.includes(prop) && (result.push(prop))
+                });
+                return result.sort()
             }
         },
         methods: {

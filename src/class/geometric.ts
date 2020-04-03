@@ -21,7 +21,8 @@ declare global {
         height: number,
     }
 
-    interface VisualNodeSetting extends AreaRect {
+    //  简化过的节点设置
+    interface NodeSettingSimply extends AreaRect {
         id: id,
         parentId: id,
         height: number,

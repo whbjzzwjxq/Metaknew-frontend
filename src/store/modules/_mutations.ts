@@ -131,3 +131,7 @@ export const commitNoteBookAdd = (payload: {note: NoteBook}) => {
 export const commitBottomDynamicBarChange = (payload: {on?: boolean, type?: BottomDynamicBarType}) => {
     return store.commit('bottomDynamicBarChange', payload)
 };
+
+export const commitLangChange = (payload: string) => {
+    return store.commit('langChange', payload)
+};
