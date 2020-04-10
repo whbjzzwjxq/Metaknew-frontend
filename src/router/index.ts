@@ -10,7 +10,7 @@ export const TestUrl = '/test';
 const routes = [
     {
         path: '',
-        redirect: {name: 'home'}
+        redirect: {name: 'index'}
     },
     {
         path: IndexUrl + '/about',
@@ -19,7 +19,7 @@ const routes = [
     },
     {
         path: IndexUrl,
-        name: 'home',
+        name: 'index',
         component: () => import(/* webpackChunkName: "group-index" */ '@/views/index/Home.vue'),
     },
     {

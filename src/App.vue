@@ -2,13 +2,13 @@
     <v-app id="page" v-resize="screenResize">
         <v-content class="d-flex flex-nowrap">
             <v-card :style="toolBarStyle" class="d-flex flex-row flex-nowrap">
-                <div :style="toolbarLeftStyle" class="flex-shrink-0">
-                    <v-btn text block href="/index" :style="buttonStyle" class="px-2 pt-2">
-                        Meta-Knew
+                <div :style="toolbarLeftStyle" class="flex-shrink-0" v-if="!isIndex">
+                    <v-btn large text block href="/index" :style="buttonStyle" class="px-2 name-title">
+                        Meta Knew
                     </v-btn>
                 </div>
                 <div class="flex-grow-1">
-                    <search-bar edit-mode v-if="toolBarSearch">
+                    <search-bar edit-mode v-if="!isIndex">
 
                     </search-bar>
                 </div>
@@ -109,9 +109,7 @@
             userName: function (): string {
                 return this.userInfo.userName
             },
-            toolBarSearch: function (): boolean {
-                return this.$route.name !== 'home'
-            },
+
             allComponentSize: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
@@ -159,7 +157,7 @@
             buttonStyle: function (): CSSProp {
                 return {
                     fontWeight: "bolder",
-                    fontSize: this.isMiddle ? 'xx-large' : 'x-large'
+                    fontSize: this.isMiddle ? '40px' : 'x-large'
                 }
             },
             userNameShow: function (): string {
@@ -167,8 +165,10 @@
                 return this.isMiddle
                     ? userName
                     : userName.length > 9 ? userName.substring(0, 6) + '...' : userName
+            },
+            isIndex: function (): boolean {
+                return this.$route.name === 'index'
             }
-
         },
         methods: {
             logout() {
@@ -198,5 +198,12 @@
 </script>
 
 <style scoped>
-
+    @font-face {
+        font-family: 'BankGothic-Md';
+        src:url("style/fonts/BankGothic Md BT Medium.ttf");
+    }
+    .name-title {
+        font-family: "BankGothic-Md",sans-serif;
+        font-weight: bolder;
+    }
 </style>

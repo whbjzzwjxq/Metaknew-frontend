@@ -64,15 +64,6 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
     
     </style>
 ```
-    3.在node_modules/vue/types/options.d.ts 中 
-    将
-    export type Accessors<T> = {
-      [K in keyof T]: (() => T[K]) | ComputedOptions<T[K]>
-    }
-    改为
-    export type Accessors<T> = {
-      [K in keyof T]: (() => T[K]) | ComputedOptions<T[K]> | ((arg0: any) => T[K])
-    }
 
 ##### 命名规范
     1.组件开头以不超过两个名字代表组件归属 例如 field${name}

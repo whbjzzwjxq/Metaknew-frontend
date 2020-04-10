@@ -41,7 +41,7 @@ export function delCookie(name: cookieName) {
 }
 
 // 深拷贝
-export function deepClone<T>(item: T): T {
+export function deepClone<T>(item: T, exclude: string[] = []): T {
     // null, undefined values check
     if (!item) {
         return item;
@@ -75,7 +75,9 @@ export function deepClone<T>(item: T): T {
                 result = {};
                 Object.entries(item)
                     .forEach(([prop, value]) => {
-                        result[prop] = deepClone(value);
+                        exclude.includes(prop)
+                            ? (result[prop] = deepClone(value))
+                            : (result[prop] = value)
                     });
             }
         } else {

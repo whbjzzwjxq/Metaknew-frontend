@@ -1,0 +1,7 @@
+.backend {
+    background-image: url("../../assets/index-background-remake.png");
+    background-position: center 0;
+    background-position-y: -24px;
+    background-repeat: no-repeat;
+    background-size: cover;
+}

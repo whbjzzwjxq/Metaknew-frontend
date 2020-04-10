@@ -1,8 +1,8 @@
 <template>
-    <div class="Home d-flex">
-        <div class="d-flex flex-column align-center justify-center" style="width: 100%; height: 100%">
-            <p class="font-weight-bold" style="font-size: 72px; width: 600px; text-align: center"> META-KNEW </p>
-            <search-bar single-select>
+    <div class="d-flex home backend" style="overflow: hidden">
+        <div class="d-flex flex-column align-center justify-center" style="width: 100%; height: 100%; top: 128px; position: relative">
+            <p class="name-title ma-0" style="font-size: 64px; width: 75%; text-align: center; color: whitesmoke"> META KNEW </p>
+            <search-bar single-select style="width: 75%" class="pt-2">
 
             </search-bar>
         </div>
@@ -32,7 +32,8 @@
 </script>
 
 <style scoped>
-    .Home {
+    @import "../../../src/style/css/backend.css";
+    .home {
         height: 100%;
     }
 

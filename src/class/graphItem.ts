@@ -115,7 +115,7 @@ export abstract class InfoPart {
         this.Ctrl = ctrl;
         this.State = {
             isEdit: false,
-            remoteNotFound: remoteNotFound,
+            remoteNotFound,
             draftId
         }
     }
@@ -178,16 +178,16 @@ export class NodeInfoPart extends InfoPart {
         return list.filter(node => node._id === this._id)
     }
 
-    protected constructor(info: BaseNodeInfo, ctrl: BaseNodeCtrl, isDeleted: boolean) {
-        super(info, ctrl, isDeleted);
+    protected constructor(info: BaseNodeInfo, ctrl: BaseNodeCtrl, remoteNotFound: boolean) {
+        super(info, ctrl, remoteNotFound);
         this.Info = info;
         this.Ctrl = ctrl;
         this.synchronizationAll();
     }
 
-    static emptyNodeInfoPart(payload: NodeQuery, commit: boolean = true, isDeleted: boolean = false) {
+    static emptyNodeInfoPart(payload: NodeQuery, commit: boolean = true, remoteNotFound: boolean = false) {
         let {id, type, pLabel} = payload;
-        let item = new NodeInfoPart(nodeInfoTemplate(id, type, pLabel), nodeCtrlTemplate(), isDeleted);
+        let item = new NodeInfoPart(nodeInfoTemplate(id, type, pLabel), nodeCtrlTemplate(), remoteNotFound);
         commit && commitInfoAdd({item, strict: false});
         return item
     }
@@ -242,7 +242,7 @@ export class LinkInfoPart extends InfoPart {
     Info: BaseLinkInfo;
     Ctrl: BaseLinkCtrl;
 
-    static get visualNodeSetting () {
+    static get visualNodeSetting() {
         let result: VisNodeSettingPart[] = [];
         result.push(...GraphNodeSettingPart.list);
         result.push(...MediaSettingPart.list);
@@ -258,15 +258,15 @@ export class LinkInfoPart extends InfoPart {
         return linkList.filter(link => link._id === this._id)
     }
 
-    protected constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl, isDeleted: boolean) {
-        super(info, ctrl, isDeleted);
+    protected constructor(info: BaseLinkInfo, ctrl: BaseLinkCtrl, remoteNotFound: boolean) {
+        super(info, ctrl, remoteNotFound);
         this.Info = info;
         this.Ctrl = ctrl;
         this.synchronizationAll();
     }
 
-    static emptyLinkInfo(_id: id, _label: string, _start: VisNodeSettingPart, _end: VisNodeSettingPart, commit: boolean = true, isDeleted: boolean = true) {
-        let item = new LinkInfoPart(linkInfoTemplate(_id, _label), linkCtrlTemplate(_start, _end), isDeleted);
+    static emptyLinkInfo(_id: id, _label: string, _start: VisNodeSettingPart, _end: VisNodeSettingPart, commit: boolean = true, remoteNotFound: boolean = true) {
+        let item = new LinkInfoPart(linkInfoTemplate(_id, _label), linkCtrlTemplate(_start, _end), remoteNotFound);
         commit && commitInfoAdd({item, strict: false});
         return item
     }
@@ -346,10 +346,6 @@ export class MediaInfoPart extends InfoPart {
         return this.Info.type
     }
 
-    get statusColor() {
-        return MediaInfoPart.statusDict[this.status]
-    }
-
     get realSrc() {
         return getSrc(this.Ctrl.FileName)
     }
@@ -362,8 +358,8 @@ export class MediaInfoPart extends InfoPart {
         warning: 'yellow'
     };
 
-    protected constructor(info: BaseMediaInfo, ctrl: BaseMediaCtrl, isDeleted: boolean, file?: File | Blob) {
-        super(info, ctrl, isDeleted);
+    protected constructor(info: BaseMediaInfo, ctrl: BaseMediaCtrl, remoteNotFound: boolean, file?: File | Blob) {
+        super(info, ctrl, remoteNotFound);
         this.file = file;
         this.status = 'new';
         this.Info = info;
@@ -374,8 +370,8 @@ export class MediaInfoPart extends InfoPart {
         this.synchronizationAll();
     }
 
-    static emptyMediaInfo(_id: id, file?: File, commit: boolean = true, isDeleted: boolean = false) {
-        let item = new MediaInfoPart(mediaInfoTemplate(_id, file), mediaCtrlTemplate(file), isDeleted, file);
+    static emptyMediaInfo(_id: id, file?: File, commit: boolean = true, remoteNotFound: boolean = false) {
+        let item = new MediaInfoPart(mediaInfoTemplate(_id, file), mediaCtrlTemplate(file), remoteNotFound, file);
         commit && commitInfoAdd({item, strict: false});
         return item
     }
@@ -428,8 +424,8 @@ export class FragmentInfoPart extends InfoPart {
         return this.Info._id
     }
 
-    constructor(info: FragmentInfo, ctrl: FragmentCtrl, isDeleted: boolean) {
-        super(info, ctrl, isDeleted);
+    constructor(info: FragmentInfo, ctrl: FragmentCtrl, remoteNotFound: boolean) {
+        super(info, ctrl, remoteNotFound);
         this.Info = info;
         this.Ctrl = ctrl
     }
@@ -521,13 +517,17 @@ export class SubTagSettingPart extends SettingPart {
 export abstract class ItemSettingPart extends SettingPart {
     Setting: Setting;
     State: BaseState;
-    parent: DocumentSelfPart | null;
+    _parent: DocumentSelfPart | null;
 
     protected constructor(Setting: Setting, State: BaseState, parent: DocumentSelfPart | null) {
         super(Setting, State);
         this.Setting = Setting;
         this.State = State;
-        this.parent = parent;
+        this._parent = parent;
+    }
+
+    get parent() {
+        return this._parent
     }
 
     findRoot() {
@@ -550,13 +550,17 @@ export abstract class ItemSettingPart extends SettingPart {
 export class GraphItemSettingPart extends ItemSettingPart {
     Setting: GraphItemSetting;
     State: GraphItemState;
-    parent: GraphSelfPart;
+    _parent: GraphSelfPart;
 
-    constructor(Setting: GraphItemSetting, State: GraphItemState, parent: GraphSelfPart) {
+    get parent() {
+        return this._parent
+    }
+
+    protected constructor(Setting: GraphItemSetting, State: GraphItemState, parent: GraphSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
-        this.parent = parent;
+        this._parent = parent;
     }
 
     get _type() {
@@ -583,12 +587,21 @@ export class GraphItemSettingPart extends ItemSettingPart {
         value === undefined && (value = !this.isSelected);
         this.updateState('isSelected', value)
     }
+
+    mouseOn(value: boolean) {
+        this.updateState('isMouseOn', value)
+    }
+
+    deepCloneSelf() {
+        let setting = deepClone(this.Setting);
+        let state = deepClone(this.State);
+        return this.constructor(setting, state, this.parent)
+    }
 }
 
 export class GraphNodeSettingPart extends GraphItemSettingPart {
     Setting: NodeSettingGraph;
     State: NodeState;
-    parent: GraphSelfPart;
     static list: Array<GraphNodeSettingPart> = [];
 
     get _type() {
@@ -599,7 +612,7 @@ export class GraphNodeSettingPart extends GraphItemSettingPart {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
-        this.parent = parent;
+        this._parent = parent;
         GraphNodeSettingPart.list.push(this);
     }
 
@@ -621,21 +634,16 @@ export class GraphNodeSettingPart extends GraphItemSettingPart {
         return new GraphNodeSettingPart(setting, state, parent)
     }
 
-    deepCloneSelf() {
-        let setting = deepClone(this.Setting);
-        let state = deepClone(this.State);
-        return new GraphNodeSettingPart(setting, state, this.parent)
-    }
-
-    select(value?: boolean) {
-        super.select(value);
+    mouseOn(value: boolean) {
+        this.State.isMouseOn = value;
+        LinkSettingPart.list.filter(item => item.isBound && (item._start._id === this._id || item._end._id === this._id))
+            .map(item => item.mouseOn(value));
     }
 }
 
 export class MediaSettingPart extends GraphItemSettingPart {
     Setting: MediaSetting;
     State: NodeState;
-    parent: GraphSelfPart;
     static list: Array<MediaSettingPart> = [];
 
     get _type() {
@@ -650,7 +658,7 @@ export class MediaSettingPart extends GraphItemSettingPart {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
-        this.parent = parent;
+        this._parent = parent;
         MediaSettingPart.list.push(this);
     }
 
@@ -674,12 +682,17 @@ export class MediaSettingPart extends GraphItemSettingPart {
         let state = nodeStateTemplate();
         return new MediaSettingPart(setting, state, parent)
     }
+
+    mouseOn(value: boolean) {
+        this.State.isMouseOn = value;
+        LinkSettingPart.list.filter(item => item.isBound && (item._start._id === this._id || item._end._id === this._id))
+            .map(item => item.mouseOn(value))
+    }
 }
 
 export class LinkSettingPart extends GraphItemSettingPart {
     Setting: LinkSetting;
     State: LinkState;
-    parent: GraphSelfPart;
     static list: Array<LinkSettingPart> = [];
 
     get _type() {
@@ -724,7 +737,7 @@ export class LinkSettingPart extends GraphItemSettingPart {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
-        this.parent = parent;
+        this._parent = parent;
         LinkSettingPart.list.push(this);
     }
 
@@ -743,8 +756,8 @@ export class LinkSettingPart extends GraphItemSettingPart {
     static resolveBackend(linkSetting: BackendLinkSetting, parent: GraphSelfPart) {
         let setting = {
             ...linkSetting,
-            _start: parent.getLinkNode(linkSetting._start.id),
-            _end: parent.getLinkNode(linkSetting._end.id)
+            _start: parent.getVisNodeById({_id: linkSetting._start.id, _type: linkSetting._start.type}),
+            _end: parent.getVisNodeById({_id: linkSetting._end.id, _type: linkSetting._end.type})
         } as LinkSetting;
         let state = linkStateTemplate();
         return new LinkSettingPart(setting, state, parent);
@@ -771,12 +784,29 @@ export class LinkSettingPart extends GraphItemSettingPart {
             this._end._id !== targetItem._id && (this._end = targetItem)
         }
     }
+
+    mouseOn(value: boolean) {
+        if (this.isBound) {
+            this._start.State.isMouseOn = value;
+            this._end.State.isMouseOn = value;
+            this.State.isMouseOn = value
+        }
+    }
+
+    deepCloneSelf(): LinkSettingPart {
+        let state = deepClone(this.State);
+        let setting = {
+            _start: this.Setting._start,
+            _end: this.Setting._end,
+            ...deepClone(this.Setting, ['_start', '_end'])
+        };
+        return new LinkSettingPart(setting, state, this.parent)
+    }
 }
 
 export class TextSettingPart extends GraphItemSettingPart {
     Setting: TextSetting;
     State: TextState;
-    parent: GraphSelfPart;
     static list: Array<TextSettingPart> = [];
 
     get _type() {
@@ -787,7 +817,7 @@ export class TextSettingPart extends GraphItemSettingPart {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
-        this.parent = parent;
+        this._parent = parent;
         TextSettingPart.list.push(this)
     }
 
@@ -825,7 +855,11 @@ export class NoteSettingPart extends SettingPart {
 export class GraphConf extends ItemSettingPart {
     Setting: GraphSetting;
     State: GraphState;
-    parent: DocumentSelfPart | null;
+    _parent: DocumentSelfPart | null;
+
+    get parent() {
+        return this._parent
+    }
 
     protected constructor(
         Setting: GraphSetting,
@@ -835,7 +869,7 @@ export class GraphConf extends ItemSettingPart {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
-        this.parent = parent;
+        this._parent = parent;
     }
 
     static emptyGraphSetting(_id: id, parent: DocumentSelfPart | null) {
@@ -846,7 +880,7 @@ export class GraphConf extends ItemSettingPart {
 
     static resolveBackend(conf: GraphSetting, parent: DocumentSelfPart | null) {
         let state = graphStateTemplate();
-        return new GraphConf(conf, graphStateTemplate(), parent);
+        return new GraphConf(conf, state, parent);
     }
 }
 
@@ -936,7 +970,7 @@ export abstract class DocumentSelfPart {
     }
 
     get texts() {
-        return this.Content.texts.filter(item => !item.isDeleted)
+        return this.textsAll.filter(item => !item.isDeleted)
     }
 
     //所有内容 包含子专题的节点和关系
@@ -993,6 +1027,13 @@ export abstract class DocumentSelfPart {
         }
     }
 
+    get allItems(): GraphSubItemSettingPart[] {
+        let {nodes, links, medias, texts} = this;
+        let result: GraphSubItemSettingPart[];
+        result = [];
+        return result.concat(nodes).concat(links).concat(medias).concat(texts)
+    }
+
     protected constructor(Content: DocumentContent, Conf: GraphConf | PaperConf, isRemote: boolean, draftId?: number) {
         this.Conf = Conf;
         this.Content = Content;
@@ -1028,19 +1069,19 @@ export abstract class DocumentSelfPart {
         return itemList
     }
 
-    getItemById(payload: {_id: id, _type: GraphItemType}) {
+    getItemById(payload: { _id: id, _type: GraphItemType }) {
         let {_id, _type} = payload;
         let list = this.getItemListByName(_type);
         return list.filter(item => item._id === _id)[0]
     }
 
-    getVisNodeById(payload: {_id: id, _type: 'node' | 'document' | 'media'}) {
+    getVisNodeById(payload: { _id: id, _type: 'node' | 'document' | 'media' }) {
         let {_id, _type} = payload;
         let list = this.getItemListByName(_type);
         return list.filter(item => item._id === _id)[0] as VisNodeSettingPart
     }
 
-    checkExistByIdType(payload: {_id: id, _type: GraphItemType}) {
+    checkExistByIdType(payload: { _id: id, _type: GraphItemType }) {
         let {_id, _type} = payload;
         let itemList = this.getItemListByName(_type);
         return findItem(itemList, _id, _type).length > 0
@@ -1053,13 +1094,6 @@ export abstract class DocumentSelfPart {
     getItemByState(name: GraphTypeS | GraphItemType, state: BaseStateKey) {
         let list = this.getItemListByName(name);
         return list.filter(item => item.State[state])
-    }
-
-    allItems(): GraphSubItemSettingPart[] {
-        let {nodes, links, medias, texts} = this.Content;
-        let result: GraphSubItemSettingPart[];
-        result = [];
-        return result.concat(nodes).concat(links).concat(medias).concat(texts)
     }
 }
 
@@ -1129,23 +1163,41 @@ export class GraphSelfPart extends DocumentSelfPart {
         return {graph, info}
     }
 
+    static collectNewGraph(payload: GraphNewObject, items: GraphItemSettingPart[], deleteSource: boolean = true) {
+        let {_id, parent, commitToVuex} = payload;
+        let newGraph = GraphSelfPart.emptyGraphSelfPart(_id, parent, commitToVuex).graph;
+        newGraph.collectItems(items, deleteSource);
+        return newGraph
+    }
+
     addItems(items: GraphItemSettingPart[]) {
         items.filter(item => !this.checkExistByItem(item)).map(item => {
             item.State.isAdd = true;
-            this.pushItem(item);
+            // 额外处理专题
             if (item._type === 'document') {
                 let graph = store.state.dataManager.graphManager[item._id];
-                graph && (graph.Conf.parent = this)
+                graph && (graph.Conf._parent = this)
+                // 额外处理link
+            } else if (isLinkSetting(item)) {
+                let _start = this.getVisNodeById(item._start.Setting);
+                if (_start === undefined) {
+                    let newStart = item._start.deepCloneSelf();
+                    this.pushItem(newStart);
+                    item._start = newStart
+                }
+                let _end = this.getVisNodeById(item._end.Setting);
+                if (_end === undefined) {
+                    let newEnd = item._end.deepCloneSelf();
+                    this.pushItem(newEnd);
+                    item._end = newEnd
+                }
             }
+            this.pushItem(item);
         })
     }
 
-    getLinkNode(_id: id) {
-        return this.nodesVisual.filter(item => item._id === _id)[0]
-    }
-
     protected pushItem(item: GraphItemSettingPart) {
-        item.parent = this;
+        item._parent = this;
         isMediaSetting(item)
             ? this.Content.medias.push(item)
             : isNodeSetting(item)
@@ -1157,13 +1209,6 @@ export class GraphSelfPart extends DocumentSelfPart {
 
     explode(value?: boolean) {
         this.Conf.updateState('isExplode', value)
-    }
-
-    selectAll(value: boolean) {
-        this.allItems().filter(item => item.State.isSelected !== value)
-            .map(item => {
-                item.State.isSelected = value
-            });
     }
 
     addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex: boolean = true) {
@@ -1180,7 +1225,7 @@ export class GraphSelfPart extends DocumentSelfPart {
         _label || (_label = 'Default');
         let _id = getIndex();
         // info
-        let info = LinkInfoPart.emptyLinkInfo(_id, _label, _start, _end);
+        let info = LinkInfoPart.emptyLinkInfo(_id, _label, _start, _end, commitToVuex);
         // setting
         let setting = LinkSettingPart.emptyLinkSetting(_id, _label, _start, _end, this);
         this.addItems([setting]);
@@ -1195,12 +1240,7 @@ export class GraphSelfPart extends DocumentSelfPart {
         return payload
     }
 
-    addSubGraph(graph: GraphSelfPart) {
-        this.addItems([graph.nodeSelf.deepCloneSelf()]);
-        graph.Conf.parent = this
-    }
-
-    deleteItem(payload: { _id: id, _type: GraphItemType }) {
+    deleteItem(payload: { _id: id, _type: GraphItemType }, snackBarOn: boolean = true) {
         let {_id, _type} = payload;
         let item = this.getItemById(payload);
         item.updateState('isDeleted', true);
@@ -1208,16 +1248,18 @@ export class GraphSelfPart extends DocumentSelfPart {
             let graph = this.docsChildAll.filter(item => item._id === _id)[0];
             graph && graph.Conf.updateState('isDeleted', true)
         }
-        let payloadSnack = {
-            timeout: 3000,
-            color: 'warning',
-            content: '删除了' + _type,
-            buttonText: '撤销',
-            action: this.rollBackDelete(item),
-            actionName: 'deleteItemFromGraph',
-            once: false
-        } as SnackBarStatePayload;
-        commitSnackbarOn(payloadSnack)
+        if (snackBarOn) {
+            let payloadSnack = {
+                timeout: 3000,
+                color: 'warning',
+                content: '删除了' + _type,
+                buttonText: '撤销',
+                action: this.rollBackDelete(item),
+                actionName: 'deleteItemFromGraph',
+                once: false
+            } as SnackBarStatePayload;
+            commitSnackbarOn(payloadSnack)
+        }
     }
 
     rollBackDelete(payload: { _id: id, _type: GraphItemType }) {
@@ -1233,7 +1275,11 @@ export class GraphSelfPart extends DocumentSelfPart {
         }
     }
 
-    collectItemsToNewGraph(deleteSource: boolean) {
-
+    collectItems(items: GraphItemSettingPart[], deleteSource: boolean) {
+        items.map(item => {
+            //复制在前 要不然删除了
+            this.addItems([item.deepCloneSelf()]);
+            deleteSource && item.parent.deleteItem(item, false);
+        })
     }
 }

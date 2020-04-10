@@ -24,7 +24,6 @@
     import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
     import {PaperSelfPart} from "@/class/paperItem";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
-    import {RectByPoint} from "@/class/geometric";
 
     export default Vue.extend({
         name: "Result",

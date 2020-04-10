@@ -150,7 +150,7 @@
                     'stroke': this.drawStyle.stroke,
                     'strokeWidth': this.setting.View.width + 12 + 'px',
                     'fill': 'none',
-                    'strokeOpacity': this.isSelected ? 0.1 : 0
+                    'strokeOpacity': this.isSelected || this.link.State.isMouseOn ? 0.1 : 0
                 }
             },
 

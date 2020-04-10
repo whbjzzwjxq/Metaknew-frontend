@@ -240,11 +240,11 @@
                     ? this.setting.Text.textSize * this.scale
                     : 10;
                 let width = this.setting.Text.textBreak
-                    ? this.setting._name.length * 18 * this.scale
-                    : this.setting._name.length * 36 * this.scale;
+                    ? this.setting._name.length * size / 2
+                    : this.setting._name.length * size;
                 let height = this.setting.Text.textBreak
-                    ? (size + 5) * 2
-                    : (size + 5);
+                    ? size * 1.5 * 2
+                    : size * 1.5;
                 return {
                     offsetX: -width * 0.5,
                     offsetY: this.height + (this.borderSetting.width + 5) * this.scale,

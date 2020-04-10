@@ -1,11 +1,11 @@
 import {ExtraProps} from "@/utils/fieldResolve";
 import {
+    GraphNodeSettingPart,
     LinkInfoPart,
     LinkSettingPart,
     MediaInfoPart,
     MediaSettingPart,
     NodeInfoPart,
-    GraphNodeSettingPart,
     TextSettingPart
 } from "@/class/graphItem";
 import {PathNodeSettingPart} from "@/class/path";
@@ -20,11 +20,13 @@ declare global {
     type IdMap = Record<id, id>; // 新旧id的Map
     //带有翻译的格式
     type Translate = Record<string, string>
+
     interface InfoState {
-        remoteNotFound: boolean // 远端模型是否被删除
+        remoteNotFound: boolean // 远端模型是否被删除/禁止
         isEdit: boolean // 自上次保存后，是否编辑过
         draftId?: number // 对应草稿的versionId 如果没有那么就是undefined
     }
+
     //InfoPart相关
     interface BaseInfo {
         id: id;
@@ -145,22 +147,23 @@ declare global {
         pLabel: string;
     } // 用于Query
 
-    interface NodeQuery extends QueryObject{
+    interface NodeQuery extends QueryObject {
         type: 'node' | 'document'
     }
 
     type VisNodeQuery = NodeQuery | MediaQuery
 
-    interface LinkQuery extends QueryObject{
+    interface LinkQuery extends QueryObject {
         type: 'link'
     }
 
-    interface MediaQuery extends QueryObject{
+    interface MediaQuery extends QueryObject {
         type: 'media'
     }
 
     type DocumentLabel = 'DocPaper' | 'DocGraph' | 'Path'
-    interface DocumentQuery extends NodeQuery{
+
+    interface DocumentQuery extends NodeQuery {
         type: 'document'
         pLabel: DocumentLabel
     }

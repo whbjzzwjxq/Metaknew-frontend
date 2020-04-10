@@ -4,7 +4,7 @@ import {
     MediaSettingPart,
     GraphNodeSettingPart,
     NoteSettingPart,
-    TextSettingPart
+    TextSettingPart, GraphSelfPart
 } from "@/class/graphItem";
 import {mergeObject} from "@/utils/utils";
 
@@ -664,8 +664,6 @@ declare global {
         }
     }
 
-    type RewriteObj<T> = Record<keyof T, any>
-
     interface NodeStyleSettingPaper {
 
     }
@@ -850,5 +848,11 @@ declare global {
 
     interface GraphState extends BaseState {
         isExplode: boolean; // 是否爆炸
+    }
+
+    interface GraphNewObject {
+        _id: id,
+        parent: GraphSelfPart | null,
+        commitToVuex?: boolean
     }
 }

@@ -30,6 +30,11 @@
 
                 </sub-tool-doc-save>
             </v-col>
+            <v-col cols="2" class="pa-0 ma-0">
+                <sub-tool-selection-method>
+
+                </sub-tool-selection-method>
+            </v-col>
         </template>
     </toolbar-bottom>
 </template>
@@ -42,6 +47,7 @@
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
     import SubToolSvg from "@/components/toolbar/SubToolSvg.vue";
     import SubToolDocSave from "@/components/toolbar/SubToolDocSave.vue";
+    import SubToolSelectionMethod from "@/components/toolbar/SubToolSelectionMethod.vue";
     import {GraphSelfPart, MediaSettingPart, NoteSettingPart} from "@/class/graphItem";
     import {commitBottomDynamicBarChange} from "@/store/modules/_mutations";
 
@@ -53,7 +59,8 @@
             SubToolStyle,
             SubToolPath,
             SubToolSvg,
-            SubToolDocSave
+            SubToolDocSave,
+            SubToolSelectionMethod
         },
         data: function () {
             return {}

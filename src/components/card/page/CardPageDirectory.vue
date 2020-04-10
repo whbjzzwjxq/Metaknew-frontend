@@ -7,6 +7,7 @@
         :active.sync="activeList"
         @update:open="open"
         activatable
+        multiple-active
         dense
         hoverable
         return-object

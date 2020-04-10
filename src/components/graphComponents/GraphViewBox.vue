@@ -21,6 +21,8 @@
                 :source="getTargetInfo(link.Setting._start)"
                 :target="getTargetInfo(link.Setting._end)"
                 :mid-location="midLocation[index]"
+                @mouseenter.native.stop="mouseEnter(link)"
+                @mouseleave.native.stop="mouseLeave(link)"
             ></graph-link>
 
             <graph-node
@@ -128,14 +130,14 @@
 
         </graph-text>
 
-        <!--        <graph-note-->
-        <!--            v-for="note in notes"-->
-        <!--            :note="note"-->
-        <!--            :container="viewBox"-->
-        <!--            :key="note._id"-->
-        <!--        >-->
+        <graph-note
+            v-for="note in notes"
+            :note="note"
+            :container="viewBox"
+            :key="note._id"
+        >
 
-        <!--        </graph-note>-->
+        </graph-note>
 
         <div class="d-flex flex-row" style="position: absolute; left: 80%; top: 65%">
             <div class="d-flex flex-column align-end">
@@ -440,7 +442,7 @@
             },
 
             //是否渲染卡片
-            showCard: function(): boolean {
+            showCard: function (): boolean {
                 return this.renderCard && !this.isDragging && !this.editMode && this.isMouseOn
             },
 
@@ -763,8 +765,8 @@
             },
 
             //node的原生事件
-            mouseEnter(node: VisAreaSettingPart, index?: number) {
-                node.State.isMouseOn = true;
+            mouseEnter(node: GraphSubItemSettingPart, index?: number) {
+                node.mouseOn(true);
                 if (index) {
                     let {x, y} = this.nodeLocation[index].end;
                     this.cardPosition.x = x + 12;
@@ -773,8 +775,8 @@
             },
 
             //node的原生事件
-            mouseLeave(node: VisAreaSettingPart) {
-                node.State.isMouseOn = false;
+            mouseLeave(node: GraphSubItemSettingPart) {
+                node.mouseOn(false);
                 this.isDragging = false;
             },
 
@@ -874,14 +876,6 @@
                     let texts = this.texts.filter((svg, index) =>
                         this.selectRect.checkInRect(this.textLocation[index].midPoint()) && this.showText[index]
                     );
-                    nodes.map(node => {
-                            //如果选中了Document 对应的Node
-                            let index = this.activeGraphIdList.indexOf(node._id);
-                            if (node._type === 'document' && index > -1) {
-                                this.activeGraphList[index].selectAll(true)
-                            }
-                        }
-                    );
                     let result = [nodes, medias, links, texts].flat(1) as GraphSubItemSettingPart[];
                     this.selectItem(result)
                 }
@@ -894,7 +888,9 @@
 
             clearSelected(items: 'all' | GraphItemSettingPart[]) {
                 if (items === 'all') {
-                    Object.values(this.dataManager.graphManager).map(document => document.selectAll(false));
+                    Object.values(this.dataManager.graphManager).map(document => {
+                        document.allItems.map(item => item.updateState('isSelected', false))
+                    });
                 } else {
                     items.map(item => item.updateState('isSelected', false));
                 }

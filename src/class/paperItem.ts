@@ -11,12 +11,12 @@ import store from "@/store";
 export class PaperConf extends ItemSettingPart {
     State: PaperState;
     Setting: PaperSetting;
-    parent: DocumentSelfPart | null;
+    _parent: DocumentSelfPart | null;
     constructor(Setting: PaperSetting, State: PaperState, parent: DocumentSelfPart | null) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
-        this.parent = parent
+        this._parent = parent
     }
 
     static emptyPaperConf(_id: id, parent: DocumentSelfPart | null) {
