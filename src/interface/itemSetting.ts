@@ -1,10 +1,12 @@
 import {
-    GraphConf,
+    DocumentConfigure,
+    DocumentSelfPart,
+    GraphSelfPart,
     LinkSettingPart,
     MediaSettingPart,
-    GraphNodeSettingPart,
+    NodeSettingPart,
     NoteSettingPart,
-    TextSettingPart, GraphSelfPart
+    TextSettingPart
 } from "@/class/graphItem";
 import {mergeObject} from "@/utils/utils";
 
@@ -599,13 +601,13 @@ export const typeSetting: Record<AllType, SettingAll> = {
 
 declare global {
     // 从视觉上来说是Node的对象
-    type VisNodeSettingPart = GraphNodeSettingPart | MediaSettingPart;
+    type VisNodeSettingPart = NodeSettingPart | MediaSettingPart;
     // 从视觉上是一个区域的对象
     type VisAreaSettingPart = VisNodeSettingPart | TextSettingPart;
     // 所有Item对象
     type GraphSubItemSettingPart = VisAreaSettingPart | LinkSettingPart;
     // 所有Setting对象
-    type AllSettingPart = GraphSubItemSettingPart | NoteSettingPart | GraphConf;
+    type AllSettingPart = GraphSubItemSettingPart | NoteSettingPart | DocumentConfigure;
 
     //SettingPart相关
 
@@ -613,7 +615,14 @@ declare global {
         _id: id;
         _type: AllType;
         _label: string;
+
         [prop: string]: any
+    }
+
+    interface DocumentSetting extends Setting {
+        _id: id
+        _type: 'document'
+        _label: string
     }
 
     interface GraphItemSetting extends Setting {
@@ -683,6 +692,7 @@ declare global {
     interface NodeSettingPaper extends NodeSettingBase, NodeStyleSettingPaper {
 
     }
+
     type NodeSetting = NodeSettingGraph | NodeSettingPaper
 
     type LinkViewType = 'linear' | 'curve' | 'polyline'
@@ -800,7 +810,7 @@ declare global {
         Background: {
             color: Color,
             opacity: number,
-            // todo
+            // todo 专题样式定义 已经列入文档
         };
         Transition: {
             rotate: number,
@@ -817,6 +827,7 @@ declare global {
     type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
     type AllStateProp = 'isLock' | 'isDark' | 'isLoading' | 'isChanged' | 'isExplode' | 'isSavedIn5min' | GraphStateProp
     type AllCrucialProp = '_id' | '_type' | '_label' | '_image' | '_name' | '_src' | '_start' | '_end'
+
     interface BaseState {
         isDeleted: boolean; // 是否被删除;
         [prop: string]: boolean;
@@ -846,13 +857,33 @@ declare global {
         isEditing: boolean;
     }
 
-    interface GraphState extends BaseState {
+    interface DocumentState extends BaseState {
+        isSaved: boolean;
+    }
+
+    interface GraphState extends DocumentState {
         isExplode: boolean; // 是否爆炸
+    }
+
+    interface PaperState extends DocumentState {
+
     }
 
     interface GraphNewObject {
         _id: id,
         parent: GraphSelfPart | null,
         commitToVuex?: boolean
+    }
+
+    interface SubGraphConfigure {
+        id: id,
+        width: number,
+        height: number
+    }
+
+    interface GraphComponents {
+        subGraph: {
+            SubGraphConfigure: []
+        }
     }
 }

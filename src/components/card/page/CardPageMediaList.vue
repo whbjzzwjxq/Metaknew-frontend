@@ -138,7 +138,7 @@
         record: {
             status: 'done',
             description: '媒体列表'
-            //todo 还没有做排序按钮
+            //todo 还没有做排序按钮 已经列入文档
         },
     })
 </script>

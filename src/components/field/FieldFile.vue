@@ -235,7 +235,7 @@
         record: {
             status: 'done',
             description: "文件上传编辑器",
-            //todo 从收藏获取File
+            //todo 从收藏获取File 已经列入文档
         }
     })
 </script>

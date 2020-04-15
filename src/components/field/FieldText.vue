@@ -203,7 +203,7 @@
         record: {
             status: 'done',
             description: '翻译文本编辑器'
-            //todo 样式优化
+            //todo 样式优化 已经列入文档
         }
     })
 </script>

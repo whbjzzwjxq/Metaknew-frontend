@@ -157,7 +157,7 @@
         record: {
             status: 'done',
             description: '字符编辑器'
-            //todo 字符解析
+            //todo 字符解析 已经列入文档
         }
 
     })

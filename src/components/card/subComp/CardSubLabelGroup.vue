@@ -113,7 +113,6 @@
         record: {
             status: 'done',
             description: '一组标签，带有增删功能',
-            // todo 标签跳转
         }
     })
 </script>

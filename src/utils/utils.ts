@@ -42,6 +42,7 @@ export function delCookie(name: cookieName) {
 
 // 深拷贝
 export function deepClone<T>(item: T, exclude: string[] = []): T {
+    //exclude 等于原样复制
     // null, undefined values check
     if (!item) {
         return item;
@@ -75,7 +76,7 @@ export function deepClone<T>(item: T, exclude: string[] = []): T {
                 result = {};
                 Object.entries(item)
                     .forEach(([prop, value]) => {
-                        exclude.includes(prop)
+                        !exclude.includes(prop)
                             ? (result[prop] = deepClone(value))
                             : (result[prop] = value)
                     });

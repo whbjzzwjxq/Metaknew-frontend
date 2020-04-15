@@ -357,7 +357,6 @@
         record: {
             status: "editing",
             description: "媒体信息卡片",
-            //todo 编辑 比例 收藏 分享
         },
         mounted(): void {
             if (this.media.isRemote) {

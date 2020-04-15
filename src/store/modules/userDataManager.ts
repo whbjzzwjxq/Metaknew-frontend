@@ -111,7 +111,7 @@ const state: UserDataManagerState = {
 };
 
 const mutations = {
-    // //todo 改写成为queue list
+    // todo 改写成为queue list 已经列入文档
     userConcernAdd(state: UserDataManagerState, payload: UserConcernPayload) {
         let {id, type, userConcern, strict} = payload;
         strict === undefined && (strict = false);

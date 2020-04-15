@@ -1,6 +1,7 @@
 import {Point, RectByPoint} from "@/class/geometric";
-import {GraphSelfPart} from "@/class/graphItem";
+import {DocumentSelfPart, GraphSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/class/graphItem";
 import {IndexedInfo} from "@/api/search/search";
+import {VirtualNodeBase} from "@/interface/interfaceTree";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -82,3 +83,29 @@ export interface FastRegisterData {
     Phone: string,
     Code: string
 }
+
+// 目录使用的内容
+export interface DirectoryItem<T> {
+    id: id,
+    type: GraphItemType,
+    label: string,
+    name: string,
+    icon: string,
+    deletable: boolean,
+    editable: boolean,
+    children?: DirectoryItemAll[],
+    origin: T
+}
+
+export type DirectorySubItemAll =
+    DirectoryItem<NodeSettingPart>
+    | DirectoryItem<LinkSettingPart>
+    | DirectoryItem<MediaSettingPart>
+
+export interface DirectoryNode extends VirtualNodeBase<DocumentSelfPart, DirectoryNode>, DirectoryItem<DocumentSelfPart> {
+    _children: DirectoryNode[]
+}
+
+export type DirectoryItemAll = DirectorySubItemAll | DirectoryNode
+
+export type DirectoryBuildPayload = {}

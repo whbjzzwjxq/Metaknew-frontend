@@ -40,7 +40,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        GraphNodeSettingPart,
+        NodeSettingPart,
         GraphSelfPart,
         MediaInfoPart,
         MediaSettingPart,
@@ -95,7 +95,7 @@
                 return this.dataManager.currentGraph
             },
 
-            originNodes: function (): GraphNodeSettingPart[] {
+            originNodes: function (): NodeSettingPart[] {
                 return this.document.nodesAllSubDoc
             },
             originMedias: function (): MediaSettingPart[] {
@@ -329,7 +329,6 @@
         record: {
             status: 'editing',
             description: ''
-            //todo 1. 碰撞检测系统 2. 重写画图组件 timeline和graph可以用同一组件 3. 更多条件 4. 时间显示更细致
         },
         created(): void {
             this.range[0] = this.min;

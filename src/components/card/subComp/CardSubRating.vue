@@ -18,7 +18,7 @@
         record: {
             status: 'empty',
             description: '星标评分机制',
-            //todo 评分机制
+            //todo 评分机制 已经列入文档
         }
     })
 </script>

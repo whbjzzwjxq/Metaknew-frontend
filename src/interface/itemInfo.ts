@@ -1,6 +1,6 @@
 import {ExtraProps} from "@/utils/fieldResolve";
 import {
-    GraphNodeSettingPart,
+    NodeSettingPart,
     LinkInfoPart,
     LinkSettingPart,
     MediaInfoPart,
@@ -115,16 +115,17 @@ declare global {
 
     //Graph
     interface DocumentContent {
-        nodes: Array<GraphNodeSettingPart>;
+        nodes: Array<NodeSettingPart>;
         links: Array<LinkSettingPart>;
         medias: Array<MediaSettingPart>;
         texts: Array<TextSettingPart>;
     }
 
-    interface DocumentData {
-        draftId?: number;
-        isRemote: boolean;
-        lastSave: number;
+    interface DocumentMetaData {
+        isTemporary: boolean //是否是暂时的模型
+        isRemoteModel: boolean // 远端模型是否能访问
+        isMergeTo?: id //合并到某个专题了
+        draftId?: number //草稿数据
     }
 
     interface PathConf extends Setting {

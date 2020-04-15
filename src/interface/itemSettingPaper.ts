@@ -10,9 +10,6 @@ declare global {
     interface PaperSetting extends Setting {
 
     }
-    interface PaperState extends BaseState {
-
-    }
 }
 
 export default {

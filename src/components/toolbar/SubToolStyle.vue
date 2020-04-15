@@ -93,7 +93,7 @@
         record: {
             status: 'done',
             description: ' 编辑样式用的工具栏'
-            //todo 专题样式编辑
+            //todo 专题样式编辑 已经列入文档
         }
     })
 </script>

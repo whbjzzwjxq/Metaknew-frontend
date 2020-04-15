@@ -62,7 +62,7 @@
         record: {
             status: 'done',
             description: '样式编辑器'
-            //todo 更加细化的样式编辑器
+            //todo 更加细化的样式编辑器比如模板 已经列入文档
         }
     })
 </script>

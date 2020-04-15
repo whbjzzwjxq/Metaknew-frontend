@@ -223,7 +223,7 @@
         record: {
             status: 'done',
             description: '关系显示',
-            //todo 关系按钮和简要卡片
+            //todo 关系按钮和简要卡片 已经列入文档 已经列入文档
         }
     })
 </script>

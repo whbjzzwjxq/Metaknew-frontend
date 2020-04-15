@@ -2,7 +2,7 @@ import Vue from 'vue'
 import {filePutBlob} from '@/api/fileUpload';
 import {
     DocumentSelfPart,
-    GraphNodeSettingPart,
+    NodeSettingPart,
     GraphSelfPart,
     LinkInfoPart,
     MediaInfoPart,
@@ -22,7 +22,6 @@ import {
 import {Commit, Dispatch} from "vuex";
 import {isGraphSelfPart} from "@/utils/typeCheck";
 import {
-    dispatchAllInfoUpdate,
     dispatchGraphQuery,
     dispatchInfoDraftSaveAll,
     dispatchLinkQuery,
@@ -36,7 +35,11 @@ import {loginCookie} from "@/api/user/loginApi";
 import {settingToQuery} from "@/utils/utils";
 import {nodeBulkUpdate, nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
 import {linkBulkCreate, linkBulkUpdate, linkQueryBulk} from "@/api/subgraph/link";
-import {documentBulkCreate, documentBulkUpdate, documentQuery} from "@/api/document/document";
+import {
+    gateDocumentBulkCreate,
+    gateDocumentBulkUpdate,
+    gateDocumentQuery
+} from "@/api/document/document";
 import {mediaCreate, mediaQueryMulti} from "@/api/subgraph/media";
 import {draftUpdate} from "@/api/subgraph/commonApi";
 
@@ -65,7 +68,7 @@ declare global {
         pathManager: Record<id, PathSelfPart>,
         fileToken: FileToken,
         newIdRegex: RegExp,
-        rootGraph: GraphSelfPart
+        rootDocument: DocumentSelfPart[]
     }
 
     interface Context {
@@ -91,7 +94,7 @@ const state: DataManagerState = {
     currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
     currentPaper: PaperSelfPart.emptyPaperSelfPart('$_-1', null, false).paper,
     currentItem: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).info,
-    rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
+    rootDocument: [],
     graphManager: {},
     paperManager: {},
     pathManager: {},
@@ -131,7 +134,7 @@ const getters = {
         return state.nodeManager[state.currentGraph._id]
     },
 
-    documentList: (state: DataManagerState, getters: DataManagerGetters) => {
+    rootDocumentList: (state: DataManagerState, getters: DataManagerGetters) => {
         let result = [] as DocumentSelfPart[];
         result.push(...getters.graphs);
         result.push(...getters.papers);
@@ -167,7 +170,8 @@ const mutations = {
     rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
         graph.explode(true);
-        state.rootGraph = graph
+        graph.isRoot = true
+        state.rootDocument.push(graph)
     },
 
     currentItemChange(state: DataManagerState, payload: NodeInfoPart | LinkInfoPart) {
@@ -255,7 +259,7 @@ const actions = {
                      payload: { _id: id, parent: GraphSelfPart | null }) {
         let {_id, parent} = payload;
         // 先绘制Graph
-        await documentQuery(_id).then(res => {
+        await gateDocumentQuery(_id).then(res => {
             let {data} = res;
             let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
             dispatchNodeQuery(graph.nodesWithoutSelf.map(item => item.Setting));
@@ -357,7 +361,7 @@ const actions = {
         } else return filePutBlob(fileToken, realFile, storeName);
     },
 
-    async nodeExplode(context: Context, payload: { node: GraphNodeSettingPart, document: GraphSelfPart }) {
+    async nodeExplode(context: Context, payload: { node: NodeSettingPart, document: GraphSelfPart }) {
         let {node, document} = payload;
         let _id = node._id;
         let subGraph = state.graphManager[_id];
@@ -427,14 +431,14 @@ const actions = {
         await linkBulkCreate(getters.links);
         //处理专题 分成需要update和需要create的内容
         let documentList: DocumentSelfPart[] = getters.documentList;
-        let dataList = documentList.filter(document => !document.DocumentData.isRemote)
+        let dataList = documentList.filter(document => !document.isRemote)
             .map(document => document.dataBackendDocument);
-        let updateDataList = documentList.filter(document => document.DocumentData.isRemote);
+        let updateDataList = documentList.filter(document => document.isRemote);
         //
         if (isDraft) {
             dispatchInfoDraftSaveAll({isAuto}).then()
         } else {
-            // todo
+            // todo 保存所有信息 重构 已经列入文档
         }
         if (updateDataList.length > 0) {
             if (isDraft) {
@@ -443,7 +447,8 @@ const actions = {
                     let {DraftIdMap} = res.data;
                     updateDataList.map(doc => {
                         let newDraftId = DraftIdMap[doc._id];
-                        doc.DocumentData.draftId === undefined && (doc.DocumentData.draftId = newDraftId);
+                        //todo 草稿保存
+                        // doc.MetaData.draftId === undefined && (doc.MetaData.draftId = newDraftId);
                     });
                     let payload = {
                         actionName: `DraftUpdateDocument`,
@@ -454,36 +459,10 @@ const actions = {
                     commitSnackbarOn(payload)
                 })
             } else {
-                documentBulkUpdate(updateDataList.map(doc => doc.dataBackendDocument)).then(res => {
-                    let idList = res.data;
-                    idList.map(id => {
-                        let graph = state.graphManager[id];
-                        graph && (graph.updateStateUpdate())
-                    });
-                    let payload: SnackBarStatePayload = {
-                        color: 'success',
-                        actionName: 'documentCreate',
-                        content: '专题更新成功',
-                    };
-                    commitSnackbarOn(payload)
-                });
+                gateDocumentBulkUpdate(documentList)
             }
         }
-        if (dataList.length > 0) {
-            await documentBulkCreate(dataList).then(res => {
-                let idList = res.data;
-                idList.map(id => {
-                    let graph = state.graphManager[id];
-                    graph && (graph.updateStateSave())
-                });
-                let payload: SnackBarStatePayload = {
-                    color: 'success',
-                    actionName: 'documentCreate',
-                    content: '专题保存成功',
-                };
-                commitSnackbarOn(payload)
-            })
-        }
+        await gateDocumentBulkCreate(documentList)
     },
 
     async allInfoUpdate(context: Context, payload: { isDraft: boolean, isAuto: boolean }) {

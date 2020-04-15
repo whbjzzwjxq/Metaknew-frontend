@@ -97,7 +97,6 @@
         record: {
             status: 'done',
             description: 'Icon的排列'
-            // todo Icon的提示
         }
     })
 </script>

@@ -391,7 +391,7 @@
             },
 
             levelGroup: function () {
-                //todo 评分机制
+                //todo 评分机制 已经列入文档
                 return {}
             },
 
@@ -431,7 +431,7 @@
             },
 
             updateRating(prop: LevelConcern, rating: number) {
-                // todo
+
             },
 
             saveItem(isDraft: boolean, isAuto: boolean = false) {
@@ -476,7 +476,7 @@
         record: {
             status: 'done',
             description: 'NodeInfo'
-            //todo 收藏 分享 单个点赞
+            //todo 收藏 分享 单个点赞 已经列入文档
         }
     })
 </script>

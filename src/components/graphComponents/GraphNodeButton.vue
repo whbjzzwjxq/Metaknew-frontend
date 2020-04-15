@@ -15,7 +15,7 @@
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
-    import {GraphSelfPart, GraphNodeSettingPart} from "@/class/graphItem";
+    import {GraphSelfPart, NodeSettingPart} from "@/class/graphItem";
 
     export default Vue.extend({
         name: "GraphNodeButton",
@@ -32,7 +32,7 @@
             },
 
             node: {
-                type: Object as () => GraphNodeSettingPart,
+                type: Object as () => NodeSettingPart,
                 required: true
             },
 

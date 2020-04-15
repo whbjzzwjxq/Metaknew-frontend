@@ -70,31 +70,51 @@
                 }
             }
         },
-        methods: {},
-        watch: {},
-        created(): void {
-            let id = this.$route.params.id;
-            if (id) {
-                dispatchGraphQuery({_id: id, parent: null}).then(() => {
-                        let graph = this.dataManager.graphManager[id];
-                        commitGraphChange({graph});
-                        commitRootGraph({graph});
-                        this.loading = false;
-                    }
-                )
-            } else {
-                if (this.graph._id === '$_-1') {
-                    let _id = getIndex();
-                    let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, null);
+        methods: {
+            fetchData() {
+                let id = this.$route.params.id;
+                const commitGraph = (graph: GraphSelfPart) => {
                     commitGraphChange({graph});
                     commitRootGraph({graph});
-                    this.loading = false
+                    this.loading = false;
+                    return true
+                };
+                if (id) {
+                    let graph = this.dataManager.graphManager[id]
+                    if (graph !== undefined) {
+                        return commitGraph(graph)
+                    } else {
+                        return dispatchGraphQuery({_id: id, parent: null}).then(() => {
+                            let graph = this.dataManager.graphManager[id];
+                            return commitGraph(graph)
+                        })
+                    }
                 } else {
-                    this.loading = false
+                    if (this.graph._id === '$_-1') {
+                        let _id = getIndex();
+                        let {graph} = GraphSelfPart.emptyGraphSelfPart(_id, null);
+                        return commitGraph(graph)
+                    } else {
+                        this.loading = false
+                        return true
+                    }
                 }
             }
         },
+        watch: {
+            $route() {
+                this.fetchData()
+            }
+        },
+
+        created(): void {
+            this.fetchData()
+        },
         mounted(): void {
+
+        },
+        updated(): void {
+
         },
         record: {
             status: 'done',

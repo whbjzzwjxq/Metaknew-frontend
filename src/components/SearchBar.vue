@@ -66,7 +66,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search/search'
-    import {GraphNodeSettingPart, GraphSelfPart, MediaSettingPart} from '@/class/graphItem'
+    import {NodeSettingPart, GraphSelfPart, MediaSettingPart} from '@/class/graphItem'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
@@ -225,7 +225,7 @@
                 }));
                 let nodes = unDuplicateItems.filter(item => item.type !== 'media');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let nodeSettingList = nodes.map(node => GraphNodeSettingPart.emptyNodeSetting(
+                let nodeSettingList = nodes.map(node => NodeSettingPart.emptyNodeSetting(
                     node.id,
                     node.type,
                     node.PrimaryLabel,

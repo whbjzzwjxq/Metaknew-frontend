@@ -41,6 +41,7 @@ export interface IndexedInfo {
 export interface HomePageSearchResponse {
     Document: IndexedInfo[],
     Meta: IndexedInfo[],
+
     [prop: string]: IndexedInfo[]
 }
 
@@ -50,14 +51,15 @@ export interface NameQueryObject {
     name: string
 }
 
-export const queryHomePage = (queryObject: SearchQueryObject) =>
-    instance.request<HomePageSearchResponse>({
-        url: '/es/home_query',
+export function queryHomePage(queryObject: SearchQueryObject) {
+    return instance.request<HomePageSearchResponse>({
+        url: 'es/home_query',
         method: "GET",
         params: {
             ...queryObject
         }
     });
+}
 
 export function nameSimilar(nameList: NameQueryObject[]) {
     return instance.request({

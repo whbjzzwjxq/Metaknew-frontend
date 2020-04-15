@@ -207,7 +207,7 @@ export const linkPropType: PLabelPropsDict = {
 };
 
 export const mediaPropType: PLabelPropsDict = {
-    // todo 媒体属性获取
+    // todo 媒体属性获取 已经列入文档
 };
 
 export function nodeLabelToStandardProps(pLabel: string) {

@@ -86,7 +86,6 @@
 <script lang="ts">
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
-    import {RectByPoint} from "@/class/geometric";
 
     export default Vue.extend({
         name: 'GraphNode',
@@ -95,12 +94,6 @@
             return {}
         },
         props: {
-            //缩放情况
-            scale: {
-                type: Number as () => number,
-                default: 1
-            },
-
             //位置
             position: {
                 type: Object as () => PointMixed,
@@ -236,9 +229,7 @@
                 }
             },
             textSetting: function (): Record<string, any> {
-                let size = this.setting.Text.textSize * this.scale >= 10
-                    ? this.setting.Text.textSize * this.scale
-                    : 10;
+                let size = this.setting.Text.textSize;
                 let width = this.setting.Text.textBreak
                     ? this.setting._name.length * size / 2
                     : this.setting._name.length * size;
@@ -247,7 +238,7 @@
                     : size * 1.5;
                 return {
                     offsetX: -width * 0.5,
-                    offsetY: this.height + (this.borderSetting.width + 5) * this.scale,
+                    offsetY: this.height + (this.borderSetting.width + 5),
                     width,
                     height,
                     size

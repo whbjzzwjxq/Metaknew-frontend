@@ -175,7 +175,16 @@ export function graphStateTemplate() {
     return <GraphState>{
         isDeleted: false,
         isExplode: true,
+        isSaved: false,
+        isTemporary: false
     };
+}
+
+export function paperStateTemplate() {
+    return <PaperState>{
+        isDeleted: false,
+        isSaved: false
+    }
 }
 
 export function textStateTemplate() {
@@ -360,5 +369,4 @@ export function getMediaType(file: File) {
         result = file.name.split(".")[1];
     }
     return result;
-    //todo 更加详细的mediaType
 }

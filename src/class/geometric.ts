@@ -274,7 +274,6 @@ export const transformBorderToRect = (rect: RectByPoint, border: number, inner: 
                 borderColor: 'white',
                 borderStyle: 'solid',
                 cursor: borderType + '-resize',
-                // todo 半透明边框
             } as CSSProp, baseCSS, rect.getDivCSS({}))
         }
     });

@@ -262,7 +262,7 @@
                         isEditing: true
                     }
                 } as NoteBook;
-                //todo
+                //todo 添加笔记本 已经列入文档
                 // 加入到现有note里面
                 let removed = this.pushNoteInShowed(note);
                 this.pushNoteInMore(removed);
@@ -273,7 +273,7 @@
                 let note = this.currentNote;
                 let index = this.removeNoteFromShow(note);
                 index === -1 && (this.removeNoteFromMore(note));
-                //todo
+                //todo 删除笔记 已经列入文档
             },
 
             editNote: function () {

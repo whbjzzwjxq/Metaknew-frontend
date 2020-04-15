@@ -5,12 +5,17 @@ import {
     LinkSettingPart,
     MediaInfoPart,
     MediaSettingPart,
-    GraphNodeSettingPart,
+    NodeSettingPart,
     TextSettingPart
 } from "@/class/graphItem";
 import {PathNode, PathNodeExist} from "@/class/path";
 import {PaperSelfPart} from "@/class/paperItem";
-import {ListText, ListTitle} from "@/interface/interfaceInComponent";
+import {
+    DirectoryItemAll,
+    DirectoryNode,
+    ListText,
+    ListTitle
+} from "@/interface/interfaceInComponent";
 import {BackendNodeInfoPart} from "@/api/subgraph/node";
 import {BackendLinkInfoPart} from "@/api/subgraph/link";
 
@@ -40,8 +45,8 @@ export function isMediaSetting(item: GraphItemSettingPart): item is MediaSetting
     return (item as MediaSettingPart)._type === 'media'
 }
 
-export function isNodeSetting(item: GraphItemSettingPart): item is GraphNodeSettingPart {
-    return (item as GraphNodeSettingPart)._type === 'node' || (item as GraphNodeSettingPart)._type === 'document'
+export function isNodeSetting(item: GraphItemSettingPart): item is NodeSettingPart {
+    return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
 }
 
 export function isVisNodeSetting(item: GraphItemSettingPart): item is VisNodeSettingPart {
@@ -84,4 +89,8 @@ export function isPathNodeExist(item: PathNode): item is PathNodeExist {
 
 export function isListText(item: ListText | ListTitle): item is ListText {
     return !(item as ListText).isTitle
+}
+
+export function isDirectoryItemDocument(item: DirectoryItemAll): item is DirectoryNode {
+    return (item as DirectoryNode).type === 'document'
 }

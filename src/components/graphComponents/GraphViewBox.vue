@@ -184,7 +184,7 @@
     import {
         GraphConf,
         GraphItemSettingPart,
-        GraphNodeSettingPart,
+        NodeSettingPart,
         GraphSelfPart,
         LinkSettingPart,
         MediaSettingPart,
@@ -203,7 +203,14 @@
     import GraphText from "@/components/graphComponents/GraphText.vue";
     import CardAllSimp from "@/components/card/standard/CardAllSimp.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
-    import {isLinkSetting, isMediaSetting, isNodeSetting, isVisAreaSetting, isVisNodeSetting} from "@/utils/typeCheck";
+    import {
+        isGraphSelfPart,
+        isLinkSetting,
+        isMediaSetting,
+        isNodeSetting,
+        isVisAreaSetting,
+        isVisNodeSetting
+    } from "@/utils/typeCheck";
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
@@ -346,7 +353,9 @@
 
             // 未被删除的孩子Graph
             activeGraphList: function (): GraphSelfPart[] {
-                return [this.graph].concat(this.graph.docsChild)
+                let result = this.graph.docsChildren.filter(item => isGraphSelfPart(item)) as GraphSelfPart[];
+                result.push(this.graph)
+                return result
             },
 
             activeGraphIdList: function (): id[] {
@@ -397,13 +406,16 @@
 
                 let result = [root];
                 let searchGraph = function (graphMeta: GraphMetaData) {
-                    let graph = graphMeta.self.Content;
-                    graph.nodes.map(node => {
-                        let {_type, _id} = node.Setting;
+                    let graph = graphMeta.self;
+                    graph.nodesAll.map(node => {
+                        let {_id} = node.Setting;
                         let index = vm.activeGraphIdList.indexOf(_id);
-                        if (_type === 'document' && index > -1 && _id !== graphMeta.self._id) {
+                        let doc = index > -1
+                            ? vm.activeGraphList[index]
+                            : undefined
+                        // doc存在 而且不是本身 而且不是根节点
+                        if (doc !== undefined && _id !== graphMeta.self._id && !doc.isRoot) {
                             // 如果这个Graph被激活了，就计算元数据
-                            let doc = vm.activeGraphList[index];
                             let absPoint = getAbsPointFromParent(node, graphMeta);
                             let childRect = getRectFromAbsPoint(doc, absPoint);
                             let childGraphMeta: GraphMetaData = {
@@ -429,13 +441,13 @@
             },
 
             // 包含所有的Nodes
-            nodes: function (): GraphNodeSettingPart[] {
+            nodes: function (): NodeSettingPart[] {
                 // root Graph自己的节点显示
                 return this.graph.nodesAllSubDoc
             },
 
             //渲染按钮
-            renderButtons: function (): GraphNodeSettingPart[] {
+            renderButtons: function (): NodeSettingPart[] {
                 return this.editMode
                     ? this.nodes
                     : []
@@ -472,6 +484,13 @@
                         ...setting.View,
                         color: this.labelColorOn ? '#000000' : setting.View.color
                     };
+                    //重写字体大小
+                    let textSize = setting.Text.textSize * this.realScale;
+                    textSize < 10 && (textSize = 10);
+                    let Text = {
+                        ...setting.Text,
+                        textSize
+                    };
                     let {_name} = setting;
                     let trans = this.nodeInfoList[index].Info.Translate[this.lang];
                     trans && (_name = trans);
@@ -479,7 +498,8 @@
                         ...setting,
                         _name,
                         Base,
-                        View
+                        View,
+                        Text
                     } as NodeSettingGraph
                 })
             },
@@ -658,7 +678,8 @@
                 return this.nodes.map((node) => (
                     node.isFatherExplode &&
                     this.labelViewDict[node._type][node._label]) ||
-                    node._id === this.graph._id
+                    (node._id === this.graph._id &&
+                        node.parent._id === this.graph._id)
                 )
             },
 
@@ -819,7 +840,7 @@
                     if (info) {
                         commitItemChange(info);
                     } else {
-                        // todo 这里全屏媒体资源
+                        // todo 这里全屏媒体资源 已经列入文档
                     }
                 }
             },
@@ -961,7 +982,7 @@
                 return getPoint($event).decrease(this.viewBox.start)
             },
 
-            explode(node: GraphNodeSettingPart) {
+            explode(node: NodeSettingPart) {
                 dispatchNodeExplode({node, document: this.graph})
             },
 
@@ -1035,7 +1056,7 @@
 
             onResize() {
                 //@ts-ignore
-                //todo 把组件改成一个基础组件
+                //todo 把组件改成一个基础组件 已经列入文档
                 let viewBox: HTMLElement = this.$refs.viewBox;
                 let rect = viewBox.getBoundingClientRect();
                 this.viewBox.updateFromArea(rect);
@@ -1049,7 +1070,7 @@
             },
 
             //显示节点或者关系卡片
-            cardOn(node: GraphNodeSettingPart | LinkSettingPart, location: PointObject) {
+            cardOn(node: NodeSettingPart | LinkSettingPart, location: PointObject) {
 
             }
         },
