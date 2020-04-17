@@ -19,7 +19,7 @@
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
     import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
-    import {commitGraphChange, commitRootGraph} from "@/store/modules/_mutations";
+    import {commitGraphChange, commitPaperChange, commitRootDocPush} from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
     import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
     import {PaperSelfPart} from "@/class/paperItem";
@@ -75,10 +75,17 @@
                 let id = this.$route.params.id;
                 const commitGraph = (graph: GraphSelfPart) => {
                     commitGraphChange({graph});
-                    commitRootGraph({graph});
+                    commitRootDocPush({document: graph});
                     this.loading = false;
                     return true
                 };
+
+                const commitPaper = (paper: PaperSelfPart) => {
+                    commitPaperChange({paper});
+                    commitRootDocPush({document: paper});
+                    this.loading = false;
+                    return true
+                }
                 if (id) {
                     let graph = this.dataManager.graphManager[id]
                     if (graph !== undefined) {
@@ -90,13 +97,24 @@
                         })
                     }
                 } else {
-                    if (this.graph._id === '$_-1') {
-                        let _id = getIndex();
-                        let {graph} = GraphSelfPart.emptyGraphSelfPart(_id, null);
-                        return commitGraph(graph)
+                    if (this.graphRouteRegex.test(String(this.$route.name))) {
+                        if (this.graph._id === '$_-1') {
+                            let _id = getIndex();
+                            let {graph} = GraphSelfPart.emptyGraphSelfPart(_id, null);
+                            return commitGraph(graph)
+                        } else {
+                            this.loading = false
+                            return true
+                        }
                     } else {
-                        this.loading = false
-                        return true
+                        if (this.paper._id === '$_-1') {
+                            let _id = getIndex();
+                            let {paper} = PaperSelfPart.emptyPaperSelfPart(_id, null);
+                            return commitPaper(paper)
+                        } else {
+                            this.loading = false
+                            return true
+                        }
                     }
                 }
             }

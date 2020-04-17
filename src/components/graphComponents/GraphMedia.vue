@@ -46,7 +46,7 @@
 
             //范围框
             state: {
-                type: Object as () => NodeState,
+                type: Object as () => MediaState,
                 required: true
             },
 

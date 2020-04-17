@@ -90,7 +90,7 @@
             @mouseenter.native="mouseEnter(node, index)"
             @mouseleave.native="mouseLeave(node)"
             @add-link="addLink(node)"
-            @explode="explode"
+            @explode="explode(node)"
         >
 
         </graph-node-button>
@@ -936,8 +936,7 @@
                 //注意这里index肯定不能是-1
                 let result;
                 const equal = (nodePart: VisNodeSettingPart, nodeSetting: NodeSettingSimply) =>
-                    (nodePart._id === nodeSetting.id) &&
-                    (nodePart.parent._id === nodeSetting.parentId || nodePart._type === 'document');
+                    (nodePart._id === nodeSetting.id) && (nodePart.parent._id === nodeSetting.parentId);
                 // 不仅id相同 必须是同一个专题下 或者node本身就是专题节点
                 node
                     ? isMediaSetting(node)

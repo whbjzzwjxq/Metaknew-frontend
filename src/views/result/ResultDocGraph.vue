@@ -14,7 +14,6 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {RectByPoint} from "@/class/geometric";
     import {GraphSelfPart} from "@/class/graphItem";
     import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
     export default Vue.extend({
@@ -29,12 +28,6 @@
         computed: {
             allComponentsStyle: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
-            },
-            viewBox: function (): RectByPoint {
-                return this.allComponentsStyle.viewBox
-            },
-            viewBoxStyle: function (): CSSProp {
-                return this.viewBox.getDivCSS({overflow: "hidden"})
             },
             graph: function (): GraphSelfPart {
                 return this.$store.state.dataManager.currentGraph

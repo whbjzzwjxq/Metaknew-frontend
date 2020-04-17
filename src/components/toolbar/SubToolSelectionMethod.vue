@@ -56,8 +56,7 @@
                 let _id = getIndex();
                 let parent = this.graph;
                 let items = parent.itemsAllSubDoc.filter(item => item.isSelected);
-                let newGraph = GraphSelfPart.collectNewGraph({_id, parent, commitToVuex: true}, items, deleteSource);
-                parent.addItems([newGraph.nodeSelf.deepCloneSelf()])
+                return GraphSelfPart.collectNewGraph({_id, parent, commitToVuex: true}, items, deleteSource);
             }
         },
         record: {

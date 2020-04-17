@@ -38,18 +38,19 @@
         <card-sub-row :text="'保存与记录'" v-if="isUserControl">
             <template v-slot:content>
                 <div class="d-flex flex-row">
-                <v-menu offset-y>
-                    <template v-slot:activator="{ on }">
-                        <v-btn text v-on="on" coor="primary">Save</v-btn>
-                    </template>
-                    <v-list>
-                        <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
-                        <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft</v-list-item>
-                    </v-list>
-                </v-menu>
-                <icon-group :icon-list="editIcon" v-show="!editMode">
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on }">
+                            <v-btn text v-on="on" coor="primary">Save</v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
+                            <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                    <icon-group :icon-list="editIcon" v-show="!editMode">
 
-                </icon-group>
+                    </icon-group>
                 </div>
             </template>
         </card-sub-row>
@@ -188,7 +189,6 @@
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/fieldResolve";
     import {LabelGroup} from "@/interface/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
-    import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
     import {dispatchMediaQuery, dispatchUserConcernQuery, dispatchUserLabelProps} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";

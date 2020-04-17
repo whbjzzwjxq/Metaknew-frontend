@@ -1,25 +1,24 @@
-import {
-    DocumentSelfPart,
-    ItemSettingPart,
-    NodeInfoPart, PaperConf,
-} from "@/class/graphItem";
-import {paperSettingTemplate} from "@/utils/template";
+import {DocumentSelfPart, NodeInfoPart, NodeSettingPart, PaperConf} from "@/class/graphItem";
 import {emptyContent} from "@/utils/utils";
-import {commitDocumentAdd} from "@/store/modules/_mutations";
-import store from "@/store";
 
 export class PaperSelfPart extends DocumentSelfPart {
     static list: PaperSelfPart[] = [];
-
-    get _name() {
-        return store.state.dataManager.paperManager[this._id].Info.Name
-    }
 
     constructor(paper: DocumentContent, conf: PaperConf, parent: PaperSelfPart | null, meta: DocumentMetaData) {
         super(paper, conf, parent, meta);
         this.Content = paper;
         this.Conf = conf;
-        PaperSelfPart.list.push(this)
+        PaperSelfPart.list.push(this);
+        // baseNode部分
+        if (this.nodeSelf === undefined) {
+            // let {_id, _type, _label} = conf;
+            // let node = NodeSettingPart.emptyNodeSetting(_id, _type, _label, 'NewDoc' + _id, '', this);
+            // this.Content.nodes.push(node);
+        } else {
+            // 检查完成
+        }
+        // 专题已经添加到父亲中去了
+        parent && parent.addItems([this.nodeSelf.deepCloneSelf()]);
     }
 
     static emptyPaperSelfPart(_id: id, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
@@ -32,7 +31,6 @@ export class PaperSelfPart extends DocumentSelfPart {
         } as DocumentMetaData;
         let paper = new PaperSelfPart(paperContent, setting, parent, meta);
         let info = NodeInfoPart.emptyNodeInfoPart(query, commitToVuex);
-        let payload = {paper, info};
-        return payload
+        return {paper, info}
     }
 }

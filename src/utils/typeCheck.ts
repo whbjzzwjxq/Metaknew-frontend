@@ -1,7 +1,7 @@
 import {
     DocumentSelfPart,
     GraphItemSettingPart, GraphSelfPart,
-    InfoPart,
+    InfoPart, ItemSettingPart,
     LinkSettingPart,
     MediaInfoPart,
     MediaSettingPart,
@@ -37,15 +37,15 @@ export function isGraphType(str: string): str is GraphItemType {
         (str as GraphItemType) === 'text'
 }
 
-export function isLinkSetting(item: GraphItemSettingPart): item is LinkSettingPart {
+export function isLinkSetting(item: ItemSettingPart): item is LinkSettingPart {
     return (item as LinkSettingPart)._type === 'link'
 }
 
-export function isMediaSetting(item: GraphItemSettingPart): item is MediaSettingPart {
+export function isMediaSetting(item: ItemSettingPart): item is MediaSettingPart {
     return (item as MediaSettingPart)._type === 'media'
 }
 
-export function isNodeSetting(item: GraphItemSettingPart): item is NodeSettingPart {
+export function isNodeSetting(item: ItemSettingPart): item is NodeSettingPart {
     return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
 }
 
@@ -53,7 +53,7 @@ export function isVisNodeSetting(item: GraphItemSettingPart): item is VisNodeSet
     return isNodeSetting(item) || isMediaSetting(item)
 }
 
-export function isTextSetting(item: GraphItemSettingPart): item is TextSettingPart {
+export function isTextSetting(item: ItemSettingPart): item is TextSettingPart {
     return (item as TextSettingPart)._type === 'text'
 }
 

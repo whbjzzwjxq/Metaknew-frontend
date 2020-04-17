@@ -136,7 +136,7 @@ export function paperSettingTemplate(_id: id) {
     let setting = {
         _id,
         _type: 'document',
-        _label: 'paper',
+        _label: 'DocPaper',
     } as PaperSetting;
     return Object.assign(setting, settingTemplate('document'))
 }

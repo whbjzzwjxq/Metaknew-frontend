@@ -592,6 +592,18 @@ export class NodeSettingPart extends GraphItemSettingPart {
         return this.Setting._type
     }
 
+    get boundDocument() {
+        return this.parent.docsChildren.filter(graph => graph._id === this._id)[0]
+    }
+
+    get remoteDocument() {
+        if (this._label === 'DocGraph') {
+            return store.state.dataManager.graphManager[this._id]
+        } else {
+            return store.state.dataManager.paperManager[this._id]
+        }
+    }
+
     protected constructor(Setting: NodeSettingGraph, State: NodeState, parent: GraphSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
@@ -633,18 +645,14 @@ export class NodeSettingPart extends GraphItemSettingPart {
 
 export class MediaSettingPart extends GraphItemSettingPart {
     Setting: MediaSetting;
-    State: NodeState;
+    State: MediaState;
     static list: Array<MediaSettingPart> = [];
 
     get _type() {
         return this.Setting._type
     }
 
-    protected constructor(
-        Setting: MediaSetting,
-        State: NodeState,
-        parent: GraphSelfPart
-    ) {
+    protected constructor(Setting: MediaSetting, State: MediaState, parent: GraphSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
@@ -909,6 +917,7 @@ export class PaperConf extends DocumentConfigure {
 }
 
 export abstract class DocumentSelfPart {
+    static list: DocumentSelfPart[] = [];
     protected MetaData: DocumentMetaData;
     Content: DocumentContent;
     Conf: DocumentConfigure;
@@ -947,7 +956,7 @@ export abstract class DocumentSelfPart {
     }
 
     get nodeSelf() {
-        return this.nodes.filter(node => node._id === this._id)[0]
+        return this.nodesAll.filter(node => node._id === this._id)[0]
     }
 
     get nodesAllSubDoc() {
@@ -1074,7 +1083,8 @@ export abstract class DocumentSelfPart {
         this.Conf = Conf;
         this.Content = Content;
         this.MetaData = meta;
-        this.treeNode = new TreeNodeDoc(this, parent)
+        this.treeNode = new TreeNodeDoc(this, parent);
+        DocumentSelfPart.list.push(this);
     }
 
     updateStateUpdate() {
@@ -1128,10 +1138,6 @@ export abstract class DocumentSelfPart {
         return list.filter(item => item.State[state])
     }
 
-    deepCloneSelf() {
-
-    }
-
     deleteItem(payload: { _id: id, _type: GraphItemType }, snackBarOn: boolean = true) {
         let {_id, _type} = payload;
         // 不删除与专题相同的内容
@@ -1171,6 +1177,58 @@ export abstract class DocumentSelfPart {
             commitSnackbarOff()
         }
     }
+
+    addItems(items: GraphItemSettingPart[]) {
+        items.filter(item => !this.checkExistByItem(item)).map(item => {
+            item.State.isAdd = true;
+            // 额外处理专题
+            if (item._type === 'document') {
+                let graph = DocumentSelfPart.list.filter(doc => doc._id === item._id)[0]
+                graph && this.treeNode._addNewNode([graph.treeNode])
+                // 额外处理link
+            } else if (isLinkSetting(item)) {
+                let _start = this.getVisNodeById(item._start.Setting);
+                if (_start === undefined) {
+                    let newStart = item._start.deepCloneSelf();
+                    this.pushItem(newStart);
+                    item._start = newStart
+                } else {
+                    item._start = _start
+                }
+                let _end = this.getVisNodeById(item._end.Setting);
+                if (_end === undefined) {
+                    //如果没有就复制一个
+                    let newEnd = item._end.deepCloneSelf();
+                    this.pushItem(newEnd);
+                    item._end = newEnd
+                } else {
+                    //如果有就直接绑定
+                    item._end = _end
+                }
+            }
+            this.pushItem(item);
+        })
+    }
+
+    collectItems(items: GraphItemSettingPart[], deleteSource: boolean) {
+        items.map(item => {
+            //复制在前 要不然删除了
+            let newItem = item.deepCloneSelf();
+            this.addItems([newItem]);
+            deleteSource && item.parent.deleteItem(item, false);
+        })
+    }
+
+    protected pushItem(item: ItemSettingPart) {
+        item._parent = this;
+        isMediaSetting(item)
+            ? this.Content.medias.push(item)
+            : isNodeSetting(item)
+            ? this.Content.nodes.push(item)
+            : isTextSetting(item)
+                ? this.Content.texts.push(item)
+                : isLinkSetting(item) && this.Content.links.push(item)
+    }
 }
 
 export class GraphSelfPart extends DocumentSelfPart {
@@ -1182,6 +1240,10 @@ export class GraphSelfPart extends DocumentSelfPart {
 
     get isExplode() {
         return this.Conf.State.isExplode
+    }
+
+    set isExplode(value) {
+        this.Conf.State.isExplode = value
     }
 
     get rect() {
@@ -1206,6 +1268,8 @@ export class GraphSelfPart extends DocumentSelfPart {
         } else {
             // 检查完成
         }
+        // 专题已经添加到父亲中去了
+        parent && parent.addItems([this.nodeSelf.deepCloneSelf()]);
     }
 
     static emptyGraphSelfPart(_id: id, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
@@ -1215,9 +1279,9 @@ export class GraphSelfPart extends DocumentSelfPart {
             isTemporary: false,
             isRemoteModel: false,
         } as DocumentMetaData
-        let graph = new GraphSelfPart(graphContent, setting, parent, meta);
         let nodeQuery = {id: _id, type: 'document', pLabel: 'DocGraph'} as DocumentQuery;
         let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
+        let graph = new GraphSelfPart(graphContent, setting, parent, meta);
         let payload = {graph, info};
         commitToVuex && commitDocumentAdd({document: graph, strict: false});
         return payload
@@ -1250,53 +1314,6 @@ export class GraphSelfPart extends DocumentSelfPart {
         return newGraph
     }
 
-    addItems(items: GraphItemSettingPart[]) {
-        items.filter(item => !this.checkExistByItem(item)).map(item => {
-            item.State.isAdd = true;
-            // 额外处理专题
-            if (item._type === 'document') {
-                let graph = store.state.dataManager.graphManager[item._id] as GraphSelfPart;
-                graph && this.treeNode._addNewNode([graph.treeNode])
-                // 额外处理link
-            } else if (isLinkSetting(item)) {
-                let _start = this.getVisNodeById(item._start.Setting);
-                if (_start === undefined) {
-                    let newStart = item._start.deepCloneSelf();
-                    this.pushItem(newStart);
-                    item._start = newStart
-                } else {
-                    item._start = _start
-                }
-                let _end = this.getVisNodeById(item._end.Setting);
-                if (_end === undefined) {
-                    //如果没有就复制一个
-                    let newEnd = item._end.deepCloneSelf();
-                    this.pushItem(newEnd);
-                    item._end = newEnd
-                } else {
-                    //如果有就直接绑定
-                    item._end = _end
-                }
-            }
-            this.pushItem(item);
-        })
-    }
-
-    protected pushItem(item: GraphItemSettingPart) {
-        item._parent = this;
-        isMediaSetting(item)
-            ? this.Content.medias.push(item)
-            : isNodeSetting(item)
-            ? this.Content.nodes.push(item)
-            : isTextSetting(item)
-                ? this.Content.texts.push(item)
-                : isLinkSetting(item) && this.Content.links.push(item)
-    }
-
-    explode(value?: boolean) {
-        this.Conf.updateState('isExplode', value)
-    }
-
     addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex: boolean = true) {
         _label || (_label = 'BaseNode');
         let _id = getIndex();
@@ -1322,17 +1339,7 @@ export class GraphSelfPart extends DocumentSelfPart {
         let _id = getIndex();
         let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, this, commitToVuex);
         let payload = {graph, info};
-        console.log(graph.nodeSelf === graph.nodeSelf.deepCloneSelf())
         this.addItems([graph.nodeSelf.deepCloneSelf()]);
         return payload
-    }
-
-    collectItems(items: GraphItemSettingPart[], deleteSource: boolean) {
-        items.map(item => {
-            //复制在前 要不然删除了
-            let newItem = item.deepCloneSelf();
-            this.addItems([newItem]);
-            deleteSource && item.parent.deleteItem(item, false);
-        })
     }
 }

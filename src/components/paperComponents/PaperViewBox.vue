@@ -1,5 +1,5 @@
 <template>
-    <div class="d-flex">
+    <div class="d-flex cardItem" style="width: 100%; height: 100%; position: relative" v-resize="onResize">
 
     </div>
 </template>
@@ -7,12 +7,15 @@
 <script lang="ts">
     import Vue from 'vue'
     import {PaperSelfPart} from "@/class/paperItem";
+    import {RectByPoint} from "@/class/geometric";
 
     export default Vue.extend({
         name: "PaperViewBox",
         components: {},
         data: function () {
-            return {}
+            return {
+                viewBox: RectByPoint.emptyRect()
+            }
         },
         props: {
             paper: {
@@ -20,10 +23,15 @@
                 required: true
             }
         },
-        computed: {
-
+        computed: {},
+        methods: {
+            onResize: function () {
+                //@ts-ignore
+                let viewBox: HTMLElement = this.$refs.viewBox;
+                let rect = viewBox.getBoundingClientRect();
+                this.viewBox.updateFromArea(rect);
+            }
         },
-        methods: {},
         record: {
             status: 'empty',
             description: ''

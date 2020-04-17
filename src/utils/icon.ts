@@ -61,7 +61,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     'i-explode': {
         true: 'mdi-arrow-expand-all',
         false: 'mdi-arrow-collapse-all',
-        unload: 'mdi-magnify'
+        unload: 'mdi-magnify',
+        goto: 'mdi-open-in-new'
     },
     'i-eye': {
         true: 'mdi-eye',

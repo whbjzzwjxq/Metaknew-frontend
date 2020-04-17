@@ -270,7 +270,7 @@
                 let idList = docList.map(item => item.id);
                 // 根专题不会缩回 其他的专题检查是否在list中
                 this.documentList.map(doc => {
-                    isGraphSelfPart(doc) && doc.explode(idList.includes(doc._id) || doc.Conf.parent === null)
+                    isGraphSelfPart(doc) && (doc.isExplode = idList.includes(doc._id) || doc.parent === null)
                 })
             },
 

@@ -55,6 +55,9 @@ const getDocumentManager = (document: DocumentSelfPart) =>
         ? state.graphManager
         : state.paperManager;
 
+const initGraph = GraphSelfPart.emptyGraphSelfPart('$_-1', null, false);
+const initPaper = PaperSelfPart.emptyPaperSelfPart('$_-2', null, false);
+
 declare global {
     interface DataManagerState {
         currentGraph: GraphSelfPart,
@@ -91,9 +94,9 @@ declare global {
 }
 
 const state: DataManagerState = {
-    currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
-    currentPaper: PaperSelfPart.emptyPaperSelfPart('$_-1', null, false).paper,
-    currentItem: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).info,
+    currentGraph: initGraph.graph,
+    currentPaper: initPaper.paper,
+    currentItem: initGraph.info,
     rootDocument: [],
     graphManager: {},
     paperManager: {},
@@ -155,7 +158,7 @@ const mutations = {
     currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
         let {graph} = payload;
         let _id = graph._id; // 这里payload是document
-        graph.explode(true);
+        graph.isExplode = true;
         state.currentGraph = graph;
         let node = state.nodeManager[_id];
         commitItemChange(node);
@@ -167,22 +170,27 @@ const mutations = {
         })
     },
 
-    rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
-        let {graph} = payload;
-        graph.explode(true);
-        graph.isRoot = true
-        state.rootDocument.push(graph)
+    currentPaperChange(state: DataManagerState, payload: {paper: PaperSelfPart}) {
+        let {paper} = payload;
+        state.currentPaper = paper;
+        let node = state.nodeManager[paper._id];
+        commitItemChange(node);
+        commitSnackbarOn({
+            color: 'info',
+            once: false,
+            content: `切换到专题${node.Info.Name}`,
+            actionName: 'documentChange'
+        })
+    },
+
+    rootDocumentPush(state: DataManagerState, payload: { document: DocumentSelfPart }) {
+        let {document} = payload;
+        document.isRoot = true
+        state.rootDocument.push(document)
     },
 
     currentItemChange(state: DataManagerState, payload: NodeInfoPart | LinkInfoPart) {
         state.currentItem = payload;
-    },
-
-    currentPaperChange(state: DataManagerState, payload: { paper: PaperSelfPart }) {
-        let {paper} = payload;
-        let _id = paper._id;
-        state.currentPaper = paper;
-        commitItemChange(state.nodeManager[_id]);
     },
 
     // ------------Graph And Paper ------------
@@ -259,13 +267,18 @@ const actions = {
                      payload: { _id: id, parent: GraphSelfPart | null }) {
         let {_id, parent} = payload;
         // 先绘制Graph
-        await gateDocumentQuery(_id).then(res => {
-            let {data} = res;
-            let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
-            dispatchNodeQuery(graph.nodesWithoutSelf.map(item => item.Setting));
-            dispatchLinkQuery(graph.links.map(item => item.Setting));
-            dispatchMediaQuery(graph.medias.map(item => item._id));
-        });
+        if (context.state.graphManager[_id] === undefined) {
+            await gateDocumentQuery(_id).then(res => {
+                let {data} = res;
+                let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
+                dispatchNodeQuery(graph.nodesWithoutSelf.map(item => item.Setting));
+                dispatchLinkQuery(graph.links.map(item => item.Setting));
+                dispatchMediaQuery(graph.medias.map(item => item._id));
+            });
+            return true
+        } else {
+            return true
+        }
     },
 
     // 异步请求Node
@@ -371,10 +384,10 @@ const actions = {
                 parent: document,
             }).then(() => {
                 let subGraph = state.graphManager[_id];
-                subGraph.explode(true)
+                subGraph.isExplode = true
             });
         } else {
-            subGraph.explode()
+            subGraph.isExplode = !subGraph.isExplode
         }
     },
 

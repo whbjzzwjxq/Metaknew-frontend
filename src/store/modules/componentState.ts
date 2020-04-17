@@ -8,7 +8,6 @@ declare global {
         loginTab: {
             root: number
         },
-        editMode: boolean,
         bottomDynamicBarOn: boolean,
         bottomDynamicBarType: BottomDynamicBarType
     }
@@ -86,9 +85,6 @@ const mutations = {
     loginDialogTabOn: (state: ComponentState, payload: 0 | 1) => {
         state.loginTab.root = payload;
         state.loginDialogOn = true;
-    },
-    editModeChange: (state: ComponentState, payload: boolean) => {
-        state.editMode = payload
     },
 
     bottomDynamicBarChange: (state: ComponentState, payload: {on?: boolean, type?: BottomDynamicBarType}) => {

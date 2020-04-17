@@ -70,7 +70,7 @@ export class TreeNode<T> {
     }
 
     get duplicateItem(): TreeNode<T>[] {
-        return this.parentNodeList.filter(item => this.isEqualTo(item))
+        return this.parentNodeList.filter((item) => this.isEqualTo(item))
     }
 
     // 是否重复
@@ -85,7 +85,7 @@ export class TreeNode<T> {
 
     get parentNodeList(): TreeNode<T>[] {
         // 不包含自身的节点
-        return this._parent
+        return this._parent !== null && !this.isRoot
             ? [this._parent].concat(this._parent.parentNodeList)
             : []
     }
@@ -112,26 +112,42 @@ export class TreeNode<T> {
         //两种寻找的方式
         let {id, type, pLabel} = query
         let idEqual = this.query.id === id
-        let typeEqual = this.query.type === type
-        let labelEqual = this.query.pLabel === pLabel
-        let parentEqual = this.parent === null
-            ? parent === null //如果都是根节点
-            : parent === null
-                ? false
-                : (this.parent.queryNode(query, parent, strict)) // 父亲id相同
-        return strict
-            ? idEqual && typeEqual && labelEqual && parentEqual
-            : idEqual
+        if (!strict) {
+            return idEqual
+        } else {
+            let typeEqual = this.query.type === type
+            let labelEqual = this.query.pLabel === pLabel
+            let parentEqual = this.parent === null
+                ? parent === null //如果都是根节点
+                : parent === null
+                    ? false
+                    : (this.parent.isEqualTo(parent, false)) // 父亲id相同
+            return idEqual && typeEqual && labelEqual && parentEqual
+        }
+    }
+
+    checkNodeExist(query: QueryObject): TreeNode<T>[] {
+        return this.children.filter(node => node.queryNode(query, this, false))
     }
 
     _addNewNode(nodeList: TreeNode<T>[]) {
         nodeList.map(node => {
             //同步到内容之中
-            TreeNode.virtualTreeList.map(tree => {
-                let virtualNode = tree.queryNodeByOrigin(this) as VirtualNodeBase<any, any>
-                virtualNode._children.push(tree.buildNode(this, node, virtualNode))
-            })
-            this.children.push(node)
+            let nodeSelf = this;
+            let parentIdList = this.parentNodeList.map(parent => parent.id)
+            parentIdList.push(this.id)
+            //子节点和父亲节点都没有目标专题
+            if (this.checkNodeExist(node.query).length === 0 && !parentIdList.includes(node.id)) {
+                this.children.push(node)
+                node.parent = this;
+                TreeNode.virtualTreeList.map(tree => {
+                    let virtualNode = tree.queryNodeByOrigin(nodeSelf) as VirtualNodeBase<any, any>
+                    virtualNode._children.push(tree.buildNode(nodeSelf, node, virtualNode))
+                })
+                return true
+            } else {
+                return false
+            }
         })
     }
 

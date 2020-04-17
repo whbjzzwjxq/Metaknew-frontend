@@ -840,11 +840,15 @@ declare global {
     }
 
     interface NodeState extends GraphItemState {
-
+        boundGraph: boolean
     }
 
     interface LinkState extends GraphItemState {
         // 暂时和Node一样
+    }
+
+    interface MediaState extends GraphItemState {
+
     }
 
     interface NoteState extends GraphItemState {

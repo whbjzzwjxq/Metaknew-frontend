@@ -66,9 +66,7 @@ const routes = [
                             toolbarBottom: () => import(/* webpackChunkName: "result-graph" */ '@/components/toolbar/ToolbarBottomGraphNormal.vue')
                         },
                         props: {
-                            content: {
-
-                            }
+                            content: {}
                         }
                     },
                     {
@@ -94,17 +92,20 @@ const routes = [
                 ]
             },
             {
-                path: 'paper/id=:id',
+                path: 'paper',
                 name: 'paper',
                 component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocPaper.vue'),
-                props: true
+                children: [
+                    {
+                        path: 'id=:id/normal',
+                        name: 'path-normal',
+                        components: {
+                            content: () => import('@/components/paperComponents/PaperViewBox.vue'),
+                            toolbarBottom: () => import('@/components/toolbar/ToolBarBottomPaperNormal.vue')
+                        }
+                    }
+                ]
             },
-            {
-                path: 'paper/edit',
-                name: 'paper-edit',
-                component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocPaper.vue'),
-                props: true
-            }
         ]
     },
 

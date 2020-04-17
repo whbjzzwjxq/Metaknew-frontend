@@ -15,7 +15,8 @@
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
-    import {GraphSelfPart, NodeSettingPart} from "@/class/graphItem";
+    import {DocumentSelfPart, NodeSettingPart} from "@/class/graphItem";
+    import {isGraphSelfPart} from "@/utils/typeCheck";
 
     export default Vue.extend({
         name: "GraphNodeButton",
@@ -77,8 +78,8 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            boundGraph: function (): GraphSelfPart {
-                return this.dataManager.graphManager[this.node._id]
+            boundDocument: function (): DocumentSelfPart {
+                return this.node.boundDocument
             },
             buttonGroup: function (): IconItem[] {
                 // 是否可以删除
@@ -90,15 +91,40 @@
                     ? deleteIcon = 'rollback'
                     : deleteIcon = true;
 
-                // 是否可以爆炸
-                let explodeAble =
-                    this.boundGraph
-                        ? this.boundGraph._id === this.dataManager.currentGraph._id
-                        : false;
-                let explodeIcon;
-                !this.boundGraph
-                    ? explodeIcon = 'unload'
-                    : explodeIcon = !this.boundGraph.isExplode;
+                let explodeIcon: IconItem;
+                if (!this.boundDocument) {
+                    if (this.node.remoteDocument) {
+                        explodeIcon = {
+                            name: getIcon("i-explode", 'goto'),
+                            _func: this.goto,
+                            toolTip: '转到对应专题',
+                            render: this.node._type === 'document',
+                            disabled: this.node.remoteDocument._id === this.dataManager.currentGraph._id
+                        }
+                    } else {
+                        explodeIcon = {
+                            name: getIcon("i-explode", 'unload'),
+                            _func: this.loadDocument,
+                            toolTip: '加载专题',
+                            render: this.node._type === 'document'
+                        }
+                    }
+                } else if (isGraphSelfPart(this.boundDocument)) {
+                    explodeIcon = {
+                        name: getIcon("i-explode", !this.boundDocument.isExplode),
+                        _func: this.explode,
+                        toolTip: '展开专题',
+                        render: this.node._type === 'document'
+                    }
+                } else {
+                    explodeIcon = {
+                        name: getIcon("i-explode", 'goto'),
+                        _func: this.goto,
+                        toolTip: '转到对应专题',
+                        render: this.node._type === 'document',
+                        disabled: this.node.remoteDocument._id === this.dataManager.currentGraph._id
+                    }
+                }
                 return [
                     {
                         name: getIcon("i-delete-able", deleteIcon),
@@ -107,12 +133,7 @@
                         render: editMode
                     },
                     {name: 'mdi-arrow-top-right', _func: this.addLink, render: editMode},
-                    {
-                        name: getIcon("i-explode", explodeIcon),
-                        _func: this.explode,
-                        render: this.node._type === 'document',
-                        disabled: explodeAble
-                    },
+                    explodeIcon,
                     {name: getIcon('i-eye', this.node.Setting.Show.showAll), _func: this.unShow},
                 ]
             }
@@ -129,8 +150,15 @@
             addLink() {
                 this.$emit('add-link', this.node)
             },
+            loadDocument() {
+                this.$emit('load-document', this.node)
+            },
+            goto() {
+                this.$emit('goto', this.node.remoteDocument)
+            },
             explode() {
-                this.$emit('explode', this.node)
+                //@ts-ignore
+                this.boundDocument.isExplode = !this.boundDocument.isExplode
             }
         },
         watch: {},
