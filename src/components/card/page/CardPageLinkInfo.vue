@@ -107,13 +107,13 @@
     import CardSubLabelGroup from "@/components/card/subComp/CardSubLabelGroup.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
     import IconGroup from "@/components/IconGroup.vue";
-    import {GraphSelfPart, LinkInfoPart} from "@/class/graphItem";
+    import {GraphSelfPart} from "@/class/settingGraph";
     import {EditProps, FieldType, labelItems, ResolveType} from "@/utils/fieldResolve";
     import {deepClone} from "@/utils/utils";
     import {LabelGroup} from "@/interface/interfaceInComponent";
-    import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {getIcon} from "@/utils/icon";
     import {linkBulkCreate, linkBulkUpdate} from '@/api/subgraph/link';
+    import {LinkInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: "CardPageLinkInfo",

@@ -1,4 +1,3 @@
-import {NodeInfoPart} from "@/class/graphItem";
 import {
     nodeCtrlTemplate,
     nodeInfoTemplate,
@@ -7,6 +6,7 @@ import {
 } from "@/utils/template";
 import {nodeTemplateTheme} from "@/utils/templateStandard";
 import {getIndex} from "@/utils/utils";
+import {NodeInfoPart} from "@/class/info";
 
 export class PathSelfPart {
     Conf: PathConf;

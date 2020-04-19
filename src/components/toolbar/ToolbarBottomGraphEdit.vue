@@ -48,8 +48,9 @@
     import SubToolSvg from "@/components/toolbar/SubToolSvg.vue";
     import SubToolDocSave from "@/components/toolbar/SubToolDocSave.vue";
     import SubToolSelectionMethod from "@/components/toolbar/SubToolSelectionMethod.vue";
-    import {GraphSelfPart, MediaSettingPart, NoteSettingPart} from "@/class/graphItem";
+    import {GraphSelfPart, MediaSettingPartGraph} from "@/class/settingGraph";
     import {commitBottomDynamicBarChange} from "@/store/modules/_mutations";
+    import {MediaSettingPart, NoteSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "ToolbarBottomGraphEdit",
@@ -101,13 +102,13 @@
                 let graph = this.defaultGraph(payload);
                 let mediaSettingList = mediaIdList.map(_id => this.dataManager.mediaManager[_id])
                     .map(info => {
-                        return MediaSettingPart.emptyMediaSettingFromInfo(info, graph)
+                        return MediaSettingPartGraph.emptyMediaSettingFromInfo(info, graph)
                     });
                 graph.addItems(mediaSettingList);
                 return mediaSettingList
             },
 
-            addDocument: function (_label: 'DocGraph' | 'DocPaper', payload?: GraphSelfPart) {
+            addDocument: function (_label: '_DocGraph' | '_DocPaper', payload?: GraphSelfPart) {
                 let graph = this.defaultGraph(payload);
                 return graph.addEmptyGraph()
             },

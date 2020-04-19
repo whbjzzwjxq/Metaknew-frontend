@@ -11,7 +11,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {IndexDouble} from "@/class/path";
+    import {IndexDouble} from "@/class/settingPath";
 
     export default Vue.extend({
         name: "PathNodeComp",

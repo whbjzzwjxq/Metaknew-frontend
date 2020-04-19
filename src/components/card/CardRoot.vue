@@ -63,7 +63,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {GraphSelfPart, LinkInfoPart, NodeInfoPart} from "@/class/graphItem";
+    import {GraphSelfPart} from "@/class/settingGraph";
     import {getIcon} from "@/utils/icon";
     import {TabContent} from "@/interface/interfaceInComponent";
     import {commitRootTabChange, commitSubTabChange} from "@/store/modules/_mutations";
@@ -72,6 +72,7 @@
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
     import CardPageLinkInfo from "@/components/card/page/CardPageLinkInfo.vue";
     import {ToolBar} from "@/store/modules/styleComponentSize";
+    import {LinkInfoPart, NodeInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: "CardRoot",
@@ -107,7 +108,7 @@
             currentItem: function (): NodeInfoPart | LinkInfoPart {
                 return this.dataManager.currentItem
             },
-            currentItemType: function (): GraphItemType {
+            currentItemType: function (): DocumentItemType {
                 let _type = this.currentItem._type;
                 _type === 'document' && (_type = 'node');
                 return _type

@@ -6,7 +6,7 @@ export interface TagRecommendation {
 
 interface EmptyUserConcern {
     id: id,
-    type: GraphItemType,
+    type: ConcernType,
     userConcern: null
 }
 

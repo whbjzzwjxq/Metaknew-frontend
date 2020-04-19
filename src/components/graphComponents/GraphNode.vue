@@ -100,7 +100,7 @@
                 required: true
             },
 
-            setting: {
+            itemSetting: {
                 type: Object as () => NodeSettingGraph,
                 required: true
             },
@@ -112,11 +112,16 @@
         },
         computed: {
             id: function(): id {
-                return this.setting._id
+                return this.itemSetting._id
             },
+
             transform: function (): string {
                 let {x, y} = this.position;
                 return 'translate(' + x + ' ' + y + ')'
+            },
+
+            setting: function(): NodeStyleSettingGraph {
+                return this.itemSetting.InGraph
             },
 
             isSelected: function (): boolean {
@@ -176,7 +181,7 @@
                 return this.setting.Show.showAll && this.setting.Show.showInlineText
             },
             showPicture: function (): boolean {
-                return this.setting._image !== '' && this.setting.Show.showAll && this.setting.Show.showImage
+                return this.itemSetting._image !== '' && this.setting.Show.showAll && this.setting.Show.showImage
             },
             showFill: function (): boolean {
                 return this.setting.Show.showAll && this.setting.Show.showBackground
@@ -231,8 +236,8 @@
             textSetting: function (): Record<string, any> {
                 let size = this.setting.Text.textSize;
                 let width = this.setting.Text.textBreak
-                    ? this.setting._name.length * size / 2
-                    : this.setting._name.length * size;
+                    ? this.itemSetting._name.length * size / 2
+                    : this.itemSetting._name.length * size;
                 let height = this.setting.Text.textBreak
                     ? size * 1.5 * 2
                     : size * 1.5;
@@ -279,7 +284,7 @@
             },
 
             getMainPic: function (): string {
-                return getSrc(this.setting._image)
+                return getSrc(this.itemSetting._image)
             },
             getClipId: function (): string {
                 return 'clipPath_' + this.id

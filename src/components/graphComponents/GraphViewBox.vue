@@ -183,15 +183,12 @@
     import Vue from 'vue'
     import {
         GraphConf,
-        GraphItemSettingPart,
-        NodeSettingPart,
-        GraphSelfPart,
-        LinkSettingPart,
-        MediaSettingPart,
-        NodeInfoPart,
-        NoteSettingPart,
-        TextSettingPart
-    } from '@/class/graphItem'
+        GraphSelfPart, ItemSettingPartGraph,
+        LinkSettingPartGraph,
+        MediaSettingPartGraph,
+        NodeSettingPartGraph, NoteSettingPartGraph,
+        TextSettingPartGraph
+    } from '@/class/settingGraph'
     import {maxN, minN} from "@/utils/utils"
     import {getPoint, Point, RectByPoint} from '@/class/geometric'
     import GraphNode from './GraphNode.vue';
@@ -214,6 +211,14 @@
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
+    import {NodeInfoPart} from "@/class/info";
+    import {
+        LinkSettingPart,
+        MediaSettingPart,
+        NodeSettingPart,
+        NoteSettingPart,
+        TextSettingPart
+    } from "@/class/settingBase";
 
     export default Vue.extend({
         name: "GraphViewBox",
@@ -441,13 +446,13 @@
             },
 
             // 包含所有的Nodes
-            nodes: function (): NodeSettingPart[] {
+            nodes: function (): NodeSettingPartGraph[] {
                 // root Graph自己的节点显示
                 return this.graph.nodesAllSubDoc
             },
 
             //渲染按钮
-            renderButtons: function (): NodeSettingPart[] {
+            renderButtons: function (): NodeSettingPartGraph[] {
                 return this.editMode
                     ? this.nodes
                     : []
@@ -477,7 +482,7 @@
                     let Base = {
                         ...setting.Base,
                         size
-                    } as BaseSize;
+                    } as BaseSizeInGraph;
 
                     // 根据标签种类重写颜色
                     let View = {
@@ -504,7 +509,7 @@
                 })
             },
 
-            mediaRewriteSettingList: function (): MediaSetting[] {
+            mediaRewriteSettingList: function (): MediaSettingGraph[] {
                 return this.medias.map((media) => {
                     let setting = media.Setting;
                     let size = (setting.Base.size) * this.realScale;
@@ -512,7 +517,7 @@
                     let Base = {
                         ...setting.Base,
                         size
-                    } as BaseSize;
+                    } as BaseSizeInGraph;
                     return {
                         ...setting,
                         Base
@@ -520,30 +525,34 @@
                 })
             },
 
-            textRewriteSettingList: function (): TextSetting[] {
+            textRewriteSettingList: function (): TextSettingGraph[] {
                 return this.texts.map((text) => {
                     return text.Setting
                 })
             },
 
-            links: function (): LinkSettingPart[] {
+            linkRewriteSettingList: function(): LinkSettingGraph[] {
+                return []
+            },
+
+            links: function (): LinkSettingPartGraph[] {
                 return this.graph.linksAllSubDoc
             },
 
             // 只有自身的medias
-            medias: function (): MediaSettingPart[] {
+            medias: function (): MediaSettingPartGraph[] {
                 return this.graph.medias
             },
 
-            notes: function (): NoteSettingPart[] {
+            notes: function (): NoteSettingPartGraph[] {
                 return this.userDataManager.userNoteInDoc.filter(item => !item.isDeleted && item.Setting._parent === this.graph._id)
             },
 
-            texts: function (): TextSettingPart[] {
+            texts: function (): TextSettingPartGraph[] {
                 return this.graph.texts
             },
 
-            labelDict: function (): Record<GraphItemType, string[]> {
+            labelDict: function (): Record<DocumentItemType, string[]> {
                 let getLabels = (list: AllSettingPart[]) => {
                     let result: string[] = [];
                     list.map((item: AllSettingPart) => {
@@ -552,21 +561,21 @@
                     });
                     return result
                 };
-                let docLabel = ['DocGraph', 'DocPaper'];
+                let docLabel = ['_DocGraph', '_DocPaper'];
                 let normalNodes = this.nodes.filter(item => !docLabel.includes(item._label));
                 return {
                     'node': getLabels(normalNodes),
                     'link': getLabels(this.links),
                     'media': getLabels(this.medias),
                     'document': docLabel
-                } as Record<GraphItemType, string[]>
+                } as Record<DocumentItemType, string[]>
             },
 
-            allItems: function (): GraphItemSettingPart[] {
+            allItems: function (): ItemSettingPartGraph[] {
                 return this.graph.itemsAllSubDoc
             },
 
-            selectedItems: function (): GraphItemSettingPart[] {
+            selectedItems: function (): ItemSettingPartGraph[] {
                 return this.allItems.filter(item => item.State.isSelected)
             },
 
@@ -724,7 +733,7 @@
 
         },
         methods: {
-            getRectByPoint(base: BaseSize, parent: GraphSelfPart) {
+            getRectByPoint(base: BaseSizeInGraph, parent: DocumentSelfPartAny) {
                 // 将绝对的坐标点转化为矩形
                 //width,height: 从源点引申的尺寸，源点在左上角
                 let [width, height] = [base.size, base.size * base.scaleX];
@@ -786,7 +795,7 @@
             },
 
             //node的原生事件
-            mouseEnter(node: GraphSubItemSettingPart, index?: number) {
+            mouseEnter(node: SubItemSettingPart, index?: number) {
                 node.mouseOn(true);
                 if (index) {
                     let {x, y} = this.nodeLocation[index].end;
@@ -796,7 +805,7 @@
             },
 
             //node的原生事件
-            mouseLeave(node: GraphSubItemSettingPart) {
+            mouseLeave(node: SubItemSettingPart) {
                 node.mouseOn(false);
                 this.isDragging = false;
             },
@@ -807,7 +816,7 @@
                 if (this.isLinking && isVisNodeSetting(node) && this.startNode) {
                     if (node.parent._id === this.startNode.parent._id) {
                         // 如果是同一张图里的
-                        let document = node.parent;
+                        let document = node.parent as GraphSelfPart;
                         document.addEmptyLink(this.startNode, node);
                         this.isLinking = false;
                     } else {
@@ -825,7 +834,7 @@
                 }
             },
             //框选
-            selectItem(itemList: GraphSubItemSettingPart[]) {
+            selectItem(itemList: SubItemSettingPart[]) {
                 //选择
                 itemList.map(item => item.updateState("isSelected", true));
                 //如果是单选就切换内容
@@ -897,7 +906,7 @@
                     let texts = this.texts.filter((svg, index) =>
                         this.selectRect.checkInRect(this.textLocation[index].midPoint()) && this.showText[index]
                     );
-                    let result = [nodes, medias, links, texts].flat(1) as GraphSubItemSettingPart[];
+                    let result = [nodes, medias, links, texts].flat(1) as SubItemSettingPart[];
                     this.selectItem(result)
                 }
             },
@@ -907,7 +916,7 @@
                 this.clearSelected('all')
             },
 
-            clearSelected(items: 'all' | GraphItemSettingPart[]) {
+            clearSelected(items: 'all' | ItemSettingPartGraph[]) {
                 if (items === 'all') {
                     Object.values(this.dataManager.graphManager).map(document => {
                         document.allItems.map(item => item.updateState('isSelected', false))
@@ -921,7 +930,7 @@
             getLabelViewDict: function () {
                 Object.entries(this.labelDict).map(([_type, labels]) => {
                     //@ts-ignore
-                    let type: GraphItemType = _type;
+                    let type: DocumentItemType = _type;
                     labels.map(label => {
                         if (this.labelViewDict[type][label] === undefined) {
                             //Vue.set检查过
@@ -981,7 +990,7 @@
                 return getPoint($event).decrease(this.viewBox.start)
             },
 
-            explode(node: NodeSettingPart) {
+            explode(node: NodeSettingPartGraph) {
                 dispatchNodeExplode({node, document: this.graph})
             },
 
@@ -1022,7 +1031,7 @@
                 setting.Base.size = width;
             },
 
-            getItemList(_type: GraphItemType) {
+            getItemList(_type: DocumentItemType) {
                 return _type === 'link'
                     ? this.links
                     : _type === 'media'
@@ -1032,7 +1041,7 @@
                             : this.nodes
             },
 
-            setLabel(_type: GraphItemType, _label: string) {
+            setLabel(_type: DocumentItemType, _label: string) {
                 let value = this.labelViewDict[_type][_label];
                 //Vue.set检查过
                 Vue.set(this.labelViewDict[_type], _label, !value)
@@ -1048,8 +1057,8 @@
                 this.getLabelViewDict()
             },
 
-            selectLabel(_type: GraphItemType, _label: string) {
-                let list: GraphItemSettingPart[] = this.getItemList(_type);
+            selectLabel(_type: DocumentItemType, _label: string) {
+                let list: ItemSettingPartGraph[] = this.getItemList(_type);
                 list.filter(item => item._label === _label).map(item => item.updateState('isSelected'))
             },
 
@@ -1069,7 +1078,7 @@
             },
 
             //显示节点或者关系卡片
-            cardOn(node: NodeSettingPart | LinkSettingPart, location: PointObject) {
+            cardOn(node: NodeSettingPartGraph | LinkSettingPartGraph, location: PointObject) {
 
             }
         },

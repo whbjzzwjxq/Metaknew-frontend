@@ -1,4 +1,4 @@
-import {NodeInfoPart} from "@/class/graphItem";
+import {NodeInfoPart} from "@/class/info";
 
 export type Time = number // 时间戳
 export type Rate = number // 0-1

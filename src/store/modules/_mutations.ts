@@ -1,8 +1,10 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {DocumentSelfPart, GraphSelfPart, LinkInfoPart, NodeInfoPart, NoteSettingPart} from "@/class/graphItem";
+import {GraphSelfPart} from "@/class/settingGraph";
 import {NoteBook} from "@/store/modules/userDataManager";
-import {PaperSelfPart} from "@/class/paperItem";
+import {PaperSelfPart} from "@/class/settingPaper";
+import {LinkInfoPart, NodeInfoPart} from "@/class/info";
+import {DocumentSelfPart, NoteSettingPart} from "@/class/settingBase";
 
 export const commitLoginIn = (payload: userLoginPayload) => {
     return store.commit('loginSet', payload)
@@ -52,7 +54,7 @@ export const commitGraphChange = (payload: { graph: GraphSelfPart }) => {
     return store.commit('currentGraphChange', payload)
 };
 
-export const commitRootDocPush = (payload: { document: DocumentSelfPart }) => {
+export const commitRootDocPush = (payload: { document: DocumentSelfPartAny }) => {
     return store.commit('rootDocumentPush', payload)
 };
 
@@ -68,7 +70,7 @@ export const commitInfoIdChange = (payload: { _type: string, idMap: IdMap }) => 
     return store.commit('infoIdChange', payload)
 };
 
-export const commitDocumentAdd = (payload: { document: GraphSelfPart | DocumentSelfPart, strict?: boolean }) => {
+export const commitDocumentAdd = (payload: { document: GraphSelfPart | DocumentSelfPartAny, strict?: boolean }) => {
     return store.commit('documentAdd', payload)
 };
 
@@ -105,7 +107,7 @@ export const commitUserConcernAdd = (payload: UserConcernPayload) => {
     return store.commit('userConcernAdd', payload)
 };
 
-export const commitNoteInDocAdd = (payload: { note: NoteSettingPart }) => {
+export const commitNoteInDocAdd = (payload: { note: NoteSettingPartAny }) => {
     return store.commit('noteInDocAdd', payload)
 };
 

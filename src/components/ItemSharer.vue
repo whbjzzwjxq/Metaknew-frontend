@@ -18,9 +18,9 @@
     import Vue from 'vue'
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
-    import {FragmentInfoPart, LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
     import {dispatchFragmentAdd} from "@/store/modules/_dispatch";
     import {getIndex} from "@/utils/utils";
+    import {FragmentInfoPart, LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: "ItemSharer",

@@ -21,8 +21,8 @@
     import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
     import {commitGraphChange, commitPaperChange, commitRootDocPush} from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
-    import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
-    import {PaperSelfPart} from "@/class/paperItem";
+    import {GraphSelfPart} from "@/class/settingGraph";
+    import {PaperSelfPart} from "@/class/settingPaper";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
@@ -49,7 +49,7 @@
             paper: function (): PaperSelfPart {
                 return this.dataManager.currentPaper
             },
-            currentDocument: function (): DocumentSelfPart {
+            currentDocument: function (): GraphSelfPart | PaperSelfPart {
                 return this.graphRouteRegex.test(String(this.$route.name))
                     ? this.graph
                     : this.paper

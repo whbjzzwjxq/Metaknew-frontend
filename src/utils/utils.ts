@@ -1,4 +1,3 @@
-import {GraphItemSettingPart, InfoPart} from "@/class/graphItem";
 import {SortProp} from "@/interface/interfaceInComponent";
 import {
     commitFileTokenRefresh,
@@ -12,6 +11,9 @@ import {ExtraProps, fieldDefaultValue, FieldType, nodeLabelToStandardProps} from
 import {userEditDataQuery} from "@/api/user/dataApi";
 import store from '@/store/index'
 import Vue from "vue";
+import {InfoPart} from "@/class/info";
+import {ItemSettingPartGraph} from "@/class/settingGraph";
+import {ItemSettingPart} from "@/class/settingBase";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -185,7 +187,7 @@ export function fileCheck(file: File, size?: number, formats?: string[], filePoo
     return rules.map(rule => rule()).filter(result => result !== '')
 }
 
-export function getInfoPart(_id: id, _type: GraphItemType, dataManager: DataManagerState) {
+export function getInfoPart(_id: id, _type: DocumentItemType, dataManager: DataManagerState) {
     let manager;
     _type === 'link'
         ? manager = dataManager.linkManager
@@ -217,12 +219,13 @@ export const getIndex = () => {
 };
 
 // 两个Item是否一样
-export const itemEqual = (itemA: { _id: id, _type: GraphItemType }, itemB: { _id: id, _type: GraphItemType }) =>
+export const itemEqual = (itemA: { _id: id, _type: DocumentItemType }, itemB: { _id: id, _type: DocumentItemType }) =>
     itemA._id === itemB._id && itemA._type === itemB._type;
-export const findItem = (list: Array<GraphItemSettingPart>, _id: id, _type: GraphItemType) =>
-    list.filter(
-        item => item._id === _id && item._type === _type // 在一个List里找Item
-    );
+
+// 在一个List里找Item
+export const findItem = (list: ItemSettingPart[], _id: id, _type: DocumentItemType) =>
+    list.filter(item => item._id === _id && item._type === _type);
+
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");
 
@@ -306,7 +309,7 @@ export const emptyContent = () => {
         links: [],
         medias: [],
         texts: []
-    } as DocumentContent
+    } as DocumentContentAny
 };
 
 const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];

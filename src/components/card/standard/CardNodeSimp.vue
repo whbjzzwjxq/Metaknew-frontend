@@ -13,8 +13,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {NodeInfoPart} from "@/class/graphItem";
     import {getSrc} from "@/utils/utils";
+    import {NodeInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: "CardNodeSimp",

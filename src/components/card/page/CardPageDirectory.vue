@@ -52,7 +52,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {commitGraphChange, commitItemChange, commitSubTabChange} from "@/store/modules/_mutations";
-    import {DocumentSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/class/graphItem";
     import {getIcon} from "@/utils/icon";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
     import {frontendIdRegex} from "@/utils/utils";
@@ -70,7 +69,7 @@
         components: {},
         data() {
             return {
-                tree: [] as VirtualTree<DocumentSelfPart, DirectoryNode, DirectoryBuildPayload>[],
+                tree: [] as VirtualTree<DocumentSelfPartAny, DirectoryNode, DirectoryBuildPayload>[],
             }
         },
         props: {
@@ -83,13 +82,13 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            rootDocumentList: function (): DocumentSelfPart[] {
+            rootDocumentList: function (): DocumentSelfPartAny[] {
                 return this.dataManager.rootDocument
             },
 
             //包含自身
-            documentList: function (): DocumentSelfPart[] {
-                let result: DocumentSelfPart[] = []
+            documentList: function (): DocumentSelfPartAny[] {
+                let result: DocumentSelfPartAny[] = []
                 this.rootDocumentList.map(doc => {
                     result.push(...doc.docsChildren)
                     result.push(doc)
@@ -164,14 +163,14 @@
         },
         methods: {
             buildDirectory: function () {
-                let _func: VirtualFunc<DocumentSelfPart, DirectoryNode, DirectoryBuildPayload> =
+                let _func: VirtualFunc<DocumentSelfPartAny, DirectoryNode, DirectoryBuildPayload> =
                     (parent, document) => {
                         return this.documentToItem(document.boundObject)
                     }
-                this.tree = this.rootDocumentList.map((doc, index) => new VirtualTree<DocumentSelfPart, DirectoryNode, DirectoryBuildPayload>(doc.treeNode, _func, {}, 'Directory' + index))
+                this.tree = this.rootDocumentList.map((doc, index) => new VirtualTree<DocumentSelfPartAny, DirectoryNode, DirectoryBuildPayload>(doc.treeNode, _func, {}, 'Directory' + index))
             },
 
-            nodeToItem: (node: NodeSettingPart) => {
+            nodeToItem: (node: NodeSettingPartAny) => {
                 return {
                     id: node._id,
                     type: 'node', //这里是目录意义上的节点
@@ -182,10 +181,10 @@
                     editable: node.isSelf,
                     origin: node,
                     children: node._type === 'document' && node._id !== node.parent._id ? [] : undefined
-                } as DirectoryItem<NodeSettingPart>
+                } as DirectoryItem<NodeSettingPartAny>
             },
 
-            linkToItem: (link: LinkSettingPart) => ({
+            linkToItem: (link: LinkSettingPartAny) => ({
                 id: link._id,
                 type: link._type,
                 label: link._label,
@@ -194,9 +193,9 @@
                 deletable: link.parent.isSelf,
                 editable: link.isSelf,
                 origin: link,
-            }) as DirectoryItem<LinkSettingPart>,
+            }) as DirectoryItem<LinkSettingPartAny>,
 
-            mediaToItem: (media: MediaSettingPart) => ({
+            mediaToItem: (media: MediaSettingPartAny) => ({
                 id: media._id,
                 type: media._type,
                 label: media._label,
@@ -205,9 +204,9 @@
                 deletable: media.parent.isSelf,
                 editable: media.isSelf,
                 origin: media,
-            }) as DirectoryItem<MediaSettingPart>,
+            }) as DirectoryItem<MediaSettingPartAny>,
 
-            documentToItem: function (document: DocumentSelfPart) {
+            documentToItem: function (document: DocumentSelfPartAny) {
                 return {
                     id: document._id,
                     type: 'document',
@@ -218,7 +217,7 @@
                     editable: document.isSelf,
                     children: [], //子节点和叶子节点
                     origin: document,
-                } as VirtualNodeContent<DocumentSelfPart, DirectoryNode>;
+                } as VirtualNodeContent<DocumentSelfPartAny, DirectoryNode>;
             },
 
             deleteItem(item: DirectoryItemAll) {
@@ -246,19 +245,19 @@
                 }
             },
 
-            getOriginItem(item: DirectoryItemAll): GraphSubItemSettingPart {
+            getOriginItem(item: DirectoryItemAll): SubItemSettingPart {
                 //返回父亲专题内的SettingPart
                 let parent = item.origin.parent
                 return isDirectoryItemDocument(item)
                     ? parent !== null
                         ? parent.getItemById({_id: item.id, _type: item.type})
                         : item.origin.nodeSelf
-                    : item.origin as GraphSubItemSettingPart
+                    : item.origin as SubItemSettingPart
             },
 
             async getDocument(nodeItem: DirectoryItemAll) {
                 if (!frontendIdRegex.test(String(nodeItem.id))) {
-                    let node = this.getOriginItem(nodeItem) as NodeSettingPart;
+                    let node = this.getOriginItem(nodeItem) as NodeSettingPartAny;
                     let parent = node.parent;
                     return dispatchGraphQuery({_id: node._id, parent});
                 } else {
@@ -274,7 +273,7 @@
                 })
             },
 
-            getDocumentChildList(document: DocumentSelfPart): DirectoryItemAll[] {
+            getDocumentChildList(document: DocumentSelfPartAny): DirectoryItemAll[] {
                 let result: DirectoryItemAll[] = [];
                 let subDocIdList = document.docsChildren.map(child => child._id)
                 let nodes = document.nodesWithoutSelf.filter(item => !subDocIdList.includes(item._id))

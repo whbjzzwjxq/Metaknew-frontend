@@ -1,7 +1,5 @@
 // 拥有孩子的接口
 
-import {DocumentSelfPart} from "@/class/graphItem";
-
 //排序用函数
 export type SortFunction<L> = (a: L, b: L) => number
 
@@ -238,12 +236,12 @@ export class VirtualTree<T, L extends VirtualNodeBase<T, L>, P> {
     }
 }
 
-export class TreeNodeDoc extends TreeNode<DocumentSelfPart> {
+export class TreeNodeDoc extends TreeNode<DocumentSelfPartAny> {
     get isDeleted() {
         return this.boundObject.Conf.isDeleted
     }
 
-    constructor(doc: DocumentSelfPart, parent: DocumentSelfPart | null) {
+    constructor(doc: DocumentSelfPartAny, parent: DocumentSelfPartAny | null) {
         let _parent = parent === null
             ? null
             : parent.treeNode

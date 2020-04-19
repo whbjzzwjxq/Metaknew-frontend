@@ -1,6 +1,6 @@
 import {instance} from "@/api/main";
 import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
-import {LinkInfoPart} from "@/class/graphItem";
+import {LinkInfoPart} from "@/class/info";
 
 export async function linkBulkCreate(links: LinkInfoPart[], createType: string = 'USER') {
     let linkList = links.filter(link => !link.isRemote);

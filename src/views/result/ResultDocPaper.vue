@@ -14,13 +14,13 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {PaperSelfPart} from "@/class/paperItem";
+    import {PaperSelfPart} from "@/class/settingPaper";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import PaperViewBox from "@/components/paperComponents/PaperViewBox.vue";
     import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
-    import {NoteSettingPart} from "@/class/graphItem";
+    import {NoteSettingPart} from "@/class/settingBase";
     export default Vue.extend({
-        name: "ResultDocPaper",
+        name: "Result_DocPaper",
         components: {
             ToolbarBottom,
             PaperViewBox,

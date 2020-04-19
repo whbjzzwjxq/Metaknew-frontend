@@ -81,7 +81,6 @@
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import CardSubLabelGroup from '@/components/card/subComp/CardSubLabelGroup.vue';
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
-    import {MediaInfoPart} from "@/class/graphItem";
     import {LabelGroup} from "@/interface/interfaceInComponent";
     import {labelItems} from "@/utils/fieldResolve";
     import {getIcon, iconMap} from "@/utils/icon";
@@ -92,6 +91,7 @@
     import {mediaUpdate} from "@/api/subgraph/media";
     import {userConcernTemplate} from "@/utils/template";
     import {dispatchUserConcernQuery} from "@/store/modules/_dispatch";
+    import {MediaInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: "CardPageMediaInfo",

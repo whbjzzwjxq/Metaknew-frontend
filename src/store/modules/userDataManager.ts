@@ -1,4 +1,3 @@
-import {FragmentInfoPart, NoteSettingPart} from "@/class/graphItem";
 import {ActionContext} from "vuex";
 import {RootState} from '@/store';
 import Vue from 'vue';
@@ -19,6 +18,8 @@ import {
     commitUserConcernAdd, commitUserLabelPropsChange,
     commitUserPropResolveAdd
 } from "@/store/modules/_mutations";
+import {FragmentInfoPart} from "@/class/info";
+import {NoteSettingPart} from "@/class/settingBase";
 
 declare global {
     interface UserSetting {
@@ -35,14 +36,15 @@ declare global {
         PLabelExtraProps: LabelProps // 用户对某个标签的额外属性
     }
 
+    type ConcernType = "node" | "link" | "media" | "document"
     interface UserDataManagerState {
         // userConcern 部分
-        userConcernDict: Record<GraphItemType, Record<id, UserConcern>>, // 基础的数据仓库
+        userConcernDict: Record<ConcernType, Record<id, UserConcern>>, // 基础的数据仓库
         userConcernLoadingList: id[], // 正在加载的List
         timerForConcern?: number, // 计时器
         fragments: Array<FragmentInfoPart>, // user收集的碎片
         userNoteBook: NoteBook[], // 笔记本
-        userNoteInDoc: NoteSettingPart[], // 所有专题的笔记， 通过father判断
+        userNoteInDoc: NoteSettingPartAny[], // 所有专题的笔记， 通过father判断
         userSetting: UserSetting,
         userEditData: UserEditData,
         userEditDataLoad: boolean
@@ -50,13 +52,13 @@ declare global {
 
     interface UserConcernKey {
         id: id,
-        type: GraphItemType,
+        type: ConcernType,
         isModeled: boolean
     }
 
     interface UserConcernPayload {
         id: id,
-        type: GraphItemType,
+        type: ConcernType,
         userConcern: UserConcern,
         strict?: boolean
     }
@@ -87,8 +89,7 @@ const state: UserDataManagerState = {
         node: {},
         link: {},
         media: {},
-        document: {},
-        text: {}
+        document: {}
     },
     userConcernLoadingList: [],
     timerForConcern: undefined,
@@ -130,12 +131,12 @@ const mutations = {
         state.userNoteBook.splice(index, 1);
     },
 
-    noteInDocAdd(state: UserDataManagerState, payload: { note: NoteSettingPart }) {
+    noteInDocAdd(state: UserDataManagerState, payload: { note: NoteSettingPartAny }) {
         let {note} = payload;
         state.userNoteInDoc.push(note)
     },
 
-    noteInDocRemove(state: UserDataManagerState, payload: { note: NoteSettingPart }) {
+    noteInDocRemove(state: UserDataManagerState, payload: { note: NoteSettingPartAny }) {
 
     },
 
@@ -250,7 +251,7 @@ const actions = {
         }
     },
 
-    noteInDocPush(context: ActionContext<UserDataManagerState, RootState>, payload: { note: NoteSettingPart }) {
+    noteInDocPush(context: ActionContext<UserDataManagerState, RootState>, payload: { note: NoteSettingPartAny }) {
         commitNoteInDocAdd(payload)
     },
 

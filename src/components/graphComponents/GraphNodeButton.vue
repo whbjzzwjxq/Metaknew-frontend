@@ -15,8 +15,8 @@
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
-    import {DocumentSelfPart, NodeSettingPart} from "@/class/graphItem";
     import {isGraphSelfPart} from "@/utils/typeCheck";
+    import {NodeSettingPartGraph} from "@/class/settingGraph";
 
     export default Vue.extend({
         name: "GraphNodeButton",
@@ -33,7 +33,7 @@
             },
 
             node: {
-                type: Object as () => NodeSettingPart,
+                type: Object as () => NodeSettingPartGraph,
                 required: true
             },
 
@@ -78,7 +78,7 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            boundDocument: function (): DocumentSelfPart {
+            boundDocument: function (): DocumentSelfPartAny {
                 return this.node.boundDocument
             },
             buttonGroup: function (): IconItem[] {
@@ -143,8 +143,8 @@
                 this.node.parent.deleteItem(this.node)
             },
             unShow() {
-                let current = this.node.Setting.Show.showAll;
-                this.node.updateSetting('Show', 'showAll', !current);
+                let current = this.node.styleSetting.Show.showAll;
+                this.node.updateSetting('InGraph', 'Show', 'showAll', !current);
             },
 
             addLink() {

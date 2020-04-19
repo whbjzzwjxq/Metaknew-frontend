@@ -40,8 +40,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {LinkSettingPart} from "@/class/graphItem";
     import {getPoint, getPointDistance, rectDiagonalDistance} from "@/class/geometric";
+    import {LinkSettingPartGraph} from "@/class/settingGraph";
 
     export default Vue.extend({
         name: 'GraphLink',
@@ -50,7 +50,7 @@
         },
         props: {
             link: {
-                type: Object as () => LinkSettingPart,
+                type: Object as () => LinkSettingPartGraph,
                 required: true
             },
             source: {
@@ -62,18 +62,13 @@
                 required: true
             },
 
-            scale: {
-                type: Number as () => number,
-                default: 1
-            },
-
             midLocation: {
                 type: Object as () => PointObject,
                 required: true
             }
         },
         computed: {
-            setting: function (): LinkSetting {
+            setting: function (): LinkSettingGraph {
                 return this.link.Setting
             },
 
@@ -191,7 +186,7 @@
             },
 
             arrowLength: function (): number {
-                return Math.floor(this.setting.Arrow.arrowLength * (0.5 * this.scale + 0.5))
+                return Math.floor(this.setting.Arrow.arrowLength)
             },
 
             arrowSetting: function (): Record<string, any> {

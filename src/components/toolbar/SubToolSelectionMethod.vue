@@ -11,7 +11,7 @@
     import SubToolBlock from "@/components/toolbar/SubToolBlock.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {iconMap} from "@/utils/icon";
-    import {GraphSelfPart} from "@/class/graphItem";
+    import {GraphSelfPart} from "@/class/settingGraph";
     import {getIndex} from "@/utils/utils";
     export default Vue.extend({
         name: "SubToolSelectionMethod",

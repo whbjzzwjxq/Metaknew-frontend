@@ -23,10 +23,10 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {MediaInfoPart} from "@/class/graphItem";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
     import {getPostRectFromBase, Point, RectByPoint} from "@/class/geometric";
     import RectContainer from "@/components/container/RectContainer.vue";
+    import {MediaInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: "GraphMedia",

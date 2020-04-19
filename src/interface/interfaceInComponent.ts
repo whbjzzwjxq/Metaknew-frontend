@@ -1,7 +1,7 @@
 import {Point, RectByPoint} from "@/class/geometric";
-import {DocumentSelfPart, GraphSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/class/graphItem";
 import {IndexedInfo} from "@/api/search/search";
 import {VirtualNodeBase} from "@/interface/interfaceTree";
+import {GraphSelfPart} from "@/class/settingGraph";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -15,7 +15,7 @@ export interface LabelGroup {
 }
 
 // _type _label bool 控制标签是否可以显示
-export type LabelViewDict = Record<GraphItemType, Record<string, boolean>>
+export type LabelViewDict = Record<DocumentItemType, Record<string, boolean>>
 
 // v-tab 相关组件使用
 export interface TabContent {
@@ -87,7 +87,7 @@ export interface FastRegisterData {
 // 目录使用的内容
 export interface DirectoryItem<T> {
     id: id,
-    type: GraphItemType,
+    type: DocumentItemType,
     label: string,
     name: string,
     icon: string,
@@ -98,11 +98,11 @@ export interface DirectoryItem<T> {
 }
 
 export type DirectorySubItemAll =
-    DirectoryItem<NodeSettingPart>
-    | DirectoryItem<LinkSettingPart>
-    | DirectoryItem<MediaSettingPart>
+    DirectoryItem<NodeSettingPartAny>
+    | DirectoryItem<LinkSettingPartAny>
+    | DirectoryItem<MediaSettingPartAny>
 
-export interface DirectoryNode extends VirtualNodeBase<DocumentSelfPart, DirectoryNode>, DirectoryItem<DocumentSelfPart> {
+export interface DirectoryNode extends VirtualNodeBase<DocumentSelfPartAny, DirectoryNode>, DirectoryItem<DocumentSelfPartAny> {
     _children: DirectoryNode[]
 }
 

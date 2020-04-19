@@ -1,13 +1,6 @@
 import Vue from 'vue'
 import {filePutBlob} from '@/api/fileUpload';
-import {
-    DocumentSelfPart,
-    NodeSettingPart,
-    GraphSelfPart,
-    LinkInfoPart,
-    MediaInfoPart,
-    NodeInfoPart
-} from "@/class/graphItem";
+import {GraphSelfPart} from "@/class/settingGraph";
 import {
     commitDocumentAdd,
     commitDocumentIdChange,
@@ -29,8 +22,8 @@ import {
     dispatchNodeQuery,
     dispatchVisNodeCreate
 } from "@/store/modules/_dispatch";
-import {PathSelfPart} from "@/class/path";
-import {PaperSelfPart} from "@/class/paperItem";
+import {PathSelfPart} from "@/class/settingPath";
+import {PaperSelfPart} from "@/class/settingPaper";
 import {loginCookie} from "@/api/user/loginApi";
 import {settingToQuery} from "@/utils/utils";
 import {nodeBulkUpdate, nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
@@ -42,6 +35,7 @@ import {
 } from "@/api/document/document";
 import {mediaCreate, mediaQueryMulti} from "@/api/subgraph/media";
 import {draftUpdate} from "@/api/subgraph/commonApi";
+import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
 
 export const getManager = (_type: ItemType) =>
     _type === 'link'
@@ -50,7 +44,7 @@ export const getManager = (_type: ItemType) =>
         ? state.mediaManager
         : state.nodeManager;
 
-const getDocumentManager = (document: DocumentSelfPart) =>
+const getDocumentManager = (document: DocumentSelfPartAny) =>
     isGraphSelfPart(document)
         ? state.graphManager
         : state.paperManager;
@@ -71,7 +65,7 @@ declare global {
         pathManager: Record<id, PathSelfPart>,
         fileToken: FileToken,
         newIdRegex: RegExp,
-        rootDocument: DocumentSelfPart[]
+        rootDocument: DocumentSelfPartAny[]
     }
 
     interface Context {
@@ -88,7 +82,7 @@ declare global {
         graphs: GraphSelfPart[],
         papers: PaperSelfPart[],
         currentGraphInfo: NodeInfoPart,
-        documentList: DocumentSelfPart[],
+        documentList: DocumentSelfPartAny[],
         allInfoPart: InfoPartInDataManager[]
     }
 }
@@ -138,7 +132,7 @@ const getters = {
     },
 
     rootDocumentList: (state: DataManagerState, getters: DataManagerGetters) => {
-        let result = [] as DocumentSelfPart[];
+        let result = [] as DocumentSelfPartAny[];
         result.push(...getters.graphs);
         result.push(...getters.papers);
         return result
@@ -183,7 +177,7 @@ const mutations = {
         })
     },
 
-    rootDocumentPush(state: DataManagerState, payload: { document: DocumentSelfPart }) {
+    rootDocumentPush(state: DataManagerState, payload: { document: DocumentSelfPartAny }) {
         let {document} = payload;
         document.isRoot = true
         state.rootDocument.push(document)
@@ -303,7 +297,7 @@ const actions = {
     },
 
     // 异步请求link
-    linkQuery(context: Context, payload: LinkSetting[]) {
+    linkQuery(context: Context, payload: LinkSetting<any>[]) {
         // 未缓存的关系列表
         let noCacheLink = payload.filter(link => !state.linkManager[link._id]);
         if (noCacheLink.length > 0) {
@@ -374,7 +368,7 @@ const actions = {
         } else return filePutBlob(fileToken, realFile, storeName);
     },
 
-    async nodeExplode(context: Context, payload: { node: NodeSettingPart, document: GraphSelfPart }) {
+    async nodeExplode(context: Context, payload: { node: NodeSettingPartAny, document: DocumentSelfPartAny }) {
         let {node, document} = payload;
         let _id = node._id;
         let subGraph = state.graphManager[_id];
@@ -443,7 +437,7 @@ const actions = {
         await dispatchVisNodeCreate();
         await linkBulkCreate(getters.links);
         //处理专题 分成需要update和需要create的内容
-        let documentList: DocumentSelfPart[] = getters.documentList;
+        let documentList: DocumentSelfPartAny[] = getters.documentList;
         let dataList = documentList.filter(document => !document.isRemote)
             .map(document => document.dataBackendDocument);
         let updateDataList = documentList.filter(document => document.isRemote);

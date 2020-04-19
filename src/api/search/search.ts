@@ -10,7 +10,7 @@ export interface SearchQueryObject {
 
 export interface IndexedInfo {
     id: id,
-    type: GraphItemType,
+    type: DocumentItemType,
     PrimaryLabel: string,
     Language: string,
     CreateUser: number,

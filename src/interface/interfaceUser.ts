@@ -17,7 +17,7 @@ declare global {
 
 export interface FragmentCtrl extends BaseCtrl {
     SourceId: id,
-    SourceType: GraphItemType,
+    SourceType: DocumentItemType,
     SourceLabel: string,
     IsLinked: boolean
 }

@@ -1,16 +1,16 @@
 import {instance} from "@/api/main";
 import {BackendNodeInfoPart} from "@/api/subgraph/node";
 import {commitSnackbarOn} from "@/store/modules/_mutations";
-import {DocumentSelfPart} from "@/class/graphItem";
 
 export interface BackendGraph {
     Content: {
         nodes: Array<NodeSettingGraph>;
-        links: Array<BackendLinkSetting>;
+        links: Array<BackendLinkSettingGraph>;
         medias: Array<MediaSetting>;
         texts: Array<TextSetting>;
     };
     Conf: GraphSetting;
+    Comps: DocumentComponents
 }
 
 export interface BackendGraphWithNode extends BackendGraph {
@@ -42,7 +42,7 @@ function documentBulkCreate(docList: BackendGraph[], createType: string = 'USER'
     })
 }
 
-export function gateDocumentBulkCreate(documentList: DocumentSelfPart[]) {
+export function gateDocumentBulkCreate(documentList: DocumentSelfPartAny[]) {
     let dataList = documentList.filter(document => !document.isRemote)
         .map(document => document.dataBackendDocument)
     if (dataList.length > 0) {
@@ -75,7 +75,7 @@ function documentBulkUpdate(docList: BackendGraph[], createType: string = 'USER'
     })
 }
 
-export function gateDocumentBulkUpdate(documentList: DocumentSelfPart[]) {
+export function gateDocumentBulkUpdate(documentList: DocumentSelfPartAny[]) {
     let dataList = documentList.filter(document => document.isRemote)
         .map(document => document.dataBackendDocument)
     if (dataList.length > 0) {

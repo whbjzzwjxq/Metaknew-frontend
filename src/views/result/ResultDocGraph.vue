@@ -14,7 +14,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {GraphSelfPart} from "@/class/graphItem";
+    import {GraphSelfPart} from "@/class/settingGraph";
     import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
     export default Vue.extend({
         name: "ResultDocGraph",

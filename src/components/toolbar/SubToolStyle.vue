@@ -49,7 +49,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import {GraphSelfPart} from "@/class/graphItem";
+    import {GraphSelfPart} from "@/class/settingGraph";
     import CardPageStyleEditor from "@/components/card/page/CardPageStyleEditor.vue";
 
     export default Vue.extend({

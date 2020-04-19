@@ -116,7 +116,7 @@ export const baseNodeProp: () => PropDescriptionDict = () => ({
 
 // node的属性
 export const nodeWithLabelProp: () => PLabelPropsDict = () => ({
-    DocGraph: {},
+    _DocGraph: {},
     ArchProject:
         {
             PeriodStart: {
@@ -218,7 +218,7 @@ export function nodeLabelToStandardProps(pLabel: string) {
         : {};
 }
 
-export var availableLabel = ['ArchProject', 'Person', 'Project', 'BaseNode', 'DocGraph', 'DocPaper'];
+export var availableLabel = ['ArchProject', 'Person', 'Project', 'BaseNode', '_DocGraph', '_DocPaper'];
 
 // 以下是预设 测试用
 export const topicItems = {

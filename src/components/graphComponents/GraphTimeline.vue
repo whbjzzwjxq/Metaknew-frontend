@@ -39,19 +39,14 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {
-        NodeSettingPart,
-        GraphSelfPart,
-        MediaInfoPart,
-        MediaSettingPart,
-        NodeInfoPart
-    } from "@/class/graphItem";
+    import {GraphSelfPart, MediaSettingPartGraph, NodeSettingPartGraph} from "@/class/settingGraph";
     import {FakeNodeSettingPart, Rate, Time, TimelineItem} from "@/interface/interfaceTimeline";
     import moment from "moment";
     import {getPoint, RectByPoint} from "@/class/geometric";
     import {isNodeInfoPart} from "@/utils/typeCheck";
-    import {nodeSettingTemplate, nodeStateTemplate} from "@/utils/template";
+    import {nodeStateTemplate, settingTemplateGraph} from "@/utils/template";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
+    import {MediaInfoPart, NodeInfoPart} from "@/class/info";
 
     const divide = 5; // 分成10部分
     const getLocationDict = (divide: number) => {
@@ -95,10 +90,10 @@
                 return this.dataManager.currentGraph
             },
 
-            originNodes: function (): NodeSettingPart[] {
+            originNodes: function (): NodeSettingPartAny[] {
                 return this.document.nodesAllSubDoc
             },
-            originMedias: function (): MediaSettingPart[] {
+            originMedias: function (): MediaSettingPartAny[] {
                 return this.document.medias
             },
             originNodeInfo: function (): NodeInfoPart[] {
@@ -146,14 +141,20 @@
             },
             nodes: function (): FakeNodeSettingPart[] {
                 return this.availableTimeItems.map(item => {
-                    let image = isNodeInfoPart(item.info.Info)
+                    let _image = isNodeInfoPart(item.info.Info)
                         ? item.info.Info.MainPic
                         : item.info.Ctrl.Thumb;
-                    let name = item.info.Info.Name;
+                    let _name = item.info.Info.Name;
                     let {_id, _type, _label} = item.info;
                     return {
                         State: nodeStateTemplate(),
-                        Setting: nodeSettingTemplate(_id, _type, _label, name, image)
+                        Setting: Object.assign({
+                            _id,
+                            _type,
+                            _label,
+                            _name,
+                            _image
+                        }, settingTemplateGraph('node')) as NodeSettingGraph
                     }
                 })
             },

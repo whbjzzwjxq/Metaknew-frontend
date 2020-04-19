@@ -89,9 +89,9 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {GraphItemSettingPart} from "@/class/graphItem";
-    import {BaseSettingConf, SettingGroup} from "@/interface/itemSetting";
+    import {ItemSettingPartGraph} from "@/class/settingGraph";
     import CardSubStyleNumber from "@/components/card/subComp/CardSubStyleNumber.vue";
+    import {SettingConf, SettingConfGroup} from "@/interface/style/interfaceStyleBase";
 
     type settingType = 'Color' | 'Number' | 'Boolean' | 'String' | 'Text'
     export default Vue.extend({
@@ -101,7 +101,7 @@
         },
         data() {
             return {
-                cache: {
+                valueCache: {
                     "Color": "",
                     "Number": null,
                     "Boolean": null,
@@ -112,7 +112,7 @@
         },
         props: {
             settingItem: {
-                type: Object as () => SettingGroup,
+                type: Object as () => SettingConfGroup,
                 required: true
             },
             propGroup: {
@@ -120,7 +120,7 @@
                 required: true
             },
             selection: {
-                type: Array as () => GraphItemSettingPart[],
+                type: Array as () => ItemSettingPartGraph[],
                 required: true
             }
         },
@@ -131,7 +131,7 @@
                     result[prop] = [];
                     // 把选中内容的值都提取出来
                     this.selection.map(item => {
-                        let value = item.Setting[this.propGroup][prop];
+                        let value = item.styleSetting[this.propGroup][prop];
                         result[prop].indexOf(value) === -1 &&
                         result[prop].push(value)
                     })
@@ -148,7 +148,7 @@
                 ? list[0]
                 : list.join(",").substring(0, 7) + "...",
 
-            manyValue(prop: string, item: BaseSettingConf) {
+            manyValue(prop: string, item: SettingConf) {
                 return this.selectionValue[prop].length >= 1
                     ? this.selectionValue[prop][0]
                     : item.default
@@ -156,16 +156,16 @@
 
             updateValue(prop: string, value: string | number) {
                 this.selection.map(item => {
-                    item.updateSetting(this.propGroup, prop, value)
+                    item.updateSetting('InGraph', this.propGroup, prop, value)
                 })
             },
 
             updateCache(type: settingType, value: any) {
-                this.cache[type] = value
+                this.valueCache[type] = value
             },
 
             saveValue(prop: string, type: settingType) {
-                let cache = this.cache[type];
+                let cache = this.valueCache[type];
                 switch (type) {
                     case "Number":
                         cache !== null && this.updateValue(prop, cache);

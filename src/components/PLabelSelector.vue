@@ -37,7 +37,7 @@
                 availableLabel: availableLabel,
                 text: '',
                 plusIcon: getIcon('i-edit', 'add'),
-                documentLabel: ['DocGraph', 'DocPaper']
+                documentLabel: ['_DocGraph', '_DocPaper']
             }
         },
         props: {

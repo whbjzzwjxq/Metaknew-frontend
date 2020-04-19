@@ -68,7 +68,7 @@
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
     import DocumentAdder from "@/components/DocumentAdder.vue";
-    import {GraphSelfPart} from "@/class/graphItem";
+    import {GraphSelfPart} from "@/class/settingGraph";
 
     export default Vue.extend({
         name: "SubToolNewItem",
@@ -127,7 +127,7 @@
                 this.$emit('add-empty-link', start, end);
             },
 
-            addDocument($event: 'DocGraph' | 'DocPaper') {
+            addDocument($event: '_DocGraph' | '_DocPaper') {
                 this.$emit('add-empty-document', $event)
             },
 

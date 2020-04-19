@@ -1,6 +1,6 @@
 import {instance} from "@/api/main";
-import {NodeInfoPart} from "@/class/graphItem";
 import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
+import {NodeInfoPart} from "@/class/info";
 
 export interface BackendNodeInfoPart {
     Info: BaseNodeInfo;

@@ -38,13 +38,13 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import {GraphSelfPart} from "@/class/graphItem";
+    import {GraphSelfPart} from "@/class/settingGraph";
     import {itemEqual} from "@/utils/utils";
 
     interface NodeAsSelectorItem {
         text: string,
         _id: id,
-        _type: GraphItemType
+        _type: DocumentItemType
     }
 
     export default Vue.extend({

@@ -1,5 +1,5 @@
-import {MediaInfoPart} from "@/class/graphItem";
 import {instance} from "@/api/main";
+import {MediaInfoPart} from "@/class/info";
 
 export interface BackendMediaInfoPart {
     Info: BaseMediaInfo;

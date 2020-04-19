@@ -191,7 +191,7 @@ export class RectByPoint {
         return new RectByPoint({x: 0, y: 0}, {x: 0, y: 0})
     }
 
-    static fromBase(base: BaseSize) {
+    static fromBase(base: BaseSizeInGraph) {
         let {x, y, size, scaleX} = base;
         let height = size * scaleX;
         let _start = new Point(x - size / 2, x + size / 2);
@@ -299,7 +299,7 @@ export const getPositiveRect = (pointA: PointMixed, pointB: PointMixed) => {
     } as AreaRect
 };
 
-export const getPostRectFromBase = (base: BaseSize) => {
+export const getPostRectFromBase = (base: BaseSizeInGraph) => {
     let {x, y, size, scaleX} = base;
     let height = size * scaleX;
     return {

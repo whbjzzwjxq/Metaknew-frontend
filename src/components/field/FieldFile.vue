@@ -117,9 +117,9 @@
     import {guid} from '@/utils/utils'
     import CardPageMediaInfo from '../card/page/CardPageMediaInfo.vue';
     import MediaResolver from '../media/MediaResolver.vue';
-    import {MediaInfoPart} from '@/class/graphItem'
     import {commitInfoAdd, commitInfoIdChange} from '@/store/modules/_mutations'
     import {dispatchUploadFile} from "@/store/modules/_dispatch";
+    import {MediaInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: 'FieldFile',

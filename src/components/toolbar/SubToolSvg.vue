@@ -15,9 +15,10 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import {GraphSelfPart, TextSettingPart} from "@/class/graphItem";
+    import {GraphSelfPart, TextSettingPartGraph} from "@/class/settingGraph";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIndex} from "@/utils/utils";
+    import {TextSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "SubToolSvg",
@@ -46,7 +47,7 @@
         methods: {
             addNewRect() {
                 let _id = getIndex();
-                let rect = TextSettingPart.emptyRect(_id, this.currentGraph);
+                let rect = TextSettingPartGraph.emptyRect(_id, this.currentGraph);
                 this.currentGraph.addItems([rect])
             },
             addNewSquare() {

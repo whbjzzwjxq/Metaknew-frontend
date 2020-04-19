@@ -66,7 +66,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search/search'
-    import {NodeSettingPart, GraphSelfPart, MediaSettingPart} from '@/class/graphItem'
+    import {GraphSelfPart, MediaSettingPartGraph, NodeSettingPartGraph} from '@/class/settingGraph'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
@@ -223,23 +223,29 @@
                     _id: item.id,
                     _type: item.type
                 }));
-                let nodes = unDuplicateItems.filter(item => item.type !== 'media');
+                let nodes = unDuplicateItems.filter(item => item.type === 'node' || item.type === 'document');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let nodeSettingList = nodes.map(node => NodeSettingPart.emptyNodeSetting(
-                    node.id,
-                    node.type,
-                    node.PrimaryLabel,
-                    node.Name['auto'],
-                    node.MainPic,
-                    this.currentGraph)
+                let nodeSettingList = nodes.map(node => NodeSettingPartGraph.emptyNodeSetting(
+                        {
+                            _id: node.id,
+                            //@ts-ignore
+                            _type: node.type,
+                            _label: node.PrimaryLabel,
+                            _name: node.Name['auto'],
+                            _image: node.MainPic,
+                        },
+                        this.currentGraph)
                 );
                 this.currentGraph.addItems(nodeSettingList);
                 dispatchNodeQuery(nodeSettingList.map(item => item.Setting));
-                let mediaSettingList = medias.map(media => MediaSettingPart.emptyMediaSetting(
-                    media.id,
-                    media.PrimaryLabel,
-                    media.Name['auto'],
-                    '',
+                let mediaSettingList = medias.map(media => MediaSettingPartGraph.emptyMediaSetting(
+                    {
+                        _id: media.id,
+                        _type: 'media',
+                        _label: media.PrimaryLabel,
+                        _name: media.Name['auto'],
+                        _src: '',
+                    },
                     this.currentGraph
                 ));
                 dispatchMediaQuery(medias.map(media => media.id));
@@ -293,7 +299,7 @@
             selection(): void {
                 if (!this.editMode) {
                     if (this.singleSelect && this.selection.length > 0) {
-                        if (this.selection[0].PrimaryLabel === 'DocGraph') {
+                        if (this.selection[0].PrimaryLabel === '_DocGraph') {
                             this.$router.push({
                                 name: "graph-normal",
                                 path: "graph/id=:id/normal",

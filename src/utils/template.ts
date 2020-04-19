@@ -1,11 +1,11 @@
-import {currentTime, getCookie, randomIntegerInRange, randomNumberInRange} from '@/utils/utils';
+import {currentTime, getCookie, randomNumberInRange} from '@/utils/utils';
 import {fieldDefaultValue, nodeLabelToStandardProps, PropDescription, ValueWithType} from "@/utils/fieldResolve";
 import PDFJS from 'pdfjs-dist';
-import {typeSetting} from "@/interface/itemSetting";
 import store from '@/store/index';
+import {typeSettingDictGraph} from "@/interface/style/templateStyleGraph";
 
-export function settingTemplate(_type: AllType) {
-    let settingConf = typeSetting[_type];
+export function settingTemplateGraph(_type: AllType) {
+    let settingConf = typeSettingDictGraph[_type];
     const specialDict: { [prop: string]: any } = {
         'x': randomNumberInRange(0.3, 0.7),
         'y': randomNumberInRange(0.3, 0.7)
@@ -32,31 +32,16 @@ export function nodeSettingTemplate(_id: id, _type: string = 'node', _label: str
         _name,
         _image
     };
-    Object.assign(setting, settingTemplate("node"));
+    Object.assign(setting, settingTemplateGraph("node"));
     return setting;
 }
 
-export function linkSettingTemplate(_id: id, _label: string, _start: VisNodeSettingPart, _end: VisNodeSettingPart) {
-    let setting = <LinkSetting>{
-        _id,
-        _type: "link",
-        _label,
-        _start,
-        _end
-    };
-    Object.assign(setting, settingTemplate("link"));
-    return setting;
-}
-
-export function mediaSettingTemplate(_id: id, _label: string, _name: string, _src: string) {
-    let setting = <MediaSetting>{
-        _id,
-        _type: "media",
-        _label,
-        _name,
-        _src
-    };
-    Object.assign(setting, settingTemplate("media"));
+export function mediaSettingTemplate(payload: MediaSetting) {
+    let setting = payload;
+    let {_src, _label} = payload;
+    Object.assign(setting, {
+        InGraph: settingTemplateGraph("media")
+    });
     if (_label === 'image') {
         let image = new Image();
         image.src = _src;
@@ -92,9 +77,9 @@ export function graphSettingTemplate(_id: id) {
     let setting = <GraphSetting>{
         _id,
         _type: "document",
-        _label: "DocGraph"
+        _label: "_DocGraph"
     };
-    Object.assign(setting, settingTemplate("document"));
+    Object.assign(setting, settingTemplateGraph("document"));
     return setting;
 }
 
@@ -104,7 +89,7 @@ export function pathSettingTemplate(_id: id) {
         _type: 'document',
         _label: "path"
     };
-    Object.assign(setting, settingTemplate('path'));
+    Object.assign(setting, settingTemplateGraph('path'));
     return setting
 }
 
@@ -117,11 +102,11 @@ export function noteSettingTemplate(_id: id, _label: string, _title: string, _co
         _content,
         _parent
     } as NoteSetting;
-    Object.assign(setting, settingTemplate('note'));
+    Object.assign(setting, settingTemplateGraph('note'));
     return setting
 }
 
-export function textSettingTemplate (_id: id, _label: TextLabel, _points: PointObject[]) {
+export function textSettingTemplate(_id: id, _label: TextLabel, _points: PointObject[]) {
     let setting = {
         _id,
         _type: 'text',
@@ -129,16 +114,16 @@ export function textSettingTemplate (_id: id, _label: TextLabel, _points: PointO
         _points,
         _text: ''
     } as TextSetting;
-    return Object.assign(setting, settingTemplate('text'));
+    return Object.assign(setting, settingTemplateGraph('text'));
 }
 
 export function paperSettingTemplate(_id: id) {
     let setting = {
         _id,
         _type: 'document',
-        _label: 'DocPaper',
+        _label: '_DocPaper',
     } as PaperSetting;
-    return Object.assign(setting, settingTemplate('document'))
+    return Object.assign(setting, settingTemplateGraph('document'))
 }
 
 export function nodeStateTemplate() {
@@ -175,8 +160,7 @@ export function graphStateTemplate() {
     return <GraphState>{
         isDeleted: false,
         isExplode: true,
-        isSaved: false,
-        isTemporary: false
+        isSaved: false
     };
 }
 

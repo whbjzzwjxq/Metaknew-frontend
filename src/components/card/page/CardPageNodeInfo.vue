@@ -173,7 +173,6 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
     import FieldArray from "@/components/field/FieldArray.vue";
     import FieldJson from "@/components/field/FieldJson.vue";
     import FieldText from "@/components/field/FieldText.vue";
@@ -193,6 +192,7 @@
     import {dispatchMediaQuery, dispatchUserConcernQuery, dispatchUserLabelProps} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
     import {userConcernTemplate} from "@/utils/template";
+    import {MediaInfoPart, NodeInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -255,7 +255,7 @@
                 return this.$store.state.userDataManager
             },
 
-            type: function (): GraphItemType {
+            type: function (): DocumentItemType {
                 return this.info.type
             },
 

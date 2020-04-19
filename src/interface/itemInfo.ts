@@ -1,21 +1,13 @@
 import {ExtraProps} from "@/utils/fieldResolve";
-import {
-    NodeSettingPart,
-    LinkInfoPart,
-    LinkSettingPart,
-    MediaInfoPart,
-    MediaSettingPart,
-    NodeInfoPart,
-    TextSettingPart
-} from "@/class/graphItem";
-import {PathNodeSettingPart} from "@/class/path";
+import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
+import {PathNodeSettingPart} from "@/class/settingPath";
 
 declare global {
     type id = number | string;
     type ItemType = "node" | "link" | "media" | "document" // 基础的type
-    type GraphItemType = ItemType | "text"; // Graph里使用的type
-    type AllType = GraphItemType | "fragment" | "path" | "note";
-    type GraphTypeS = 'nodes' | 'medias' | 'links' | "texts";
+    type DocumentItemType = ItemType | "text"; // Graph里使用的type
+    type AllType = DocumentItemType | "fragment" | "path" | "note";
+    type ContentTypeS = 'nodes' | 'medias' | 'links' | "texts";
     type MediaStatus = "new" | "uploading" | "error" | "success" | "warning";
     type IdMap = Record<id, id>; // 新旧id的Map
     //带有翻译的格式
@@ -111,23 +103,6 @@ declare global {
         End: VisNodeSettingPart;
     }
 
-    type VisualNodeInfoPart = NodeInfoPart | MediaInfoPart
-
-    //Graph
-    interface DocumentContent {
-        nodes: Array<NodeSettingPart>;
-        links: Array<LinkSettingPart>;
-        medias: Array<MediaSettingPart>;
-        texts: Array<TextSettingPart>;
-    }
-
-    interface DocumentMetaData {
-        isTemporary: boolean //是否是暂时的模型
-        isRemoteModel: boolean // 远端模型是否能访问
-        isMergeTo?: id //合并到某个专题了
-        draftId?: number //草稿数据
-    }
-
     interface PathConf extends Setting {
         _type: 'document',
         _label: 'path'
@@ -162,20 +137,11 @@ declare global {
         type: 'media'
     }
 
-    type DocumentLabel = 'DocPaper' | 'DocGraph' | 'Path'
+    type DocumentLabel = '_DocPaper' | '_DocGraph' | 'Path'
 
     interface DocumentQuery extends NodeQuery {
         type: 'document'
         pLabel: DocumentLabel
     }
-
-    type ExtractType<O, T> = { [K in keyof O]: O[K] extends T ? O[K] : unknown }
-
-    type Diff<T extends string, U> = ({ [P in T]: P } &
-        { [P in keyof U]: U[P] extends string ? string : never } & {
-        [x: string]: never
-    })[T]
-
-    type ExtractStringKey<A> = Diff<Extract<keyof A, string>, ExtractType<A, string>>
 
 }

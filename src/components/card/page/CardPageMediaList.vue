@@ -34,13 +34,15 @@
     import Vue from 'vue'
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {NodeInfoPart, MediaInfoPart, MediaSettingPart} from "@/class/graphItem";
     import {commitFileTokenRefresh} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import {SortProp} from "@/interface/interfaceInComponent";
     import {sortCtrl} from "@/utils/utils";
     import {loginCookie} from "@/api/user/loginApi";
     import {mediaAppendToNode} from "@/api/subgraph/media";
+    import {MediaInfoPart, NodeInfoPart} from "@/class/info";
+    import {MediaSettingPart} from "@/class/settingBase";
+    import {MediaSettingPartGraph} from "@/class/settingGraph";
 
     export default Vue.extend({
         name: "CardPageMediaList",
@@ -91,7 +93,7 @@
         methods: {
             addMediaToNode: function (mediaIdList: id[]) {
                 if (this.baseData.isRemote) {
-                    let node = this.baseData.dataQueryObject;
+                    let node = this.baseData.queryObject;
                     mediaAppendToNode(node, mediaIdList).then(res => {
                         let num = res.data.length;
                         num === 0
@@ -105,7 +107,7 @@
             },
             addMediaToGraph: function (media: MediaInfoPart) {
                 let graph = this.dataManager.currentGraph;
-                let newMediaSetting = MediaSettingPart.emptyMediaSettingFromInfo(media, graph);
+                let newMediaSetting = MediaSettingPartGraph.emptyMediaSettingFromInfo(media, graph);
                 this.dataManager.currentGraph.addItems([newMediaSetting])
             },
             reRankFile: function () {
