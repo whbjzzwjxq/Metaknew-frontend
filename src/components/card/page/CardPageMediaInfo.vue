@@ -239,12 +239,12 @@
             showDeleteIcon: function (): boolean {
                 return this.inViewBox
                     ? this.nodeIsSelf
-                    : this.dataManager.currentGraph.Conf.State.isSelf;
+                    : this.dataManager.currentDocument.Conf.State.isSelf;
             },
 
             //能够变成media节点:不在画布里而且画布是isSelf的
             showExportIcon: function (): boolean {
-                return !this.inViewBox && this.dataManager.currentGraph.Conf.State.isSelf
+                return !this.inViewBox && this.dataManager.currentDocument.Conf.State.isSelf
             },
 
             iconList: function (): IconItem[] {

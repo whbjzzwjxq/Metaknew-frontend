@@ -7,7 +7,7 @@ declare global {
         index: number
     }
 
-    interface NodeStyleSettingPaper extends SettingGroupInPage {
+    interface NodeStyleSettingPaper extends SettingGroup {
         Base: BaseSizeInPaper;
         Show: {
             showTitle: boolean;
@@ -18,19 +18,15 @@ declare global {
         }
     }
 
-    interface MediaStyleSettingPaper extends SettingGroupInPage {
+    interface MediaStyleSettingPaper extends SettingGroup {
         Base: BaseSizeInPaper;
     }
 
-    interface LinkStyleSettingPaper extends SettingGroupInPage {
+    interface LinkStyleSettingPaper extends SettingGroup {
 
     }
 
-    interface TextStyleSettingPaper extends SettingGroupInPage {
+    interface TextStyleSettingPaper extends SettingGroup {
         Base: BaseSizeInPaper;
-    }
-
-    interface PaperConfigure extends DocumentConfigureAny {
-
     }
 }

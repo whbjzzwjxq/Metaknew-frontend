@@ -44,7 +44,7 @@ declare global {
         timerForConcern?: number, // 计时器
         fragments: Array<FragmentInfoPart>, // user收集的碎片
         userNoteBook: NoteBook[], // 笔记本
-        userNoteInDoc: NoteSettingPartAny[], // 所有专题的笔记， 通过father判断
+        userNoteInDoc: NoteSettingPart[], // 所有专题的笔记， 通过father判断
         userSetting: UserSetting,
         userEditData: UserEditData,
         userEditDataLoad: boolean
@@ -131,12 +131,12 @@ const mutations = {
         state.userNoteBook.splice(index, 1);
     },
 
-    noteInDocAdd(state: UserDataManagerState, payload: { note: NoteSettingPartAny }) {
+    noteInDocAdd(state: UserDataManagerState, payload: { note: NoteSettingPart }) {
         let {note} = payload;
         state.userNoteInDoc.push(note)
     },
 
-    noteInDocRemove(state: UserDataManagerState, payload: { note: NoteSettingPartAny }) {
+    noteInDocRemove(state: UserDataManagerState, payload: { note: NoteSettingPart }) {
 
     },
 
@@ -251,7 +251,7 @@ const actions = {
         }
     },
 
-    noteInDocPush(context: ActionContext<UserDataManagerState, RootState>, payload: { note: NoteSettingPartAny }) {
+    noteInDocPush(context: ActionContext<UserDataManagerState, RootState>, payload: { note: NoteSettingPart }) {
         commitNoteInDocAdd(payload)
     },
 

@@ -1,34 +1,32 @@
 import {
-    LinkSettingPartGraph,
-    MediaSettingPartGraph,
-    NodeSettingPartGraph,
-    TextSettingPartGraph
-} from "@/class/settingGraph";
-import {
-    LinkSettingPartPaper,
-    MediaSettingPartPaper,
-    NodeSettingPartPaper,
-    TextSettingPartPaper
-} from "@/class/settingPaper";
-import {SettingConfGroup} from "@/interface/style/interfaceStyleBase";
+    DocumentSelfPart,
+    LinkSettingPart,
+    MediaSettingPart,
+    NodeSettingPart, NoteSettingPart,
+    TextSettingPart
+} from "@/class/settingBase";
 
 declare global {
     // 从视觉上来说是Node的对象
-    type VisNodeSettingPart = NodeSettingPartAny | MediaSettingPartAny;
+    type VisNodeSettingPart = NodeSettingPart | MediaSettingPart;
     // 从视觉上是一个区域的对象
-    type VisAreaSettingPart = VisNodeSettingPart | TextSettingPartAny;
+    type VisAreaSettingPart = VisNodeSettingPart | TextSettingPart;
     // 所有Item对象
-    type SubItemSettingPart = VisAreaSettingPart | LinkSettingPartAny;
+    type SubItemSettingPart = VisAreaSettingPart | LinkSettingPart;
     // 所有Setting对象
-    type AllSettingPart = SubItemSettingPart | NoteSettingPartAny;
+    type AllSettingPart = SubItemSettingPart | NoteSettingPart;
 
+    type SettingGroupKey = 'InGraph' | 'InPaper'
+    type SettingKey = SettingGroupKey | '_id' | '_type' | '_label' | '_name' | '_image'| '_src' | '_start' | '_end' |
+        '_title' | '_content' | '_parent' | '_points' | '_text'
     //SettingPart相关
-    interface Setting {
+    type SettingKeyRecord = Record<SettingKey, any>
+    interface Setting extends SettingKeyRecord {
         _id: id;
         _type: AllType;
         _label: string;
-
-        [prop: string]: any
+        InGraph: SettingGroup
+        InPaper: SettingGroup
     }
 
     interface DocumentSetting extends Setting {
@@ -37,86 +35,66 @@ declare global {
         _label: string
     }
 
-    interface GraphSetting extends DocumentSetting, GraphConfigure {
-
-    }
-    type SettingGroup = Record<string, number | string | boolean>
-    type SettingGroupInPage = Record<string, SettingGroup>;
+    type SettingComponent = Record<string, number | string | boolean>
+    type SettingGroup = Record<string, SettingComponent>;
 
     interface DocumentItemSetting extends Setting {
         _type: DocumentItemType
-        InGraph?: SettingGroupInPage
-        InPaper?: SettingGroupInPage
     }
 
-    type SettingGroupKey = 'InGraph' | 'InPaper'
     type StateKeyBase = keyof DocumentItemState
 
+    interface NodeInitPayload {
+        _id: id,
+        _type: 'node' | 'document',
+        _label: string,
+        _name: string,
+        _image: string
+    }
     interface NodeSetting extends DocumentItemSetting {
         _type: 'node' | 'document';
         _name: string;
         _image: string;
-        InGraph?: NodeStyleSettingGraph;
-        InPaper?: NodeStyleSettingPaper
-    }
-
-    interface NodeSettingGraph extends NodeSetting {
-        InGraph: NodeStyleSettingGraph
-    }
-
-    interface NodeSettingPaper extends NodeSetting {
+        InGraph: NodeStyleSetting;
         InPaper: NodeStyleSettingPaper
     }
 
-    interface LinkSetting<Node extends VisNodeSettingPart> extends DocumentItemSetting {
+    interface LinkInitPayload {
+        _id: id,
+        _type: 'link',
+        _label: string,
+        _start: VisNodeSettingPart,
+        _end: VisNodeSettingPart
+    }
+
+    interface LinkSetting extends DocumentItemSetting {
         _type: 'link';
-        _start: Node;
-        _end: Node;
-        InGraph?: LinkStyleSettingGraph;
-        InPaper?: LinkStyleSettingPaper;
+        _start: VisNodeSettingPart;
+        _end: VisNodeSettingPart;
+        InGraph: LinkStyleSetting;
+        InPaper: LinkStyleSettingPaper;
     }
 
-    interface LinkSettingGraph extends LinkSetting<NodeSettingPartGraph> {
-        InGraph: LinkStyleSettingGraph
-    }
-
-    interface LinkSettingPaper extends LinkSetting<NodeSettingPartPaper> {
-        InPaper: LinkStyleSettingPaper
-    }
-
-    interface BackendLinkSettingGraph extends DocumentItemSetting {
-        InGraph: LinkStyleSettingGraph;
+    interface BackendLinkSetting extends DocumentItemSetting {
+        InGraph: LinkStyleSetting;
         _start: VisNodeQuery;
         _end: VisNodeQuery;
     }
 
-    interface BackendLinkSettingPaper extends DocumentItemSetting {
-        InPaper: LinkStyleSettingPaper
+    interface MediaInitPayload extends Setting {
+        _id: id,
+        _type: 'media',
+        _label: string,
+        _name: string,
+        _src: string
     }
 
     interface MediaSetting extends DocumentItemSetting {
         _type: 'media';
         _name: string;
         _src: string; // url字符串或者 URL.createObjectUrl返回值
-        InGraph?: MediaStyleSettingGraph
-        InPaper?: MediaStyleSettingPaper
-    }
-
-    interface MediaSettingGraph extends MediaSetting {
-        InGraph: MediaStyleSettingGraph
-    }
-
-    interface MediaSettingPaper extends MediaSetting {
+        InGraph: MediaStyleSetting
         InPaper: MediaStyleSettingPaper
-    }
-
-    interface GraphSetting extends DocumentItemSetting {
-        _type: 'document';
-        Base: Record<string, any>
-    }
-
-    interface PaperSetting extends DocumentItemSetting {
-        _type: 'document';
     }
 
     interface NoteSetting extends Setting {
@@ -124,14 +102,12 @@ declare global {
         _title: string;
         _content: string;
         _parent: id;
-    }
-
-    interface NoteSettingGraph extends NoteSetting {
-        Base: BaseSizeInGraph;
-    }
-
-    interface NoteSettingPaper extends NoteSetting {
-        Base: BaseSizeInPaper
+        InGraph: {
+            Base: BaseSizeInGraph;
+        }
+        InPaper: {
+            Base: BaseSizeInPaper
+        }
     }
 
     type TextLabel = 'polygon' | 'polyline' | 'rect' | 'ellipse'
@@ -141,15 +117,7 @@ declare global {
         _label: TextLabel,
         _points: PointObject[],
         _text: string,
-        InGraph?: TextStyleSettingGraph,
-        InPaper?: TextStyleSettingPaper
-    }
-
-    interface TextSettingGraph extends TextSetting {
-        InGraph: TextStyleSettingGraph
-    }
-
-    interface TextSettingPaper extends TextSetting {
+        InGraph: TextStyleSetting,
         InPaper: TextStyleSettingPaper
     }
 
@@ -159,39 +127,16 @@ declare global {
 
     interface DocumentInitPayload {
         _id: id,
-        parent: DocumentSelfPartAny | null,
+        parent: DocumentSelfPart | null,
         commitToVuex?: boolean
     }
 
     //Graph
-    interface DocumentContent<Node extends NodeSettingPartAny,
-        Link extends LinkSettingPartAny,
-        Media extends MediaSettingPartAny,
-        Text extends TextSettingPartAny> {
-        nodes: Node[];
-        links: Link[];
-        medias: Media[];
-        texts: Text[];
-    }
-
-    type DocumentContentAny = DocumentContent<
-        NodeSettingPartAny,
-        LinkSettingPartAny,
-        MediaSettingPartAny,
-        TextSettingPartAny>
-
-    interface GraphContent {
-        nodes: Array<NodeSettingPartGraph>;
-        links: Array<LinkSettingPartGraph>;
-        medias: Array<MediaSettingPartGraph>;
-        texts: Array<TextSettingPartGraph>;
-    }
-
-    interface PaperContent {
-        nodes: Array<NodeSettingPartPaper>;
-        links: Array<LinkSettingPartPaper>;
-        medias: Array<MediaSettingPartPaper>;
-        texts: Array<TextSettingPartPaper>;
+    interface DocumentContent {
+        nodes: NodeSettingPart[];
+        links: LinkSettingPart[];
+        medias: MediaSettingPart[];
+        texts: TextSettingPart[];
     }
 
     interface DocumentMetaData {
@@ -206,6 +151,7 @@ declare global {
         width: number;
         height: number
     }
+
     interface DocumentComponents {
         SubGraph: SubGraphSetting[]
     }

@@ -41,7 +41,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getPoint, getPointDistance, rectDiagonalDistance} from "@/class/geometric";
-    import {LinkSettingPartGraph} from "@/class/settingGraph";
+    import {LinkSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: 'GraphLink',
@@ -50,7 +50,7 @@
         },
         props: {
             link: {
-                type: Object as () => LinkSettingPartGraph,
+                type: Object as () => LinkSettingPart,
                 required: true
             },
             source: {
@@ -68,7 +68,7 @@
             }
         },
         computed: {
-            setting: function (): LinkSettingGraph {
+            setting: function (): LinkSetting {
                 return this.link.Setting
             },
 

@@ -59,7 +59,6 @@
     import {randomIntegerInRange} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
     import {NoteSettingPart} from "@/class/settingBase";
-    import {NoteSettingPartGraph} from "@/class/settingGraph";
 
     export default Vue.extend({
         name: 'GraphNote',
@@ -93,7 +92,7 @@
         },
         props: {
             note: {
-                type: Object as () => NoteSettingPartGraph,
+                type: Object as () => NoteSettingPart,
                 required: true
             },
             container: {
@@ -295,7 +294,7 @@
             },
 
             //恢复Note
-            rollBackDelete(target: NoteSettingPartGraph) {
+            rollBackDelete(target: NoteSettingPart) {
                 target.updateState('isDeleted', false)
             },
 

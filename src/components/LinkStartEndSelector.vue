@@ -38,7 +38,7 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import {GraphSelfPart} from "@/class/settingGraph";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import {itemEqual} from "@/utils/utils";
 
     interface NodeAsSelectorItem {
@@ -64,7 +64,7 @@
                 default: false
             },
             document: {
-                type: Object as () => GraphSelfPart,
+                type: Object as () => DocumentSelfPart,
                 required: true
             },
             currentStart: {
@@ -88,7 +88,7 @@
             },
             nodeToLinkItems: function (): NodeAsSelectorItem[] {
                 return this.nodes.map(node => ({
-                    "text": node.Setting._name,
+                    "text": node._name,
                     "_id": node._id,
                     "_type": node._type
                 }))

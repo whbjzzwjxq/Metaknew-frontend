@@ -12,7 +12,6 @@ import {userEditDataQuery} from "@/api/user/dataApi";
 import store from '@/store/index'
 import Vue from "vue";
 import {InfoPart} from "@/class/info";
-import {ItemSettingPartGraph} from "@/class/settingGraph";
 import {ItemSettingPart} from "@/class/settingBase";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
@@ -309,7 +308,7 @@ export const emptyContent = () => {
         links: [],
         medias: [],
         texts: []
-    } as DocumentContentAny
+    } as DocumentContent
 };
 
 const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];

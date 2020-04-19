@@ -107,7 +107,7 @@
     import CardSubLabelGroup from "@/components/card/subComp/CardSubLabelGroup.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
     import IconGroup from "@/components/IconGroup.vue";
-    import {GraphSelfPart} from "@/class/settingGraph";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import {EditProps, FieldType, labelItems, ResolveType} from "@/utils/fieldResolve";
     import {deepClone} from "@/utils/utils";
     import {LabelGroup} from "@/interface/interfaceInComponent";
@@ -138,7 +138,7 @@
                 required: true
             },
             document: {
-                type: Object as () => GraphSelfPart,
+                type: Object as () => DocumentSelfPart,
                 required: true
             },
             editMode: {

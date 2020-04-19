@@ -1,5 +1,5 @@
 import {instance} from "@/api/main";
-import {BackendGraph} from "@/api/document/document";
+import {BackendDocument} from "@/api/document/document";
 
 export interface Draft {
     Query: QueryObject;
@@ -9,7 +9,7 @@ export interface Draft {
 }
 
 export interface DocumentDraft extends Draft{
-    Content: BackendGraph
+    Content: BackendDocument
 }
 
 export interface NodeDraft extends Draft {

@@ -1,19 +1,20 @@
 import {instance} from "@/api/main";
 import {BackendNodeInfoPart} from "@/api/subgraph/node";
 import {commitSnackbarOn} from "@/store/modules/_mutations";
+import {DocumentSelfPart} from "@/class/settingBase";
 
-export interface BackendGraph {
+export interface BackendDocument {
     Content: {
-        nodes: Array<NodeSettingGraph>;
-        links: Array<BackendLinkSettingGraph>;
+        nodes: Array<NodeSetting>;
+        links: Array<BackendLinkSetting>;
         medias: Array<MediaSetting>;
         texts: Array<TextSetting>;
     };
-    Conf: GraphSetting;
+    Conf: DocumentSetting;
     Comps: DocumentComponents
 }
 
-export interface BackendGraphWithNode extends BackendGraph {
+export interface BackendGraphWithNode extends BackendDocument {
     Base: BackendNodeInfoPart;
 }
 
@@ -31,7 +32,7 @@ export function gateDocumentQuery(id: id) {
     return documentQuery(id)
 }
 
-function documentBulkCreate(docList: BackendGraph[], createType: string = 'USER') {
+function documentBulkCreate(docList: BackendDocument[], createType: string = 'USER') {
     return instance.request<id[]>({
         url: 'document/bulk_create',
         method: 'POST',
@@ -42,7 +43,7 @@ function documentBulkCreate(docList: BackendGraph[], createType: string = 'USER'
     })
 }
 
-export function gateDocumentBulkCreate(documentList: DocumentSelfPartAny[]) {
+export function gateDocumentBulkCreate(documentList: DocumentSelfPart[]) {
     let dataList = documentList.filter(document => !document.isRemote)
         .map(document => document.dataBackendDocument)
     if (dataList.length > 0) {
@@ -64,7 +65,7 @@ export function gateDocumentBulkCreate(documentList: DocumentSelfPartAny[]) {
     }
 }
 
-function documentBulkUpdate(docList: BackendGraph[], createType: string = 'USER') {
+function documentBulkUpdate(docList: BackendDocument[], createType: string = 'USER') {
     return instance.request<id[]>({
         url: 'document/bulk_update',
         method: 'POST',
@@ -75,7 +76,7 @@ function documentBulkUpdate(docList: BackendGraph[], createType: string = 'USER'
     })
 }
 
-export function gateDocumentBulkUpdate(documentList: DocumentSelfPartAny[]) {
+export function gateDocumentBulkUpdate(documentList: DocumentSelfPart[]) {
     let dataList = documentList.filter(document => document.isRemote)
         .map(document => document.dataBackendDocument)
     if (dataList.length > 0) {
@@ -97,7 +98,7 @@ export function gateDocumentBulkUpdate(documentList: DocumentSelfPartAny[]) {
     }
 }
 
-function documentSaveDraft(docList: BackendGraph[], isAuto: boolean) {
+function documentSaveDraft(docList: BackendDocument[], isAuto: boolean) {
     return instance.request<Record<id, number>>({
         url: 'document/draft',
         method: 'POST',

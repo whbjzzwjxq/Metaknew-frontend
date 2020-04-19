@@ -1,11 +1,15 @@
 import {PathNode, PathNodeExist} from "@/class/settingPath";
-import {PaperSelfPart} from "@/class/settingPaper";
 import {DirectoryItemAll, DirectoryNode, ListText, ListTitle} from "@/interface/interfaceInComponent";
 import {BackendNodeInfoPart} from "@/api/subgraph/node";
 import {BackendLinkInfoPart} from "@/api/subgraph/link";
 import {InfoPart, MediaInfoPart} from "@/class/info";
-import {ItemSettingPart} from "@/class/settingBase";
-import {GraphSelfPart, NodeSettingPartGraph} from "@/class/settingGraph";
+import {
+    ItemSettingPart,
+    LinkSettingPart,
+    MediaSettingPart,
+    NodeSettingPart,
+    TextSettingPart
+} from "@/class/settingBase";
 
 export function isNodeBackend(item: BackendNodeInfoPart | BackendLinkInfoPart): item is BackendNodeInfoPart {
     let type = (item as BackendNodeInfoPart).Info.type;
@@ -25,36 +29,28 @@ export function isDocumentType(str: string): str is DocumentItemType {
         (str as DocumentItemType) === 'text'
 }
 
-export function isNodeSetting(item: ItemSettingPart): item is NodeSettingPartAny {
-    return (item as NodeSettingPartAny)._type === 'node' || (item as NodeSettingPartAny)._type === 'document'
+export function isNodeSetting(item: ItemSettingPart): item is NodeSettingPart {
+    return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
 }
 
-export function isMediaSetting(item: ItemSettingPart): item is MediaSettingPartAny {
-    return (item as MediaSettingPartAny)._type === 'media'
+export function isMediaSetting(item: ItemSettingPart): item is MediaSettingPart {
+    return (item as MediaSettingPart)._type === 'media'
 }
 
 export function isVisNodeSetting(item: ItemSettingPart): item is VisNodeSettingPart {
     return isNodeSetting(item) || isMediaSetting(item)
 }
 
-export function isLinkSetting(item: ItemSettingPart): item is LinkSettingPartAny {
-    return (item as LinkSettingPartAny)._type === 'link'
+export function isLinkSetting(item: ItemSettingPart): item is LinkSettingPart {
+    return (item as LinkSettingPart)._type === 'link'
 }
 
-export function isTextSetting(item: ItemSettingPart): item is TextSettingPartAny {
-    return (item as TextSettingPartAny)._type === 'text'
+export function isTextSetting(item: ItemSettingPart): item is TextSettingPart {
+    return (item as TextSettingPart)._type === 'text'
 }
 
 export function isVisAreaSetting(item: ItemSettingPart): item is VisAreaSettingPart {
     return isVisNodeSetting(item as VisAreaSettingPart) || isTextSetting(item as VisAreaSettingPart)
-}
-
-export function isGraphSelfPart(item: DocumentSelfPartAny): item is GraphSelfPart {
-    return (item as GraphSelfPart).Conf._label === '_DocGraph'
-}
-
-export function isPaperSelfPart(item: DocumentSelfPartAny): item is PaperSelfPart {
-    return (item as PaperSelfPart).Conf._label === '_DocPaper'
 }
 
 export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is BooleanConcern {

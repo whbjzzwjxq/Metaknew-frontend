@@ -11,5 +11,5 @@ export interface TimelineItem {
 
 export interface FakeNodeSettingPart {
     State: NodeState,
-    Setting: NodeSettingGraph
+    Setting: NodeSetting
 }

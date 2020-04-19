@@ -1,22 +1,25 @@
 import {TreeNodeDoc} from "@/interface/interfaceTree";
 import store from "@/store";
-import {BackendGraph} from "@/api/document/document";
+import {BackendDocument, BackendGraphWithNode} from "@/api/document/document";
 import {DocumentDraft} from "@/api/subgraph/commonApi";
+import {isDocumentType, isLinkSetting, isMediaSetting, isNodeSetting, isTextSetting} from "@/utils/typeCheck";
+import {crucialRegex, deepClone, emptyContent, findItem, frontendIdRegex, getIndex} from "@/utils/utils";
+import {commitDocumentAdd, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
 import {
-    isDocumentType,
-    isGraphSelfPart,
-    isLinkSetting,
-    isMediaSetting,
-    isNodeSetting,
-    isTextSetting
-} from "@/utils/typeCheck";
-import {crucialRegex, deepClone, findItem, frontendIdRegex, getIndex} from "@/utils/utils";
-import {commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
-import {noteSettingTemplate, noteStateTemplate} from "@/utils/template";
+    documentSettingTemplate,
+    documentStateTemplate,
+    linkStateTemplate,
+    mediaSettingTemplate,
+    nodeStateTemplate,
+    noteSettingTemplate,
+    noteStateTemplate,
+    settingTemplateGraph,
+    textSettingTemplate,
+    textStateTemplate
+} from "@/utils/template";
 import {dispatchNoteInDocPush} from "@/store/modules/_dispatch";
 import {getManager} from "@/store/modules/dataManager";
-import Vue from "vue";
-import {NodeSettingPartGraph} from "@/class/settingGraph";
+import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
 
 export abstract class SettingPart {
     Setting: Setting;
@@ -77,9 +80,9 @@ export abstract class SettingPart {
 export class ItemSettingPart extends SettingPart {
     Setting: DocumentItemSetting;
     State: BaseState;
-    _parent: DocumentSelfPartAny;
+    _parent: DocumentSelfPart;
 
-    protected constructor(Setting: DocumentItemSetting, State: BaseState, parent: DocumentSelfPartAny) {
+    protected constructor(Setting: DocumentItemSetting, State: BaseState, parent: DocumentSelfPart) {
         super(Setting, State);
         this.Setting = Setting;
         this.State = State;
@@ -118,6 +121,17 @@ export class ItemSettingPart extends SettingPart {
         return this.State.isSelected;
     }
 
+    get StyleInGraph() {
+        return this.Setting.InGraph
+    }
+
+    get isMain() {
+        let main = this.StyleInGraph.View.isMain
+        return typeof main === "boolean"
+            ? main
+            : false
+    }
+
     select(value?: boolean) {
         value === undefined && (value = !this.isSelected);
         this.updateState('isSelected', value)
@@ -134,10 +148,10 @@ export class ItemSettingPart extends SettingPart {
     }
 }
 
-export class NodeSettingPart<Style extends NodeSetting> extends ItemSettingPart {
-    Setting: Style;
+export class NodeSettingPart extends ItemSettingPart {
+    Setting: NodeSetting;
     State: NodeState;
-    static list: NodeSettingPartAny[] = [];
+    static list: NodeSettingPart[] = [];
 
     get _type() {
         return this.Setting._type
@@ -147,7 +161,7 @@ export class NodeSettingPart<Style extends NodeSetting> extends ItemSettingPart 
         return this.Setting._name
     }
 
-    get boundDocument(): DocumentSelfPartAny {
+    get boundDocument(): DocumentSelfPart {
         return this.parent.docsChildren.filter(graph => graph._id === this._id)[0]
     }
 
@@ -159,7 +173,11 @@ export class NodeSettingPart<Style extends NodeSetting> extends ItemSettingPart 
         }
     }
 
-    protected constructor(Setting: Style, State: NodeState, parent: DocumentSelfPartAny) {
+    get StyleInGraph() {
+        return this.Setting.InGraph
+    }
+
+    protected constructor(Setting: NodeSetting, State: NodeState, parent: DocumentSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
@@ -173,17 +191,31 @@ export class NodeSettingPart<Style extends NodeSetting> extends ItemSettingPart 
             .map(item => item.mouseOn(value));
     }
 
-    deepCloneSelf(): NodeSettingPart<Style> {
+    deepCloneSelf(): NodeSettingPart {
         let setting = deepClone(this.Setting);
         let state = deepClone(this.State);
         return new NodeSettingPart(setting, state, this.parent)
     }
+
+    static emptyNodeSetting(payload: NodeInitPayload, parent: DocumentSelfPart) {
+        let setting = Object.assign(payload, {
+            InGraph: settingTemplateGraph("node"),
+            InPaper: {}
+        }) as NodeSetting;
+        let state = nodeStateTemplate();
+        return new NodeSettingPart(setting, state, parent) as NodeSettingPart
+    }
+
+    static resolveBackend(setting: NodeSetting, parent: DocumentSelfPart) {
+        let state = nodeStateTemplate();
+        return new NodeSettingPart(setting, state, parent) as NodeSettingPart
+    }
 }
 
-export class MediaSettingPart<Style extends MediaSetting> extends ItemSettingPart {
-    Setting: Style;
+export class MediaSettingPart extends ItemSettingPart {
+    Setting: MediaSetting;
     State: MediaState;
-    static list: MediaSettingPartAny[] = [];
+    static list: MediaSettingPart[] = [];
 
     get _type() {
         return this.Setting._type
@@ -193,12 +225,33 @@ export class MediaSettingPart<Style extends MediaSetting> extends ItemSettingPar
         return this.Setting._name
     }
 
-    protected constructor(Setting: Style, State: MediaState, parent: DocumentSelfPartAny) {
+    get StyleInGraph() {
+        return this.Setting.InGraph
+    }
+
+    protected constructor(Setting: MediaSetting, State: MediaState, parent: DocumentSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
         this._parent = parent;
         MediaSettingPart.list.push(this);
+    }
+
+    static emptyMediaSetting(payload: MediaInitPayload, parent: DocumentSelfPart) {
+        let setting = mediaSettingTemplate(payload);
+        let state = nodeStateTemplate();
+        return new MediaSettingPart(setting, state, parent);
+    }
+
+    static emptyMediaSettingFromInfo(media: MediaInfoPart, parent: DocumentSelfPart) {
+        let {_id, _type, _label} = media
+        let payload = {_id, _type, _label, _name: media.Info.Name, _src: media.Ctrl.FileName} as MediaSetting
+        return MediaSettingPart.emptyMediaSetting(payload, parent)
+    }
+
+    static resolveBackend(setting: MediaSetting, parent: DocumentSelfPart) {
+        let state = nodeStateTemplate();
+        return new MediaSettingPart(setting, state, parent)
     }
 
     mouseOn(value: boolean) {
@@ -207,17 +260,17 @@ export class MediaSettingPart<Style extends MediaSetting> extends ItemSettingPar
             .map(item => item.mouseOn(value))
     }
 
-    deepCloneSelf(): MediaSettingPart<Style> {
+    deepCloneSelf(): MediaSettingPart {
         let setting = deepClone(this.Setting);
         let state = deepClone(this.State);
         return new MediaSettingPart(setting, state, this.parent)
     }
 }
 
-export class LinkSettingPart<Style extends LinkSetting<any>> extends ItemSettingPart {
-    Setting: Style;
+export class LinkSettingPart extends ItemSettingPart {
+    Setting: LinkSetting;
     State: LinkState;
-    static list: LinkSettingPartAny[] = [];
+    static list: LinkSettingPart[] = [];
 
     get _type() {
         return this.Setting._type
@@ -261,7 +314,7 @@ export class LinkSettingPart<Style extends LinkSetting<any>> extends ItemSetting
         return this._start !== undefined && this._end !== undefined
     }
 
-    protected constructor(Setting: Style, State: LinkState, parent: DocumentSelfPartAny) {
+    protected constructor(Setting: LinkSetting, State: LinkState, parent: DocumentSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
@@ -299,7 +352,7 @@ export class LinkSettingPart<Style extends LinkSetting<any>> extends ItemSetting
         }
     }
 
-    deepCloneSelf(): LinkSettingPart<Style> {
+    deepCloneSelf(): LinkSettingPart {
         let state = deepClone(this.State);
         let setting = {
             _start: this.Setting._start,
@@ -308,18 +361,38 @@ export class LinkSettingPart<Style extends LinkSetting<any>> extends ItemSetting
         };
         return new LinkSettingPart(setting, state, this.parent)
     }
+
+    static emptyLinkSetting(payload: LinkSetting, parent: DocumentSelfPart) {
+        let setting = Object.assign(payload, settingTemplateGraph("link"));
+        let state = linkStateTemplate();
+        return new LinkSettingPart(setting, state, parent) as LinkSettingPart
+    }
+
+    static resolveBackend(linkSetting: BackendLinkSetting, parent: DocumentSelfPart) {
+        let setting = {
+            ...linkSetting,
+            _start: parent.getVisNodeById({_id: linkSetting._start.id, _type: linkSetting._start.type}),
+            _end: parent.getVisNodeById({_id: linkSetting._end.id, _type: linkSetting._end.type})
+        } as LinkSetting;
+        let state = linkStateTemplate();
+        return new LinkSettingPart(setting, state, parent) as LinkSettingPart;
+    }
 }
 
-export class TextSettingPart<Style extends TextSetting> extends ItemSettingPart {
-    Setting: Style;
+export class TextSettingPart extends ItemSettingPart {
+    Setting: TextSetting;
     State: TextState;
-    static list: TextSettingPartAny[] = [];
+    static list: TextSettingPart[] = [];
 
     get _type() {
         return this.Setting._type
     }
 
-    protected constructor(Setting: Style, State: TextState, parent: DocumentSelfPartAny) {
+    get StyleInGraph() {
+        return this.Setting.InGraph
+    }
+
+    protected constructor(Setting: TextSetting, State: TextState, parent: DocumentSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
@@ -327,19 +400,31 @@ export class TextSettingPart<Style extends TextSetting> extends ItemSettingPart 
         TextSettingPart.list.push(this)
     }
 
-    deepCloneSelf(): TextSettingPart<Style> {
+    static emptyRect(_id: id, parent: DocumentSelfPart) {
+        let _points = [] as PointObject[];
+        let setting = textSettingTemplate(_id, 'rect', _points);
+        let state = textStateTemplate();
+        return new TextSettingPart(setting, state, parent)
+    }
+
+    static resolveBackend(setting: TextSetting, parent: DocumentSelfPart) {
+        let state = textStateTemplate();
+        return new TextSettingPart(setting, state, parent)
+    }
+
+    deepCloneSelf(): TextSettingPart {
         let setting = deepClone(this.Setting);
         let state = deepClone(this.State);
         return new TextSettingPart(setting, state, this.parent)
     }
 }
 
-export class NoteSettingPart<Style extends NoteSetting> extends SettingPart {
-    Setting: Style;
+export class NoteSettingPart extends SettingPart {
+    Setting: NoteSetting;
     State: NoteState;
-    static list: NoteSettingPartAny[] = [];
+    static list: NoteSettingPart[] = [];
 
-    constructor(Setting: Style, State: NoteState) {
+    constructor(Setting: NoteSetting, State: NoteState) {
         super(Setting, State);
         this.Setting = Setting;
         this.State = State;
@@ -357,35 +442,108 @@ export class NoteSettingPart<Style extends NoteSetting> extends SettingPart {
     }
 }
 
-export class DocumentConfigure<T extends DocumentSetting> extends SettingPart {
+export class DocumentConfigure extends SettingPart {
     State: DocumentState;
-    Setting: T;
+    Setting: DocumentSetting;
 
     get _type() {
         return this.Setting._type
     }
 
-    protected constructor(setting: T, state: DocumentState) {
+    protected constructor(setting: DocumentSetting, state: DocumentState) {
         super(setting, state);
         this.State = state;
         this.Setting = setting;
     }
+
+    static emptyGraphConf(_id: id) {
+        let setting = documentSettingTemplate(_id)
+        let state = documentStateTemplate()
+        return new DocumentConfigure(setting, state)
+    }
+
+    static resolveBackend(setting: DocumentSetting) {
+        let state = documentStateTemplate()
+        return new DocumentConfigure(setting, state)
+    }
 }
 
-export class DocumentSelfPart<Content extends DocumentContentAny, Configure extends DocumentConfigureAny> {
-    Content: Content;
-    Conf: Configure;
+export class DocumentSelfPart {
+    Content: DocumentContent;
+    Conf: DocumentConfigure;
     Components: DocumentComponents;
     //以下构建时定义
     treeNode: TreeNodeDoc;
     protected MetaData: DocumentMetaData;
+    static baseList: BackendGraphWithNode[] = []
 
-    protected constructor(Content: Content, Conf: Configure, comps: DocumentComponents, parent: DocumentSelfPartAny | null, meta: DocumentMetaData) {
+    protected constructor(Content: DocumentContent, Conf: DocumentConfigure, comps: DocumentComponents, parent: DocumentSelfPart | null, meta: DocumentMetaData) {
         this.Conf = Conf;
         this.Content = Content;
         this.Components = comps;
         this.MetaData = meta;
         this.treeNode = new TreeNodeDoc(this, parent);
+        if (this.nodeSelf === undefined) {
+            let {_id, _type, _label} = Conf;
+            let node = NodeSettingPart.emptyNodeSetting({
+                _id,
+                _type,
+                _label,
+                _name: 'NewDoc' + _id,
+                _image: ''
+            }, this);
+            this.Content.nodes.push(node);
+        } else {
+            // 检查完成
+        }
+        // 专题已经添加到父亲中去了
+        parent && parent.addItems([this.nodeSelf.deepCloneSelf()]);
+    }
+
+    static emptyInit(_id: id, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
+        let graphContent = emptyContent();
+        let setting = DocumentConfigure.emptyGraphConf(_id);
+        let meta = {
+            isTemporary: false,
+            isRemoteModel: false,
+        } as DocumentMetaData
+        let comps = {
+            SubGraph: []
+        } as DocumentComponents
+        let nodeQuery = {id: _id, type: 'document', pLabel: '_DocGraph'} as DocumentQuery;
+        let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
+        let graph = new DocumentSelfPart(graphContent, setting, comps, parent, meta);
+        let payload = {graph, info};
+        commitToVuex && commitDocumentAdd({document: graph, strict: false});
+        return payload
+    }
+
+    static backendInit(data: BackendGraphWithNode, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
+        DocumentSelfPart.baseList.push(data);
+        let setting = DocumentConfigure.resolveBackend(data.Conf);
+        let graphContent = emptyContent();
+        let Comps = data.Comps;
+        let meta = {
+            isTemporary: false,
+            isRemoteModel: true
+        }
+        let graph = new DocumentSelfPart(graphContent, setting, Comps, parent, meta);
+        let info = NodeInfoPart.resolveBackend(data.Base, commitToVuex);
+        let {nodes, links, medias, texts} = data.Content;
+        graph.Content.nodes = nodes.map(setting => NodeSettingPart.resolveBackend(setting, graph));
+        graph.Content.medias = medias.map(setting => MediaSettingPart.resolveBackend(setting, graph));
+        graph.Content.links = links.map(setting => LinkSettingPart.resolveBackend(setting, graph))
+            .filter(link => link.Setting._start && link.Setting._end);
+        graph.Content.texts = texts.map(setting => TextSettingPart.resolveBackend(setting, graph));
+        commitToVuex && commitDocumentAdd({document: graph, strict: false});
+        return {graph, info}
+    }
+
+    static collectInit(payload: DocumentInitPayload, items: ItemSettingPart[], deleteSource: boolean = true) {
+        let {_id, parent, commitToVuex} = payload;
+        let newGraph = DocumentSelfPart.emptyInit(_id, parent, commitToVuex).graph;
+        newGraph.collectItems(items, deleteSource);
+        return newGraph
     }
 
     // prop
@@ -394,7 +552,11 @@ export class DocumentSelfPart<Content extends DocumentContentAny, Configure exte
     }
 
     get _name() {
-        return this.nodeSelf.Setting._name
+        return this.nodeSelf._name
+    }
+
+    get _label() {
+        return this.Conf._label
     }
 
     get isSelf() {
@@ -413,6 +575,10 @@ export class DocumentSelfPart<Content extends DocumentContentAny, Configure exte
 
     set isExplode(value) {
         this.Conf.State.isExplode = value
+    }
+
+    get isDeleted() {
+        return this.treeNode.isDeleted
     }
 
     get rect() {
@@ -436,20 +602,24 @@ export class DocumentSelfPart<Content extends DocumentContentAny, Configure exte
         this.rect.height = height
     }
 
+    get selfSettingInGraph() {
+        return this.nodeSelf.Setting.InGraph
+    }
+
     //node
     get nodesAll() {
         return this.Content.nodes
     }
 
-    get nodes(): NodeSettingPartAny[] {
+    get nodes(): NodeSettingPart[] {
         return this.nodesAll.filter(item => !item.isDeleted)
     }
 
-    get nodesWithoutSelf(): NodeSettingPartAny[] {
+    get nodesWithoutSelf(): NodeSettingPart[] {
         return this.nodes.filter(node => node._id !== this._id)
     }
 
-    get nodeSelf(): NodeSettingPartAny {
+    get nodeSelf(): NodeSettingPart {
         return this.nodesAll.filter(node => node._id === this._id)[0]
     }
 
@@ -513,7 +683,7 @@ export class DocumentSelfPart<Content extends DocumentContentAny, Configure exte
     }
 
     //doc
-    get docsRootList(): DocumentSelfPartAny[] {
+    get docsRootList(): DocumentSelfPart[] {
         return this.treeNode.parentNodeList.map(node => node.boundObject)
     }
 
@@ -521,12 +691,12 @@ export class DocumentSelfPart<Content extends DocumentContentAny, Configure exte
         return this.treeNode.rootNode.boundObject
     }
 
-    get docsChildrenAll(): DocumentSelfPartAny[] {
+    get docsChildrenAll(): DocumentSelfPart[] {
         // 所有孩子doc
         return this.treeNode.childrenAll.map(node => node.boundObject)
     }
 
-    get docsChildren(): DocumentSelfPartAny[] {
+    get docsChildren(): DocumentSelfPart[] {
         return this.treeNode.childrenActive.map(node => node.boundObject)
     }
 
@@ -542,7 +712,7 @@ export class DocumentSelfPart<Content extends DocumentContentAny, Configure exte
         return {
             Content,
             Conf: this.Conf.Setting,
-        } as BackendGraph
+        } as BackendDocument
     }
 
     get dataDraftObject(): DocumentDraft {
@@ -715,14 +885,45 @@ export class DocumentSelfPart<Content extends DocumentContentAny, Configure exte
                 ? this.Content.texts.push(item)
                 : isLinkSetting(item) && this.Content.links.push(item)
     }
-}
 
-declare global {
-    type DocumentConfigureAny = DocumentConfigure<any>
-    type DocumentSelfPartAny = DocumentSelfPart<DocumentContentAny, DocumentConfigureAny>
-    type NodeSettingPartAny = NodeSettingPart<any>
-    type LinkSettingPartAny = LinkSettingPart<any>
-    type MediaSettingPartAny = MediaSettingPart<any>
-    type TextSettingPartAny = TextSettingPart<any>
-    type NoteSettingPartAny = NoteSettingPart<any>
+    addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex: boolean = true) {
+        _label || (_label = 'BaseNode');
+        let _id = getIndex();
+        let nodeQuery = {id: _id, type: _type, pLabel: _label} as NodeQuery;
+        let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
+        let payload = {
+            _id,
+            _type,
+            _label,
+            _name: 'NewNode' + _id,
+            _image: ''
+        } as NodeInitPayload
+        let setting = NodeSettingPart.emptyNodeSetting(payload, this);
+        this.addItems([setting]);
+        return {setting, info}
+    }
+
+    addEmptyLink(_start: VisNodeSettingPart, _end: VisNodeSettingPart, _label?: string, commitToVuex: boolean = true) {
+        _label || (_label = 'Default');
+        let _id = getIndex();
+        // info
+        let info = LinkInfoPart.emptyLinkInfo(_id, _label, _start, _end, commitToVuex);
+        // setting
+        let payload = {
+            _id,
+            _type: 'link',
+            _label,
+            _start,
+            _end
+        } as LinkSetting
+        let setting = LinkSettingPart.emptyLinkSetting(payload, this);
+        this.addItems([setting]);
+        return {setting, info};
+    }
+
+    addEmptyGraph(commitToVuex: boolean = true) {
+        let _id = getIndex();
+        let {graph, info} = DocumentSelfPart.emptyInit(_id, this, commitToVuex);
+        return {graph, info}
+    }
 }

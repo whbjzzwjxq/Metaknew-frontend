@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import {filePutBlob} from '@/api/fileUpload';
-import {GraphSelfPart} from "@/class/settingGraph";
+import {DocumentSelfPart, NodeSettingPart} from "@/class/settingBase";
 import {
     commitDocumentAdd,
     commitDocumentIdChange,
@@ -13,7 +13,6 @@ import {
     commitSnackbarOn
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
-import {isGraphSelfPart} from "@/utils/typeCheck";
 import {
     dispatchGraphQuery,
     dispatchInfoDraftSaveAll,
@@ -23,16 +22,11 @@ import {
     dispatchVisNodeCreate
 } from "@/store/modules/_dispatch";
 import {PathSelfPart} from "@/class/settingPath";
-import {PaperSelfPart} from "@/class/settingPaper";
 import {loginCookie} from "@/api/user/loginApi";
 import {settingToQuery} from "@/utils/utils";
 import {nodeBulkUpdate, nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
 import {linkBulkCreate, linkBulkUpdate, linkQueryBulk} from "@/api/subgraph/link";
-import {
-    gateDocumentBulkCreate,
-    gateDocumentBulkUpdate,
-    gateDocumentQuery
-} from "@/api/document/document";
+import {gateDocumentBulkCreate, gateDocumentBulkUpdate, gateDocumentQuery} from "@/api/document/document";
 import {mediaCreate, mediaQueryMulti} from "@/api/subgraph/media";
 import {draftUpdate} from "@/api/subgraph/commonApi";
 import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
@@ -44,28 +38,20 @@ export const getManager = (_type: ItemType) =>
         ? state.mediaManager
         : state.nodeManager;
 
-const getDocumentManager = (document: DocumentSelfPartAny) =>
-    isGraphSelfPart(document)
-        ? state.graphManager
-        : state.paperManager;
-
-const initGraph = GraphSelfPart.emptyGraphSelfPart('$_-1', null, false);
-const initPaper = PaperSelfPart.emptyPaperSelfPart('$_-2', null, false);
+const initGraph = DocumentSelfPart.emptyInit('$_-1', null, false);
 
 declare global {
     interface DataManagerState {
-        currentGraph: GraphSelfPart,
+        currentDocument: DocumentSelfPart,
         currentItem: NodeInfoPart | LinkInfoPart,
-        currentPaper: PaperSelfPart,
-        graphManager: Record<id, GraphSelfPart>,
-        paperManager: Record<id, PaperSelfPart>,
+        graphManager: Record<id, DocumentSelfPart>,
         nodeManager: Record<id, NodeInfoPart>,
         linkManager: Record<id, LinkInfoPart>,
         mediaManager: Record<id, MediaInfoPart>,
         pathManager: Record<id, PathSelfPart>,
         fileToken: FileToken,
         newIdRegex: RegExp,
-        rootDocument: DocumentSelfPartAny[]
+        rootDocument: DocumentSelfPart[]
     }
 
     interface Context {
@@ -79,21 +65,19 @@ declare global {
         nodes: NodeInfoPart[],
         links: LinkInfoPart[],
         medias: MediaInfoPart[],
-        graphs: GraphSelfPart[],
-        papers: PaperSelfPart[],
+        graphs: DocumentSelfPart[],
+        papers: DocumentSelfPart[],
         currentGraphInfo: NodeInfoPart,
-        documentList: DocumentSelfPartAny[],
+        documentList: DocumentSelfPart[],
         allInfoPart: InfoPartInDataManager[]
     }
 }
 
 const state: DataManagerState = {
-    currentGraph: initGraph.graph,
-    currentPaper: initPaper.paper,
+    currentDocument: initGraph.graph,
     currentItem: initGraph.info,
     rootDocument: [],
     graphManager: {},
-    paperManager: {},
     pathManager: {},
     nodeManager: {},
     linkManager: {},
@@ -123,16 +107,12 @@ const getters = {
         return Object.values(state.graphManager)
     },
 
-    papers: (state: DataManagerState) => {
-        return Object.values(state.paperManager)
-    },
-
     currentGraphInfo: (state: DataManagerState) => {
-        return state.nodeManager[state.currentGraph._id]
+        return state.nodeManager[state.currentDocument._id]
     },
 
     rootDocumentList: (state: DataManagerState, getters: DataManagerGetters) => {
-        let result = [] as DocumentSelfPartAny[];
+        let result = [] as DocumentSelfPart[];
         result.push(...getters.graphs);
         result.push(...getters.papers);
         return result
@@ -149,11 +129,11 @@ const getters = {
 const mutations = {
 
     // ------------单纯的操作------------
-    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
+    currentGraphChange(state: DataManagerState, payload: { graph: DocumentSelfPart }) {
         let {graph} = payload;
         let _id = graph._id; // 这里payload是document
         graph.isExplode = true;
-        state.currentGraph = graph;
+        state.currentDocument = graph;
         let node = state.nodeManager[_id];
         commitItemChange(node);
         commitSnackbarOn({
@@ -164,20 +144,7 @@ const mutations = {
         })
     },
 
-    currentPaperChange(state: DataManagerState, payload: {paper: PaperSelfPart}) {
-        let {paper} = payload;
-        state.currentPaper = paper;
-        let node = state.nodeManager[paper._id];
-        commitItemChange(node);
-        commitSnackbarOn({
-            color: 'info',
-            once: false,
-            content: `切换到专题${node.Info.Name}`,
-            actionName: 'documentChange'
-        })
-    },
-
-    rootDocumentPush(state: DataManagerState, payload: { document: DocumentSelfPartAny }) {
+    rootDocumentPush(state: DataManagerState, payload: { document: DocumentSelfPart }) {
         let {document} = payload;
         document.isRoot = true
         state.rootDocument.push(document)
@@ -189,9 +156,9 @@ const mutations = {
 
     // ------------Graph And Paper ------------
     // Push Graph
-    documentAdd(state: DataManagerState, payload: { document: GraphSelfPart | PaperSelfPart, strict?: boolean }) {
+    documentAdd(state: DataManagerState, payload: { document: DocumentSelfPart, strict?: boolean }) {
         let {document, strict} = payload;
-        let manager = getDocumentManager(document);
+        let manager = state.graphManager;
         strict || (strict = true);
         strict
             //Vue.set检查过
@@ -258,13 +225,13 @@ const actions = {
 
     // 请求Graph
     async graphQuery(context: { commit: Commit, state: DataManagerState, dispatch: Dispatch },
-                     payload: { _id: id, parent: GraphSelfPart | null }) {
+                     payload: { _id: id, parent: DocumentSelfPart | null }) {
         let {_id, parent} = payload;
         // 先绘制Graph
         if (context.state.graphManager[_id] === undefined) {
             await gateDocumentQuery(_id).then(res => {
                 let {data} = res;
-                let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
+                let {graph} = DocumentSelfPart.backendInit(data, parent);
                 dispatchNodeQuery(graph.nodesWithoutSelf.map(item => item.Setting));
                 dispatchLinkQuery(graph.links.map(item => item.Setting));
                 dispatchMediaQuery(graph.medias.map(item => item._id));
@@ -297,7 +264,7 @@ const actions = {
     },
 
     // 异步请求link
-    linkQuery(context: Context, payload: LinkSetting<any>[]) {
+    linkQuery(context: Context, payload: LinkSetting[]) {
         // 未缓存的关系列表
         let noCacheLink = payload.filter(link => !state.linkManager[link._id]);
         if (noCacheLink.length > 0) {
@@ -368,7 +335,7 @@ const actions = {
         } else return filePutBlob(fileToken, realFile, storeName);
     },
 
-    async nodeExplode(context: Context, payload: { node: NodeSettingPartAny, document: DocumentSelfPartAny }) {
+    async nodeExplode(context: Context, payload: { node: NodeSettingPart, document: DocumentSelfPart }) {
         let {node, document} = payload;
         let _id = node._id;
         let subGraph = state.graphManager[_id];
@@ -437,7 +404,7 @@ const actions = {
         await dispatchVisNodeCreate();
         await linkBulkCreate(getters.links);
         //处理专题 分成需要update和需要create的内容
-        let documentList: DocumentSelfPartAny[] = getters.documentList;
+        let documentList: DocumentSelfPart[] = getters.documentList;
         let dataList = documentList.filter(document => !document.isRemote)
             .map(document => document.dataBackendDocument);
         let updateDataList = documentList.filter(document => document.isRemote);

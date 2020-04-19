@@ -21,8 +21,7 @@
     import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
     import {commitGraphChange, commitPaperChange, commitRootDocPush} from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
-    import {GraphSelfPart} from "@/class/settingGraph";
-    import {PaperSelfPart} from "@/class/settingPaper";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
@@ -43,13 +42,13 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            graph: function (): GraphSelfPart {
-                return this.dataManager.currentGraph
+            graph: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             },
-            paper: function (): PaperSelfPart {
-                return this.dataManager.currentPaper
+            paper: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             },
-            currentDocument: function (): GraphSelfPart | PaperSelfPart {
+            currentDocument: function (): DocumentSelfPart {
                 return this.graphRouteRegex.test(String(this.$route.name))
                     ? this.graph
                     : this.paper
@@ -73,14 +72,14 @@
         methods: {
             fetchData() {
                 let id = this.$route.params.id;
-                const commitGraph = (graph: GraphSelfPart) => {
+                const commitGraph = (graph: DocumentSelfPart) => {
                     commitGraphChange({graph});
                     commitRootDocPush({document: graph});
                     this.loading = false;
                     return true
                 };
 
-                const commitPaper = (paper: PaperSelfPart) => {
+                const commitPaper = (paper: DocumentSelfPart) => {
                     commitPaperChange({paper});
                     commitRootDocPush({document: paper});
                     this.loading = false;
@@ -100,7 +99,7 @@
                     if (this.graphRouteRegex.test(String(this.$route.name))) {
                         if (this.graph._id === '$_-1') {
                             let _id = getIndex();
-                            let {graph} = GraphSelfPart.emptyGraphSelfPart(_id, null);
+                            let {graph} = DocumentSelfPart.emptyInit(_id, null);
                             return commitGraph(graph)
                         } else {
                             this.loading = false
@@ -109,8 +108,8 @@
                     } else {
                         if (this.paper._id === '$_-1') {
                             let _id = getIndex();
-                            let {paper} = PaperSelfPart.emptyPaperSelfPart(_id, null);
-                            return commitPaper(paper)
+                            let {graph} = DocumentSelfPart.emptyInit(_id, null);
+                            return commitPaper(graph)
                         } else {
                             this.loading = false
                             return true

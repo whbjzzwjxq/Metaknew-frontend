@@ -14,7 +14,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {GraphSelfPart} from "@/class/settingGraph";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
     export default Vue.extend({
         name: "ResultDocGraph",
@@ -29,8 +29,8 @@
             allComponentsStyle: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            graph: function (): GraphSelfPart {
-                return this.$store.state.dataManager.currentGraph
+            graph: function (): DocumentSelfPart {
+                return this.$store.state.dataManager.currentDocument
             }
         },
         methods: {},

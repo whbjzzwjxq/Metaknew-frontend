@@ -63,7 +63,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {GraphSelfPart} from "@/class/settingGraph";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import {getIcon} from "@/utils/icon";
     import {TabContent} from "@/interface/interfaceInComponent";
     import {commitRootTabChange, commitSubTabChange} from "@/store/modules/_mutations";
@@ -90,7 +90,7 @@
         },
         props: {
             document: {
-                type: Object as () => GraphSelfPart,
+                type: Object as () => DocumentSelfPart,
                 required: true
             },
             editMode: {

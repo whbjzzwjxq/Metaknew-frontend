@@ -1,6 +1,6 @@
 export default {}
 declare global {
-    interface BaseSizeInGraph extends SettingGroup {
+    interface BaseSizeInGraph extends SettingComponent {
         x: number;
         y: number;
         size: number;
@@ -8,7 +8,7 @@ declare global {
     }
 
     type NodeViewType = 'rectangle' | 'rhombus' | 'ellipse';
-    interface NodeStyleSettingGraph extends SettingGroupInPage {
+    interface NodeStyleSetting extends SettingGroup {
         Base: BaseSizeInGraph;
         View: {
             color: Color;
@@ -42,7 +42,7 @@ declare global {
 
     type LinkViewType = 'linear' | 'curve' | 'polyline'
     type LinkPointLocation = 'top' | 'bottom' | 'left' | 'right' | 'center'
-    interface LinkStyleSettingGraph extends SettingGroupInPage {
+    interface LinkStyleSetting extends SettingGroup {
         View: {
             width: number;
             color: Color;
@@ -67,7 +67,7 @@ declare global {
         }
     }
 
-    interface MediaStyleSettingGraph extends SettingGroupInPage {
+    interface MediaStyleSetting extends SettingGroup {
         Base: BaseSizeInGraph;
         View: {
             opacity: number,
@@ -100,7 +100,7 @@ declare global {
         }
     }
 
-    interface TextStyleSettingGraph extends SettingGroupInPage {
+    interface TextStyleSetting extends SettingGroup {
         Base: BaseSizeInGraph;
         Border: {
             width: number,
@@ -124,7 +124,7 @@ declare global {
         }
     }
 
-    interface GraphConfigure extends SettingGroupInPage {
+    interface GraphConfigure extends SettingGroup {
         Background: {
             image: string,
             color: Color,

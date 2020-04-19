@@ -15,8 +15,7 @@
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
-    import {isGraphSelfPart} from "@/utils/typeCheck";
-    import {NodeSettingPartGraph} from "@/class/settingGraph";
+    import {DocumentSelfPart, NodeSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "GraphNodeButton",
@@ -33,7 +32,7 @@
             },
 
             node: {
-                type: Object as () => NodeSettingPartGraph,
+                type: Object as () => NodeSettingPart,
                 required: true
             },
 
@@ -78,14 +77,14 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            boundDocument: function (): DocumentSelfPartAny {
+            boundDocument: function (): DocumentSelfPart {
                 return this.node.boundDocument
             },
             buttonGroup: function (): IconItem[] {
                 // 是否可以删除
                 let editMode = this.editMode;
                 let deleteIcon;
-                this.node._id === this.dataManager.currentGraph._id
+                this.node._id === this.dataManager.currentDocument._id
                     ? deleteIcon = false
                     : this.node.isDeleted
                     ? deleteIcon = 'rollback'
@@ -99,7 +98,7 @@
                             _func: this.goto,
                             toolTip: '转到对应专题',
                             render: this.node._type === 'document',
-                            disabled: this.node.remoteDocument._id === this.dataManager.currentGraph._id
+                            disabled: this.node.remoteDocument._id === this.dataManager.currentDocument._id
                         }
                     } else {
                         explodeIcon = {
@@ -109,7 +108,7 @@
                             render: this.node._type === 'document'
                         }
                     }
-                } else if (isGraphSelfPart(this.boundDocument)) {
+                } else if (this.boundDocument._label === '_DocGraph') {
                     explodeIcon = {
                         name: getIcon("i-explode", !this.boundDocument.isExplode),
                         _func: this.explode,
@@ -122,7 +121,7 @@
                         _func: this.goto,
                         toolTip: '转到对应专题',
                         render: this.node._type === 'document',
-                        disabled: this.node.remoteDocument._id === this.dataManager.currentGraph._id
+                        disabled: this.node.remoteDocument._id === this.dataManager.currentDocument._id
                     }
                 }
                 return [
@@ -134,7 +133,7 @@
                     },
                     {name: 'mdi-arrow-top-right', _func: this.addLink, render: editMode},
                     explodeIcon,
-                    {name: getIcon('i-eye', this.node.Setting.Show.showAll), _func: this.unShow},
+                    {name: getIcon('i-eye', this.node.StyleInGraph.Show.showAll), _func: this.unShow},
                 ]
             }
         },
@@ -143,7 +142,7 @@
                 this.node.parent.deleteItem(this.node)
             },
             unShow() {
-                let current = this.node.styleSetting.Show.showAll;
+                let current = this.node.StyleInGraph.Show.showAll;
                 this.node.updateSetting('InGraph', 'Show', 'showAll', !current);
             },
 

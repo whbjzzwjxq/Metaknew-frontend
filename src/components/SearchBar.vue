@@ -66,7 +66,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search/search'
-    import {GraphSelfPart, MediaSettingPartGraph, NodeSettingPartGraph} from '@/class/settingGraph'
+    import {DocumentSelfPart, MediaSettingPart, NodeSettingPart} from '@/class/settingBase'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
@@ -120,8 +120,8 @@
                 return this.$store.state.dataManager
             },
 
-            currentGraph: function (): GraphSelfPart {
-                return this.dataManager.currentGraph
+            currentDocument: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             },
             buildQueryObject: function (): SearchQueryObject {
                 let index = this.keyword.search(this.regexSymbol);
@@ -219,13 +219,13 @@
             },
 
             addItemToGraph() {
-                let unDuplicateItems = this.selection.filter(item => !this.currentGraph.checkExistByIdType({
+                let unDuplicateItems = this.selection.filter(item => !this.currentDocument.checkExistByIdType({
                     _id: item.id,
                     _type: item.type
                 }));
                 let nodes = unDuplicateItems.filter(item => item.type === 'node' || item.type === 'document');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let nodeSettingList = nodes.map(node => NodeSettingPartGraph.emptyNodeSetting(
+                let nodeSettingList = nodes.map(node => NodeSettingPart.emptyNodeSetting(
                         {
                             _id: node.id,
                             //@ts-ignore
@@ -234,22 +234,22 @@
                             _name: node.Name['auto'],
                             _image: node.MainPic,
                         },
-                        this.currentGraph)
+                        this.currentDocument)
                 );
-                this.currentGraph.addItems(nodeSettingList);
+                this.currentDocument.addItems(nodeSettingList);
                 dispatchNodeQuery(nodeSettingList.map(item => item.Setting));
-                let mediaSettingList = medias.map(media => MediaSettingPartGraph.emptyMediaSetting(
+                let mediaSettingList = medias.map(media => MediaSettingPart.emptyMediaSetting(
                     {
                         _id: media.id,
                         _type: 'media',
                         _label: media.PrimaryLabel,
                         _name: media.Name['auto'],
                         _src: '',
-                    },
-                    this.currentGraph
+                    } as MediaInitPayload,
+                    this.currentDocument
                 ));
                 dispatchMediaQuery(medias.map(media => media.id));
-                this.currentGraph.addItems(mediaSettingList);
+                this.currentDocument.addItems(mediaSettingList);
                 this.selection = []
             },
 

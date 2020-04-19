@@ -49,7 +49,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import {GraphSelfPart} from "@/class/settingGraph";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import CardPageStyleEditor from "@/components/card/page/CardPageStyleEditor.vue";
 
     export default Vue.extend({
@@ -84,8 +84,8 @@
                     }
                 }
             },
-            document: function (): GraphSelfPart {
-                return this.$store.state.dataManager.currentGraph
+            document: function (): DocumentSelfPart {
+                return this.$store.state.dataManager.currentDocument
             },
         },
         methods: {},

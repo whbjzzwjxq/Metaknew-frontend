@@ -1,10 +1,8 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {GraphSelfPart} from "@/class/settingGraph";
-import {NoteBook} from "@/store/modules/userDataManager";
-import {PaperSelfPart} from "@/class/settingPaper";
-import {LinkInfoPart, NodeInfoPart} from "@/class/info";
 import {DocumentSelfPart, NoteSettingPart} from "@/class/settingBase";
+import {NoteBook} from "@/store/modules/userDataManager";
+import {LinkInfoPart, NodeInfoPart} from "@/class/info";
 
 export const commitLoginIn = (payload: userLoginPayload) => {
     return store.commit('loginSet', payload)
@@ -50,11 +48,11 @@ export const commitItemChange = (payload: NodeInfoPart | LinkInfoPart) => {
     return store.commit('currentItemChange', payload)
 };
 
-export const commitGraphChange = (payload: { graph: GraphSelfPart }) => {
+export const commitGraphChange = (payload: { graph: DocumentSelfPart }) => {
     return store.commit('currentGraphChange', payload)
 };
 
-export const commitRootDocPush = (payload: { document: DocumentSelfPartAny }) => {
+export const commitRootDocPush = (payload: { document: DocumentSelfPart }) => {
     return store.commit('rootDocumentPush', payload)
 };
 
@@ -70,7 +68,7 @@ export const commitInfoIdChange = (payload: { _type: string, idMap: IdMap }) => 
     return store.commit('infoIdChange', payload)
 };
 
-export const commitDocumentAdd = (payload: { document: GraphSelfPart | DocumentSelfPartAny, strict?: boolean }) => {
+export const commitDocumentAdd = (payload: { document: DocumentSelfPart | DocumentSelfPart, strict?: boolean }) => {
     return store.commit('documentAdd', payload)
 };
 
@@ -107,7 +105,7 @@ export const commitUserConcernAdd = (payload: UserConcernPayload) => {
     return store.commit('userConcernAdd', payload)
 };
 
-export const commitNoteInDocAdd = (payload: { note: NoteSettingPartAny }) => {
+export const commitNoteInDocAdd = (payload: { note: NoteSettingPart }) => {
     return store.commit('noteInDocAdd', payload)
 };
 
@@ -123,11 +121,11 @@ export const commitUserEditDataLoadDone = (payload: UserEditData) => {
     return store.commit('userEditDataChange', payload)
 };
 
-export const commitNoteBookAdd = (payload: {note: NoteBook}) => {
+export const commitNoteBookAdd = (payload: { note: NoteBook }) => {
     return store.commit('noteBookAdd', payload)
 };
 
-export const commitBottomDynamicBarChange = (payload: {on?: boolean, type?: BottomDynamicBarType}) => {
+export const commitBottomDynamicBarChange = (payload: { on?: boolean, type?: BottomDynamicBarType }) => {
     return store.commit('bottomDynamicBarChange', payload)
 };
 
@@ -135,6 +133,6 @@ export const commitLangChange = (payload: string) => {
     return store.commit('langChange', payload)
 };
 
-export const commitPaperChange = (payload: {paper: PaperSelfPart}) => {
+export const commitPaperChange = (payload: { paper: DocumentSelfPart }) => {
     return store.commit('currentPaperChange', payload)
 }

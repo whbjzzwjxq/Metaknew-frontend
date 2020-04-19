@@ -89,9 +89,9 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {ItemSettingPartGraph} from "@/class/settingGraph";
     import CardSubStyleNumber from "@/components/card/subComp/CardSubStyleNumber.vue";
     import {SettingConf, SettingConfGroup} from "@/interface/style/interfaceStyleBase";
+    import {ItemSettingPart} from "@/class/settingBase";
 
     type settingType = 'Color' | 'Number' | 'Boolean' | 'String' | 'Text'
     export default Vue.extend({
@@ -120,7 +120,7 @@
                 required: true
             },
             selection: {
-                type: Array as () => ItemSettingPartGraph[],
+                type: Array as () => ItemSettingPart[],
                 required: true
             }
         },
@@ -131,7 +131,7 @@
                     result[prop] = [];
                     // 把选中内容的值都提取出来
                     this.selection.map(item => {
-                        let value = item.styleSetting[this.propGroup][prop];
+                        let value = item.Setting.InGraph[this.propGroup][prop];
                         result[prop].indexOf(value) === -1 &&
                         result[prop].push(value)
                     })

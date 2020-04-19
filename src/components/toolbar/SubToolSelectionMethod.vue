@@ -11,7 +11,7 @@
     import SubToolBlock from "@/components/toolbar/SubToolBlock.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {iconMap} from "@/utils/icon";
-    import {GraphSelfPart} from "@/class/settingGraph";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import {getIndex} from "@/utils/utils";
     export default Vue.extend({
         name: "SubToolSelectionMethod",
@@ -47,8 +47,8 @@
                 return this.$store.state.dataManager
             },
 
-            graph: function (): GraphSelfPart {
-                return this.dataManager.currentGraph
+            graph: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             }
         },
         methods: {
@@ -56,7 +56,7 @@
                 let _id = getIndex();
                 let parent = this.graph;
                 let items = parent.itemsAllSubDoc.filter(item => item.isSelected);
-                return GraphSelfPart.collectNewGraph({_id, parent, commitToVuex: true}, items, deleteSource);
+                return DocumentSelfPart.collectInit({_id, parent, commitToVuex: true}, items, deleteSource);
             }
         },
         record: {

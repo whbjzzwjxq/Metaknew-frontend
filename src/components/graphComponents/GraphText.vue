@@ -57,7 +57,6 @@
     import RectContainer from "@/components/container/RectContainer.vue";
     import FieldTextRender from "@/components/field/FieldTextRender.vue";
     import {TextSettingPart} from "@/class/settingBase";
-    import {TextSettingPartGraph} from "@/class/settingGraph";
 
     export default Vue.extend({
         name: "GraphText",
@@ -70,7 +69,7 @@
         },
         props: {
             svg: {
-                type: Object as () => TextSettingPartGraph,
+                type: Object as () => TextSettingPart,
                 required: true
             },
             scale: {

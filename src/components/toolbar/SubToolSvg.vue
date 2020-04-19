@@ -15,10 +15,9 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
-    import {GraphSelfPart, TextSettingPartGraph} from "@/class/settingGraph";
+    import {DocumentSelfPart, TextSettingPart} from "@/class/settingBase";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIndex} from "@/utils/utils";
-    import {TextSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "SubToolSvg",
@@ -40,15 +39,15 @@
                     {name: getIcon('i-shape', 'polyline'), _func: this.addNewPolyline}
                 ]
             },
-            currentGraph: function (): GraphSelfPart {
-                return this.$store.state.dataManager.currentGraph
+            currentDocument: function (): DocumentSelfPart {
+                return this.$store.state.dataManager.currentDocument
             }
         },
         methods: {
             addNewRect() {
                 let _id = getIndex();
-                let rect = TextSettingPartGraph.emptyRect(_id, this.currentGraph);
-                this.currentGraph.addItems([rect])
+                let rect = TextSettingPart.emptyRect(_id, this.currentDocument);
+                this.currentDocument.addItems([rect])
             },
             addNewSquare() {
 

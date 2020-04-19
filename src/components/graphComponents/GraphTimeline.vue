@@ -27,7 +27,7 @@
                 v-for="(node, index) in nodes"
                 v-show="showItems[index] && position[index].x >= 0"
                 :key="index"
-                :setting="node.Setting"
+                :item-setting="node.Setting"
                 :state="node.State"
                 :position="position[index]"
             >
@@ -39,7 +39,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {GraphSelfPart, MediaSettingPartGraph, NodeSettingPartGraph} from "@/class/settingGraph";
+    import {DocumentSelfPart, MediaSettingPart, NodeSettingPart} from "@/class/settingBase";
     import {FakeNodeSettingPart, Rate, Time, TimelineItem} from "@/interface/interfaceTimeline";
     import moment from "moment";
     import {getPoint, RectByPoint} from "@/class/geometric";
@@ -86,14 +86,14 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            document: function (): GraphSelfPart {
-                return this.dataManager.currentGraph
+            document: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             },
 
-            originNodes: function (): NodeSettingPartAny[] {
+            originNodes: function (): NodeSettingPart[] {
                 return this.document.nodesAllSubDoc
             },
-            originMedias: function (): MediaSettingPartAny[] {
+            originMedias: function (): MediaSettingPart[] {
                 return this.document.medias
             },
             originNodeInfo: function (): NodeInfoPart[] {
@@ -154,7 +154,9 @@
                             _label,
                             _name,
                             _image
-                        }, settingTemplateGraph('node')) as NodeSettingGraph
+                        }, {
+                            InGraph: settingTemplateGraph('node')
+                        }) as NodeSetting
                     }
                 })
             },

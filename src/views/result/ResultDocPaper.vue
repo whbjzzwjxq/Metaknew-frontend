@@ -1,4 +1,4 @@
- <template>
+<template>
     <div class="pa-0 d-flex flex-column">
         <div class="flex-grow-1 cardItem">
             <router-view name="content" :paper="paper"></router-view>
@@ -14,11 +14,11 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {PaperSelfPart} from "@/class/settingPaper";
+    import {DocumentSelfPart, NoteSettingPart} from "@/class/settingBase";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import PaperViewBox from "@/components/paperComponents/PaperViewBox.vue";
     import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
-    import {NoteSettingPart} from "@/class/settingBase";
+
     export default Vue.extend({
         name: "Result_DocPaper",
         components: {
@@ -39,13 +39,13 @@
             editMode: function (): boolean {
                 return this.editPageRegex.test(String(this.$route.name))
             },
-            paper: function (): PaperSelfPart {
-                return this.dataManager.currentPaper
+            document: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             }
         },
         methods: {
             newNote: function () {
-                NoteSettingPart.emptyNoteSetting('note', '', '', this.paper._id, true)
+                NoteSettingPart.emptyNoteSetting('note', '', '', this.document._id, true)
             },
         },
         watch: {},

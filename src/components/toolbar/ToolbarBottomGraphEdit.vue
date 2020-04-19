@@ -48,9 +48,8 @@
     import SubToolSvg from "@/components/toolbar/SubToolSvg.vue";
     import SubToolDocSave from "@/components/toolbar/SubToolDocSave.vue";
     import SubToolSelectionMethod from "@/components/toolbar/SubToolSelectionMethod.vue";
-    import {GraphSelfPart, MediaSettingPartGraph} from "@/class/settingGraph";
+    import {DocumentSelfPart, MediaSettingPart, NoteSettingPart} from "@/class/settingBase";
     import {commitBottomDynamicBarChange} from "@/store/modules/_mutations";
-    import {MediaSettingPart, NoteSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "ToolbarBottomGraphEdit",
@@ -71,44 +70,44 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            graph: function (): GraphSelfPart {
-                return this.dataManager.currentGraph
+            graph: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             }
         },
         methods: {
-            defaultGraph: function (graph?: GraphSelfPart): GraphSelfPart {
+            defaultGraph: function (graph?: DocumentSelfPart): DocumentSelfPart {
                 return graph === undefined
                     ? this.graph
                     : graph
             },
 
-            newNode: function (_label: string, payload?: GraphSelfPart) {
+            newNode: function (_label: string, payload?: DocumentSelfPart) {
                 let graph = this.defaultGraph(payload);
                 //Info Ctrl部分
                 return graph.addEmptyNode('node', _label);
             },
-            newLink: function (start: VisNodeSettingPart, end: VisNodeSettingPart, payload?: GraphSelfPart) {
+            newLink: function (start: VisNodeSettingPart, end: VisNodeSettingPart, payload?: DocumentSelfPart) {
                 let graph = this.defaultGraph(payload);
                 //Info Ctrl部分
                 return graph.addEmptyLink(start, end);
             },
 
-            newNote: function (payload?: GraphSelfPart) {
+            newNote: function (payload?: DocumentSelfPart) {
                 let graph = this.defaultGraph(payload);
                 NoteSettingPart.emptyNoteSetting('note', '', '', graph._id, true)
             },
 
-            addMedia: function (mediaIdList: id[], payload?: GraphSelfPart) {
+            addMedia: function (mediaIdList: id[], payload?: DocumentSelfPart) {
                 let graph = this.defaultGraph(payload);
                 let mediaSettingList = mediaIdList.map(_id => this.dataManager.mediaManager[_id])
                     .map(info => {
-                        return MediaSettingPartGraph.emptyMediaSettingFromInfo(info, graph)
+                        return MediaSettingPart.emptyMediaSettingFromInfo(info, graph)
                     });
                 graph.addItems(mediaSettingList);
                 return mediaSettingList
             },
 
-            addDocument: function (_label: '_DocGraph' | '_DocPaper', payload?: GraphSelfPart) {
+            addDocument: function (_label: '_DocGraph' | '_DocPaper', payload?: DocumentSelfPart) {
                 let graph = this.defaultGraph(payload);
                 return graph.addEmptyGraph()
             },

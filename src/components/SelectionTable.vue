@@ -55,7 +55,7 @@
                     return {
                         index: index,
                         name,
-                        isMain: setting.Setting.View.isMain,
+                        isMain: setting.isMain,
                         label: setting._label
                     }
                 })

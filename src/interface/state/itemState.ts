@@ -38,12 +38,4 @@ declare global {
         isExplode: boolean; // 是否爆炸
 
     }
-
-    interface GraphState extends DocumentState {
-        isExplode: boolean; // 是否爆炸
-    }
-
-    interface PaperState extends DocumentState {
-
-    }
 }

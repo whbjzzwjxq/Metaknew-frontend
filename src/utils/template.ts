@@ -25,7 +25,7 @@ export function settingTemplateGraph(_type: AllType) {
 }
 
 export function nodeSettingTemplate(_id: id, _type: string = 'node', _label: string = 'BaseNode', _name: string = '', _image: string = '') {
-    let setting = <NodeSettingGraph>{
+    let setting = <NodeSetting>{
         _id,
         _type,
         _label,
@@ -36,26 +36,25 @@ export function nodeSettingTemplate(_id: id, _type: string = 'node', _label: str
     return setting;
 }
 
-export function mediaSettingTemplate(payload: MediaSetting) {
-    let setting = payload;
+export function mediaSettingTemplate(payload: MediaInitPayload) {
     let {_src, _label} = payload;
-    Object.assign(setting, {
+    let setting = Object.assign(payload, {
         InGraph: settingTemplateGraph("media")
-    });
+    }) as MediaSetting;
     if (_label === 'image') {
         let image = new Image();
         image.src = _src;
         let checkLoad = function () {
             if (image.width > 0 || image.height > 0) {
-                setting.Base.size = image.width;
-                setting.Base.scaleX = image.height / image.width;
+                setting.InGraph.Base.size = image.width;
+                setting.InGraph.Base.scaleX = image.height / image.width;
                 cancelAnimationFrame(query)
             }
         };
         let query = requestAnimationFrame(checkLoad);
         image.onload = function () {
-            setting.Base.size = image.width;
-            setting.Base.scaleX = image.height / image.width;
+            setting.InGraph.Base.size = image.width;
+            setting.InGraph.Base.scaleX = image.height / image.width;
             cancelAnimationFrame(query)
         };
         checkLoad()
@@ -65,16 +64,16 @@ export function mediaSettingTemplate(payload: MediaSetting) {
         loadingTask.promise.then(function (pdf: any) {
             pdf.getPage(1).then(function (page: any) {
                 let viewport = page.getViewport({scale: 1.5});
-                setting.Base.size = viewport.width;
-                setting.Base.scaleX = viewport.height / viewport.width;
+                setting.InGraph.Base.size = viewport.width;
+                setting.InGraph.Base.scaleX = viewport.height / viewport.width;
             });
         })
     }
     return setting;
 }
 
-export function graphSettingTemplate(_id: id) {
-    let setting = <GraphSetting>{
+export function documentSettingTemplate(_id: id) {
+    let setting = <DocumentSetting>{
         _id,
         _type: "document",
         _label: "_DocGraph"
@@ -117,15 +116,6 @@ export function textSettingTemplate(_id: id, _label: TextLabel, _points: PointOb
     return Object.assign(setting, settingTemplateGraph('text'));
 }
 
-export function paperSettingTemplate(_id: id) {
-    let setting = {
-        _id,
-        _type: 'document',
-        _label: '_DocPaper',
-    } as PaperSetting;
-    return Object.assign(setting, settingTemplateGraph('document'))
-}
-
 export function nodeStateTemplate() {
     return {
         isSelected: false,
@@ -156,19 +146,12 @@ export function noteStateTemplate() {
     } as NoteState
 }
 
-export function graphStateTemplate() {
-    return <GraphState>{
+export function documentStateTemplate() {
+    return <DocumentState>{
         isDeleted: false,
         isExplode: true,
         isSaved: false
     };
-}
-
-export function paperStateTemplate() {
-    return <PaperState>{
-        isDeleted: false,
-        isSaved: false
-    }
 }
 
 export function textStateTemplate() {

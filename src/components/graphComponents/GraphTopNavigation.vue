@@ -19,12 +19,12 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {GraphSelfPart} from "@/class/settingGraph";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import {commitGraphChange} from "@/store/modules/_mutations";
 
     interface NavigationItem {
         disabled: boolean;
-        document: DocumentSelfPartAny;
+        document: DocumentSelfPart;
         text: string;
         color: string
     }
@@ -42,13 +42,13 @@
         },
         props: {
             document: {
-                type: Object as () => DocumentSelfPartAny,
+                type: Object as () => DocumentSelfPart,
                 required: true
             }
         },
         computed: {
             navigationList: function (): NavigationItem[] {
-                let result: DocumentSelfPartAny[] = (this.document.docsRootList).concat([this.document]);
+                let result: DocumentSelfPart[] = (this.document.docsRootList).concat([this.document]);
                 return result.map(doc => ({
                     disabled: doc._id === this.document._id,
                     document: doc,
@@ -58,7 +58,7 @@
             },
         },
         methods: {
-            gotoDocument(graph: GraphSelfPart) {
+            gotoDocument(graph: DocumentSelfPart) {
                 commitGraphChange({graph})
             },
         },

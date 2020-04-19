@@ -20,7 +20,7 @@
         <template v-slot:append="{ item }">
             <template>
                 <v-btn
-                    v-if="item._id === dataManager.currentGraph._id"
+                    v-if="item._id === dataManager.currentDocument._id"
                     style="font-weight: bolder;"
                     color="#42b983"
                     x-small
@@ -56,20 +56,21 @@
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
     import {frontendIdRegex} from "@/utils/utils";
     import {VirtualFunc, VirtualNodeContent, VirtualTree} from "@/interface/interfaceTree";
-    import {isDirectoryItemDocument, isGraphSelfPart} from "@/utils/typeCheck";
+    import {isDirectoryItemDocument} from "@/utils/typeCheck";
     import {
         DirectoryBuildPayload,
         DirectoryItem,
         DirectoryItemAll,
         DirectoryNode
     } from "@/interface/interfaceInComponent";
+    import {DocumentSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "CardPageDirectory",
         components: {},
         data() {
             return {
-                tree: [] as VirtualTree<DocumentSelfPartAny, DirectoryNode, DirectoryBuildPayload>[],
+                tree: [] as VirtualTree<DocumentSelfPart, DirectoryNode, DirectoryBuildPayload>[],
             }
         },
         props: {
@@ -82,13 +83,13 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            rootDocumentList: function (): DocumentSelfPartAny[] {
+            rootDocumentList: function (): DocumentSelfPart[] {
                 return this.dataManager.rootDocument
             },
 
             //包含自身
-            documentList: function (): DocumentSelfPartAny[] {
-                let result: DocumentSelfPartAny[] = []
+            documentList: function (): DocumentSelfPart[] {
+                let result: DocumentSelfPart[] = []
                 this.rootDocumentList.map(doc => {
                     result.push(...doc.docsChildren)
                     result.push(doc)
@@ -163,61 +164,61 @@
         },
         methods: {
             buildDirectory: function () {
-                let _func: VirtualFunc<DocumentSelfPartAny, DirectoryNode, DirectoryBuildPayload> =
+                let _func: VirtualFunc<DocumentSelfPart, DirectoryNode, DirectoryBuildPayload> =
                     (parent, document) => {
                         return this.documentToItem(document.boundObject)
                     }
-                this.tree = this.rootDocumentList.map((doc, index) => new VirtualTree<DocumentSelfPartAny, DirectoryNode, DirectoryBuildPayload>(doc.treeNode, _func, {}, 'Directory' + index))
+                this.tree = this.rootDocumentList.map((doc, index) => new VirtualTree<DocumentSelfPart, DirectoryNode, DirectoryBuildPayload>(doc.treeNode, _func, {}, 'Directory' + index))
             },
 
-            nodeToItem: (node: NodeSettingPartAny) => {
+            nodeToItem: (node: NodeSettingPart) => {
                 return {
                     id: node._id,
                     type: 'node', //这里是目录意义上的节点
                     label: node._label,
-                    name: node.Setting._name,
+                    name: node._name,
                     icon: getIcon('i-item', 'node'),
                     deletable: node.parent.isSelf,
                     editable: node.isSelf,
                     origin: node,
                     children: node._type === 'document' && node._id !== node.parent._id ? [] : undefined
-                } as DirectoryItem<NodeSettingPartAny>
+                } as DirectoryItem<NodeSettingPart>
             },
 
-            linkToItem: (link: LinkSettingPartAny) => ({
+            linkToItem: (link: LinkSettingPart) => ({
                 id: link._id,
                 type: link._type,
                 label: link._label,
                 icon: getIcon('i-item', 'link'),
-                name: link.Setting._start.Setting._name + ' --> ' + link.Setting._end.Setting._name,
+                name: link._name,
                 deletable: link.parent.isSelf,
                 editable: link.isSelf,
                 origin: link,
-            }) as DirectoryItem<LinkSettingPartAny>,
+            }) as DirectoryItem<LinkSettingPart>,
 
-            mediaToItem: (media: MediaSettingPartAny) => ({
+            mediaToItem: (media: MediaSettingPart) => ({
                 id: media._id,
                 type: media._type,
                 label: media._label,
-                name: media.Setting._name,
+                name: media._name,
                 icon: getIcon("i-media-type", media._label),
                 deletable: media.parent.isSelf,
                 editable: media.isSelf,
                 origin: media,
-            }) as DirectoryItem<MediaSettingPartAny>,
+            }) as DirectoryItem<MediaSettingPart>,
 
-            documentToItem: function (document: DocumentSelfPartAny) {
+            documentToItem: function (document: DocumentSelfPart) {
                 return {
                     id: document._id,
                     type: 'document',
-                    label: document.nodeSelf._label,
-                    name: document.nodeSelf.Setting._name,
-                    icon: getIcon('i-item', document.nodeSelf._label),
+                    label: document._label,
+                    name: document._name,
+                    icon: getIcon('i-item', document._label),
                     deletable: !document.isRoot,
                     editable: document.isSelf,
                     children: [], //子节点和叶子节点
                     origin: document,
-                } as VirtualNodeContent<DocumentSelfPartAny, DirectoryNode>;
+                } as VirtualNodeContent<DocumentSelfPart, DirectoryNode>;
             },
 
             deleteItem(item: DirectoryItemAll) {
@@ -257,7 +258,7 @@
 
             async getDocument(nodeItem: DirectoryItemAll) {
                 if (!frontendIdRegex.test(String(nodeItem.id))) {
-                    let node = this.getOriginItem(nodeItem) as NodeSettingPartAny;
+                    let node = this.getOriginItem(nodeItem) as NodeSettingPart;
                     let parent = node.parent;
                     return dispatchGraphQuery({_id: node._id, parent});
                 } else {
@@ -269,11 +270,11 @@
                 let idList = docList.map(item => item.id);
                 // 根专题不会缩回 其他的专题检查是否在list中
                 this.documentList.map(doc => {
-                    isGraphSelfPart(doc) && (doc.isExplode = idList.includes(doc._id) || doc.parent === null)
+                    (doc.isExplode = idList.includes(doc._id) || doc.parent === null)
                 })
             },
 
-            getDocumentChildList(document: DocumentSelfPartAny): DirectoryItemAll[] {
+            getDocumentChildList(document: DocumentSelfPart): DirectoryItemAll[] {
                 let result: DirectoryItemAll[] = [];
                 let subDocIdList = document.docsChildren.map(child => child._id)
                 let nodes = document.nodesWithoutSelf.filter(item => !subDocIdList.includes(item._id))

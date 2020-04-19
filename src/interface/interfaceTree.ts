@@ -1,6 +1,8 @@
 // 拥有孩子的接口
 
 //排序用函数
+import {DocumentSelfPart} from "@/class/settingBase";
+
 export type SortFunction<L> = (a: L, b: L) => number
 
 //虚拟化函数
@@ -236,12 +238,12 @@ export class VirtualTree<T, L extends VirtualNodeBase<T, L>, P> {
     }
 }
 
-export class TreeNodeDoc extends TreeNode<DocumentSelfPartAny> {
+export class TreeNodeDoc extends TreeNode<DocumentSelfPart> {
     get isDeleted() {
         return this.boundObject.Conf.isDeleted
     }
 
-    constructor(doc: DocumentSelfPartAny, parent: DocumentSelfPartAny | null) {
+    constructor(doc: DocumentSelfPart, parent: DocumentSelfPart | null) {
         let _parent = parent === null
             ? null
             : parent.treeNode

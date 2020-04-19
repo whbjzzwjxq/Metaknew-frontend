@@ -68,7 +68,7 @@
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
     import DocumentAdder from "@/components/DocumentAdder.vue";
-    import {GraphSelfPart} from "@/class/settingGraph";
+    import {DocumentSelfPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "SubToolNewItem",
@@ -112,8 +112,8 @@
                     }
                 }
             },
-            document: function (): GraphSelfPart {
-                return this.$store.state.dataManager.currentGraph
+            document: function (): DocumentSelfPart {
+                return this.$store.state.dataManager.currentDocument
             }
         },
         methods: {

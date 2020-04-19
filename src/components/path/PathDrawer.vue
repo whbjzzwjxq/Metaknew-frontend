@@ -17,7 +17,7 @@
                     v-for="node in activeNodeList"
                     :key="node.node._id"
                     :state="node.node.State"
-                    :setting="node.node.Setting"
+                    :item-setting="node.node.Setting"
                     :size="12"
                     :point="getLocation(node)">
 
@@ -48,7 +48,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {IndexDouble, PathNode, PathNodeEmpty, PathNodeExist, PathSelfPart} from "@/class/path";
+    import {IndexDouble, PathNode, PathNodeEmpty, PathNodeExist, PathSelfPart} from "@/class/settingPath";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import {isPathNodeExist} from "@/utils/typeCheck";
@@ -73,7 +73,9 @@
                     _label: 'pathNode',
                     _name: '',
                     _image: ''
-                }, nodeTemplateTheme.inPath()) as NodeSetting,
+                }, {
+
+                }) as NodeSetting,
                 pathLeftDivWidth: 240,
                 currentIndex: {
                     depth: 0,

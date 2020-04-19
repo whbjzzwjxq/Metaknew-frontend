@@ -1,7 +1,7 @@
 import {Point, RectByPoint} from "@/class/geometric";
 import {IndexedInfo} from "@/api/search/search";
 import {VirtualNodeBase} from "@/interface/interfaceTree";
-import {GraphSelfPart} from "@/class/settingGraph";
+import {DocumentSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/class/settingBase";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -28,7 +28,7 @@ export interface TabContent {
 // graph-viewBox graph-render相关组件使用
 export type GraphMetaData = {
     absolute: Point, // 在视图中的绝对位置
-    self: GraphSelfPart, // 对应的Graph
+    self: DocumentSelfPart, // 对应的Graph
     rect: RectByPoint, // 对应的矩形
     parent: GraphMetaData | null, //对应的上级MetaData
 }
@@ -98,11 +98,11 @@ export interface DirectoryItem<T> {
 }
 
 export type DirectorySubItemAll =
-    DirectoryItem<NodeSettingPartAny>
-    | DirectoryItem<LinkSettingPartAny>
-    | DirectoryItem<MediaSettingPartAny>
+    DirectoryItem<NodeSettingPart>
+    | DirectoryItem<LinkSettingPart>
+    | DirectoryItem<MediaSettingPart>
 
-export interface DirectoryNode extends VirtualNodeBase<DocumentSelfPartAny, DirectoryNode>, DirectoryItem<DocumentSelfPartAny> {
+export interface DirectoryNode extends VirtualNodeBase<DocumentSelfPart, DirectoryNode>, DirectoryItem<DocumentSelfPart> {
     _children: DirectoryNode[]
 }
 

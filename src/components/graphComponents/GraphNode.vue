@@ -68,7 +68,7 @@
             :y="textSetting.offsetY"
             :width="textSetting.width"
             :height="textSetting.height">
-            <p :style="textStyle">{{ setting._name }}</p>
+            <p :style="textStyle">{{ itemSetting._name }}</p>
         </foreignObject>
 
         <foreignObject
@@ -101,7 +101,7 @@
             },
 
             itemSetting: {
-                type: Object as () => NodeSettingGraph,
+                type: Object as () => NodeSetting,
                 required: true
             },
 
@@ -120,7 +120,7 @@
                 return 'translate(' + x + ' ' + y + ')'
             },
 
-            setting: function(): NodeStyleSettingGraph {
+            setting: function(): NodeStyleSetting {
                 return this.itemSetting.InGraph
             },
 

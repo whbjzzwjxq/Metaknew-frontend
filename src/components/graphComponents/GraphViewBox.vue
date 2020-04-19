@@ -31,7 +31,7 @@
                 :key="index"
                 :state="node.State"
                 :id="node._id"
-                :setting="nodeRewriteSettingList[index]"
+                :item-setting="nodeRewriteSettingList[index]"
                 :position="nodeLocation[index].positiveRect()"
                 :scale="realScale"
                 @mouseenter.native.stop="mouseEnter(node, index)"
@@ -182,13 +182,13 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        GraphConf,
-        GraphSelfPart, ItemSettingPartGraph,
-        LinkSettingPartGraph,
-        MediaSettingPartGraph,
-        NodeSettingPartGraph, NoteSettingPartGraph,
-        TextSettingPartGraph
-    } from '@/class/settingGraph'
+        DocumentConfigure,
+        DocumentSelfPart, ItemSettingPart,
+        LinkSettingPart,
+        MediaSettingPart,
+        NodeSettingPart, NoteSettingPart,
+        TextSettingPart
+    } from '@/class/settingBase'
     import {maxN, minN} from "@/utils/utils"
     import {getPoint, Point, RectByPoint} from '@/class/geometric'
     import GraphNode from './GraphNode.vue';
@@ -201,7 +201,6 @@
     import CardAllSimp from "@/components/card/standard/CardAllSimp.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {
-        isGraphSelfPart,
         isLinkSetting,
         isMediaSetting,
         isNodeSetting,
@@ -212,13 +211,6 @@
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
     import {NodeInfoPart} from "@/class/info";
-    import {
-        LinkSettingPart,
-        MediaSettingPart,
-        NodeSettingPart,
-        NoteSettingPart,
-        TextSettingPart
-    } from "@/class/settingBase";
 
     export default Vue.extend({
         name: "GraphViewBox",
@@ -291,7 +283,7 @@
         },
         props: {
             graph: {
-                type: Object as () => GraphSelfPart,
+                type: Object as () => DocumentSelfPart,
                 required: true
             },
 
@@ -345,10 +337,10 @@
             userDataManager: function (): UserDataManagerState {
                 return this.$store.state.userDataManager
             },
-            state: function (): GraphState {
+            state: function (): DocumentState {
                 return this.graph.Conf.State
             },
-            setting: function (): GraphConf {
+            setting: function (): DocumentConfigure {
                 return this.graph.Conf
             },
             containerRect: function (): AreaRect {
@@ -357,8 +349,8 @@
             },
 
             // 未被删除的孩子Graph
-            activeGraphList: function (): GraphSelfPart[] {
-                let result = this.graph.docsChildren.filter(item => isGraphSelfPart(item)) as GraphSelfPart[];
+            activeGraphList: function (): DocumentSelfPart[] {
+                let result = this.graph.docsChildren.filter(item => !item.isDeleted)
                 result.push(this.graph)
                 return result
             },
@@ -379,7 +371,7 @@
                     y: this.containerRect.height
                 }); // 起始坐标置为(0,0)
 
-                let basePoint = getPoint(this.graph.nodeSelf.Setting.Base).multiRect(this.containerRect);
+                let basePoint = getPoint(this.graph.selfSettingInGraph.Base).multiRect(this.containerRect);
                 // 基础点就是Graph.baseNode点
                 let root: GraphMetaData = {
                     parent: null,
@@ -391,17 +383,17 @@
                 // 从父亲Graph算出点的绝对位置
                 const getAbsPointFromParent = (node: VisNodeSettingPart, parentMetaData: GraphMetaData) => {
                     // 加上父亲GraphBaseNode的绝对位置
-                    return getPoint(node.Setting.Base) // 自己的位置比例
-                        .decrease(node.parent.nodeSelf.Setting.Base) // 父亲GraphBaseNode的位置比例
+                    return getPoint(node.StyleInGraph.Base) // 自己的位置比例
+                        .decrease(node.parent.selfSettingInGraph.Base) // 父亲GraphBaseNode的位置比例
                         .multiRect(parentMetaData.rect.positiveRect()) // 乘以父亲Graph的宽高
                         .add(parentMetaData.absolute)
                 };
 
                 // 从父亲Graph里的节点位置推出自身的矩形的绝对位置
-                const getRectFromAbsPoint = (document: GraphSelfPart, parentPoint: Point) => {
+                const getRectFromAbsPoint = (document: DocumentSelfPart, parentPoint: Point) => {
                     let {width, height} = document.rect;
                     // 自身baseNode在自己矩形的位置
-                    let delta = getPoint(document.nodeSelf.Setting.Base).multiRect({width, height});
+                    let delta = getPoint(document.selfSettingInGraph.Base).multiRect({width, height});
                     // 起点与parentNode的位置差为delta，可以算出起点(左上角)
                     let start = delta.multi(-1).add(parentPoint);
                     // 终点就是起点加长宽
@@ -446,13 +438,13 @@
             },
 
             // 包含所有的Nodes
-            nodes: function (): NodeSettingPartGraph[] {
+            nodes: function (): NodeSettingPart[] {
                 // root Graph自己的节点显示
                 return this.graph.nodesAllSubDoc
             },
 
             //渲染按钮
-            renderButtons: function (): NodeSettingPartGraph[] {
+            renderButtons: function (): NodeSettingPart[] {
                 return this.editMode
                     ? this.nodes
                     : []
@@ -473,45 +465,49 @@
                 return this.nodes.map(node => this.dataManager.nodeManager[node._id])
             },
 
-            nodeRewriteSettingList: function (): NodeSettingGraph[] {
+            nodeRewriteSettingList: function (): NodeSetting[] {
                 return this.nodes.map((node, index) => {
-                    let setting = node.Setting;
-                    let size = (this.importanceOn ? this.impScaleRadius[index] : setting.Base.size) * this.realScale;
+                    let {_name, InGraph} = node.Setting;
+                    //翻译注入
+                    let trans = this.nodeInfoList[index].Info.Translate[this.lang];
+                    trans && (_name = trans);
+                    //
+                    let size = (this.importanceOn ? this.impScaleRadius[index] : InGraph.Base.size) * this.realScale;
                     size <= 8 && (size = 8);
                     // 根据重要度比例重写尺度
                     let Base = {
-                        ...setting.Base,
+                        ...InGraph.Base,
                         size
                     } as BaseSizeInGraph;
 
                     // 根据标签种类重写颜色
                     let View = {
-                        ...setting.View,
-                        color: this.labelColorOn ? '#000000' : setting.View.color
+                        ...InGraph.View,
+                        color: this.labelColorOn ? '#000000' : InGraph.View.color
                     };
                     //重写字体大小
-                    let textSize = setting.Text.textSize * this.realScale;
+                    let textSize = InGraph.Text.textSize * this.realScale;
                     textSize < 10 && (textSize = 10);
                     let Text = {
-                        ...setting.Text,
+                        ...InGraph.Text,
                         textSize
                     };
-                    let {_name} = setting;
-                    let trans = this.nodeInfoList[index].Info.Translate[this.lang];
-                    trans && (_name = trans);
                     return {
-                        ...setting,
+                        ...node.Setting,
                         _name,
-                        Base,
-                        View,
-                        Text
-                    } as NodeSettingGraph
+                        InGraph: {
+                            ...InGraph,
+                            Base,
+                            View,
+                            Text
+                        }
+                    } as NodeSetting
                 })
             },
 
-            mediaRewriteSettingList: function (): MediaSettingGraph[] {
+            mediaRewriteSettingList: function (): MediaSetting[] {
                 return this.medias.map((media) => {
-                    let setting = media.Setting;
+                    let setting = media.StyleInGraph;
                     let size = (setting.Base.size) * this.realScale;
                     size <= 50 && (size = 50);
                     let Base = {
@@ -519,36 +515,38 @@
                         size
                     } as BaseSizeInGraph;
                     return {
-                        ...setting,
-                        Base
+                        ...media.Setting,
+                        InGraph: {
+                            Base
+                        }
                     } as MediaSetting
                 })
             },
 
-            textRewriteSettingList: function (): TextSettingGraph[] {
+            textRewriteSettingList: function (): TextSetting[] {
                 return this.texts.map((text) => {
                     return text.Setting
                 })
             },
 
-            linkRewriteSettingList: function(): LinkSettingGraph[] {
+            linkRewriteSettingList: function (): LinkSetting[] {
                 return []
             },
 
-            links: function (): LinkSettingPartGraph[] {
+            links: function (): LinkSettingPart[] {
                 return this.graph.linksAllSubDoc
             },
 
             // 只有自身的medias
-            medias: function (): MediaSettingPartGraph[] {
+            medias: function (): MediaSettingPart[] {
                 return this.graph.medias
             },
 
-            notes: function (): NoteSettingPartGraph[] {
+            notes: function (): NoteSettingPart[] {
                 return this.userDataManager.userNoteInDoc.filter(item => !item.isDeleted && item.Setting._parent === this.graph._id)
             },
 
-            texts: function (): TextSettingPartGraph[] {
+            texts: function (): TextSettingPart[] {
                 return this.graph.texts
             },
 
@@ -571,11 +569,11 @@
                 } as Record<DocumentItemType, string[]>
             },
 
-            allItems: function (): ItemSettingPartGraph[] {
+            allItems: function (): ItemSettingPart[] {
                 return this.graph.itemsAllSubDoc
             },
 
-            selectedItems: function (): ItemSettingPartGraph[] {
+            selectedItems: function (): ItemSettingPart[] {
                 return this.allItems.filter(item => item.State.isSelected)
             },
 
@@ -600,15 +598,15 @@
             },
 
             nodeLocation: function (): RectByPoint[] {
-                return this.nodes.map((node, index) => this.getRectByPoint(this.nodeRewriteSettingList[index].Base, node.parent));
+                return this.nodes.map((node, index) => this.getRectByPoint(this.nodeRewriteSettingList[index].InGraph.Base, node.parent));
             },
 
             mediaLocation: function (): RectByPoint[] {
-                return this.medias.map((media, index) => this.getRectByPoint(this.mediaRewriteSettingList[index].Base, media.parent))
+                return this.medias.map((media, index) => this.getRectByPoint(this.mediaRewriteSettingList[index].InGraph.Base, media.parent))
             },
 
             textLocation: function (): RectByPoint[] {
-                return this.texts.map((text, index) => this.getRectByPoint(this.textRewriteSettingList[index].Base, text.parent))
+                return this.texts.map((text, index) => this.getRectByPoint(this.textRewriteSettingList[index].InGraph.Base, text.parent))
             },
 
             //关系midX
@@ -619,14 +617,14 @@
                     let y1 = this.getTargetInfo(link.Setting._start).y;
                     let x2 = this.getTargetInfo(link.Setting._end).x;
                     let y2 = this.getTargetInfo(link.Setting._end).y;
-                    switch (link.Setting.View.viewType) {
+                    switch (link.StyleInGraph.View.viewType) {
                         case "curve":
-                            link.Setting.View.direct === 'top'
+                            link.StyleInGraph.View.direct === 'top'
                                 ? result = {"x": (x1 + x2) / 2, "y": y2}
                                 : result = {"x": (x1 + x2) / 2, "y": y1};
                             break;
                         case "polyline":
-                            link.Setting.View.direct === 'top'
+                            link.StyleInGraph.View.direct === 'top'
                                 ? result = {"x": (x1 + x2) / 2, "y": y2}
                                 : result = {"x": (x1 + x2) / 2, "y": y1};
                             break;
@@ -654,7 +652,7 @@
                         width,
                         x,
                         y,
-                        show: this.showNode[index] && node.Setting.Show.showAll,
+                        show: this.showNode[index] && node.StyleInGraph.Show.showAll,
                         isSelected: node.State.isSelected,
                         isDeleted: node.isDeleted
                     }
@@ -733,13 +731,13 @@
 
         },
         methods: {
-            getRectByPoint(base: BaseSizeInGraph, parent: DocumentSelfPartAny) {
+            getRectByPoint(base: BaseSizeInGraph, parent: DocumentSelfPart) {
                 // 将绝对的坐标点转化为矩形
                 //width,height: 从源点引申的尺寸，源点在左上角
                 let [width, height] = [base.size, base.size * base.scaleX];
                 let graphMeta = this.getGraphMetaData(parent._id);
                 let point = getPoint(base)
-                    .decrease(parent.nodeSelf.Setting.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
+                    .decrease(parent.selfSettingInGraph.Base) // 计算小数差 e.g. 0.3- 0.5 = -0.2
                     .multiRect(graphMeta.rect.positiveRect()); // 乘以矩形 e.g. -0.2 * 1000 = -200
                 point.add(graphMeta.absolute); // 加上绝对坐标 e.g. -100 + 320 = 220
                 let startPoint = this.pointMoveComputed(point);
@@ -776,8 +774,8 @@
                     delta.decrease(this.dragStartPoint).divideRect(rect).divide(this.realScale);
                     this.dragStart($event);
                     let moveFunc = (node: VisAreaSettingPart) => {
-                        node.Setting.Base.x += delta.x;
-                        node.Setting.Base.y += delta.y;
+                        node.StyleInGraph.Base.x += delta.x;
+                        node.StyleInGraph.Base.y += delta.y;
                     };
                     if (this.selectedItems.length >= 1) {
                         this.selectedItems.map(item => isVisAreaSetting(item) && moveFunc(item))
@@ -816,7 +814,7 @@
                 if (this.isLinking && isVisNodeSetting(node) && this.startNode) {
                     if (node.parent._id === this.startNode.parent._id) {
                         // 如果是同一张图里的
-                        let document = node.parent as GraphSelfPart;
+                        let document = node.parent as DocumentSelfPart;
                         document.addEmptyLink(this.startNode, node);
                         this.isLinking = false;
                     } else {
@@ -916,7 +914,7 @@
                 this.clearSelected('all')
             },
 
-            clearSelected(items: 'all' | ItemSettingPartGraph[]) {
+            clearSelected(items: 'all' | ItemSettingPart[]) {
                 if (items === 'all') {
                     Object.values(this.dataManager.graphManager).map(document => {
                         document.allItems.map(item => item.updateState('isSelected', false))
@@ -990,7 +988,7 @@
                 return getPoint($event).decrease(this.viewBox.start)
             },
 
-            explode(node: NodeSettingPartGraph) {
+            explode(node: NodeSettingPart) {
                 dispatchNodeExplode({node, document: this.graph})
             },
 
@@ -1003,7 +1001,7 @@
                 let graph = this.activeGraphRectList[index].self;
                 //现有的矩阵长宽
                 let {width, height} = graph.rect;
-                let setting = graph.nodeSelf.Setting;
+                let setting = graph.selfSettingInGraph;
                 let scale = this.realScale;
                 //更新矩形长宽
                 let deltaRect = getPoint(end).decrease(start).divide(scale);
@@ -1015,20 +1013,20 @@
                 setting.Base.y = (height * y - start.y / scale) / (graph.rect.height);
             },
 
-            updateSize: function (start: PointMixed, end: PointMixed, setting: NodeSettingGraph | MediaSetting) {
+            updateSize: function (start: PointMixed, end: PointMixed, setting: NodeSetting | MediaSetting) {
                 // 视觉上的更新尺寸start, end
                 let scale = this.realScale;
                 // 更新起始点
-                setting.Base.x += start.x / (this.containerRect.width * scale);
-                setting.Base.y += start.y / (this.containerRect.height * scale);
+                setting.InGraph.Base.x += start.x / (this.containerRect.width * scale);
+                setting.InGraph.Base.y += start.y / (this.containerRect.height * scale);
                 //更新长宽
-                let width = setting.Base.size;
-                let height = setting.Base.scaleX * width;
+                let width = setting.InGraph.Base.size;
+                let height = setting.InGraph.Base.scaleX * width;
                 let delta = getPoint(end).decrease(start).divide(scale);
                 width += delta.x;
                 height += delta.y;
-                setting.Base.scaleX = height / width;
-                setting.Base.size = width;
+                setting.InGraph.Base.scaleX = height / width;
+                setting.InGraph.Base.size = width;
             },
 
             getItemList(_type: DocumentItemType) {
@@ -1058,7 +1056,7 @@
             },
 
             selectLabel(_type: DocumentItemType, _label: string) {
-                let list: ItemSettingPartGraph[] = this.getItemList(_type);
+                let list: ItemSettingPart[] = this.getItemList(_type);
                 list.filter(item => item._label === _label).map(item => item.updateState('isSelected'))
             },
 
@@ -1078,7 +1076,7 @@
             },
 
             //显示节点或者关系卡片
-            cardOn(node: NodeSettingPartGraph | LinkSettingPartGraph, location: PointObject) {
+            cardOn(node: NodeSettingPart | LinkSettingPart, location: PointObject) {
 
             }
         },

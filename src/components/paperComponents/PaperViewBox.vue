@@ -6,7 +6,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {PaperSelfPart} from "@/class/paperItem";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import {RectByPoint} from "@/class/geometric";
 
     export default Vue.extend({
@@ -19,7 +19,7 @@
         },
         props: {
             paper: {
-                type: Object as () => PaperSelfPart,
+                type: Object as () => DocumentSelfPart,
                 required: true
             }
         },

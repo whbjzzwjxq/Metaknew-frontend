@@ -42,7 +42,6 @@
     import {mediaAppendToNode} from "@/api/subgraph/media";
     import {MediaInfoPart, NodeInfoPart} from "@/class/info";
     import {MediaSettingPart} from "@/class/settingBase";
-    import {MediaSettingPartGraph} from "@/class/settingGraph";
 
     export default Vue.extend({
         name: "CardPageMediaList",
@@ -106,9 +105,9 @@
                 }
             },
             addMediaToGraph: function (media: MediaInfoPart) {
-                let graph = this.dataManager.currentGraph;
-                let newMediaSetting = MediaSettingPartGraph.emptyMediaSettingFromInfo(media, graph);
-                this.dataManager.currentGraph.addItems([newMediaSetting])
+                let graph = this.dataManager.currentDocument;
+                let newMediaSetting = MediaSettingPart.emptyMediaSettingFromInfo(media, graph);
+                this.dataManager.currentDocument.addItems([newMediaSetting])
             },
             reRankFile: function () {
                 let sorter = sortCtrl(this.filterProp);
