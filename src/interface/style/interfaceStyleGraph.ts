@@ -123,12 +123,4 @@ declare global {
             rotate: number,
         }
     }
-
-    interface GraphConfigure extends SettingGroup {
-        Background: {
-            image: string,
-            color: Color,
-            // todo 专题样式定义 已经列入文档
-        },
-    }
 }

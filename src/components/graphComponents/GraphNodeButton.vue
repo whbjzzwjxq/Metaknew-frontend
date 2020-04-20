@@ -110,10 +110,11 @@
                     }
                 } else if (this.boundDocument._label === '_DocGraph') {
                     explodeIcon = {
-                        name: getIcon("i-explode", !this.boundDocument.isExplode),
+                        name: getIcon("i-explode", !this.boundDocument.isExplodeState),
                         _func: this.explode,
-                        toolTip: '展开专题',
-                        render: this.node._type === 'document'
+                        toolTip: !this.boundDocument.isExplodeState ? '展开专题' : '关闭专题',
+                        render: this.node._type === 'document',
+                        disabled: this.boundDocument.isRoot
                     }
                 } else {
                     explodeIcon = {
@@ -156,8 +157,7 @@
                 this.$emit('goto', this.node.remoteDocument)
             },
             explode() {
-                //@ts-ignore
-                this.boundDocument.isExplode = !this.boundDocument.isExplode
+                this.boundDocument.explode()
             }
         },
         watch: {},

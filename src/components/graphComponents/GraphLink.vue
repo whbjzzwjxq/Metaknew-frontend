@@ -41,7 +41,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {getPoint, getPointDistance, rectDiagonalDistance} from "@/class/geometric";
-    import {LinkSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: 'GraphLink',
@@ -49,10 +48,6 @@
             return {}
         },
         props: {
-            link: {
-                type: Object as () => LinkSettingPart,
-                required: true
-            },
             source: {
                 type: Object as () => NodeSettingSimply,
                 required: true
@@ -65,11 +60,21 @@
             midLocation: {
                 type: Object as () => PointObject,
                 required: true
+            },
+
+            state: {
+                type: Object as () => LinkState,
+                required: true
+            },
+
+            itemSetting: {
+                type: Object as () => LinkSetting,
+                required: true
             }
         },
         computed: {
-            setting: function (): LinkSetting {
-                return this.link.Setting
+            setting: function (): LinkStyleSetting {
+                return this.itemSetting.InGraph
             },
 
             // 说的是线型 不是'link'
@@ -126,7 +131,7 @@
             },
 
             isSelected: function (): boolean {
-                return this.link.isSelected
+                return this.state.isSelected
             },
 
             drawStyle: function (): CSSProp {
@@ -145,7 +150,7 @@
                     'stroke': this.drawStyle.stroke,
                     'strokeWidth': this.setting.View.width + 12 + 'px',
                     'fill': 'none',
-                    'strokeOpacity': this.isSelected || this.link.State.isMouseOn ? 0.1 : 0
+                    'strokeOpacity': this.isSelected || this.state.isMouseOn ? 0.1 : 0
                 }
             },
 
@@ -196,7 +201,7 @@
                 let refY = length * 0.3;
                 let L1 = `L${-refX}, ${-refY} `;
                 let L2 = `L${-refX}, ${refY} `;
-                let _id = 'arrow_' + this.link._id;
+                let _id = 'arrow_' + this.itemSetting._id;
                 return {
                     _id,
                     length: length,
@@ -208,7 +213,7 @@
 
             textSetting: function (): Record<string, any> {
                 return {
-                    width: this.link._label.length * 12,
+                    width: this.itemSetting._label.length * 12,
                     height: 20
                 }
             },

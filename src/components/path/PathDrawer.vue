@@ -52,7 +52,7 @@
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import GraphLink from "@/components/graphComponents/GraphLink.vue";
     import {isPathNodeExist} from "@/utils/typeCheck";
-    import {nodeStateTemplate} from "@/utils/template";
+    import {nodeStateTemplate, settingTemplateGraph} from "@/utils/template";
     import {nodeTemplateTheme} from "@/utils/templateStandard";
     import PathNodeComp from "@/components/path/PathNodeComp.vue";
     import {getIcon} from "@/utils/icon";
@@ -70,11 +70,11 @@
                 defaultSetting: Object.assign({
                     _id: '$_-2',
                     _type: 'node',
-                    _label: 'pathNode',
+                    _label: '_PathNode',
                     _name: '',
                     _image: ''
                 }, {
-
+                    InGraph: settingTemplateGraph('node')
                 }) as NodeSetting,
                 pathLeftDivWidth: 240,
                 currentIndex: {

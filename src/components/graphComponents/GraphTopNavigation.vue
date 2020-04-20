@@ -59,6 +59,7 @@
         },
         methods: {
             gotoDocument(graph: DocumentSelfPart) {
+                console.log(graph)
                 commitGraphChange({graph})
             },
         },

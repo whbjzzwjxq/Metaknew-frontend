@@ -15,11 +15,11 @@
             <graph-link
                 v-for="(link, index) in links"
                 v-show="showLink[index]"
-                :key="link._id"
-                :link="link"
-                :scale="realScale"
-                :source="getTargetInfo(link.Setting._start)"
-                :target="getTargetInfo(link.Setting._end)"
+                :key="link._uniqueId"
+                :item-setting="linkRewriteSettingList[index]"
+                :state="link.State"
+                :source="getTargetInfo(link._start)"
+                :target="getTargetInfo(link._end)"
                 :mid-location="midLocation[index]"
                 @mouseenter.native.stop="mouseEnter(link)"
                 @mouseleave.native.stop="mouseLeave(link)"
@@ -28,12 +28,10 @@
             <graph-node
                 v-for="(node, index) in nodes"
                 v-show="showNode[index]"
-                :key="index"
-                :state="node.State"
-                :id="node._id"
-                :item-setting="nodeRewriteSettingList[index]"
+                :key="node._uniqueId"
                 :position="nodeLocation[index].positiveRect()"
-                :scale="realScale"
+                :item-setting="nodeRewriteSettingList[index]"
+                :state="node.State"
                 @mouseenter.native.stop="mouseEnter(node, index)"
                 @mouseleave.native.stop="mouseLeave(node)"
                 @mousedown.native.stop="dragStart"
@@ -183,10 +181,12 @@
     import Vue from 'vue'
     import {
         DocumentConfigure,
-        DocumentSelfPart, ItemSettingPart,
+        DocumentSelfPart,
+        ItemSettingPart,
         LinkSettingPart,
         MediaSettingPart,
-        NodeSettingPart, NoteSettingPart,
+        NodeSettingPart,
+        NoteSettingPart,
         TextSettingPart
     } from '@/class/settingBase'
     import {maxN, minN} from "@/utils/utils"
@@ -200,13 +200,7 @@
     import GraphText from "@/components/graphComponents/GraphText.vue";
     import CardAllSimp from "@/components/card/standard/CardAllSimp.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
-    import {
-        isLinkSetting,
-        isMediaSetting,
-        isNodeSetting,
-        isVisAreaSetting,
-        isVisNodeSetting
-    } from "@/utils/typeCheck";
+    import {isLinkSetting, isMediaSetting, isNodeSetting, isVisAreaSetting, isVisNodeSetting} from "@/utils/typeCheck";
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
@@ -530,7 +524,20 @@
             },
 
             linkRewriteSettingList: function (): LinkSetting[] {
-                return []
+                return this.links.map((link) => {
+                    let style = link.StyleInGraph
+                    let Arrow = {
+                        ...style.Arrow,
+                        arrowLength: style.Arrow.arrowLength * (0.5 * this.realScale + 0.5)
+                    }
+                    return {
+                        ...link.Setting,
+                        InGraph: {
+                            ...style,
+                            Arrow
+                        }
+                    }
+                })
             },
 
             links: function (): LinkSettingPart[] {
@@ -609,14 +616,14 @@
                 return this.texts.map((text, index) => this.getRectByPoint(this.textRewriteSettingList[index].InGraph.Base, text.parent))
             },
 
-            //关系midX
+            //关系middleLocation
             midLocation: function (): PointObject[] {
                 return this.links.map(link => {
                     let result;
-                    let x1 = this.getTargetInfo(link.Setting._start).x;
-                    let y1 = this.getTargetInfo(link.Setting._start).y;
-                    let x2 = this.getTargetInfo(link.Setting._end).x;
-                    let y2 = this.getTargetInfo(link.Setting._end).y;
+                    let x1 = this.getTargetInfo(link._start).x;
+                    let y1 = this.getTargetInfo(link._start).y;
+                    let x2 = this.getTargetInfo(link._end).x;
+                    let y2 = this.getTargetInfo(link._end).y;
                     switch (link.StyleInGraph.View.viewType) {
                         case "curve":
                             link.StyleInGraph.View.direct === 'top'

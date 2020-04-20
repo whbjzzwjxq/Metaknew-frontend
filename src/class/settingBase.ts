@@ -97,6 +97,10 @@ export class ItemSettingPart extends SettingPart {
         return this.Setting
     }
 
+    get _uniqueId() {
+        return this.parent._id + '_' + this._id
+    }
+
     get _type() {
         return this.Setting._type
     }
@@ -162,15 +166,11 @@ export class NodeSettingPart extends ItemSettingPart {
     }
 
     get boundDocument(): DocumentSelfPart {
-        return this.parent.docsChildren.filter(graph => graph._id === this._id)[0]
+        return this.parent.docsChildrenWithSelf.filter(graph => graph._id === this._id)[0]
     }
 
     get remoteDocument() {
-        if (this._label === '_DocGraph') {
-            return store.state.dataManager.graphManager[this._id]
-        } else {
-            return store.state.dataManager.paperManager[this._id]
-        }
+        return store.state.dataManager.graphManager[this._id]
     }
 
     get StyleInGraph() {
@@ -304,6 +304,10 @@ export class LinkSettingPart extends ItemSettingPart {
         }
     }
 
+    get StyleInGraph() {
+        return this.Setting.InGraph
+    }
+
     get isDeleted() {
         let {_start, _end} = this;
         return this.State.isDeleted || _start.isDeleted || _end.isDeleted
@@ -363,9 +367,11 @@ export class LinkSettingPart extends ItemSettingPart {
     }
 
     static emptyLinkSetting(payload: LinkSetting, parent: DocumentSelfPart) {
-        let setting = Object.assign(payload, settingTemplateGraph("link"));
+        let setting = Object.assign(payload, {
+            InGraph: settingTemplateGraph("link")
+        });
         let state = linkStateTemplate();
-        return new LinkSettingPart(setting, state, parent) as LinkSettingPart
+        return new LinkSettingPart(setting, state, parent)
     }
 
     static resolveBackend(linkSetting: BackendLinkSetting, parent: DocumentSelfPart) {
@@ -375,7 +381,7 @@ export class LinkSettingPart extends ItemSettingPart {
             _end: parent.getVisNodeById({_id: linkSetting._end.id, _type: linkSetting._end.type})
         } as LinkSetting;
         let state = linkStateTemplate();
-        return new LinkSettingPart(setting, state, parent) as LinkSettingPart;
+        return new LinkSettingPart(setting, state, parent)
     }
 }
 
@@ -477,7 +483,13 @@ export class DocumentSelfPart {
     protected MetaData: DocumentMetaData;
     static baseList: BackendGraphWithNode[] = []
 
-    protected constructor(Content: DocumentContent, Conf: DocumentConfigure, comps: DocumentComponents, parent: DocumentSelfPart | null, meta: DocumentMetaData) {
+    protected constructor(
+        Content: DocumentContent,
+        Conf: DocumentConfigure,
+        comps: DocumentComponents,
+        parent: DocumentSelfPart | null,
+        meta: DocumentMetaData
+    ) {
         this.Conf = Conf;
         this.Content = Content;
         this.Components = comps;
@@ -559,26 +571,47 @@ export class DocumentSelfPart {
         return this.Conf._label
     }
 
+    get isRemote() {
+        return this.Conf.isRemote
+    }
+
+    get isRoot() {
+        return this.treeNode.isRoot
+    }
+
+    set isRoot(value: boolean) {
+        this.treeNode.isRoot = value
+    }
+
     get isSelf() {
         return store.state.dataManager.nodeManager[this._id].isSelf
+    }
+
+    get isFatherExplode(): boolean {
+        return this.parent === null || this.parent.isFatherExplode
+    }
+
+    get isExplode() {
+        return this.isExplodeState && this.isFatherExplode
+    }
+
+    get isExplodeState() {
+        return this.Conf.State.isExplode
+    }
+
+    explode(value?: boolean) {
+        value === undefined && (value = !this.Conf.State.isExplode)
+        !this.isRoot && (this.Conf.State.isExplode = value)
+    }
+
+    get isDeleted() {
+        return this.treeNode.isDeleted
     }
 
     get parent() {
         return this.treeNode.parent
             ? this.treeNode.parent.boundObject
             : null
-    }
-
-    get isExplode() {
-        return this.Conf.State.isExplode
-    }
-
-    set isExplode(value) {
-        this.Conf.State.isExplode = value
-    }
-
-    get isDeleted() {
-        return this.treeNode.isDeleted
     }
 
     get rect() {
@@ -700,6 +733,13 @@ export class DocumentSelfPart {
         return this.treeNode.childrenActive.map(node => node.boundObject)
     }
 
+    get docsChildrenWithSelf() {
+        let result = [] as DocumentSelfPart[]
+        result.push(...this.docsChildren)
+        result.push(this)
+        return result
+    }
+
     get dataQueryObject() {
         return this.Conf.queryObject
     }
@@ -729,18 +769,6 @@ export class DocumentSelfPart {
         let result: SubItemSettingPart[];
         result = [];
         return result.concat(nodes).concat(links).concat(medias).concat(texts)
-    }
-
-    get isRemote() {
-        return this.Conf.isRemote
-    }
-
-    get isRoot() {
-        return this.treeNode.isRoot
-    }
-
-    set isRoot(value: boolean) {
-        this.treeNode.isRoot = value
     }
 
     updateStateUpdate() {
@@ -840,6 +868,7 @@ export class DocumentSelfPart {
             // 额外处理专题
             if (isNodeSetting(item)) {
                 let graph = item.boundDocument;
+                console.log(graph, item)
                 graph && this.treeNode._addNewNode([graph.treeNode])
                 // 额外处理link
             } else if (isLinkSetting(item)) {

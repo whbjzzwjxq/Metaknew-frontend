@@ -132,7 +132,7 @@ const mutations = {
     currentGraphChange(state: DataManagerState, payload: { graph: DocumentSelfPart }) {
         let {graph} = payload;
         let _id = graph._id; // 这里payload是document
-        graph.isExplode = true;
+        graph.explode(true)
         state.currentDocument = graph;
         let node = state.nodeManager[_id];
         commitItemChange(node);
@@ -345,10 +345,10 @@ const actions = {
                 parent: document,
             }).then(() => {
                 let subGraph = state.graphManager[_id];
-                subGraph.isExplode = true
+                subGraph.explode(true)
             });
         } else {
-            subGraph.isExplode = !subGraph.isExplode
+            subGraph.explode()
         }
     },
 
