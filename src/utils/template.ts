@@ -3,8 +3,9 @@ import {fieldDefaultValue, nodeLabelToStandardProps, PropDescription, ValueWithT
 import PDFJS from 'pdfjs-dist';
 import store from '@/store/index';
 import {typeSettingDictGraph} from "@/interface/style/templateStyleGraph";
+import {settingTemplatePaper} from "@/interface/style/templateStylePaper";
 
-export function settingTemplateGraph(_type: AllType) {
+export function settingTemplateGraph(_type: DocumentItemType | 'note') {
     let settingConf = typeSettingDictGraph[_type];
     const specialDict: { [prop: string]: any } = {
         'x': randomNumberInRange(0.3, 0.7),
@@ -22,18 +23,6 @@ export function settingTemplateGraph(_type: AllType) {
         result[key] = settingInstance
     });
     return result
-}
-
-export function nodeSettingTemplate(_id: id, _type: string = 'node', _label: string = 'BaseNode', _name: string = '', _image: string = '') {
-    let setting = <NodeSetting>{
-        _id,
-        _type,
-        _label,
-        _name,
-        _image
-    };
-    Object.assign(setting, settingTemplateGraph("node"));
-    return setting;
 }
 
 export function mediaSettingTemplate(payload: MediaInitPayload) {
@@ -88,7 +77,7 @@ export function pathSettingTemplate(_id: id) {
         _type: 'document',
         _label: "path"
     };
-    Object.assign(setting, settingTemplateGraph('path'));
+    Object.assign(setting, {});
     return setting
 }
 
@@ -111,9 +100,12 @@ export function textSettingTemplate(_id: id, _label: TextLabel, _points: PointOb
         _type: 'text',
         _label,
         _points,
-        _text: ''
+        _text: '测试使用的文字'
     } as TextSetting;
-    return Object.assign(setting, settingTemplateGraph('text'));
+    return Object.assign(setting, {
+        InGraph: settingTemplateGraph('text'),
+        InPaper: settingTemplatePaper('node')
+    });
 }
 
 export function nodeStateTemplate() {
@@ -122,6 +114,7 @@ export function nodeStateTemplate() {
         isMouseOn: false,
         isDeleted: false,
         isAdd: false,
+        isInRow: false
     } as NodeState;
 }
 
@@ -131,6 +124,7 @@ export function linkStateTemplate() {
         isMouseOn: false,
         isDeleted: false,
         isAdd: false,
+        isInRow: false
     } as LinkState;
 }
 
@@ -160,7 +154,8 @@ export function textStateTemplate() {
         isAdd: true,
         isEditing: false,
         isMouseOn: false,
-        isSelected: false
+        isSelected: false,
+        isInRow: false
     }
 }
 

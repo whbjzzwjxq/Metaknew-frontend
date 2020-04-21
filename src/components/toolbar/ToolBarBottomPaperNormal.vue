@@ -1,13 +1,15 @@
 <template>
-    <div></div>
+    <toolbar-bottom></toolbar-bottom>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-
+    import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     export default Vue.extend({
         name: "ToolBarBottomPaperNormal",
-        components: {},
+        components: {
+            ToolbarBottom
+        },
         data: function () {
             return {}
         },

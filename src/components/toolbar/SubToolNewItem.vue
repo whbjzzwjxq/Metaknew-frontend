@@ -68,7 +68,7 @@
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import LinkStartEndSelector from "@/components/LinkStartEndSelector.vue";
     import DocumentAdder from "@/components/DocumentAdder.vue";
-    import {DocumentSelfPart} from "@/class/settingBase";
+    import {DocumentSelfPart, MediaSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "SubToolNewItem",
@@ -112,27 +112,37 @@
                     }
                 }
             },
+            dataManager: function(): DataManagerState {
+                return this.$store.state.dataManager
+            },
             document: function (): DocumentSelfPart {
-                return this.$store.state.dataManager.currentDocument
+                return this.dataManager.currentDocument
             }
         },
         methods: {
-            addNode($event: string) {
-                this.$emit('add-empty-node', $event);
-            },
-            addMedia(mediaIdList: id[]) {
-                this.$emit('add-media', mediaIdList);
-            },
-            addLink(start: VisNodeSettingPart, end: VisNodeSettingPart) {
-                this.$emit('add-empty-link', start, end);
+            addNode(_label: string) {
+                this.document.addEmptyNode('node', _label);
             },
 
-            addDocument($event: '_DocGraph' | '_DocPaper') {
-                this.$emit('add-empty-document', $event)
+            addMedia(mediaIdList: id[]) {
+                let mediaSettingList = mediaIdList.map(_id => this.dataManager.mediaManager[_id])
+                    .map(info => {
+                        return MediaSettingPart.emptyMediaSettingFromInfo(info, this.document)
+                    });
+                this.document.addItems(mediaSettingList);
+                return mediaSettingList
+            },
+
+            addLink(start: VisNodeSettingPart, end: VisNodeSettingPart) {
+                this.document.addEmptyLink(start, end);
+            },
+
+            addDocument() {
+                this.document.addEmptyGraph();
             },
 
             addNote() {
-                this.$emit('add-empty-note')
+                this.document.addEmptyGraph();
             }
 
         },

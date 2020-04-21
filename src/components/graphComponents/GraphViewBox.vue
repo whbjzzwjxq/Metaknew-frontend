@@ -3,7 +3,6 @@
          style="width: 100%; height: 100%; position: relative; overflow: hidden"
          v-resize="onResize"
          ref="viewBox">
-        <!--        基础的Graph-->
         <svg
             width="100%"
             height="100%"
@@ -923,7 +922,7 @@
 
             clearSelected(items: 'all' | ItemSettingPart[]) {
                 if (items === 'all') {
-                    Object.values(this.dataManager.graphManager).map(document => {
+                    Object.values(this.dataManager.documentManager).map(document => {
                         document.allItems.map(item => item.updateState('isSelected', false))
                     });
                 } else {

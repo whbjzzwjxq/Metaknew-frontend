@@ -15,7 +15,6 @@
 .cardItem {
   overflow-y: scroll;
   overflow-x: hidden;
-  background: white;
 }
 
 .cardItem::-webkit-scrollbar {

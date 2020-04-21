@@ -167,7 +167,6 @@
                 </field-text>
             </template>
         </card-sub-row>
-
     </div>
 </template>
 

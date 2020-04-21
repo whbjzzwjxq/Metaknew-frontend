@@ -3,10 +3,11 @@
         <v-text-field
             :style="fontCss"
             :value="text"
+            :label="label"
             @input="updateText"
             dense
             flat
-            hide-details
+            :hide-details="hideDetails"
             class="pr-2"
             v-if="editMode">
 
@@ -42,6 +43,14 @@
             divCss: {
                 type: Object as () => CSSProp,
                 default: () => {}
+            },
+            label: {
+                type: String,
+                default: ''
+            },
+            hideDetails: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {},

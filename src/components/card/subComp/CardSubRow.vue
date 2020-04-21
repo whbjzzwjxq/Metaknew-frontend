@@ -6,9 +6,7 @@
                 <v-subheader class="ml-n4 card-subheader" style="height: 36px">{{text}}</v-subheader>
             </v-col>
             <v-col class="pa-0 ma-0" cols="1">
-                <v-btn icon x-small v-if="!noCollapse">
-                    <v-icon @click="input">{{collapsedIcon}}</v-icon>
-                </v-btn>
+                <icon-group :icon-list="iconList" x-small></icon-group>
             </v-col>
         </v-row>
         <v-row class="px-4 pb-2 pt-0 ma-0" v-show="!isCollapsed" :style="rowStyle">
@@ -21,13 +19,17 @@
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
     import {leftCardWidth} from "@/store/modules/styleComponentSize";
+    import IconGroup from "@/components/IconGroup.vue";
 
     export default Vue.extend({
         name: "CardSubRow",
-        components: {},
+        components: {
+            IconGroup
+        },
         data() {
             return {
-                isCollapsed: false
+                isCollapsed: false,
+
             }
         },
         props: {
@@ -42,9 +44,28 @@
             width: {
                 type: Number,
                 default: leftCardWidth
+            },
+            editMode: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
+            iconList: function(): IconItem[] {
+                return [
+                    {
+                        name: getIcon("i-collapse", !this.isCollapsed),
+                        render: !this.noCollapse,
+                        _func: this.input,
+                        toolTip: '折叠'
+                    },
+                    {
+                        name: getIcon("i-edit", "close"),
+                        render: this.editMode,
+                        _func: this.close
+                    }
+                ]
+            },
             collapsedIcon: function (): string {
                 return getIcon("i-collapse", !this.isCollapsed)
             },
@@ -63,6 +84,10 @@
         methods: {
             input() {
                 this.isCollapsed = !this.isCollapsed
+            },
+
+            close() {
+                this.$emit('close')
             }
         },
         watch: {},

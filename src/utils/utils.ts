@@ -13,6 +13,7 @@ import store from '@/store/index'
 import Vue from "vue";
 import {InfoPart} from "@/class/info";
 import {ItemSettingPart} from "@/class/settingBase";
+import {paperSectionTemplate} from "@/interface/style/templateStylePaper";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -310,6 +311,17 @@ export const emptyContent = () => {
         texts: []
     } as DocumentContent
 };
+
+export const emptyDocumentComp = () => {
+    return {
+        InGraph: {
+            SubGraph: []
+        },
+        InPaper: {
+            SubSection: [paperSectionTemplate(), paperSectionTemplate()]
+        }
+    } as DocumentComponents
+}
 
 const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];
 

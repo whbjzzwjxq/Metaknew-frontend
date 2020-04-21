@@ -2,7 +2,8 @@ import {
     DocumentSelfPart,
     LinkSettingPart,
     MediaSettingPart,
-    NodeSettingPart, NoteSettingPart,
+    NodeSettingPart,
+    NoteSettingPart,
     TextSettingPart
 } from "@/class/settingBase";
 
@@ -17,10 +18,11 @@ declare global {
     type AllSettingPart = SubItemSettingPart | NoteSettingPart;
 
     type SettingGroupKey = 'InGraph' | 'InPaper'
-    type SettingKey = SettingGroupKey | '_id' | '_type' | '_label' | '_name' | '_image'| '_src' | '_start' | '_end' |
+    type SettingKey = SettingGroupKey | '_id' | '_type' | '_label' | '_name' | '_image' | '_src' | '_start' | '_end' |
         '_title' | '_content' | '_parent' | '_points' | '_text'
     //SettingPart相关
     type SettingKeyRecord = Record<SettingKey, any>
+
     interface Setting extends SettingKeyRecord {
         _id: id;
         _type: AllType;
@@ -51,6 +53,7 @@ declare global {
         _name: string,
         _image: string
     }
+
     interface NodeSetting extends DocumentItemSetting {
         _type: 'node' | 'document';
         _name: string;
@@ -101,7 +104,7 @@ declare global {
         _type: 'note';
         _title: string;
         _content: string;
-        _parent: id;
+        _user: id;
         InGraph: {
             Base: BaseSizeInGraph;
         }
@@ -152,7 +155,43 @@ declare global {
         height: number
     }
 
+    interface RowSetting {
+        height: number
+        forceAlign: boolean //是否强制对齐
+    }
+
+    interface PaperSectionLeftSetting {
+        info: string //左边栏文字
+        color: Color //左边栏颜色
+        show: boolean //是否显示
+    }
+
+    interface PaperSectionTitleSetting {
+        text: string //标题内容
+        color: Color //标题底色
+        show: boolean //是否显示标题
+    }
+
+    interface PaperSectionSetting {
+        Left: PaperSectionLeftSetting
+        Title: PaperSectionTitleSetting
+        Rows: RowSetting[]
+    }
+
+    interface PaperSectionSettingPart {
+        Setting: PaperSectionSetting
+        State: {
+            isSelected: boolean, //选中
+            isDeleted: boolean, //被删除
+        }
+    }
+
     interface DocumentComponents {
-        SubGraph: SubGraphSetting[]
+        InGraph: {
+            SubGraph: SubGraphSetting[]
+        },
+        InPaper: {
+            SubSection: PaperSectionSettingPart[]
+        }
     }
 }

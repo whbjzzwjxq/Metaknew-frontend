@@ -87,7 +87,7 @@ const routes = [
                                 dragAble: true
                             },
                             toolbarBottom: {}
-                        },
+                        }
                     }
                 ]
             },
@@ -102,6 +102,22 @@ const routes = [
                         components: {
                             content: () => import('@/components/paperComponents/PaperViewBox.vue'),
                             toolbarBottom: () => import('@/components/toolbar/ToolBarBottomPaperNormal.vue')
+                        }
+                    },
+                    {
+                        path: 'edit',
+                        name: 'path-edit',
+                        components: {
+                            content: () => import('@/components/paperComponents/PaperViewBox.vue'),
+                            toolbarBottom: () => import('@/components/toolbar/ToolBarBottomPaperNormal.vue')
+                        },
+                        props: {
+                            content: {
+                                editMode: true,
+                            },
+                            toolbarBottom: {
+
+                            }
                         }
                     }
                 ]

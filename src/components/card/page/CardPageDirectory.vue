@@ -12,6 +12,7 @@
         hoverable
         return-object
         v-model="selection"
+        class="unselected"
     >
         <template v-slot:prepend="{ item }">
             <v-icon>{{ item.icon }}</v-icon>
@@ -20,7 +21,7 @@
         <template v-slot:append="{ item }">
             <template>
                 <v-btn
-                    v-if="item._id === dataManager.currentDocument._id"
+                    v-if="item.isCurrent"
                     style="font-weight: bolder;"
                     color="#42b983"
                     x-small
@@ -51,7 +52,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {commitGraphChange, commitItemChange, commitSubTabChange} from "@/store/modules/_mutations";
+    import {commitDocumentChange, commitItemChange, commitSubTabChange} from "@/store/modules/_mutations";
     import {getIcon} from "@/utils/icon";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
     import {frontendIdRegex} from "@/utils/utils";
@@ -218,6 +219,7 @@
                     editable: document.isSelf,
                     children: [], //子节点和叶子节点
                     origin: document,
+                    isCurrent: document._id === this.dataManager.currentDocument._id
                 } as VirtualNodeContent<DocumentSelfPart, DirectoryNode>;
             },
 
@@ -241,8 +243,8 @@
                     // let text = this.getOriginItem(item);
                     // text.updateState('isEditing')
                 } else if (item.type === 'document') {
-                    let graph = this.dataManager.graphManager[item.id];
-                    graph && commitGraphChange({graph: graph})
+                    let graph = this.dataManager.documentManager[item.id];
+                    graph && commitDocumentChange({graph: graph})
                 }
             },
 

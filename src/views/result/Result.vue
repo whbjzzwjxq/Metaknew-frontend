@@ -4,12 +4,6 @@
 
         </card-root>
         <div class="d-flex flex-column flex-grow-1">
-            <graph-top-navigation
-                :document="currentDocument"
-                :style="navigationStyle"
-                class="unselected">
-
-            </graph-top-navigation>
             <router-view class="flex-grow-1"></router-view>
         </div>
     </div>
@@ -18,8 +12,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
-    import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
-    import {commitGraphChange, commitPaperChange, commitRootDocPush} from "@/store/modules/_mutations";
+    import {commitDocumentChange, commitRootDocPush} from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
     import {DocumentSelfPart} from "@/class/settingBase";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
@@ -27,8 +20,7 @@
     export default Vue.extend({
         name: "Result",
         components: {
-            CardRoot,
-            GraphTopNavigation
+            CardRoot
         },
         data() {
             return {
@@ -42,16 +34,8 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            graph: function (): DocumentSelfPart {
-                return this.dataManager.currentDocument
-            },
-            paper: function (): DocumentSelfPart {
-                return this.dataManager.currentDocument
-            },
             currentDocument: function (): DocumentSelfPart {
-                return this.graphRouteRegex.test(String(this.$route.name))
-                    ? this.graph
-                    : this.paper
+                return this.dataManager.currentDocument
             },
             editMode: function (): boolean {
                 return this.editRegex.test(String(this.$route.name))
@@ -73,47 +57,29 @@
             fetchData() {
                 let id = this.$route.params.id;
                 const commitGraph = (graph: DocumentSelfPart) => {
-                    commitGraphChange({graph});
+                    commitDocumentChange({graph});
                     commitRootDocPush({document: graph});
                     this.loading = false;
                     return true
                 };
-
-                const commitPaper = (paper: DocumentSelfPart) => {
-                    commitPaperChange({paper});
-                    commitRootDocPush({document: paper});
-                    this.loading = false;
-                    return true
-                }
                 if (id) {
-                    let graph = this.dataManager.graphManager[id]
+                    let graph = this.dataManager.documentManager[id]
                     if (graph !== undefined) {
                         return commitGraph(graph)
                     } else {
                         return dispatchGraphQuery({_id: id, parent: null}).then(() => {
-                            let graph = this.dataManager.graphManager[id];
+                            let graph = this.dataManager.documentManager[id];
                             return commitGraph(graph)
                         })
                     }
                 } else {
-                    if (this.graphRouteRegex.test(String(this.$route.name))) {
-                        if (this.graph._id === '$_-1') {
-                            let _id = getIndex();
-                            let {graph} = DocumentSelfPart.emptyInit(_id, null);
-                            return commitGraph(graph)
-                        } else {
-                            this.loading = false
-                            return true
-                        }
+                    if (this.currentDocument._id === '$_-1') {
+                        let _id = getIndex();
+                        let {graph} = DocumentSelfPart.emptyInit(_id, null);
+                        return commitGraph(graph)
                     } else {
-                        if (this.paper._id === '$_-1') {
-                            let _id = getIndex();
-                            let {graph} = DocumentSelfPart.emptyInit(_id, null);
-                            return commitPaper(graph)
-                        } else {
-                            this.loading = false
-                            return true
-                        }
+                        this.loading = false
+                        return true
                     }
                 }
             }

@@ -3,7 +3,15 @@ import store from "@/store";
 import {BackendDocument, BackendGraphWithNode} from "@/api/document/document";
 import {DocumentDraft} from "@/api/subgraph/commonApi";
 import {isDocumentType, isLinkSetting, isMediaSetting, isNodeSetting, isTextSetting} from "@/utils/typeCheck";
-import {crucialRegex, deepClone, emptyContent, findItem, frontendIdRegex, getIndex} from "@/utils/utils";
+import {
+    crucialRegex,
+    deepClone,
+    emptyContent,
+    emptyDocumentComp,
+    findItem,
+    frontendIdRegex, getCookie,
+    getIndex
+} from "@/utils/utils";
 import {commitDocumentAdd, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
 import {
     documentSettingTemplate,
@@ -20,6 +28,7 @@ import {
 import {dispatchNoteInDocPush} from "@/store/modules/_dispatch";
 import {getManager} from "@/store/modules/dataManager";
 import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
+import {settingTemplatePaper} from "@/interface/style/templateStylePaper";
 
 export abstract class SettingPart {
     Setting: Setting;
@@ -114,7 +123,7 @@ export class ItemSettingPart extends SettingPart {
     }
 
     get isSelf() {
-        if (this._type !== 'text') {
+        if (this._type !== 'text' && this._type !== 'note') {
             return getManager(this._type)[this._id].isSelf
         } else {
             return this.parent.isSelf
@@ -127,6 +136,10 @@ export class ItemSettingPart extends SettingPart {
 
     get StyleInGraph() {
         return this.Setting.InGraph
+    }
+
+    get StyleInPaper() {
+        return this.Setting.InPaper
     }
 
     get isMain() {
@@ -170,7 +183,7 @@ export class NodeSettingPart extends ItemSettingPart {
     }
 
     get remoteDocument() {
-        return store.state.dataManager.graphManager[this._id]
+        return store.state.dataManager.documentManager[this._id]
     }
 
     get StyleInGraph() {
@@ -200,7 +213,7 @@ export class NodeSettingPart extends ItemSettingPart {
     static emptyNodeSetting(payload: NodeInitPayload, parent: DocumentSelfPart) {
         let setting = Object.assign(payload, {
             InGraph: settingTemplateGraph("node"),
-            InPaper: {}
+            InPaper: settingTemplatePaper('node')
         }) as NodeSetting;
         let state = nodeStateTemplate();
         return new NodeSettingPart(setting, state, parent) as NodeSettingPart
@@ -398,6 +411,10 @@ export class TextSettingPart extends ItemSettingPart {
         return this.Setting.InGraph
     }
 
+    get _name() {
+        return this.Setting._text
+    }
+
     protected constructor(Setting: TextSetting, State: TextState, parent: DocumentSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
@@ -425,24 +442,33 @@ export class TextSettingPart extends ItemSettingPart {
     }
 }
 
-export class NoteSettingPart extends SettingPart {
+export class NoteSettingPart extends ItemSettingPart {
     Setting: NoteSetting;
     State: NoteState;
     static list: NoteSettingPart[] = [];
 
-    constructor(Setting: NoteSetting, State: NoteState) {
-        super(Setting, State);
+    constructor(Setting: NoteSetting, State: NoteState, parent: DocumentSelfPart) {
+        super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
         NoteSettingPart.list.push(this)
     }
 
-    static emptyNoteSetting(_label: string, _title: string, _content: string, _parent: id, commitToVuex?: boolean) {
-        let _id = getIndex();
-        commitToVuex === undefined && (commitToVuex = true);
-        let setting = noteSettingTemplate(_id, _label, _title, _content, _parent);
+    static emptyNoteSetting(_id: id, parent: DocumentSelfPart, commitToVuex?: boolean) {
+        let setting = Object.assign({
+            _id,
+            _type: 'note',
+            _label: 'text',
+            _title: '',
+            _content: '',
+            _user: getCookie('user_id')
+        }, {
+            InGraph: settingTemplateGraph('note'),
+            InPaper: {}
+        }) as NoteSetting;
         let state = noteStateTemplate();
-        let note = new NoteSettingPart(setting, state);
+        let note = new NoteSettingPart(setting, state, parent);
+        commitToVuex === undefined && (commitToVuex = true);
         commitToVuex && dispatchNoteInDocPush({note});
         return note
     }
@@ -510,6 +536,7 @@ export class DocumentSelfPart {
         }
         // 专题已经添加到父亲中去了
         parent && parent.addItems([this.nodeSelf.deepCloneSelf()]);
+        this.addEmptyText()
     }
 
     static emptyInit(_id: id, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
@@ -519,9 +546,7 @@ export class DocumentSelfPart {
             isTemporary: false,
             isRemoteModel: false,
         } as DocumentMetaData
-        let comps = {
-            SubGraph: []
-        } as DocumentComponents
+        let comps = emptyDocumentComp();
         let nodeQuery = {id: _id, type: 'document', pLabel: '_DocGraph'} as DocumentQuery;
         let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
         let graph = new DocumentSelfPart(graphContent, setting, comps, parent, meta);
@@ -583,6 +608,14 @@ export class DocumentSelfPart {
         this.treeNode.isRoot = value
     }
 
+    get isGraph() {
+        return this._label === '_DocGraph'
+    }
+
+    get isPaper() {
+        return this._label === '_DocPaper'
+    }
+
     get isSelf() {
         return store.state.dataManager.nodeManager[this._id].isSelf
     }
@@ -616,10 +649,10 @@ export class DocumentSelfPart {
 
     get rect() {
         if (this.parent) {
-            let rect = this.parent.Components.SubGraph.filter(graph => graph.id === this._id)[0]
+            let rect = this.parent.CompInGraph.SubGraph.filter(graph => graph.id === this._id)[0]
             if (rect === undefined) {
                 rect = {id: this._id, width: 600, height: 400}
-                this.parent.Components.SubGraph.push(rect)
+                this.parent.CompInGraph.SubGraph.push(rect)
                 return rect
             } else {
                 return rect
@@ -633,6 +666,14 @@ export class DocumentSelfPart {
         let {width, height} = value
         this.rect.width = width
         this.rect.height = height
+    }
+
+    get CompInGraph() {
+        return this.Components.InGraph
+    }
+
+    get CompInPaper() {
+        return this.Components.InPaper
     }
 
     get selfSettingInGraph() {
@@ -954,5 +995,16 @@ export class DocumentSelfPart {
         let _id = getIndex();
         let {graph, info} = DocumentSelfPart.emptyInit(_id, this, commitToVuex);
         return {graph, info}
+    }
+
+    addEmptyNote() {
+        let id = getIndex();
+        NoteSettingPart.emptyNoteSetting(id, this, true)
+    }
+
+    addEmptyText() {
+        let _id = getIndex();
+        let rect = TextSettingPart.emptyRect(_id, this);
+        this.addItems([rect])
     }
 }

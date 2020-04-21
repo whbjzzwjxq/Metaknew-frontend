@@ -44,7 +44,7 @@ declare global {
     interface DataManagerState {
         currentDocument: DocumentSelfPart,
         currentItem: NodeInfoPart | LinkInfoPart,
-        graphManager: Record<id, DocumentSelfPart>,
+        documentManager: Record<id, DocumentSelfPart>,
         nodeManager: Record<id, NodeInfoPart>,
         linkManager: Record<id, LinkInfoPart>,
         mediaManager: Record<id, MediaInfoPart>,
@@ -77,7 +77,7 @@ const state: DataManagerState = {
     currentDocument: initGraph.graph,
     currentItem: initGraph.info,
     rootDocument: [],
-    graphManager: {},
+    documentManager: {},
     pathManager: {},
     nodeManager: {},
     linkManager: {},
@@ -104,7 +104,7 @@ const getters = {
     },
 
     graphs: (state: DataManagerState) => {
-        return Object.values(state.graphManager)
+        return Object.values(state.documentManager)
     },
 
     currentGraphInfo: (state: DataManagerState) => {
@@ -129,7 +129,7 @@ const getters = {
 const mutations = {
 
     // ------------单纯的操作------------
-    currentGraphChange(state: DataManagerState, payload: { graph: DocumentSelfPart }) {
+    currentDocumentChange(state: DataManagerState, payload: { graph: DocumentSelfPart }) {
         let {graph} = payload;
         let _id = graph._id; // 这里payload是document
         graph.explode(true)
@@ -158,7 +158,7 @@ const mutations = {
     // Push Graph
     documentAdd(state: DataManagerState, payload: { document: DocumentSelfPart, strict?: boolean }) {
         let {document, strict} = payload;
-        let manager = state.graphManager;
+        let manager = state.documentManager;
         strict || (strict = true);
         strict
             //Vue.set检查过
@@ -167,12 +167,12 @@ const mutations = {
     },
 
     documentRemove(state: DataManagerState, payload: id) {
-        Vue.delete(state.graphManager, payload)
+        Vue.delete(state.documentManager, payload)
     },
 
     documentIdChange(state: DataManagerState, payload: { oldId: id, newId: id }) {
         let {oldId, newId} = payload;
-        let oldGraph = state.graphManager[oldId];
+        let oldGraph = state.documentManager[oldId];
         if (oldGraph) {
             oldGraph.Conf._id = newId;
             commitDocumentAdd({document: oldGraph});
@@ -228,7 +228,7 @@ const actions = {
                      payload: { _id: id, parent: DocumentSelfPart | null }) {
         let {_id, parent} = payload;
         // 先绘制Graph
-        if (context.state.graphManager[_id] === undefined) {
+        if (context.state.documentManager[_id] === undefined) {
             await gateDocumentQuery(_id).then(res => {
                 let {data} = res;
                 let {graph} = DocumentSelfPart.backendInit(data, parent);
@@ -338,13 +338,13 @@ const actions = {
     async nodeExplode(context: Context, payload: { node: NodeSettingPart, document: DocumentSelfPart }) {
         let {node, document} = payload;
         let _id = node._id;
-        let subGraph = state.graphManager[_id];
+        let subGraph = state.documentManager[_id];
         if (subGraph === undefined) {
             dispatchGraphQuery({
                 _id,
                 parent: document,
             }).then(() => {
-                let subGraph = state.graphManager[_id];
+                let subGraph = state.documentManager[_id];
                 subGraph.explode(true)
             });
         } else {

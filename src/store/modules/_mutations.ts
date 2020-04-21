@@ -48,8 +48,8 @@ export const commitItemChange = (payload: NodeInfoPart | LinkInfoPart) => {
     return store.commit('currentItemChange', payload)
 };
 
-export const commitGraphChange = (payload: { graph: DocumentSelfPart }) => {
-    return store.commit('currentGraphChange', payload)
+export const commitDocumentChange = (payload: { graph: DocumentSelfPart }) => {
+    return store.commit('currentDocumentChange', payload)
 };
 
 export const commitRootDocPush = (payload: { document: DocumentSelfPart }) => {
@@ -132,7 +132,3 @@ export const commitBottomDynamicBarChange = (payload: { on?: boolean, type?: Bot
 export const commitLangChange = (payload: string) => {
     return store.commit('langChange', payload)
 };
-
-export const commitPaperChange = (payload: { paper: DocumentSelfPart }) => {
-    return store.commit('currentPaperChange', payload)
-}

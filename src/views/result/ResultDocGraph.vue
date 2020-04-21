@@ -1,5 +1,8 @@
 <template>
     <div class="pa-0 d-flex flex-column">
+        <graph-top-navigation :document="graph" class="d-inline-flex pt-4 pl-4">
+
+        </graph-top-navigation>
         <div class="flex-grow-1">
             <router-view name="content" :graph="graph"></router-view>
         </div>
@@ -16,10 +19,12 @@
     import Vue from 'vue'
     import {DocumentSelfPart} from "@/class/settingBase";
     import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
+    import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
     export default Vue.extend({
         name: "ResultDocGraph",
         components: {
-            BottomDynamicBar
+            BottomDynamicBar,
+            GraphTopNavigation
         },
         data() {
             return {}

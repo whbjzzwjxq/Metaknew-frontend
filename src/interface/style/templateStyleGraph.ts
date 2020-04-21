@@ -560,17 +560,11 @@ const textSetting = () => {
     return result as SettingConfAll
 };
 
-const fragmentSetting = () => ({});
-
-const pathSetting = () => ({});
-
-export const typeSettingDictGraph: Record<AllType, SettingConfAll> = {
+export const typeSettingDictGraph: Record<DocumentItemType | 'note', SettingConfAll> = {
     'node': nodeSetting(),
     'link': linkSetting,
     'document': graphSetting(),
     'media': mediaSetting(),
     'text': textSetting(),
-    'note': noteSetting(),
-    'fragment': fragmentSetting(),
-    'path': pathSetting()
+    'note': noteSetting()
 };

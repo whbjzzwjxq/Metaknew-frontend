@@ -64,9 +64,12 @@
             toolbarStyle: function (): CSSProp {
                 return {
                     height: this.styleManager.bottomBar.height + 'px',
-                    width: this.styleManager.bottomBar.width,
                     backgroundColor: 'white',
-                    overflow: "hidden"
+                    overflow: "hidden",
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    left: this.styleManager.leftCard.width + 'px'
                 }
             },
             buttonGroupStyle: function (): CSSProp {

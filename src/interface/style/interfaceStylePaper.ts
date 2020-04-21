@@ -2,15 +2,23 @@ export default {}
 declare global {
 
     interface BaseSizeInPaper extends Record<string, number>{
-        cols: number,
+        //尺寸大小
+        width: number,
+        //高度
         height: number,
-        index: number
+        //多少节
+        section: number,
+        //多少行
+        row: number,
+        //多少列
+        order: number
     }
 
     interface NodeStyleSettingPaper extends SettingGroup {
         Base: BaseSizeInPaper;
         Show: {
             showTitle: boolean;
+            showTags: boolean;
         };
         Background: {
             backgroundColor: Color;
@@ -20,10 +28,13 @@ declare global {
 
     interface MediaStyleSettingPaper extends SettingGroup {
         Base: BaseSizeInPaper;
+        Show: {
+            showAsImage: boolean
+        }
     }
 
     interface LinkStyleSettingPaper extends SettingGroup {
-
+        Base: BaseSizeInPaper;
     }
 
     interface TextStyleSettingPaper extends SettingGroup {

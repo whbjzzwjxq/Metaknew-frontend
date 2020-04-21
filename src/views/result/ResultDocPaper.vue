@@ -1,14 +1,16 @@
 <template>
-    <div class="pa-0 d-flex flex-column">
-        <div class="flex-grow-1 cardItem">
-            <router-view name="content" :paper="paper"></router-view>
+    <div class="pa-0 d-flex flex-column" style="overflow: hidden">
+        <v-card outlined tile height="48">
+            <graph-top-navigation :document="document" class="d-inline-flex pa-4">
+
+            </graph-top-navigation>
+        </v-card>
+        <div class="flex-grow-1">
+            <router-view name="content" :document="document"></router-view>
         </div>
-        <router-view name="toolbarBottom" :paper="paper">
+        <router-view name="toolbarBottom">
 
         </router-view>
-        <bottom-dynamic-bar>
-
-        </bottom-dynamic-bar>
     </div>
 </template>
 
@@ -18,13 +20,15 @@
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import PaperViewBox from "@/components/paperComponents/PaperViewBox.vue";
     import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
+    import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
 
     export default Vue.extend({
         name: "Result_DocPaper",
         components: {
             ToolbarBottom,
             PaperViewBox,
-            BottomDynamicBar
+            BottomDynamicBar,
+            GraphTopNavigation
         },
         data() {
             return {
@@ -46,7 +50,7 @@
         methods: {
             newNote: function () {
                 NoteSettingPart.emptyNoteSetting('note', '', '', this.document._id, true)
-            },
+            }
         },
         watch: {},
         record: {
