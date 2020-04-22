@@ -87,7 +87,7 @@
         methods: {
             doSomething: function (icon: IconItem) {
                 icon._func
-                    ? icon.payload
+                    ? icon.payload !== undefined
                         ? icon._func(icon.payload)
                         : icon._func()
                     : doNothing()

@@ -8,13 +8,13 @@
             <svg :width="rect.width" :height="rect.height">
                 <polyline
                     v-if="label === 'polyline'"
-                    :points="setting.Point"
+                    :points="originPoints"
                 >
 
                 </polyline>
                 <polygon
                     v-else-if="label === 'polygon'"
-                    :points="setting.Point">
+                    :points="originPoints">
 
                 </polygon>
                 <rect
@@ -34,16 +34,13 @@
                 </ellipse>
                 <foreignObject :x="borderWidth" :y="borderWidth" :height="inlineRect.height" :width="inlineRect.width">
                     <div :style="divStyle">
-                        <field-text-render
-                            :disabled="!isSelected"
-                            render-as-markdown
-                            :value="setting._text"
-                            :rows="4"
-                            :row-height="14"
-                            @update-text="updateText"
+                        <markdown-render
+                            :edit-mode="isSelected"
+                            :text="itemSetting._text"
+                            @update="updateText"
                         >
 
-                        </field-text-render>
+                        </markdown-render>
                     </div>
                 </foreignObject>
             </svg>
@@ -55,26 +52,25 @@
     import Vue from 'vue'
     import {RectByPoint} from "@/class/geometric";
     import RectContainer from "@/components/container/RectContainer.vue";
-    import FieldTextRender from "@/components/field/FieldTextRender.vue";
-    import {TextSettingPart} from "@/class/settingBase";
+    import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
 
     export default Vue.extend({
         name: "GraphText",
         components: {
             RectContainer,
-            FieldTextRender
+            MarkdownRender
         },
         data: function () {
             return {}
         },
         props: {
-            svg: {
-                type: Object as () => TextSettingPart,
+            itemSetting: {
+                type: Object as () => TextSetting,
                 required: true
             },
-            scale: {
-                type: Number as () => number,
-                default: 1
+            state: {
+                type: Object as () => TextState,
+                required: true
             },
             container: {
                 type: Object as () => RectByPoint,
@@ -82,16 +78,16 @@
             }
         },
         computed: {
-            setting: function (): TextSetting {
-                return this.svg.Setting
+            setting: function (): TextStyleSetting {
+                return this.itemSetting.InGraph
             },
 
             originPoints: function (): PointObject[] {
-                return this.setting._points
+                return this.itemSetting._points
             },
 
             label: function (): TextLabel {
-                return this.setting._label
+                return this.itemSetting._label
             },
 
             rect: function (): AreaRect {
@@ -153,7 +149,7 @@
             },
 
             isSelected: function (): boolean {
-                return this.svg.isSelected
+                return this.state.isSelected
             }
         },
         methods: {
@@ -162,7 +158,7 @@
             },
 
             updateText(propName: string, value: string) {
-                this.setting._text = value
+                this.itemSetting._text = value
             }
         },
         record: {

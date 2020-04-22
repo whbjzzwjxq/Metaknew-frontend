@@ -113,16 +113,17 @@
         </graph-media>
 
         <graph-text
-            v-for="(svg, index) in texts"
-            :key="svg._id"
-            :svg="svg"
+            v-for="(text, index) in texts"
+            :key="text._id"
+            :state="text.State"
+            :item-setting="text.Setting"
             :container="textLocation[index]"
-            @mouseenter.native="mouseEnter(svg)"
-            @mouseleave.native="mouseLeave(svg)"
+            @mouseenter.native="mouseEnter(text)"
+            @mouseleave.native="mouseLeave(text)"
             @mousedown.native="dragStart"
-            @mousemove.native="drag(svg, $event)"
-            @mouseup.native="dragEnd(svg, $event)"
-            @dblclick.native.stop="dbClickNode(svg)"
+            @mousemove.native="drag(text, $event)"
+            @mouseup.native="dragEnd(text, $event)"
+            @dblclick.native.stop="dbClickNode(text)"
             @update-size="updateSize">
 
         </graph-text>

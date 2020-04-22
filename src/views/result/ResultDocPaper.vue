@@ -48,9 +48,7 @@
             }
         },
         methods: {
-            newNote: function () {
-                NoteSettingPart.emptyNoteSetting('note', '', '', this.document._id, true)
-            }
+
         },
         watch: {},
         record: {

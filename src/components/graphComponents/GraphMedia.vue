@@ -92,7 +92,7 @@
                 let {width, height} = this.containerRect;
                 // 成比例更新
                 let x = newWidth - width;
-                let y = this.setting.Base.scaleX * newWidth - height;
+                let y = this.setting.InGraph.Base.scaleX * newWidth - height;
                 let delta = new Point(x, y).multi(0.5);
                 this.updateSize(delta.copy().multi(-1), delta);
             },

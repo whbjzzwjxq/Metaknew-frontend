@@ -84,15 +84,14 @@
                             </icon-group>
                         </v-card-title>
                         <v-card-text class="px-4 py-2">
-                            <field-text-render
+                            <markdown-render
                                 :div-style="textAreaStyle"
-                                :disabled="!isEditing"
-                                :prop-name="'Text'"
-                                :value="currentNote.Text"
-                                render-as-markdown
-                                @update-text="updateValue"
+                                :edit-mode="isEditing"
+                                :text="currentNote.Text"
+                                :rows="20"
+                                @update="updateValue('Text', arguments[0])"
                             >
-                            </field-text-render>
+                            </markdown-render>
                         </v-card-text>
                     </v-card>
                 </v-tab-item>
@@ -117,7 +116,7 @@
     import {currentTime, getCookie, getIndex} from "@/utils/utils";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import TimeRender from "@/components/TimeRender.vue";
-    import FieldTextRender from "@/components/field/FieldTextRender.vue";
+    import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
     import {dispatchNoteBookPush, dispatchNoteInDocPush} from '@/store/modules/_dispatch';
 
     export default Vue.extend({
@@ -126,7 +125,7 @@
             IconGroup,
             FieldTitle,
             TimeRender,
-            FieldTextRender
+            MarkdownRender
         },
         data: function () {
             return {

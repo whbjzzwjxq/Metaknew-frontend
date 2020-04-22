@@ -25,29 +25,23 @@
             </v-tab>
 
             <v-tab-item v-for="(value, key) in text" :key="key" :value="'tab-'+ key">
-                <field-text-render
-                    :prop-name="key"
-                    :disabled="!setting.editable"
+                <markdown-render
+                    :edit-mode="setting.editable"
                     :placeholder="placeholder"
                     :width="width"
-                    :single-line="setting.singleLine"
-                    :label="label"
-                    :value="value"
-                    @update-text="updateText">
+                    :text="value"
+                    @update-text="updateText(key, arguments[0])">
 
-                </field-text-render>
+                </markdown-render>
             </v-tab-item>
 
             <v-tab-item :value="'tab-default'">
-                <field-text-render
-                    :single-line="setting.singleLine"
-                    :label="label"
-                    value=""
-                    prop-name="default"
+                <markdown-render
+                    text=""
                     placeholder="请在上方输入语言类型"
                     disabled>
 
-                </field-text-render>
+                </markdown-render>
             </v-tab-item>
         </v-tabs>
 
@@ -55,18 +49,12 @@
             <div style="height: 24px">
 
             </div>
-            <field-text-render
-                :value="text[singleKey]"
-                :prop-name="singleKey"
-                :disabled="!setting.editable"
-                :single-line="setting.singleLine"
-                :label="label"
-                :placeholder="placeholder"
-                :width="width"
-                :rows="rows"
-                @update-text="updateText">
+            <markdown-render
+                :text="text[singleKey]"
+                :edit-mode="!setting.editable"
+                @update="updateText(singleKey, arguments[0])">
 
-            </field-text-render>
+            </markdown-render>
         </template>
 
         <v-card-actions v-if="setting.showSetter" class="pa-0" style="height: 24px">
@@ -85,11 +73,13 @@
 <script lang="ts">
     import Vue from 'vue'
     import {deepClone} from '@/utils/utils'
-    import FieldTextRender from "@/components/field/FieldTextRender.vue";
+    import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
 
     export default Vue.extend({
         name: 'FieldText',
-        components: {FieldTextRender},
+        components: {
+            MarkdownRender
+        },
         data() {
             return {
                 cacheText: '',

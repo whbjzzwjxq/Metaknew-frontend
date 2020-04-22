@@ -29,11 +29,11 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import vueMarkdown from "vue-markdown";
+    import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
     export default Vue.extend({
         name: "FieldTextRender",
         components: {
-            vueMarkdown
+            MarkdownRender
         },
         data: function () {
             return {

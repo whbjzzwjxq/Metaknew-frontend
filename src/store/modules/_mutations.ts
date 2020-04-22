@@ -3,6 +3,7 @@ import store from '../index';
 import {DocumentSelfPart, NoteSettingPart} from "@/class/settingBase";
 import {NoteBook} from "@/store/modules/userDataManager";
 import {LinkInfoPart, NodeInfoPart} from "@/class/info";
+import {MarkdownInputState} from "@/components/markdown/_markdownInterface";
 
 export const commitLoginIn = (payload: userLoginPayload) => {
     return store.commit('loginSet', payload)
@@ -132,3 +133,7 @@ export const commitBottomDynamicBarChange = (payload: { on?: boolean, type?: Bot
 export const commitLangChange = (payload: string) => {
     return store.commit('langChange', payload)
 };
+
+export const commitMarkdownState = (payload: MarkdownInputState) => {
+    return store.commit('markdownUpdate', payload)
+}

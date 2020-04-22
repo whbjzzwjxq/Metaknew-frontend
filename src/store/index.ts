@@ -8,13 +8,9 @@ import dataManager from "@/store/modules/dataManager";
 import styleComponentSize from "@/store/modules/styleComponentSize";
 import userDataManager from "@/store/modules/userDataManager";
 import componentState from "@/store/modules/componentState";
-import {doNothing} from "@/utils/utils";
+import markdown from "@/store/modules/markdown";
 
 Vue.use(Vuex);
-
-export interface NormalState {
-    userIndex: number
-}
 
 export interface RootState {
     state: any,
@@ -24,24 +20,9 @@ export interface RootState {
     modules: any
 }
 
-export const getMutationName = (baseName: string, ...props: string[]) => {
-    let result: Record<string, string> = {};
-    props.map(prop => {
-        result[prop] = baseName + prop
-    });
-    return result
-};
-
 export default new Vuex.Store({
-    state: {
-        userIndex: 0
-    } as NormalState,
+    state: {},
     mutations: {
-        userIndexPlus(state: NormalState, payload: number) {
-            payload >= state.userIndex
-                ? state.userIndex = payload
-                : doNothing()
-        }
     },
     getters: {},
     actions: {},
@@ -53,6 +34,7 @@ export default new Vuex.Store({
         styleLabelColor: styleLabelColor,
         styleComponentSize: styleComponentSize,
         userDataManager: userDataManager,
-        componentState: componentState
+        componentState: componentState,
+        markdown: markdown
     }
 } as RootState)
