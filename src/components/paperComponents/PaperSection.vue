@@ -1,49 +1,51 @@
 <template>
-    <v-hover v-slot:default="{ hover }">
-        <v-card
-            class="d-flex flex-column unselected"
-            min-height="90"
-            outlined
-            :elevation="hover ? 6 : 0"
-            :id="index"
-            @mouseenter="mouseEnter"
-            @mouseleave="mouseLeave"
-            @mousemove="mouseMove">
-            <v-row no-gutters class="pa-0 flex-nowrap flex-row-reverse" style="height: 48px">
-                <v-col cols="12" class="pa-2">
-                    <field-title
-                        :text="setting.Title.text"
-                        :edit-mode="editMode"
-                        label="Title"
-                        :hide-details="false"
-                        @update-text="setting.Title.text = $event">
+    <v-container class="pa-0 py-2">
+        <v-hover v-slot:default="{ hover }">
+            <v-card
+                class="d-flex flex-column unselected"
+                min-height="90"
+                outlined
+                :elevation="hover ? 6 : 0"
+                :id="index"
+                @mouseenter="mouseEnter"
+                @mouseleave="mouseLeave"
+                @mousemove="mouseMove">
+                <v-row no-gutters class="pa-0 flex-nowrap flex-row-reverse" style="height: 48px">
+                    <v-col cols="12" class="pa-4 py-2">
+                        <field-title
+                            :text="setting.Title.text"
+                            :edit-mode="editMode"
+                            label="Title"
+                            :hide-details="false"
+                            @update-text="setting.Title.text = $event">
 
-                    </field-title>
-                </v-col>
-                <v-col class="offset-1 pa-2 pt-0" v-show="showLeft">
-                    <v-card width="120">
-                        <v-card-text class="pa-2">
-                            <field-title
-                                :text="setting.Left.info"
-                                :edit-mode="editMode"
-                                @update-text="setting.Left.info = $event">
+                        </field-title>
+                    </v-col>
+                    <v-col class="offset-1 pa-2 pt-0" v-show="showLeft">
+                        <v-card width="120" :elevation="hover ? 6 : 0">
+                            <v-card-text>
+                                <field-title
+                                    :text="setting.Left.info"
+                                    :edit-mode="editMode"
+                                    @update-text="setting.Left.info = $event">
 
-                            </field-title>
-                        </v-card-text>
-                        <v-card-actions class="pa-2">
-                            <icon-group :icon-list="iconListInLeft" x-small></icon-group>
-                        </v-card-actions>
-                    </v-card>
-                </v-col>
-            </v-row>
-            <div v-show="!isCollapse" class="pa-2">
-                <slot name="content"></slot>
-            </div>
-            <v-card-actions v-if="editMode" class="pa-2">
-                <icon-group :icon-list="iconListInBottom"></icon-group>
-            </v-card-actions>
-        </v-card>
-    </v-hover>
+                                </field-title>
+                            </v-card-text>
+                            <v-card-actions>
+                                <icon-group :icon-list="iconListInLeft" x-small></icon-group>
+                            </v-card-actions>
+                        </v-card>
+                    </v-col>
+                </v-row>
+                <div v-show="!isCollapse">
+                    <slot name="content"></slot>
+                </div>
+                <v-card-actions v-if="editMode">
+                    <icon-group :icon-list="iconListInBottom"></icon-group>
+                </v-card-actions>
+            </v-card>
+        </v-hover>
+    </v-container>
 </template>
 
 <script lang="ts">
@@ -110,7 +112,7 @@
             setting: function (): PaperSectionSetting {
                 return this.section.Setting
             },
-            showLeft: function(): boolean {
+            showLeft: function (): boolean {
                 return this.setting.Left.show
             }
         },

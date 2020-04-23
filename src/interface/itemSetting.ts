@@ -1,5 +1,5 @@
 import {
-    DocumentSelfPart,
+    DocumentSelfPart, ItemSettingPart,
     LinkSettingPart,
     MediaSettingPart,
     NodeSettingPart,
@@ -28,7 +28,10 @@ declare global {
         _type: AllType;
         _label: string;
         InGraph: SettingGroup
-        InPaper: SettingGroup
+        InPaper: {
+            Base: BaseSizeInPaper,
+            [prop: string]: SettingComponent
+        }
     }
 
     interface DocumentSetting extends Setting {
@@ -160,6 +163,10 @@ declare global {
         forceAlign: boolean //是否强制对齐
     }
 
+    interface RowSettingWithItem extends RowSetting {
+        Items: ItemSettingPart[]
+    }
+
     interface PaperSectionLeftSetting {
         info: string //左边栏文字
         color: Color //左边栏颜色
@@ -180,6 +187,17 @@ declare global {
 
     interface PaperSectionSettingPart {
         Setting: PaperSectionSetting
+        State: {
+            isSelected: boolean, //选中
+            isDeleted: boolean, //被删除
+        }
+    }
+    interface PaperSectionSettingPartWithItems {
+        Setting: {
+            Left: PaperSectionLeftSetting
+            Title: PaperSectionTitleSetting
+            Rows: RowSettingWithItem[]
+        }
         State: {
             isSelected: boolean, //选中
             isDeleted: boolean, //被删除

@@ -86,7 +86,9 @@
         },
         methods: {
             doSomething: function (icon: IconItem) {
-                icon._func
+                icon._isTrigger && icon._eventName
+                    ? this.$emit(icon._eventName, icon)
+                    : icon._func
                     ? icon.payload !== undefined
                         ? icon._func(icon.payload)
                         : icon._func()

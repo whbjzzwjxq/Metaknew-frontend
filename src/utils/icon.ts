@@ -15,6 +15,8 @@ declare global {
         color?: string,
         render?: boolean,
         disabled?: boolean,
+        _isTrigger?: boolean,
+        _eventName?: string,
         toolTip?: string,
         toolTipOn?: boolean,
         [prop: string]: any
@@ -90,6 +92,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     'i-arrow': {
         true: 'mdi-chevron-up',
         false: 'mdi-chevron-down',
+        up: 'mdi-chevron-up',
+        down: 'mdi-chevron-down',
         left: 'mdi-chevron-left',
         right: 'mdi-chevron-right'
     },

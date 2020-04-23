@@ -27,6 +27,3 @@ yarn-error.log*
 *.vue.js
 *.vue.js.map
 template/
-
-#
-/src/views/test/
