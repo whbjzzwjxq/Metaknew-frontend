@@ -1,6 +1,6 @@
 <template>
-    <v-list dense class="pa-0 pt-2">
-        <v-list-item dense :class="itemClass">
+    <v-list dense class="pa-0">
+        <v-list-item dense class="pa-0">
             <v-autocomplete
                 v-model="addLinkStartModel"
                 :items="nodeToLinkItems"
@@ -8,13 +8,13 @@
                 item-text="text"
                 item-value="_id"
                 :item-disabled="getItemDisabled"
-                label="startNode"
+                label="StartNode"
                 dense
                 return-object>
             </v-autocomplete>
 
         </v-list-item>
-        <v-list-item dense :class="itemClass">
+        <v-list-item dense class="pa-0">
             <v-autocomplete
                 v-model="addLinkEndModel"
                 :items="nodeToLinkItems"
@@ -22,13 +22,13 @@
                 item-text="text"
                 item-value="_id"
                 :item-disabled="getItemDisabled"
-                label="endNode"
+                label="EndNode"
                 dense
                 return-object>
             </v-autocomplete>
         </v-list-item>
 
-        <v-list-item dense v-if="editMode" :class="itemClass">
+        <v-list-item dense v-if="editMode" class="pa-0">
             <v-btn text small @click="editable = !editable">{{editable ? 'edit off' : 'edit on '}}</v-btn>
             <v-btn text small @click="addLinkSelect" :disabled="!addLinkDisable">Confirm</v-btn>
             <v-btn text small @click="clearSelect" :disabled="!editable">Clear</v-btn>
@@ -54,8 +54,7 @@
             return {
                 startCache: undefined as NodeAsSelectorItem | undefined,
                 endCache: undefined as NodeAsSelectorItem | undefined,
-                editable: false,
-                itemClass: "pt-0 pb-0 pl-1 pr-1"
+                editable: false
             }
         },
         props: {

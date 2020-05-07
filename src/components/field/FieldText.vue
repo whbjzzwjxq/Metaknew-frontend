@@ -26,9 +26,8 @@
 
             <v-tab-item v-for="(value, key) in text" :key="key" :value="'tab-'+ key">
                 <markdown-render
-                    :edit-mode="setting.editable"
+                    :edit-base="setting.editable"
                     :placeholder="placeholder"
-                    :width="width"
                     :text="value"
                     @update-text="updateText(key, arguments[0])">
 
@@ -51,7 +50,7 @@
             </div>
             <markdown-render
                 :text="text[singleKey]"
-                :edit-mode="!setting.editable"
+                :edit-base="setting.editable"
                 @update="updateText(singleKey, arguments[0])">
 
             </markdown-render>
@@ -99,8 +98,8 @@
                 required: true
             },
             width: {
-                type: [String, Number],
-                default: 400
+                type: [Number, String],
+                default: '100%'
             },
             defaultValue: {
                 type: Object,

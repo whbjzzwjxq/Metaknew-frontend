@@ -73,7 +73,7 @@
             }
         },
         computed: {
-            setting: function (): LinkStyleSetting {
+            setting: function (): LinkStyleSettingGraph {
                 return this.itemSetting.InGraph
             },
 

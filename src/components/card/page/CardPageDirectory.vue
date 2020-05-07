@@ -269,7 +269,6 @@
             },
 
             open(docList: DirectoryNode[]) {
-                console.log(docList)
                 let idList = docList.map(item => item.id);
                 // 根专题不会缩回 其他的专题检查是否在list中
                 this.documentList.map(doc => {

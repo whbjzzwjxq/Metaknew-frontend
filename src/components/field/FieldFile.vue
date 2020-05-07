@@ -150,8 +150,8 @@
                 required: true
             },
             width: {
-                type: Number as () => number,
-                default: 600
+                type: [Number, String],
+                default: '100%'
             },
             // 规则组
             rules: {

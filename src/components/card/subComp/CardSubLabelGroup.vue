@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-chip-group column class="">
+        <v-chip-group column class="d-flex flex-column">
             <v-chip
                 ripple
                 outlined

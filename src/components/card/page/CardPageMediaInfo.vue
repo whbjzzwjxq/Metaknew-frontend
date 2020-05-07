@@ -1,77 +1,78 @@
 <template>
-    <v-card
+    <div
         @mouseenter.stop="showTool = true"
         @mouseleave.stop="showTool = false"
-        flat
-        tile
-        outlined
         class="unselected"
-        :width="width"
-        :height="height"
     >
-        <v-card-title class="ma-0 pa-0">
-            <media-viewer :max-height="height" :media="media" :show-float="showTool" :width="width" ref="mediaViewer">
-                <template v-slot:float>
-                    <icon-group
-                        v-if="height >= 100"
-                        :icon-list="iconList"
-                        :container-style="buttonGroupStyle"
-                        small
-                        vertical
-                        ref="img"
-                    >
-                    </icon-group>
-                </template>
-            </media-viewer>
-        </v-card-title>
-        <v-card-text v-show="detailOn" class="ma-0 pa-0">
-            <card-sub-row :width="rowWidth" text="Title">
+        <media-viewer
+            :max-height="height"
+            :width="width"
+            :src="media.fileName"
+            :label="media._label"
+            :show-float="showTool"
+            ref="mediaViewer">
+            <template v-slot:float>
+                <icon-group
+                    v-if="height >= 100"
+                    :icon-list="iconList"
+                    :container-style="buttonGroupStyle"
+                    small
+                    vertical
+                    ref="img"
+                >
+                </icon-group>
+            </template>
+        </media-viewer>
+        <field-title
+            :edit-mode="editMode"
+            :text="media.Info.Name"
+            @update-text="updateName"
+            v-show="showText"
+            class="pa-4"
+        ></field-title>
+        <div v-show="detailOn">
+            <card-sub-row text="Title" v-model="settingInPaper.showTitle" :close-able="editInPaper">
                 <template v-slot:content>
-                    <field-title
-                        :edit-mode="editMode"
-                        :text="media.Info.Name"
-                        @update-text="updateName"
-                        v-show="showText"
-                    ></field-title>
-                    <item-sharer :base-data="media" :user-concern="userConcern">
+                    <div class="pa-2">
+                        <item-sharer :base-data="media" :user-concern="userConcern">
 
-                    </item-sharer>
+                        </item-sharer>
+                    </div>
                 </template>
             </card-sub-row>
-            <card-sub-row :width="rowWidth" text="Labels">
+            <card-sub-row text="Labels" v-model="settingInPaper.showLabels" :close-able="editInPaper">
                 <template v-slot:content>
-                    <card-sub-label-group
-                        :editable="group.editable"
-                        :key="index"
-                        :label-items="labelItems"
-                        :label-list="group.labels"
-                        :name="group.name"
-                        @add-label="addItem(arguments[0], group.prop)"
-                        @remove-label="removeItem"
-                        small
-                        v-for="(group, index) in labelGroup">
+                    <div class="d-flex flex-column pa-2">
+                        <div v-for="(group, index) in labelGroup" :key="index">
+                            <card-sub-label-group
+                                :editable="group.editable"
+                                :label-items="labelItems"
+                                :label-list="group.labels"
+                                :name="group.name"
+                                @add-label="addItem(arguments[0], group.prop)"
+                                @remove-label="removeItem"
+                                small>
 
-                    </card-sub-label-group>
+                            </card-sub-label-group>
+                        </div>
+                    </div>
                 </template>
             </card-sub-row>
-            <card-sub-row :width="rowWidth" text="Description">
+            <card-sub-row text="Description" v-model="settingInPaper.showDescription" :close-able="editInPaper">
                 <template v-slot:content>
                     <field-text
+                        class="pa-2"
                         prop-name="Description"
                         :base-text="info.Description"
                         :editable="editMode"
                         :rows="10"
+                        :width="'100%'"
                         @update-value="updateValue"
                     ></field-text>
                 </template>
             </card-sub-row>
-        </v-card-text>
-        <v-card-actions v-show="detailOn">
-            <v-btn text>Learn More+</v-btn>
-            <v-spacer></v-spacer>
-            <v-btn text @click="saveMedia" :disabled="!media.isSelf">Save</v-btn>
-        </v-card-actions>
-    </v-card>
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
@@ -92,6 +93,7 @@
     import {userConcernTemplate} from "@/utils/template";
     import {dispatchUserConcernQuery} from "@/store/modules/_dispatch";
     import {MediaInfoPart} from "@/class/info";
+    import {mediaShowInPaperTemplate} from '@/interface/style/templateStylePaper';
 
     export default Vue.extend({
         name: "CardPageMediaInfo",
@@ -114,7 +116,6 @@
                 resizeBase: 100,
                 dialogDetailVisible: false,
                 dialogEdit: false,
-                rowWidth: 340,
                 userConcern: userConcernTemplate()
             };
         },
@@ -139,11 +140,6 @@
                 default: 400
             },
 
-            showLabels: {
-                type: Boolean,
-                default: true
-            },
-
             //这张图片本身的索引
             index: {
                 type: Number,
@@ -162,10 +158,15 @@
                 default: false
             },
 
-            iconColor: {
-                type: String as () => string,
-                default: 'grey'
-            }
+            settingInPaper: {
+                type: Object as () => CardShowInPaper,
+                default: () => mediaShowInPaperTemplate()
+            },
+            editInPaper: {
+                type: Boolean,
+                default: false
+            },
+
         },
         computed: {
             realSrc: function (): string {
@@ -235,7 +236,6 @@
                 return this.height >= 100
             },
             //能够删除 在画布中删除是从画布中删除 在节点中删除是从节点删除
-
             showDeleteIcon: function (): boolean {
                 return this.inViewBox
                     ? this.nodeIsSelf
@@ -244,7 +244,7 @@
 
             //能够变成media节点:不在画布里而且画布是isSelf的
             showExportIcon: function (): boolean {
-                return !this.inViewBox && this.dataManager.currentDocument.Conf.State.isSelf
+                return !this.inViewBox && this.dataManager.currentDocument.isSelf
             },
 
             iconList: function (): IconItem[] {

@@ -137,7 +137,7 @@
             },
             width: {
                 type: [Number, String],
-                default: 360
+                default: '100%'
             },
             // 是否是原生属性
             changeType: {

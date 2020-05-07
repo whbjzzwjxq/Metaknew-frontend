@@ -29,7 +29,7 @@ export function isDocumentType(str: string): str is DocumentItemType {
         (str as DocumentItemType) === 'text'
 }
 
-export function isNodeSetting(item: ItemSettingPart): item is NodeSettingPart {
+export function isNodeSettingPart(item: ItemSettingPart): item is NodeSettingPart {
     return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
 }
 
@@ -38,7 +38,7 @@ export function isMediaSetting(item: ItemSettingPart): item is MediaSettingPart 
 }
 
 export function isVisNodeSetting(item: ItemSettingPart): item is VisNodeSettingPart {
-    return isNodeSetting(item) || isMediaSetting(item)
+    return isNodeSettingPart(item) || isMediaSetting(item)
 }
 
 export function isLinkSetting(item: ItemSettingPart): item is LinkSettingPart {

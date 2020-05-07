@@ -89,8 +89,8 @@
 
             //宽度
             width: {
-                type: Number,
-                default: 200
+                type: [Number, String],
+                default: '100%'
             },
 
             //是否可编辑

@@ -8,11 +8,10 @@
             dense
             flat
             :hide-details="hideDetails"
-            class="pr-2"
             v-if="editMode">
 
         </v-text-field>
-        <p class="title-text pt-2 pr-2" v-else :style="fontCss">
+        <p class="title-text text-center" v-else :style="fontCss">
             {{ text }}
         </p>
     </div>
@@ -89,8 +88,9 @@
         -webkit-box-orient: vertical;
         -webkit-line-break: normal;
         overflow: hidden;
-        line-height: 20px;
-        font-size: 16px;
+        line-height: 28px;
+        font-size: 24px;
+        font-weight: bolder;
         margin: unset;
         text-overflow:ellipsis;
         white-space: nowrap;

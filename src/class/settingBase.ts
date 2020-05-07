@@ -2,7 +2,7 @@ import {TreeNodeDoc} from "@/interface/interfaceTree";
 import store from "@/store";
 import {BackendDocument, BackendGraphWithNode} from "@/api/document/document";
 import {DocumentDraft} from "@/api/subgraph/commonApi";
-import {isDocumentType, isLinkSetting, isMediaSetting, isNodeSetting, isTextSetting} from "@/utils/typeCheck";
+import {isDocumentType, isLinkSetting, isMediaSetting, isNodeSettingPart, isTextSetting} from "@/utils/typeCheck";
 import {
     crucialRegex,
     deepClone,
@@ -88,10 +88,10 @@ export abstract class SettingPart {
 
 export class ItemSettingPart extends SettingPart {
     Setting: DocumentItemSetting;
-    State: BaseState;
+    State: DocumentItemState;
     _parent: DocumentSelfPart;
 
-    protected constructor(Setting: DocumentItemSetting, State: BaseState, parent: DocumentSelfPart) {
+    protected constructor(Setting: DocumentItemSetting, State: DocumentItemState, parent: DocumentSelfPart) {
         super(Setting, State);
         this.Setting = Setting;
         this.State = State;
@@ -381,7 +381,8 @@ export class LinkSettingPart extends ItemSettingPart {
 
     static emptyLinkSetting(payload: LinkSetting, parent: DocumentSelfPart) {
         let setting = Object.assign(payload, {
-            InGraph: settingTemplateGraph("link")
+            InGraph: settingTemplateGraph("link"),
+            InPaper: settingTemplatePaper('link')
         });
         let state = linkStateTemplate();
         return new LinkSettingPart(setting, state, parent)
@@ -442,15 +443,21 @@ export class TextSettingPart extends ItemSettingPart {
     }
 }
 
-export class NoteSettingPart extends ItemSettingPart {
+export class NoteSettingPart extends SettingPart {
     Setting: NoteSetting;
     State: NoteState;
+    _parent: DocumentSelfPart;
     static list: NoteSettingPart[] = [];
 
+    get parent() {
+        return this._parent
+    }
+
     constructor(Setting: NoteSetting, State: NoteState, parent: DocumentSelfPart) {
-        super(Setting, State, parent);
+        super(Setting, State);
         this.Setting = Setting;
         this.State = State;
+        this._parent = parent;
         NoteSettingPart.list.push(this)
     }
 
@@ -508,7 +515,6 @@ export class DocumentSelfPart {
     treeNode: TreeNodeDoc;
     protected MetaData: DocumentMetaData;
     static baseList: BackendGraphWithNode[] = []
-
     protected constructor(
         Content: DocumentContent,
         Conf: DocumentConfigure,
@@ -536,7 +542,6 @@ export class DocumentSelfPart {
         }
         // 专题已经添加到父亲中去了
         parent && parent.addItems([this.nodeSelf.deepCloneSelf()]);
-        this.addEmptyText()
     }
 
     static emptyInit(_id: id, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
@@ -793,6 +798,7 @@ export class DocumentSelfPart {
         return {
             Content,
             Conf: this.Conf.Setting,
+            Comps: this.Components
         } as BackendDocument
     }
 
@@ -907,9 +913,8 @@ export class DocumentSelfPart {
         items.filter(item => !this.checkExistByItem(item)).map(item => {
             item.State.isAdd = true;
             // 额外处理专题
-            if (isNodeSetting(item)) {
+            if (isNodeSettingPart(item)) {
                 let graph = item.boundDocument;
-                console.log(graph, item)
                 graph && this.treeNode._addNewNode([graph.treeNode])
                 // 额外处理link
             } else if (isLinkSetting(item)) {
@@ -949,7 +954,7 @@ export class DocumentSelfPart {
         item._parent = this;
         isMediaSetting(item)
             ? this.Content.medias.push(item)
-            : isNodeSetting(item)
+            : isNodeSettingPart(item)
             ? this.Content.nodes.push(item)
             : isTextSetting(item)
                 ? this.Content.texts.push(item)

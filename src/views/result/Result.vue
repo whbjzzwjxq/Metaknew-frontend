@@ -76,6 +76,7 @@
                     if (this.currentDocument._id === '$_-1') {
                         let _id = getIndex();
                         let {graph} = DocumentSelfPart.emptyInit(_id, null);
+                        graph.addEmptyNode('node', 'BaseNode')
                         return commitGraph(graph)
                     } else {
                         this.loading = false

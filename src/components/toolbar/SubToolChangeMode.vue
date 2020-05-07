@@ -11,6 +11,7 @@
     import SubToolBlock from "@/components/toolbar/SubToolBlock.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {iconMap} from "@/utils/icon";
+    import {DocumentSelfPart} from "@/class/settingBase";
     export default Vue.extend({
         name: "SubToolChangeMode",
         components: {
@@ -20,10 +21,14 @@
         data: function () {
             return {
                 modeIconGroup: iconMap['i-mode'],
+                itemIconGroup: iconMap['i-item']
             }
         },
         props: {},
         computed: {
+            document: function(): DocumentSelfPart {
+                return this.$store.state.dataManager.currentDocument
+            },
             iconList: function (): IconItem[] {
                 return [
                     {
@@ -45,10 +50,16 @@
                         payload: 'edit'
                     },
                     {
-                        name: this.modeIconGroup.normal,
-                        toolTip: '切换到普通模式',
-                        _func: this.changeMode,
-                        payload: 'normal'
+                        name: this.itemIconGroup._DocPaper,
+                        toolTip: '切换到Paper模式',
+                        _func: this.changeView,
+                        payload: 'paper'
+                    },
+                    {
+                        name: this.itemIconGroup._DocGraph,
+                        toolTip: '切换到Graph模式',
+                        _func: this.changeView,
+                        payload: 'graph'
                     }
                 ]
             }
@@ -56,6 +67,9 @@
         methods: {
             changeMode(type: 'normal' | 'geo' | 'timeline' | 'edit') {
                 this.$router.push({name: 'graph-' + type})
+            },
+            changeView(type: 'graph' | 'paper') {
+                this.$router.push({name: `${type}-normal`, params: {id: this.document._id.toString()}})
             }
         },
         record: {

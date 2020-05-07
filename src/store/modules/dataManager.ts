@@ -10,7 +10,7 @@ import {
     commitInfoIdChange,
     commitInfoRemove,
     commitItemChange,
-    commitSnackbarOn
+    commitSnackbarOn, commitSubTabChange
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
 import {
@@ -124,6 +124,9 @@ const getters = {
         result.push(...getters.links);
         result.push(...getters.medias);
         return result
+    },
+    documentList: (state: DataManagerState) => {
+        return Object.values(state.documentManager)
     }
 };
 const mutations = {
@@ -152,6 +155,7 @@ const mutations = {
 
     currentItemChange(state: DataManagerState, payload: NodeInfoPart | LinkInfoPart) {
         state.currentItem = payload;
+        commitSubTabChange('info')
     },
 
     // ------------Graph And Paper ------------
@@ -405,8 +409,6 @@ const actions = {
         await linkBulkCreate(getters.links);
         //处理专题 分成需要update和需要create的内容
         let documentList: DocumentSelfPart[] = getters.documentList;
-        let dataList = documentList.filter(document => !document.isRemote)
-            .map(document => document.dataBackendDocument);
         let updateDataList = documentList.filter(document => document.isRemote);
         //
         if (isDraft) {

@@ -45,9 +45,7 @@
         },
         methods: {
             addNewRect() {
-                let _id = getIndex();
-                let rect = TextSettingPart.emptyRect(_id, this.currentDocument);
-                this.currentDocument.addItems([rect])
+                this.currentDocument.addEmptyText()
             },
             addNewSquare() {
 

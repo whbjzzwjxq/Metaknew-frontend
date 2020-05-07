@@ -1,43 +1,149 @@
 <template>
-    <v-card flat tile outlined class="subCard">
-        <v-img
-            class="white--text align-end"
-            :src="realSrc">
+    <v-card :width="cardSize.width" :height="cardSize.height" flat>
+        <v-card-title class="pa-2 pb-0">
+            <v-row no-gutters>
+                <v-col class="pa-2 pb-0" cols="5">
+                    <node-avatar :source-url="mainImage">
 
-        </v-img>
-        <v-card-title>
-            {{ info.Name }}
+                    </node-avatar>
+                </v-col>
+                <v-col class="pa-2 pb-0" cols="7">
+                    <v-text-field
+                        v-model="name"
+                        label="Name"
+                        disabled
+                        dense
+                        class="mt-2">
+
+                    </v-text-field>
+                    <p-label-selector
+                        :label="label"
+                        disabled
+                        class="mt-n4">
+
+                    </p-label-selector>
+                </v-col>
+            </v-row>
         </v-card-title>
+        <v-card-text class="pa-2 pb-0">
+            <slot name="content" :setting="setting" :state="state">
+
+            </slot>
+            <markdown-render :text="info.description" v-if="!notRenderDescription">
+
+            </markdown-render>
+        </v-card-text>
+        <v-card-actions class="pa-2 pb-0" style="position: absolute; bottom: 4px">
+            <div class="flex-shrink-1">
+                <icon-group :icon-list="iconList" small v-if="!notRenderDefaultIcon">
+
+                </icon-group>
+            </div>
+            <slot name="iconContent" :setting="setting" :state="state">
+
+            </slot>
+        </v-card-actions>
     </v-card>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
+    import NodeAvatar from "@/components/NodeAvatar.vue";
+    import PLabelSelector from "@/components/PLabelSelector.vue";
+    import IconGroup from "@/components/IconGroup.vue";
+    import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
     import {getSrc} from "@/utils/utils";
+    import {getIcon} from "@/utils/icon";
+    import {commitItemChange} from "@/store/modules/_mutations";
+    import {CardSize, getCardSize} from "@/interface/interfaceInComponent";
     import {NodeInfoPart} from "@/class/info";
+    //todo mixin 估计Vue3才解决了 笑死
 
     export default Vue.extend({
         name: "CardNodeSimp",
-        components: {},
+        components: {
+            NodeAvatar,
+            PLabelSelector,
+            IconGroup,
+            MarkdownRender
+        },
         data: function () {
             return {}
         },
         props: {
-            node: {
-                type: Object as () => NodeInfoPart,
+            setting: {
+                type: Object as () => NodeSetting,
                 required: true
+            },
+            state: {
+                type: Object as () => NodeState,
+                required: true
+            },
+            notRenderDefaultIcon: {
+                type: Boolean,
+                default: false
+            },
+            notRenderDescription: {
+                type: Boolean,
+                default: false
+            },
+            appendIconList: {
+                type: Array as () => IconItem[],
+                default: () => []
+            },
+            large: {
+                type: Boolean,
+                default: false
+            },
+            xLarge: {
+                type: Boolean,
+                default: false
+            },
+            small: {
+                type: Boolean,
+                default: false
+            },
+            xSmall: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
-            info: function (): BaseNodeInfo {
-                return this.node.Info
+            mainImage: function (): string {
+                return getSrc(this.setting._image)
             },
-
-            realSrc: function (): string {
-                return getSrc(this.info.MainPic)
+            name: function (): string {
+                return this.setting._name
             },
+            type: function (): string {
+                return this.setting._type
+            },
+            label: function (): string {
+                return this.setting._label
+            },
+            iconList: function (): IconItem[] {
+                let base = [
+                    {
+                        name: getIcon('i-explode', 'goto'),
+                        _func: this.gotoLeftCard,
+                        toolTip: '转到知识元卡片'
+                    }
+                ] as IconItem[]
+                base.push(...this.appendIconList)
+                return base
+            },
+            cardSize: function (): CardSize {
+                return getCardSize(this.$props)
+            },
+            info: function (): NodeInfoPart {
+                return this.$store.state.dataManager.nodeManager[this.setting._id]
+            }
         },
-        methods: {},
+        methods: {
+            gotoLeftCard: function () {
+                this.info && commitItemChange(this.info)
+            }
+        },
         record: {
             status: 'empty',
             description: ''
@@ -46,5 +152,5 @@
 </script>
 
 <style scoped>
-    @import "src/style/css/subCard.css";
+
 </style>

@@ -9,8 +9,15 @@ const state = {
 } as MarkdownState;
 
 const mutations = {
-    markdownUpdate(state: MarkdownState, payload: MarkdownInputState) {
+    updateMarkdownState(state: MarkdownState, payload: MarkdownInputState) {
         state.currentMarkdown = payload
+    },
+
+    clearMarkdownState(state: MarkdownState) {
+        state.currentMarkdown = {
+            dom: undefined,
+            editMode: false
+        }
     }
 };
 const actions = {};

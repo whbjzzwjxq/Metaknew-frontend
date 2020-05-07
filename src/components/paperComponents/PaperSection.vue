@@ -1,17 +1,14 @@
 <template>
-    <v-container class="pa-0 py-2">
+    <v-container>
         <v-hover v-slot:default="{ hover }">
             <v-card
                 class="d-flex flex-column unselected"
-                min-height="90"
+                min-height="108"
                 outlined
                 :elevation="hover ? 6 : 0"
-                :id="index"
-                @mouseenter="mouseEnter"
-                @mouseleave="mouseLeave"
-                @mousemove="mouseMove">
+                :id="index">
                 <v-row no-gutters class="pa-0 flex-nowrap flex-row-reverse" style="height: 48px">
-                    <v-col cols="12" class="pa-4 py-2">
+                    <v-col cols="12" class="pa-4 pb-0">
                         <field-title
                             :text="setting.Title.text"
                             :edit-mode="editMode"
@@ -27,6 +24,7 @@
                                 <field-title
                                     :text="setting.Left.info"
                                     :edit-mode="editMode"
+                                    label="Tag"
                                     @update-text="setting.Left.info = $event">
 
                                 </field-title>
@@ -53,7 +51,8 @@
     import IconGroup from "@/components/IconGroup.vue";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import {getIcon} from "@/utils/icon";
-    import {paperDefaultRow} from "@/interface/style/templateStylePaper";
+    import {paperRowSettingTemplate} from "@/interface/style/templateStylePaper";
+    import {maxRow} from "@/interface/interfaceInComponent";
 
     export default Vue.extend({
         name: "PaperSection",
@@ -89,9 +88,24 @@
                         toolTip: !this.isCollapse ? '收起内容' : '展开内容'
                     },
                     {
-                        name: getIcon('i-arrow-double', true),
+                        name: getIcon('i-arrow', 'up'),
                         _func: this.pushUp,
-
+                        toolTip: '跳转到上一节'
+                    },
+                    {
+                        name: getIcon('i-arrow', 'down'),
+                        _func: this.pushDown,
+                        toolTip: '跳转到下一节'
+                    },
+                    {
+                        name: getIcon('i-arrow-double', 'up'),
+                        _func: this.pushTop,
+                        toolTip: '跳转到顶部'
+                    },
+                    {
+                        name: getIcon('i-arrow-double', 'down'),
+                        _func: this.pushBottom,
+                        toolTip: '跳转到底部'
                     }
                 ]
             },
@@ -100,6 +114,7 @@
                     {
                         name: getIcon('i-edit', 'add'),
                         _func: this.addRow,
+                        disabled: this.len >= maxRow,
                         toolTip: '添加一行',
                     },
                     {
@@ -114,29 +129,32 @@
             },
             showLeft: function (): boolean {
                 return this.setting.Left.show
+            },
+            len: function (): number {
+                return this.setting.Rows.length
             }
         },
         methods: {
             collapse: function () {
                 this.isCollapse = !this.isCollapse
             },
-            mouseEnter: function () {
-                this.$emit('mouse-enter')
-            },
-            mouseLeave: function () {
-                this.$emit('mouse-leave')
-            },
-            mouseMove: function () {
-                this.$emit('mouse-move')
-            },
             addRow: function () {
-                this.setting.Rows.push(paperDefaultRow())
+                this.len < maxRow && this.setting.Rows.push(paperRowSettingTemplate(this.len))
             },
             leftOff: function () {
                 this.setting.Left.show = !this.showLeft
             },
             pushUp: function () {
                 this.$emit('push-up')
+            },
+            pushDown: function () {
+                this.$emit('push-down')
+            },
+            pushTop: function () {
+                this.$emit('push-top')
+            },
+            pushBottom: function () {
+                this.$emit('push-bottom')
             }
         },
         record: {

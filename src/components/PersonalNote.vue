@@ -3,7 +3,7 @@
         <v-toolbar color="deep-purple accent-4" flat dense :extension-height="36">
             <v-icon> {{ noteIcon }}</v-icon>
             <v-toolbar-title style="font-weight: bolder" class="pl-2 unselected">
-               NOTE BOOK
+                NOTE BOOK
             </v-toolbar-title>
 
             <v-spacer></v-spacer>
@@ -57,54 +57,66 @@
             </template>
         </v-toolbar>
 
-        <template v-if="noteBooks.length">
-            <v-tabs-items v-model="currentItem">
-                <v-tab-item
-                    v-for="note in reConcatNotes"
-                    :key="note._id"
-                    :value="'tab-' + note._id"
-                >
-                    <v-card flat>
-                        <v-card-title class="px-4 py-2">
-                            <field-title
-                                text="Title:"
-                                style="width: 48px; font-size: 28px; font-weight: bold">
-                            </field-title>
-                            <field-title
-                                :edit-mode="isEditing"
-                                :text="currentNote.Name"
-                                :div-css="titleStyle"
-                                @update-text="updateValue('Name', arguments[0])">
+        <template v-if="noteBooks.length > 0">
+            <v-card flat tile height="520">
+                <v-tabs-items v-model="currentItem">
+                    <v-tab-item
+                        v-for="note in reConcatNotes"
+                        :key="note._id"
+                        :value="'tab-' + note._id"
+                    >
+                        <v-card flat>
+                            <v-card-title class="py-2 d-flex flex-row">
+                                <div>
+                                    <p class="title text-center ma-0 pr-2">Title: </p>
+                                </div>
+                                <div>
+                                    <field-title
+                                        :edit-mode="isEditing"
+                                        :text="currentNote.Name"
+                                        :div-css="titleStyle"
+                                        @update-text="updateValue('Name', arguments[0])">
 
-                            </field-title>
-                            <v-spacer></v-spacer>
-                            <time-render :time="currentNote.UpdateTime"></time-render>
-                            <icon-group small :icon-list="noteIconList">
+                                    </field-title>
+                                </div>
+                                <v-spacer></v-spacer>
+                                <div>
+                                    <time-render :time="currentNote.UpdateTime"></time-render>
+                                </div>
+                                <div>
+                                    <icon-group small :icon-list="noteIconList">
 
-                            </icon-group>
-                        </v-card-title>
-                        <v-card-text class="px-4 py-2">
-                            <markdown-render
-                                :div-style="textAreaStyle"
-                                :edit-mode="isEditing"
-                                :text="currentNote.Text"
-                                :rows="20"
-                                @update="updateValue('Text', arguments[0])"
-                            >
-                            </markdown-render>
-                        </v-card-text>
-                    </v-card>
-                </v-tab-item>
-            </v-tabs-items>
+                                    </icon-group>
+                                </div>
+                            </v-card-title>
+                            <v-card-text class="py-2">
+                                <markdown-render
+                                    :div-style="textAreaStyle"
+                                    :edit-base="isEditing"
+                                    :text="currentNote.Text"
+                                    :rows="20"
+                                    @update="updateValue('Text', arguments[0])"
+                                >
+                                </markdown-render>
+                            </v-card-text>
+                        </v-card>
+                    </v-tab-item>
+                </v-tabs-items>
+            </v-card>
         </template>
 
         <template v-else>
-            <v-card flat tile>
+            <v-card flat tile height="520">
                 <v-card-title>
                     <p style="font-weight: bolder">暂时没有笔记 点击右上角"+"按钮新建笔记本</p>
                 </v-card-title>
             </v-card>
         </template>
+        <div style="height: 100%; width: 100%" class="pa-2">
+            <markdown-toolbar>
+
+            </markdown-toolbar>
+        </div>
     </v-card>
 </template>
 
@@ -117,7 +129,8 @@
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import TimeRender from "@/components/TimeRender.vue";
     import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
-    import {dispatchNoteBookPush, dispatchNoteInDocPush} from '@/store/modules/_dispatch';
+    import MarkdownToolbar from "@/components/markdown/MarkdownToolbar.vue";
+    import {dispatchNoteBookPush} from '@/store/modules/_dispatch';
 
     export default Vue.extend({
         name: "PersonalNote",
@@ -125,7 +138,8 @@
             IconGroup,
             FieldTitle,
             TimeRender,
-            MarkdownRender
+            MarkdownRender,
+            MarkdownToolbar
         },
         data: function () {
             return {
@@ -176,7 +190,6 @@
                         color: 'blue',
                         toolTip: '支持Markdown解析'
                     },
-                    {name: getIcon('i-edit-able', !this.isEditing), _func: this.editNote, color: 'black'},
                     {name: getIcon('i-edit', 'delete'), _func: this.deleteNote, color: 'black'}
                 ]
             },

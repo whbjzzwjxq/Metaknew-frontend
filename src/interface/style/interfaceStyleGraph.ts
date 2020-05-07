@@ -8,7 +8,7 @@ declare global {
     }
 
     type NodeViewType = 'rectangle' | 'rhombus' | 'ellipse';
-    interface NodeStyleSetting extends SettingGroup {
+    interface NodeStyleSettingGraph extends SettingGroup {
         Base: BaseSizeInGraph;
         View: {
             color: Color;
@@ -42,7 +42,7 @@ declare global {
 
     type LinkViewType = 'linear' | 'curve' | 'polyline'
     type LinkPointLocation = 'top' | 'bottom' | 'left' | 'right' | 'center'
-    interface LinkStyleSetting extends SettingGroup {
+    interface LinkStyleSettingGraph extends SettingGroup {
         View: {
             width: number;
             color: Color;
@@ -67,7 +67,7 @@ declare global {
         }
     }
 
-    interface MediaStyleSetting extends SettingGroup {
+    interface MediaStyleSettingGraph extends SettingGroup {
         Base: BaseSizeInGraph;
         View: {
             opacity: number,
@@ -100,7 +100,7 @@ declare global {
         }
     }
 
-    interface TextStyleSetting extends SettingGroup {
+    interface TextStyleSettingGraph extends SettingGroup {
         Base: BaseSizeInGraph;
         Border: {
             width: number,

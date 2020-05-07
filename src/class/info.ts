@@ -144,6 +144,10 @@ export class NodeInfoPart extends InfoPart {
         return list.filter(node => node._id === this._id)
     }
 
+    get description() {
+        return this.Info.Description['auto']
+    }
+
     protected constructor(info: BaseNodeInfo, ctrl: BaseNodeCtrl, isRemoteModel: boolean) {
         super(info, ctrl, isRemoteModel);
         this.Info = info;
@@ -197,10 +201,6 @@ export class NodeInfoPart extends InfoPart {
             node.updateCrucialProp("_image", this.Info.MainPic);
             node.updateCrucialProp('_id', this.Info.id);
         });
-    }
-
-    save() {
-
     }
 }
 
@@ -314,6 +314,10 @@ export class MediaInfoPart extends InfoPart {
 
     get realSrc() {
         return getSrc(this.Ctrl.FileName)
+    }
+
+    get fileName() {
+        return this.Ctrl.FileName
     }
 
     static statusDict: Record<MediaStatus, string> = {

@@ -1,15 +1,20 @@
 <template>
     <div>
-        <icon-group :icon-list="iconList"></icon-group>
+        <icon-group :icon-list="activeIconList" small></icon-group>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import IconGroup from "@/components/IconGroup.vue";
-    import {MarkdownInputState, MarkdownInsertItem} from "@/components/markdown/_markdownInterface";
-    import {insertItemDict, isItalicAndBoldConflict, maxHistory} from "@/components/markdown/_markdownToolbarMethod";
+    import {MarkdownInputState} from "@/components/markdown/_markdownInterface";
+    import {
+        insertItemDict,
+        isItalicAndBoldConflict,
+        MarkdownIconName
+    } from "@/components/markdown/_markdownToolbarMethod";
     import {insertText} from "@/utils/insertText";
+    import {iconMap} from "@/utils/icon";
 
     export default Vue.extend({
         name: "MarkdownToolbar",
@@ -18,13 +23,36 @@
         },
         data: function () {
             return {
-                insertDict: insertItemDict
+                insertDict: insertItemDict,
+                renderDict: {
+                    'simply': [
+                        MarkdownIconName.EDIT,
+                        MarkdownIconName.BOLD,
+                        MarkdownIconName.ITALIC,
+                        MarkdownIconName.HEADER1,
+                        MarkdownIconName.UNDERLINE
+                    ],
+                    'default': [
+                        MarkdownIconName.REDO,
+                        MarkdownIconName.UNDO,
+                        MarkdownIconName.EDIT,
+                        MarkdownIconName.BOLD,
+                        MarkdownIconName.ITALIC,
+                        MarkdownIconName.HEADER1,
+                        MarkdownIconName.UNDERLINE,
+                    ]
+                } as Record<string, MarkdownIconName[]>,
+                iconDict: iconMap["i-markdown"] as Record<MarkdownIconName, string>
             }
         },
         props: {
-            closeBolder: {
+            simply: {
                 type: Boolean,
                 default: false
+            },
+            excludeIconNameList: {
+                type: Array as () => MarkdownIconName[],
+                default: () => []
             }
         },
         computed: {
@@ -32,29 +60,98 @@
                 //撤销重做只是提示
                 return [
                     {
-                        name: 'mdi-undo',
+                        name: this.iconDict.undo,
                         disabled: false,
-                        toolTip: '撤销(ctrl+z) 点击无效'
+                        toolTip: '撤销(ctrl+z) 点击无效',
+                        payload: MarkdownIconName.UNDO
                     },
                     {
-                        name: 'mdi-redo',
+                        name: this.iconDict.redo,
                         disabled: false,
-                        toolTip: '重做(ctrl+y) 点击无效'
+                        toolTip: '重做(ctrl+y) 点击无效',
+                        payload: MarkdownIconName.REDO
+                    },
+                    {
+                        name: this.iconDict.edit,
+                        _func: this.changeEdit,
+                        color: this.markdownInstance.editMode ? 'green' : 'default',
+                        toolTip: this.markdownInstance.editMode ? '渲染内容' : '编辑内容',
+                        payload: MarkdownIconName.EDIT
                     },
                     {
                         name: 'mdi-format-bold',
                         _func: this.changeStyle,
-                        payload: this.insertDict.bold,
-                        render: !this.closeBolder
-                    }
+                        payload: MarkdownIconName.BOLD,
+                        toolTip: '粗体'
+                    },
+                    {
+                        name: 'mdi-format-italic',
+                        _func: this.changeStyle,
+                        payload: MarkdownIconName.ITALIC,
+                        toolTip: '斜体'
+                    },
+                    {
+                        name: 'mdi-format-header-1',
+                        _func: this.changeStyle,
+                        payload: MarkdownIconName.HEADER1,
+                        toolTip: '一级标题'
+                    },
+                    {
+                        name: 'mdi-format-header-2',
+                        _func: this.changeStyle,
+                        payload: MarkdownIconName.HEADER2,
+                        toolTip: '二级标题'
+                    },
+                    {
+                        name: 'mdi-format-header-3',
+                        _func: this.changeStyle,
+                        payload: MarkdownIconName.HEADER3,
+                        toolTip: '三级标题'
+                    },
+                    {
+                        name: 'mdi-format-header-4',
+                        _func: this.changeStyle,
+                        payload: MarkdownIconName.HEADER4,
+                        toolTip: '四级标题'
+                    },
+                    {
+                        name: 'mdi-format-header-5',
+                        _func: this.changeStyle,
+                        payload: MarkdownIconName.HEADER5,
+                        toolTip: '五级标题'
+                    },
+                    {
+                        name: 'mdi-format-header-6',
+                        _func: this.changeStyle,
+                        payload: MarkdownIconName.HEADER6,
+                        toolTip: '六级标题'
+                    },
+                    {
+                        name: 'mdi-format-underline',
+                        _func: this.changeStyle,
+                        payload: MarkdownIconName.UNDERLINE,
+                        toolTip: '下划线'
+                    },
                 ]
             },
             markdownInstance: function (): MarkdownInputState {
                 return this.$store.state.markdown.currentMarkdown
+            },
+            activeIconNameList: function (): MarkdownIconName[] {
+                return this.simply
+                    ? this.renderDict['simply']
+                    : this.renderDict['default']
+            },
+            activeIconList: function(): IconItem[] {
+                return this.iconList.filter(item =>
+                    this.activeIconNameList.includes(item.payload) &&
+                    !this.excludeIconNameList.includes(item.payload)
+                )
             }
         },
         methods: {
-            changeStyle: function (payload: MarkdownInsertItem) {
+            changeStyle: function (name: MarkdownIconName) {
+                let payload = this.insertDict[name]
                 if (this.markdownInstance.dom !== undefined) {
                     let {prefix, suffix} = payload
                     let {dom} = this.markdownInstance
@@ -86,6 +183,9 @@
             },
             insert: function (text: string) {
                 this.markdownInstance.dom && insertText(this.markdownInstance.dom, text)
+            },
+            changeEdit: function () {
+                this.$emit('change-edit-mode')
             }
         },
         record: {

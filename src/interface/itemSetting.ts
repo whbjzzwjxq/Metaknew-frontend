@@ -45,6 +45,7 @@ declare global {
 
     interface DocumentItemSetting extends Setting {
         _type: DocumentItemType
+        InPaper: ItemStyleSettingPaper
     }
 
     type StateKeyBase = keyof DocumentItemState
@@ -61,7 +62,7 @@ declare global {
         _type: 'node' | 'document';
         _name: string;
         _image: string;
-        InGraph: NodeStyleSetting;
+        InGraph: NodeStyleSettingGraph;
         InPaper: NodeStyleSettingPaper
     }
 
@@ -77,12 +78,12 @@ declare global {
         _type: 'link';
         _start: VisNodeSettingPart;
         _end: VisNodeSettingPart;
-        InGraph: LinkStyleSetting;
+        InGraph: LinkStyleSettingGraph;
         InPaper: LinkStyleSettingPaper;
     }
 
     interface BackendLinkSetting extends DocumentItemSetting {
-        InGraph: LinkStyleSetting;
+        InGraph: LinkStyleSettingGraph;
         _start: VisNodeQuery;
         _end: VisNodeQuery;
     }
@@ -99,7 +100,7 @@ declare global {
         _type: 'media';
         _name: string;
         _src: string; // url字符串或者 URL.createObjectUrl返回值
-        InGraph: MediaStyleSetting
+        InGraph: MediaStyleSettingGraph
         InPaper: MediaStyleSettingPaper
     }
 
@@ -112,7 +113,8 @@ declare global {
             Base: BaseSizeInGraph;
         }
         InPaper: {
-            Base: BaseSizeInPaper
+            Base: BaseSizeInPaper,
+            Card: CardStyleInPaper
         }
     }
 
@@ -123,11 +125,11 @@ declare global {
         _label: TextLabel,
         _points: PointObject[],
         _text: string,
-        InGraph: TextStyleSetting,
+        InGraph: TextStyleSettingGraph,
         InPaper: TextStyleSettingPaper
     }
 
-    type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing'
+    type GraphStateProp = 'isDeleted' | 'isSelf' | 'isAdd' | 'isSelected' | 'isMouseOn' | 'isEditing' | 'isInRow'
     type AllStateProp = 'isLock' | 'isDark' | 'isLoading' | 'isChanged' | 'isExplode' | 'isSavedIn5min' | GraphStateProp
     type AllCrucialProp = '_id' | '_type' | '_label' | '_image' | '_name' | '_src' | '_start' | '_end'
 
@@ -158,13 +160,14 @@ declare global {
         height: number
     }
 
-    interface RowSetting {
-        height: number
-        forceAlign: boolean //是否强制对齐
-    }
-
-    interface RowSettingWithItem extends RowSetting {
-        Items: ItemSettingPart[]
+    interface PaperRowSetting {
+        order: number //顺序
+        width: number //限制宽度
+        height: number //限制高度
+        isOverflowX: boolean //是否限制宽度
+        Items: ItemSettingPart[], //包含的内容
+        isAlign: boolean //是否强制对齐高度
+        isVirtual?: boolean //是否是视图以外的Queue
     }
 
     interface PaperSectionLeftSetting {
@@ -182,22 +185,11 @@ declare global {
     interface PaperSectionSetting {
         Left: PaperSectionLeftSetting
         Title: PaperSectionTitleSetting
-        Rows: RowSetting[]
+        Rows: PaperRowSetting[]
     }
 
     interface PaperSectionSettingPart {
         Setting: PaperSectionSetting
-        State: {
-            isSelected: boolean, //选中
-            isDeleted: boolean, //被删除
-        }
-    }
-    interface PaperSectionSettingPartWithItems {
-        Setting: {
-            Left: PaperSectionLeftSetting
-            Title: PaperSectionTitleSetting
-            Rows: RowSettingWithItem[]
-        }
         State: {
             isSelected: boolean, //选中
             isDeleted: boolean, //被删除

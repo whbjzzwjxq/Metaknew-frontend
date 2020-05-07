@@ -50,8 +50,8 @@
                 }) as Range
             },
             width: {
-                type: Number,
-                default: 200
+                type: [Number, String],
+                default: '100%'
             },
             intCheck: {
                 type: Boolean,

@@ -27,7 +27,7 @@
                 :min-width="300"
                 :min-height="200"
                 :max-height="600"
-                class="cardItem">
+                class="scrollY cardItem">
                 <v-card-subtitle style="font-size: 18px">
                     PathList
                 </v-card-subtitle>
@@ -78,15 +78,15 @@
         },
         methods: {
             openCurrent: function () {
-                this.$emit('path-open-current')
+
             },
 
             nextPage: function () {
-                this.$emit('path-next-page')
+
             },
 
             prePage: function () {
-                this.$emit('path-pre-page')
+
             },
 
             openList: function () {

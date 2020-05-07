@@ -92,8 +92,8 @@
                 required: true
             },
             width: {
-                type: Number,
-                default: 400
+                type: [Number, String],
+                default: '100%'
             },
             resolveType: {
                 type: String as () => ResolveType,

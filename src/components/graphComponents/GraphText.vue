@@ -78,7 +78,7 @@
             }
         },
         computed: {
-            setting: function (): TextStyleSetting {
+            setting: function (): TextStyleSettingGraph {
                 return this.itemSetting.InGraph
             },
 

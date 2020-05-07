@@ -1,13 +1,13 @@
 <template>
     <div>
-        <card-sub-row text="关系信息">
+        <card-sub-row text="关系信息" :close-able="editMode" v-model="settingInPaper.showTitle">
             <template v-slot:content>
                 <v-col class="pt-0 pb-0 ma-0 pl-2">
                     <link-start-end-selector
                         :current-start="start"
                         :current-end="end"
                         :document="document"
-                        :edit-mode="!baseData.isRemote"
+                        :edit-mode="editable"
                         @select-item-link="changeNode">
 
                     </link-start-end-selector>
@@ -23,7 +23,7 @@
                 </v-col>
             </template>
         </card-sub-row>
-        <card-sub-row :text="'保存与记录'" v-if="isUserControl">
+        <card-sub-row :text="'保存与记录'" v-if="isUserControl && !editInPaper">
             <template v-slot:content>
                 <div class="d-flex flex-row">
                     <v-menu offset-y>
@@ -42,7 +42,7 @@
                 </div>
             </template>
         </card-sub-row>
-        <card-sub-row text="关系标签">
+        <card-sub-row text="关系标签" :close-able="editMode" v-model="settingInPaper.showLabels">
             <template v-slot:content>
                 <card-sub-label-group
                     :editable="group.editable"
@@ -58,7 +58,7 @@
                 </card-sub-label-group>
             </template>
         </card-sub-row>
-        <card-sub-row text="关系信息">
+        <card-sub-row text="关系信息" :close-able="editMode" v-model="settingInPaper.showProps">
             <template v-slot:content>
                 <field-json
                     :p-label="'link'"
@@ -70,8 +70,7 @@
                 </field-json>
             </template>
         </card-sub-row>
-
-        <card-sub-row :text="'关系描述'">
+        <card-sub-row :text="'关系描述'" :close-able="editMode" v-model="settingInPaper.showDescription">
             <template v-slot:content>
                 <field-text
                     :base-text="info.Description"
@@ -80,20 +79,6 @@
                 >
 
                 </field-text>
-            </template>
-        </card-sub-row>
-
-        <card-sub-row :text="'保存与记录'" v-if="editable">
-            <template v-slot:content>
-                <v-menu offset-y>
-                    <template v-slot:activator="{ on }">
-                        <v-btn text v-on="on" coor="primary">Save</v-btn>
-                    </template>
-                    <v-list>
-                        <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
-                        <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft</v-list-item>
-                    </v-list>
-                </v-menu>
             </template>
         </card-sub-row>
     </div>
@@ -114,6 +99,7 @@
     import {getIcon} from "@/utils/icon";
     import {linkBulkCreate, linkBulkUpdate} from '@/api/subgraph/link';
     import {LinkInfoPart} from "@/class/info";
+    import {mediaShowInPaperTemplate} from "@/interface/style/templateStylePaper";
 
     export default Vue.extend({
         name: "CardPageLinkInfo",
@@ -142,6 +128,14 @@
                 required: true
             },
             editMode: {
+                type: Boolean,
+                default: false
+            },
+            settingInPaper: {
+                type: Object as () => LinkStyleSettingPaper,
+                default: () => mediaShowInPaperTemplate()
+            },
+            editInPaper: {
                 type: Boolean,
                 default: false
             }

@@ -1,7 +1,13 @@
 import {Point, RectByPoint} from "@/class/geometric";
 import {IndexedInfo} from "@/api/search/search";
 import {VirtualNodeBase} from "@/interface/interfaceTree";
-import {DocumentSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/class/settingBase";
+import {
+    DocumentSelfPart,
+    ItemSettingPart,
+    LinkSettingPart,
+    MediaSettingPart,
+    NodeSettingPart
+} from "@/class/settingBase";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -109,3 +115,38 @@ export interface DirectoryNode extends VirtualNodeBase<DocumentSelfPart, Directo
 export type DirectoryItemAll = DirectorySubItemAll | DirectoryNode
 
 export type DirectoryBuildPayload = {}
+
+export interface CardSize {
+    height: number,
+    width: number,
+}
+
+export function getCardSize(props: {large?: boolean, xLarge?: boolean, small?: boolean, xSmall?: boolean}): CardSize {
+    if (props.large) {
+        return {width: 360, height: 270}
+    } else if (props.xLarge) {
+        return {width: 600, height: 450}
+    } else if (props.small) {
+        return {width: 200, height: 150}
+    } else if (props.xSmall) {
+        return {width: 160, height: 120}
+    } else {
+        return {width: 240, height: 180}
+    }
+}
+
+export function getSizeByWidth(width: number) {
+    return {
+        xSmall: width <= 120,
+        small: width > 120 && width <= 180,
+        normal: width > 180 && width <= 240,
+        large: width > 240 && width <= 360,
+        xLarge: width > 360
+    }
+}
+
+export interface DragEventWithTarget extends DragEvent {
+    mouseOnTarget: Element | null
+}
+
+export const maxRow = 12

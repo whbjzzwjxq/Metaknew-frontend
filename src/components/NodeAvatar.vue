@@ -1,11 +1,12 @@
 <template>
-    <v-card class="empty-avatar" flat tile :width="avatarSize + 4" :height="avatarSize + 4">
+    <v-card class="empty-avatar" flat tile>
         <v-img
+            :max-width="avatarSize"
+            :max-height="avatarSize"
             :src="realSrc"
-            :width="avatarSize + 'px'"
-            :height="avatarSize + 'px'"
+            aspect-ratio="1"
             contain>
-            <template v-if="!sourceUrl">
+            <template v-if="!sourceUrl && editMode">
                 <div style="height: 40px"></div>
                 <p>upload main image</p>
             </template>
@@ -50,8 +51,8 @@
                                         :img="currentImage"
                                         :max-img-size="4000"
                                         :enlarge="4"
-                                        :auto-crop-width="avatarSize"
-                                        :auto-crop-height="avatarSize"
+                                        :auto-crop-width="defaultAvatarSize"
+                                        :auto-crop-height="defaultAvatarSize"
                                         auto-crop
                                         fixed-box
                                     >
@@ -90,7 +91,10 @@
     export default Vue.extend({
         name: "NodeAvatar",
         components: {
-            FileResolver, CardSubRow, MediaGrids, VueCropper
+            FileResolver,
+            CardSubRow,
+            MediaGrids,
+            VueCropper
         },
         data() {
             return {
@@ -103,7 +107,7 @@
                 guid: guid,
                 deleteIcon: getIcon('i-edit', 'delete'),
                 uploadIcon: getIcon('i-add-media-method', 'upload'),
-                avatarSize: 128
+                defaultAvatarSize: 128,
             }
         },
         props: {
@@ -113,11 +117,15 @@
             },
             imageList: {
                 type: Array as () => string[],
-                required: true
+                default: () => []
             },
             editMode: {
                 type: Boolean,
                 default: false
+            },
+            givenAvatarSize: {
+                type: Number,
+                default: 0
             }
         },
         computed: {
@@ -131,6 +139,11 @@
                 return this.currentFile
                     ? this.currentFile
                     : this.realSrc
+            },
+            avatarSize: function (): number {
+                return this.givenAvatarSize !== 0
+                    ? this.givenAvatarSize
+                    : this.defaultAvatarSize
             }
         },
         methods: {
@@ -170,6 +183,9 @@
             }
         },
         watch: {},
+        mounted(): void {
+
+        },
         record: {
             status: 'done',
             description: '节点MainImage的编辑器 '
@@ -179,7 +195,6 @@
 
 <style scoped>
     .empty-avatar {
-        background-color: #EDEDED;
         opacity: 0.9;
         text-align: center;
         vertical-align: center;

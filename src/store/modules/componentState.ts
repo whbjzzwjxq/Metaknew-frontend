@@ -1,3 +1,5 @@
+import {ItemSettingPart} from "@/class/settingBase";
+
 declare global {
     interface ComponentState {
         leftCardTab: {
@@ -9,7 +11,9 @@ declare global {
             root: number
         },
         bottomDynamicBarOn: boolean,
-        bottomDynamicBarType: BottomDynamicBarType
+        bottomDynamicBarType: BottomDynamicBarType,
+        paperQueueOn: boolean,
+        paperDraggingState: PaperDraggingState
     }
 
     type RootTabName = 'ecoSystem' | 'document' | 'metaKnowledge';
@@ -18,6 +22,12 @@ declare global {
     type MetaKnowledgeTabName = 'info' | 'mediaList' | 'relative'
     type SubTabName = EcoTabName | DocumentTabName | MetaKnowledgeTabName
     type BottomDynamicBarType = 'path'
+
+    interface PaperDraggingState {
+        isDragging: boolean,
+        draggingItem: null | ItemSettingPart,
+        draggingRow: null | PaperRowSetting
+    }
 }
 
 export const tabDict: Record<RootTabName, string[]> = {
@@ -51,7 +61,13 @@ const state = {
     },
     editMode: false,
     bottomDynamicBarOn: false,
-    bottomDynamicBarType: 'path'
+    bottomDynamicBarType: 'path',
+    paperQueueOn: false,
+    paperDraggingState: {
+        isDragging: false,
+        draggingItem: null,
+        draggingRow: null
+    }
 } as ComponentState;
 
 const mutations = {
@@ -91,6 +107,28 @@ const mutations = {
         let {type, on} = payload;
         on !== undefined && (state.bottomDynamicBarOn = on);
         type !== undefined && (state.bottomDynamicBarType = type)
+    },
+
+    changePaperQueue: (state: ComponentState, payload: {on?: boolean}) => {
+        let {on} = payload
+        on === undefined && (on = !state.paperQueueOn)
+        state.paperQueueOn = on
+    },
+    changePaperIsDragging: (state: ComponentState, payload: {isDragging: boolean}) => {
+        let {isDragging} = payload;
+        state.paperDraggingState.isDragging = isDragging
+    },
+    changePaperDraggingItem: (state: ComponentState, payload: {item: ItemSettingPart, row: PaperRowSetting}) => {
+        let {item, row} = payload;
+        state.paperDraggingState.draggingRow = row
+        state.paperDraggingState.draggingItem = item
+    },
+    clearPaperDraggingState: (state: ComponentState) => {
+        state.paperDraggingState = {
+            draggingRow: null,
+            draggingItem: null,
+            isDragging: false
+        }
     }
 };
 const actions = {};

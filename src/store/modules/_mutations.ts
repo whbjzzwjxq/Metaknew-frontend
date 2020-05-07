@@ -1,6 +1,6 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {DocumentSelfPart, NoteSettingPart} from "@/class/settingBase";
+import {DocumentSelfPart, ItemSettingPart, NoteSettingPart} from "@/class/settingBase";
 import {NoteBook} from "@/store/modules/userDataManager";
 import {LinkInfoPart, NodeInfoPart} from "@/class/info";
 import {MarkdownInputState} from "@/components/markdown/_markdownInterface";
@@ -89,10 +89,6 @@ export const commitSubTabChange = (payload: SubTabName) => {
     return store.commit('subTabChange', payload)
 };
 
-export const commitGlobalIndexPlus = (payload: number) => {
-    return store.commit('userIndexPlus', payload)
-};
-
 export const commitLoginDialogChange = (payload: boolean) => {
     return store.commit('loginDialogChange', payload)
 };
@@ -135,5 +131,17 @@ export const commitLangChange = (payload: string) => {
 };
 
 export const commitMarkdownState = (payload: MarkdownInputState) => {
-    return store.commit('markdownUpdate', payload)
+    return store.commit('updateMarkdownState', payload)
+}
+
+export const commitClearMarkdownState = () => {
+    return store.commit('clearMarkdownState')
+}
+
+export const commitChangePaperQueue = (payload: {on?: boolean}) => {
+    return store.commit('changePaperQueue', payload)
+}
+
+export const commitChangePaperDraggingItem = (payload: {item: ItemSettingPart, row: PaperRowSetting}) => {
+    return store.commit('changePaperDraggingItem', payload)
 }

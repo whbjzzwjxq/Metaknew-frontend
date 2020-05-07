@@ -1,20 +1,24 @@
 <template>
-    <div v-if="!loading">
-        <card-sub-row :text="nameTrans[type] + '标题'">
+    <div
+        v-if="!loading"
+        class="unselected">
+        <card-sub-row :text="nameTrans[type] + '标题'" :close-able="editInPaper" v-model="settingInPaper.showTitle">
             <template v-slot:content>
-                <v-col cols="5" class="pa-0 ma-0">
+                <v-row no-gutters>
+                <v-col class="pa-2" cols="5">
                     <node-avatar
                         :source-url="mainImage"
                         :imageList="imageList"
                         :edit-mode="editable"
+                        :given-avatar-size="1440"
                         @new-main-image="mainImage = arguments[0]">
 
                     </node-avatar>
                 </v-col>
-                <v-col cols="7" class="pa-0 ma-0 pt-2 pl-2">
+                <v-col class="pa-2" cols="7">
                     <v-text-field
                         v-model="name"
-                        class="pr-2 font-weight-bold"
+                        class="pr-2 pt-2 font-weight-bold"
                         :style="simplifySetting.titleSize"
                         :disabled="!editable"
                         label="Name"
@@ -24,18 +28,19 @@
                     <p-label-selector
                         :label="info.PrimaryLabel"
                         @update-label="label = $event"
-                        :disabled="!typeSelectable"
+                        :disabled="!typeSelectable || !editMode"
                         class="mt-n2">
 
                     </p-label-selector>
-                    <item-sharer :base-data="baseData" :user-concern="userConcern" class="mt-n2">
+                    <item-sharer :base-data="baseData" :user-concern="userConcern" class="mt-n2" :x-small="editInPaper">
 
                     </item-sharer>
                 </v-col>
+                </v-row>
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="'保存与记录'" v-if="isUserControl">
+        <card-sub-row :text="'保存与记录'" v-if="isUserControl && !editInPaper">
             <template v-slot:content>
                 <div class="d-flex flex-row">
                     <v-menu offset-y>
@@ -55,11 +60,15 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '的别名与翻译'">
+        <card-sub-row
+            :text="nameTrans[type] + '的别名与翻译'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showTranslate"
+        >
             <template v-slot:content>
                 <v-text-field
                     :disabled="!editable"
-                    class="pt-2 font-weight-bold"
+                    class="pa-2 font-weight-bold"
                     dense
                     label="Alias"
                     placeholder="使用;分割多个别名"
@@ -71,9 +80,13 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '相关话题'">
+        <card-sub-row
+            :text="nameTrans[type] + '相关话题'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showTopic"
+        >
             <template v-slot:content>
-                <v-chip-group column>
+                <v-chip-group column class="pa-2">
                     <global-chip
                         v-for="(label, index) in info.Topic"
                         :key="label"
@@ -108,7 +121,11 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '有关的标签'">
+        <card-sub-row
+            :text="nameTrans[type] + '有关的标签'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showLabels"
+        >
             <template v-slot:content>
                 <card-sub-label-group
                     :editable="group.editable"
@@ -118,6 +135,7 @@
                     :name="group.name"
                     @add-label="addItem(arguments[0], group.prop)"
                     @remove-label="removeItem"
+                    class="pa-2"
                     small
                     v-for="(group, index) in labelGroup">
 
@@ -125,7 +143,11 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="'你的评分'">
+        <card-sub-row
+            :text="'你的评分'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showRating"
+        >
             <template v-slot:content>
                 <v-col v-for="(level, index) in levelGroup"
                        :key="index"
@@ -140,7 +162,11 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '属性'">
+        <card-sub-row
+            :text="nameTrans[type] + '属性'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showProps"
+        >
             <template v-slot:content>
                 <field-json
                     :base-props="editProps"
@@ -154,10 +180,14 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '描述'">
+        <card-sub-row
+            :text="nameTrans[type] + '描述'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showDescription"
+        >
             <template v-slot:content>
                 <field-text
-                    class="pa-1"
+                    class="pa-2"
                     :base-text="info.Description"
                     :prop-name="'Description'"
                     :editable="editable"
@@ -167,6 +197,9 @@
                 </field-text>
             </template>
         </card-sub-row>
+        <slot name="footContent">
+
+        </slot>
     </div>
 </template>
 
@@ -192,6 +225,7 @@
     import {getIcon} from "@/utils/icon";
     import {userConcernTemplate} from "@/utils/template";
     import {MediaInfoPart, NodeInfoPart} from "@/class/info";
+    import {nodeShowInPaperTemplate} from "@/interface/style/templateStylePaper";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -233,10 +267,14 @@
                 type: Boolean,
                 default: false
             },
-            isSimplify: {
-                type: Boolean as () => boolean,
+            editInPaper: {
+                type: Boolean,
                 default: false
-            }
+            },
+            settingInPaper: {
+                type: Object,
+                default: () => nodeShowInPaperTemplate()
+            },
         },
         computed: {
             info: function (): BaseNodeInfo {
@@ -263,17 +301,11 @@
             },
 
             simplifySetting: function (): Record<string, any> {
-                return this.isSimplify
-                    ? {
-                        titleSize: 'font-size: 14px',
-                        chipSize: 'xSmall',
-                        renderAlias: true
-                    }
-                    : {
-                        titleSize: 'font-size: 18px',
-                        chipSize: 'small',
-                        renderAlias: true
-                    }
+                return {
+                    titleSize: 'font-size: 18px',
+                    chipSize: 'small',
+                    renderAlias: true
+                }
             },
 
             isUserControl: function (): boolean {
@@ -396,16 +428,12 @@
 
             imageList: function (): MediaInfoPart[] {
                 let result: MediaInfoPart[] = [];
-                if (this.isSimplify) {
-                    result = [];
-                } else {
-                    this.info.IncludedMedia.map(_id => {
-                        let media = this.dataManager.mediaManager[_id];
-                        if (media && media._label === 'image') {
-                            result.push(media)
-                        }
-                    })
-                }
+                this.info.IncludedMedia.map(_id => {
+                    let media = this.dataManager.mediaManager[_id];
+                    if (media && media._label === 'image') {
+                        result.push(media)
+                    }
+                })
                 return result;
             },
         },

@@ -1,5 +1,5 @@
 <template>
-    <v-card :height="container.height" :width="container.width" class="cardItem">
+    <v-card :height="container.height" :width="container.width" class="scrollY cardItem">
         <v-card-title>
             Your Fragment
         </v-card-title>

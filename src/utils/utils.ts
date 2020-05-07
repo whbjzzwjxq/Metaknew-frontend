@@ -1,7 +1,6 @@
-import {SortProp} from "@/interface/interfaceInComponent";
+import {CardSize, SortProp} from "@/interface/interfaceInComponent";
 import {
     commitFileTokenRefresh,
-    commitGlobalIndexPlus,
     commitLoginDialogChange,
     commitLoginIn,
     commitLoginOut
@@ -361,7 +360,6 @@ export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays
     setCookie('token', data.token, day);
     commitLoginIn(data);
     commitFileTokenRefresh(data.fileToken);
-    commitGlobalIndexPlus(data.personalId);
     commitLoginDialogChange(false);
     (store && !store.state.userDataManager.userEditDataLoad) && userEditDataQuery()
 };

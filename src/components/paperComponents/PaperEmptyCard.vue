@@ -1,4 +1,4 @@
-<template functional>
+<template>
     <div class="empty-avatar d-flex align-center justify-center" style="height: 100%">
         <p style="font-size: 32px; color: grey">Drop Card Here</p>
     </div>
@@ -25,7 +25,6 @@
 
 <style scoped>
     .empty-avatar {
-        background-color: #EDEDED;
         opacity: 0.9;
         text-align: center;
         vertical-align: center;

@@ -1,4 +1,5 @@
 import {mergeSetting, SettingConfAll, SettingConfGroup} from "@/interface/style/interfaceStyleBase";
+
 const section = () => {
     return {
         section: {
@@ -38,8 +39,8 @@ const order = () => {
 const width = () => {
     return {
         width: {
-            default: 2,
-            range: [2, 12],
+            default: 240,
+            range: [180, 2880],
             type: "Number",
             explain: '计数宽度',
             tips: ''
@@ -179,31 +180,101 @@ const renderAsText = () => {
     } as SettingConfGroup
 }
 
-const BaseSettingGroup = () => mergeSetting(section(), row(), order(), width(), height()) as SettingConfGroup;
+const isFlat = () => {
+    return {
+        isFlat: {
+            type: 'Boolean',
+            default: true,
+            range: '',
+            tips: '',
+            explain: '是否无阴影'
+        }
+    } as SettingConfGroup
+}
+
+const isTile = () => {
+    return {
+        isTile: {
+            type: 'Boolean',
+            default: true,
+            range: '',
+            tips: '',
+            explain: '是否无圆角'
+        }
+    } as SettingConfGroup
+}
+
+const isOutlined = () => {
+    return {
+        isOutlined: {
+            type: 'Boolean',
+            default: true,
+            range: '',
+            tips: '',
+            explain: '是否无边框'
+        }
+    } as SettingConfGroup
+}
+
+const BaseSettingGroup = () => mergeSetting(section(), row(), order(), width(), height())
 const BaseShowSettingGroup = () => mergeSetting(showAll(), showTitle(), showLabels(), showProps(), showDescription())
+const CardSettingGroup = () => mergeSetting(isFlat(), isTile(), isOutlined())
 
 const nodeSetting = () => {
     let result = {
         Base: BaseSettingGroup(),
+        Card: CardSettingGroup(),
         Show: mergeSetting(BaseShowSettingGroup(), showTopic(), showTranslate(), showRating()),
         Render: mergeSetting(renderAsImage(), renderAsText())
     }
     return result as SettingConfAll
 }
 
-export const typeSettingDictPaper: Record<DocumentItemType, SettingConfAll> = {
-    node: nodeSetting(),
-    link: {},
-    document: {},
-    media: {},
-    note: {},
-    text: {}
+const linkSetting = () => {
+    let result = {
+        Base: BaseShowSettingGroup(),
+        Card: CardSettingGroup(),
+    }
+    return result as SettingConfAll
 }
 
-export const paperDefaultRow = () => ({
-    height: 200,
-    forceAlign: true
-})
+export const typeSettingDictPaper: Record<DocumentItemType, SettingConfAll> = {
+    node: nodeSetting(),
+    link: linkSetting(),
+    document: {},
+    media: nodeSetting(),
+    note: {},
+    text: nodeSetting()
+}
+
+export const nodeShowInPaperTemplate = () => ({
+    showAll: true,
+    showTitle: true,
+    showLabels: true,
+    showProps: true,
+    showDescription: true,
+    showTopic: true,
+    showTranslate: true,
+    showRating: true
+}) as NodeShowInPaper
+
+export const mediaShowInPaperTemplate = () => ({
+    showAll: true,
+    showDescription: true,
+    showLabels: true,
+    showProps: true,
+    showTitle: true
+}) as CardShowInPaper
+
+export const paperRowSettingTemplate = (order: number) => ({
+    isAlign: true,
+    isOverflowX: false,
+    isVirtual: false,
+    order,
+    width: 240,
+    height: 240,
+    Items: []
+}) as PaperRowSetting
 
 export const paperSectionTemplate = () => ({
     Setting: {
@@ -218,8 +289,7 @@ export const paperSectionTemplate = () => ({
             color: 'white'
         },
         Rows: [
-            paperDefaultRow(),
-            paperDefaultRow()
+            paperRowSettingTemplate(0),
         ]
     },
     State: {
@@ -228,9 +298,7 @@ export const paperSectionTemplate = () => ({
     }
 }) as PaperSectionSettingPart
 
-const specialDict: { [prop: string]: any } = {
-
-};
+const specialDict: { [prop: string]: any } = {};
 
 export function settingTemplatePaper(_type: DocumentItemType | 'note') {
     let settingConf = typeSettingDictPaper[_type];

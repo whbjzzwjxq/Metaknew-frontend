@@ -1,17 +1,9 @@
 <template>
-    <div>
-        <v-row style="width: 180px" class="ma-0 ml-n1">
-            <v-col v-for="icon in iconList" :key="icon.name" cols="3" class="pa-0 pr-2" style="align-content: normal">
-                <v-btn text
-                       small
-                       @click="icon._func"
-                       :color="icon.color ? icon.color : 'grey'">
-                    <v-icon left class="pr-1"> {{ icon.name }}</v-icon>
-                    <p> {{ icon.num }} </p>
-                </v-btn>
-            </v-col>
-        </v-row>
-    </div>
+    <icon-group :icon-list="iconList" :x-small="xSmall" :small="!xSmall">
+        <template v-slot:text="{ icon }">
+            <p class="text--disabled caption px-1"> {{ icon.num }}</p>
+        </template>
+    </icon-group>
 </template>
 
 <script lang="ts">
@@ -28,9 +20,7 @@
             IconGroup
         },
         data: function () {
-            return {
-
-            }
+            return {}
         },
         props: {
             baseData: {
@@ -40,6 +30,10 @@
             userConcern: {
                 type: Object as () => UserConcern,
                 required: true
+            },
+            xSmall: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -138,7 +132,8 @@
             status: 'empty',
             description: ''
         },
-        mounted(): void {}
+        mounted(): void {
+        }
     })
 </script>
 

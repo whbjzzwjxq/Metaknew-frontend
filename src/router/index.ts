@@ -98,7 +98,7 @@ const routes = [
                 children: [
                     {
                         path: 'id=:id/normal',
-                        name: 'path-normal',
+                        name: 'paper-normal',
                         components: {
                             content: () => import('@/components/paperComponents/PaperViewBox.vue'),
                             toolbarBottom: () => import('@/components/toolbar/ToolBarBottomPaperNormal.vue')
@@ -106,10 +106,10 @@ const routes = [
                     },
                     {
                         path: 'edit',
-                        name: 'path-edit',
+                        name: 'paper-edit',
                         components: {
                             content: () => import('@/components/paperComponents/PaperViewBox.vue'),
-                            toolbarBottom: () => import('@/components/toolbar/ToolBarBottomPaperNormal.vue')
+                            toolbarBottom: () => import('@/components/toolbar/ToolBarBottomPaperEdit.vue')
                         },
                         props: {
                             content: {

@@ -1,10 +1,12 @@
+import {MarkdownIconName} from "@/components/markdown/_markdownToolbarMethod";
+
 declare global {
     type IconGroup = 'i-star' | 'i-good' | 'i-bad' | 'i-arrow-double' |
         'i-edit-able' | 'i-edit' | 'i-delete-able' | 'i-explode' |
         'i-eye' | 'i-media-type' | 'i-collapse' | 'i-arrow' | 'i-knowledge-level' |
         'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
         'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge' | 'i-shape' | 'i-save' |
-        'i-mode'
+        'i-mode' | 'i-paper' | 'i-card' | 'i-markdown'
 
     type IconAlias = 'i-show' | 'i-normal'
 
@@ -15,8 +17,11 @@ declare global {
         color?: string,
         render?: boolean,
         disabled?: boolean,
+        //是否需要emit出来
         _isTrigger?: boolean,
+        //emit事件名称
         _eventName?: string,
+        //提示
         toolTip?: string,
         toolTipOn?: boolean,
         [prop: string]: any
@@ -116,6 +121,7 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         five: 'mdi-numeric-5-box',
         three: 'mdi-numeric-3-box',
         two: 'mdi-numeric-2-box',
+        one: 'mdi-numeric-1-box',
         double: 'mdi-plus-box-multiple'
     },
     'i-item': {
@@ -190,11 +196,47 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
     },
     'i-mode': {
         state: 'mdi-state-machine',
-        normal: 'mdi-graph-outline',
+        normal: 'mdi-alpha-n-box-outline',
         timeline: 'mdi-chart-timeline-variant',
         geo: 'mdi-map-marker-circle',
         edit: 'mdi-pencil'
-    }
+    },
+    'i-paper': {
+        list: 'mdi-view-list',
+        section: 'mdi-'
+    },
+    'i-card': {
+        flat: 'mdi-box-shadow',
+        radius: 'mdi-square-outline',
+        outlined: 'mdi-square-off-outline',
+        reset: 'mdi-refresh'
+    },
+    'i-markdown': {
+        redo: 'mdi-redo',
+        undo: 'mdi-undo',
+        edit: 'mdi-pencil',
+        bold: 'mdi-format-bold',
+        italic: 'mdi-format-italic',
+        header1: 'mdi-format-header-1',
+        header2: 'mdi-format-header-2',
+        header3: 'mdi-format-header-3',
+        header4: 'mdi-format-header-4',
+        header5: 'mdi-format-header-5',
+        header6: 'mdi-format-header-6',
+        underline: 'mdi-format-underline',
+        strikethrough: 'mdi-format-strikethrough',
+        mark: 'mdi-format-mark',
+        superscript: 'mdi-format-superscript',
+        subscript: 'mdi-format-subscript',
+        quote: 'mdi-format-quote',
+        link: 'mdi-link',
+        imageLink: 'mdi-image',
+        code: 'mdi-code',
+        table: 'mdi-table',
+        alignCenter: 'mdi-align-center',
+        alignRight: 'mdi-align-right',
+        alignLeft: 'mdi-align-left'
+    } as Record<MarkdownIconName, string>
 };
 
 const iconAlias: Record<IconAlias, IconGroup> = {

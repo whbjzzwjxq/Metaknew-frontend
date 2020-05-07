@@ -1,38 +1,30 @@
 <template>
-    <media-viewer
-        :max-height="cardSize.height"
-        :width="cardSize.width"
-        :src="src"
-        :label="label"
-        ref="mediaViewer">
-        <template slot="content">
+    <v-card :width="cardSize.width" :height="cardSize.height" flat>
+        <markdown-render :text="text" class="pa-2">
 
-        </template>
-    </media-viewer>
+        </markdown-render>
+    </v-card>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import MediaViewer from "@/components/media/MediaViewer.vue";
     import {CardSize, getCardSize} from "@/interface/interfaceInComponent";
-
+    import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
     export default Vue.extend({
-        name: "CardMediaSimp",
+        name: "CardTextSimp",
         components: {
-            MediaViewer
+            MarkdownRender
         },
         data: function () {
-            return {
-
-            }
+            return {}
         },
         props: {
             setting: {
-                type: Object as () => MediaSetting,
+                type: Object as () => TextSetting,
                 required: true
             },
             state: {
-                type: Object as () => MediaState,
+                type: Object as () => TextState,
                 required: true
             },
             large: {
@@ -56,11 +48,8 @@
             cardSize: function (): CardSize {
                 return getCardSize(this.$props)
             },
-            src: function (): string {
-                return this.setting._src
-            },
-            label: function(): string {
-                return this.setting._label
+            text: function(): string {
+                return this.setting._text
             }
         },
         methods: {},

@@ -10,10 +10,6 @@ export const insertItemDict = {
         prefix: '*',
         suffix: '*',
     },
-    'header': {
-        prefix: '# ',
-        suffix: '',
-    },
     'header1': {
         prefix: '# ',
         suffix: '',
@@ -66,7 +62,7 @@ export const insertItemDict = {
         prefix: '[](',
         suffix: ')',
     },
-    'imagelink': {
+    'imageLink': {
         prefix: '![](',
         suffix: ')',
     },
@@ -78,21 +74,21 @@ export const insertItemDict = {
         prefix: '',
         suffix: '',
     },
-    'aligncenter': {
+    'alignCenter': {
         prefix: '::: hljs-center\n\n',
         suffix: '\n\n:::\n',
     },
-    'alignright': {
+    'alignRight': {
         prefix: '::: hljs-right\n\n',
         suffix: '\n\n:::\n',
     },
-    'alignleft': {
+    'alignLeft': {
         prefix: '::: hljs-left\n\n',
         suffix: '\n\n:::\n',
     }
-}
+} as Record<MarkdownIconName, MarkdownInsertItem>
 
-// 处理粗体与斜体冲突问题
+// 处理粗体与斜体冲突问题 todo 扩展
 export function isItalicAndBoldConflict(insertItem: MarkdownInsertItem, instance: MarkdownInputState) {
     let {prefix, suffix} = insertItem
     if (prefix === '*' && suffix === '*' && instance.dom !== undefined) {
@@ -102,4 +98,31 @@ export function isItalicAndBoldConflict(insertItem: MarkdownInsertItem, instance
         }
     }
     return false
+}
+
+export enum MarkdownIconName {
+    REDO = 'redo',
+    UNDO = 'undo',
+    EDIT = 'edit',
+    BOLD = 'bold',
+    ITALIC = 'italic',
+    HEADER1 = 'header1',
+    HEADER2 = 'header2',
+    HEADER3 = 'header3',
+    HEADER4 = 'header4',
+    HEADER5 = 'header5',
+    HEADER6 = 'header6',
+    UNDERLINE = 'underline',
+    STRIKETHROUGH = 'strikethrough',
+    MARK = 'mark',
+    SUPERSCRIPT = 'superscript',
+    SUBSCRIPT = 'subscript',
+    QUOTE = 'quote',
+    LINK = 'link',
+    IMAGELINK = 'imageLink',
+    CODE = 'code',
+    TABLE = 'table',
+    ALIGNCENTER = 'alignCenter',
+    ALIGNLEFT = 'alignLeft',
+    ALIGNRIGHT = 'alignRight'
 }

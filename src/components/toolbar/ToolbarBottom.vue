@@ -69,7 +69,8 @@
                     position: "absolute",
                     bottom: 0,
                     right: 0,
-                    left: this.styleManager.leftCard.width + 'px'
+                    left: this.styleManager.leftCard.width + 'px',
+                    zIndex: 2
                 }
             },
             buttonGroupStyle: function (): CSSProp {

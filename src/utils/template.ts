@@ -28,7 +28,8 @@ export function settingTemplateGraph(_type: DocumentItemType | 'note') {
 export function mediaSettingTemplate(payload: MediaInitPayload) {
     let {_src, _label} = payload;
     let setting = Object.assign(payload, {
-        InGraph: settingTemplateGraph("media")
+        InGraph: settingTemplateGraph("media"),
+        InPaper: settingTemplatePaper('media')
     }) as MediaSetting;
     if (_label === 'image') {
         let image = new Image();
@@ -136,7 +137,8 @@ export function noteStateTemplate() {
         isLock: false,
         isDark: false,
         isDeleted: false,
-        isEditing: false
+        isEditing: false,
+        isInRow: false
     } as NoteState
 }
 
@@ -149,14 +151,14 @@ export function documentStateTemplate() {
 }
 
 export function textStateTemplate() {
-    return <TextState>{
+    return {
         isDeleted: false,
         isAdd: true,
         isEditing: false,
         isMouseOn: false,
         isSelected: false,
         isInRow: false
-    }
+    } as TextState
 }
 
 export function userConcernTemplate() {

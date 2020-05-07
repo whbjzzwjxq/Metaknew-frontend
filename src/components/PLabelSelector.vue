@@ -8,7 +8,7 @@
         @update:search-input="updateText"
         autofocus
         persistent-hint
-        label="PrimaryLabel Select">
+        label="PrimaryLabel">
         <template v-slot:no-data>
             <v-list-item>
                 <v-list-item-title>

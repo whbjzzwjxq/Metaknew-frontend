@@ -1,31 +1,38 @@
 <template>
-    <div>
-        <div v-if="!editMode" v-html="renderResult">
+    <div class="pa-2">
+        <div style="height: 100%; width: 100%">
+            <template v-if="!editMode">
+                <div v-html="renderResult">
 
+                </div>
+            </template>
+            <template v-else>
+                <v-textarea
+                    :disabled="disabled"
+                    :placeholder="placeholder"
+                    :rows="rows"
+                    @focus="updateState"
+                    @focusout="update"
+                    @select="updateState"
+                    auto-grow
+                    filled
+                    ref="markdownInput"
+                    class="cardItem"
+                    v-model="value"
+                >
+
+                </v-textarea>
+            </template>
         </div>
-        <div v-else>
-            <label>
-            <textarea
-                ref="markdownInput"
-                v-model="value"
-                @select="updateState"
-                @focus="updateState"
-                @focusout="update"
-                style="width: 100%; height: 100%; background-color: whitesmoke"
-                class="cardItem"
-                :rows="rows"
-                :disabled="disabled"
-                :placeholder="placeholder"
-            >
-
-            </textarea>
-            </label>
+        <div v-if="renderToolBar" style="position: absolute; bottom: 32px; width: 100%; background-color: white">
+            <markdown-toolbar :simply="simply" @change-edit-mode="changeEditMode"></markdown-toolbar>
         </div>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
+    import MarkdownToolbar from "@/components/markdown/MarkdownToolbar.vue";
     import {markdownAll, markdownSimply} from "@/components/markdown/_markdownPreset";
     import MarkdownIt from "markdown-it/lib";
     import {commitMarkdownState} from "@/store/modules/_mutations";
@@ -33,7 +40,9 @@
 
     export default Vue.extend({
         name: "MarkdownRender",
-        components: {},
+        components: {
+            MarkdownToolbar
+        },
         data: function () {
             return {
                 value: '',
@@ -42,11 +51,9 @@
                     'simply': markdownSimply,
                     'all': markdownAll
                 },
-                //@ts-ignore
                 instance: {
-                    history: [],
-                    historyIndex: 0,
-                    dom: undefined
+                    dom: undefined,
+                    editMode: this.editBase
                 } as MarkdownInputState,
             }
         },
@@ -55,21 +62,23 @@
                 type: String,
                 default: ''
             },
-            editMode: {
+            editBase: {
                 type: Boolean,
                 default: false
             },
+            //只支持基础语法
             simply: {
                 type: Boolean,
                 default: false
             },
-            shortcutAble: {
+            //渲染工具栏
+            renderToolBar: {
                 type: Boolean,
                 default: false
             },
             rows: {
                 type: Number,
-                default: 10
+                default: 4
             },
             disabled: {
                 type: Boolean,
@@ -86,7 +95,9 @@
                     ? this.renderDict['simply']
                     : this.renderDict['all']
             },
-
+            editMode: function (): boolean {
+                return this.instance.editMode
+            }
         },
         methods: {
             renderHtml: function () {
@@ -100,6 +111,9 @@
                 //@ts-ignore
                 this.instance.dom = this.$refs.markdownInput
                 commitMarkdownState(this.instance)
+            },
+            changeEditMode: function () {
+                this.instance.editMode = !this.instance.editMode
             }
         },
         mounted(): void {

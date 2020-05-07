@@ -3,16 +3,9 @@ export interface MarkdownInsertItem {
     suffix: string;
 }
 
-export interface MarkdownHistory {
-    start: number
-    oldValue: string
-    newValue: string
-}
-
 export interface MarkdownInputState {
     dom?: HTMLTextAreaElement //对应Dom
-    history: MarkdownHistory[] //历史记录
-    historyIndex: number //现在的历史记录位置
+    editMode: boolean //是否正在编辑
 }
 
 export abstract class HistoryStack<T> {

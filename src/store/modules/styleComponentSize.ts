@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import {RectByPoint} from "@/class/geometric";
 import {commitBottomDynamicBarResize, commitViewBoxResize} from "@/store/modules/_mutations";
 export const leftCardPadding = 4;

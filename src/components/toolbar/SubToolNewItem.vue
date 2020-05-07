@@ -52,7 +52,7 @@
                         outlined
                         tile
                         v-else-if="key === 'note'"
-                        @click="addNote">
+                        @click="addText">
                         New Text Note
                     </v-btn>
                 </v-card-text>
@@ -141,8 +141,8 @@
                 this.document.addEmptyGraph();
             },
 
-            addNote() {
-                this.document.addEmptyGraph();
+            addText() {
+                this.document.addEmptyText();
             }
 
         },

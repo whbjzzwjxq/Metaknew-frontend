@@ -33,9 +33,9 @@
                 :state="node.State"
                 @mouseenter.native.stop="mouseEnter(node, index)"
                 @mouseleave.native.stop="mouseLeave(node)"
-                @mousedown.native.stop="dragStart"
-                @mousemove.native.stop="drag(node, $event)"
-                @mouseup.native.stop="dragEnd(node, $event)"
+                @mousedown.passive.native.stop="dragStart"
+                @mousemove.passive.native.stop="drag(node, $event)"
+                @mouseup.passive.native.stop="dragEnd(node, $event)"
                 @dblclick.native.stop="dbClickNode(node)">
 
             </graph-node>
@@ -61,10 +61,6 @@
 
             </line>
         </svg>
-
-        <card-all-simp v-show="showCard">
-
-        </card-all-simp>
 
         <rect-container
             @update-size="updateGraphSize(arguments[0], arguments[1], index)"
@@ -198,9 +194,8 @@
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
     import GraphText from "@/components/graphComponents/GraphText.vue";
-    import CardAllSimp from "@/components/card/standard/CardAllSimp.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
-    import {isLinkSetting, isMediaSetting, isNodeSetting, isVisAreaSetting, isVisNodeSetting} from "@/utils/typeCheck";
+    import {isLinkSetting, isMediaSetting, isNodeSettingPart, isVisAreaSetting, isVisNodeSetting} from "@/utils/typeCheck";
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
@@ -217,7 +212,6 @@
             RectContainer,
             GraphNote,
             GraphText,
-            CardAllSimp
         },
         data() {
             return {
@@ -848,7 +842,7 @@
                     let info;
                     isLinkSetting(item)
                         ? info = this.dataManager.linkManager[item._id]
-                        : isNodeSetting(item)
+                        : isNodeSettingPart(item)
                         ? info = this.dataManager.nodeManager[item._id]
                         : info = undefined;
                     if (info) {

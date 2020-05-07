@@ -9,7 +9,7 @@ declare global {
         isAdd: boolean; // 是否是新建的
         isSelected: boolean; // 是否被选中
         isMouseOn: boolean; // 是否鼠标放置在上面
-        isInRow: boolean; //是否Paper的Row里面
+        isInRow: boolean; //是否已经进入Row
     }
 
     interface NodeState extends DocumentItemState {

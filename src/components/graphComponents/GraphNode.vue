@@ -120,7 +120,7 @@
                 return 'translate(' + x + ' ' + y + ')'
             },
 
-            setting: function(): NodeStyleSetting {
+            setting: function(): NodeStyleSettingGraph {
                 return this.itemSetting.InGraph
             },
 

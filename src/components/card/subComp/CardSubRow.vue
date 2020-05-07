@@ -1,15 +1,16 @@
 <template>
-    <div :style="rowStyle">
+    <div :style="rowStyle" v-show="value" class="pa-2 pb-0">
         <hr class="cardHr"/>
-        <v-row class="px-4 pb-2 pt-0 ma-0 justify-content-between" :style="rowStyle">
-            <v-col class="pa-0 ma-0" cols="11">
-                <v-subheader class="ml-n4 card-subheader" style="height: 36px">{{text}}</v-subheader>
+        <v-row class="pa-0 ma-0" no-gutters :style="rowStyle" justify="end">
+            <v-col cols="8">
+                <v-subheader class="pr-0" style="height: 36px">{{text}}</v-subheader>
             </v-col>
-            <v-col class="pa-0 ma-0" cols="1">
+            <v-spacer></v-spacer>
+            <v-col class="pt-2">
                 <icon-group :icon-list="iconList" x-small></icon-group>
             </v-col>
         </v-row>
-        <v-row class="px-4 pb-2 pt-0 ma-0" v-show="!isCollapsed" :style="rowStyle">
+        <v-row class="pa-2 ma-0" v-show="!isCollapsed" :style="rowStyle">
             <slot name="content"></slot>
         </v-row>
     </div>
@@ -34,18 +35,18 @@
         },
         props: {
             noCollapse: {
-                type: Boolean as () => boolean,
+                type: Boolean,
                 default: false
             },
             text: {
-                type: String as () => string,
+                type: String,
                 default: ''
             },
-            width: {
-                type: Number,
-                default: leftCardWidth
+            value: {
+                type: Boolean,
+                default: true
             },
-            editMode: {
+            closeAble: {
                 type: Boolean,
                 default: false
             }
@@ -61,22 +62,15 @@
                     },
                     {
                         name: getIcon("i-edit", "close"),
-                        render: this.editMode,
-                        _func: this.close
+                        render: this.closeAble,
+                        _func: this.close,
+                        toolTip: '关闭'
                     }
                 ]
             },
-            collapsedIcon: function (): string {
-                return getIcon("i-collapse", !this.isCollapsed)
-            },
-            activeWidth: function (): number {
-                return this.width
-                    ? this.width
-                    : this.$store.state.styleComponentSize.leftCard.width
-            },
             rowStyle: function (): CSSProp {
                 return {
-                    width: (this.activeWidth - 4) + 'px'
+                    width: '100%'
                 }
             }
 
@@ -87,7 +81,7 @@
             },
 
             close() {
-                this.$emit('close')
+                this.$emit('input', false)
             }
         },
         watch: {},
@@ -104,8 +98,8 @@
         unicode-bidi: isolate;
         margin-block-start: 8px;
         margin-block-end: 8px;
-        margin-inline-start: 10px;
-        margin-inline-end: 10px;
+        margin-inline-start: 8px;
+        margin-inline-end: 8px;
         overflow: hidden;
         border-style: inset;
         border-width: 1px;

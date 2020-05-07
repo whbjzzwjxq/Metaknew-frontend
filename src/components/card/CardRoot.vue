@@ -18,7 +18,7 @@
                 </v-tabs>
                 <v-tabs-items v-model="subTab">
                     <v-tab-item v-for="subValue in value.children" :key="subValue.key">
-                        <div :style="subCardStyle" class="cardItem">
+                        <div :style="subCardStyle" class="scrollY cardItem">
                             <template v-if="value.key === 'ecoSystem'">
 
                             </template>
@@ -35,7 +35,8 @@
                                     <card-page-node-info
                                         v-if="currentItemType === 'node'"
                                         :edit-mode="editMode"
-                                        :base-data="currentItem">
+                                        :base-data="currentItem"
+                                        :width="leftCardWidth">
 
                                     </card-page-node-info>
                                     <card-page-link-info
@@ -71,7 +72,7 @@
     import CardPageMediaList from "@/components/card/page/CardPageMediaList.vue";
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
     import CardPageLinkInfo from "@/components/card/page/CardPageLinkInfo.vue";
-    import {ToolBar} from "@/store/modules/styleComponentSize";
+    import {leftCardWidth, ToolBar} from "@/store/modules/styleComponentSize";
     import {LinkInfoPart, NodeInfoPart} from "@/class/info";
 
     export default Vue.extend({
@@ -85,7 +86,8 @@
         data() {
             return {
                 editPageRegex: new RegExp('edit.*'),
-                bottomHeight: 108
+                bottomHeight: 108,
+                leftCardWidth: leftCardWidth
             }
         },
         props: {

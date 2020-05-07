@@ -46,6 +46,7 @@ function documentBulkCreate(docList: BackendDocument[], createType: string = 'US
 export function gateDocumentBulkCreate(documentList: DocumentSelfPart[]) {
     let dataList = documentList.filter(document => !document.isRemote)
         .map(document => document.dataBackendDocument)
+    console.log(documentList, dataList)
     if (dataList.length > 0) {
         return documentBulkCreate(dataList).then(res => {
             let idList = res.data;

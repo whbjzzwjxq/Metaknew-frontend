@@ -28,7 +28,7 @@
                 :min-width="300"
                 :min-height="200"
                 :max-height="600"
-                class="cardItem">
+                class="scrollY cardItem">
                 <v-card-subtitle style="font-size: 18px">
                     {{ item.title }}
                 </v-card-subtitle>
