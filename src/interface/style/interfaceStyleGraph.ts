@@ -14,7 +14,6 @@ declare global {
             color: Color;
             opacity: number;
             viewType: NodeViewType;
-            isMain: boolean;
         };
         Border: {
             width: number;
@@ -51,7 +50,6 @@ declare global {
             startLoc: LinkPointLocation;
             endLoc: LinkPointLocation;
             dashArray: string;
-            isMain: boolean;
         };
         Arrow: {
             arrowLength: number;
@@ -71,7 +69,6 @@ declare global {
         Base: BaseSizeInGraph;
         View: {
             opacity: number,
-            isMain: boolean,
         };
         Border: {
             width: number,

@@ -56,7 +56,7 @@
                 let _id = getIndex();
                 let parent = this.graph;
                 let items = parent.itemsAllSubDoc.filter(item => item.isSelected);
-                return DocumentSelfPart.collectInit({_id, parent, commitToVuex: true}, items, deleteSource);
+                return DocumentSelfPart.initCollect({_id, parent, commitToVuex: true}, items, deleteSource);
             }
         },
         record: {

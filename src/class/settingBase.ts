@@ -6,29 +6,31 @@ import {isDocumentType, isLinkSetting, isMediaSetting, isNodeSettingPart, isText
 import {
     crucialRegex,
     deepClone,
-    emptyContent,
-    emptyDocumentComp,
     findItem,
-    frontendIdRegex, getCookie,
+    frontendIdRegex,
+    getCookie,
     getIndex
 } from "@/utils/utils";
 import {commitDocumentAdd, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
 import {
-    documentSettingTemplate,
-    documentStateTemplate,
     linkStateTemplate,
-    mediaSettingTemplate,
     nodeStateTemplate,
-    noteSettingTemplate,
     noteStateTemplate,
-    settingTemplateGraph,
-    textSettingTemplate,
     textStateTemplate
 } from "@/utils/template";
 import {dispatchNoteInDocPush} from "@/store/modules/_dispatch";
 import {getManager} from "@/store/modules/dataManager";
 import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
-import {settingTemplatePaper} from "@/interface/style/templateStylePaper";
+import {nodeSettingGroupInPaper, settingTemplatePaper} from "@/interface/style/templateStylePaper";
+import {PaperComponent} from "@/class/settingPaper";
+import {
+    linkSettingGroupInGraph, mediaSettingInPaper,
+    nodeSettingGroupInGraph,
+    noteSettingGroupInGraph,
+    textSettingGroupInGraph
+} from "@/interface/style/templateStyleGraph";
+import {handleSettingConfAllToValue} from "@/interface/style/interfaceStyleBase";
+import PDFJS from "pdfjs-dist";
 
 export abstract class SettingPart {
     Setting: Setting;
@@ -63,7 +65,7 @@ export abstract class SettingPart {
     }
 
     get isRemote() {
-        return frontendIdRegex.test(this._id.toString())
+        return !frontendIdRegex.test(this._id.toString())
     }
 
     updateState(prop: AllStateProp, value?: boolean) {
@@ -71,12 +73,7 @@ export abstract class SettingPart {
         this.State[prop] = value
     }
 
-    updateSetting(status: SettingGroupKey, propGroup: string, prop: string, value: any) {
-        ////Vue.set检查过
-        this.Setting[status][propGroup][prop] = value
-    }
-
-    updateCrucialProp(prop: AllCrucialProp, value: any) {
+    updateCrucialProp(prop: keyof Setting, value: any) {
         crucialRegex.test(prop) && (this.Setting[prop] = value);
     }
 
@@ -114,6 +111,10 @@ export class ItemSettingPart extends SettingPart {
         return this.Setting._type
     }
 
+    set _type(value) {
+        this.Setting._type = value
+    }
+
     get _name() {
         return this._type + this._id
     }
@@ -143,10 +144,12 @@ export class ItemSettingPart extends SettingPart {
     }
 
     get isMain() {
-        let main = this.StyleInGraph.View.isMain
-        return typeof main === "boolean"
-            ? main
-            : false
+        return this.Setting._isMain
+    }
+
+    updateGraphSetting(propGroup: string, prop: string, value: any) {
+        //Vue.set检查过
+        this.Setting.InGraph[propGroup][prop] = value
     }
 
     select(value?: boolean) {
@@ -170,6 +173,32 @@ export class NodeSettingPart extends ItemSettingPart {
     State: NodeState;
     static list: NodeSettingPart[] = [];
 
+    protected constructor(Setting: NodeSetting, State: NodeState, parent: DocumentSelfPart) {
+        super(Setting, State, parent);
+        this.Setting = Setting;
+        this.State = State;
+        this._parent = parent;
+        NodeSettingPart.list.push(this);
+    }
+
+    static nodeSettingDefault(payload: NodeInitPayload): NodeSetting {
+        return {
+            ...payload,
+            InGraph: handleSettingConfAllToValue(nodeSettingGroupInGraph()),
+            InPaper: handleSettingConfAllToValue(nodeSettingGroupInPaper()),
+        }
+    }
+
+    static initEmpty(payload: NodeInitPayload, parent: DocumentSelfPart) {
+        let setting = this.nodeSettingDefault(payload)
+        let state = nodeStateTemplate();
+        return new NodeSettingPart(setting, state, parent) as NodeSettingPart
+    }
+
+    static initFromBackend(setting: NodeSetting, parent: DocumentSelfPart) {
+        let state = nodeStateTemplate();
+        return new NodeSettingPart(setting, state, parent) as NodeSettingPart
+    }
     get _type() {
         return this.Setting._type
     }
@@ -190,12 +219,12 @@ export class NodeSettingPart extends ItemSettingPart {
         return this.Setting.InGraph
     }
 
-    protected constructor(Setting: NodeSetting, State: NodeState, parent: DocumentSelfPart) {
-        super(Setting, State, parent);
-        this.Setting = Setting;
-        this.State = State;
-        this._parent = parent;
-        NodeSettingPart.list.push(this);
+    updateCrucialProp(prop: keyof NodeSetting, value: any) {
+        //参数解构 覆盖顺序 后面覆盖前面
+        crucialRegex.test(prop) && (this.Setting = {
+            ...this.Setting,
+            [prop]: value
+        });
     }
 
     mouseOn(value: boolean) {
@@ -208,20 +237,6 @@ export class NodeSettingPart extends ItemSettingPart {
         let setting = deepClone(this.Setting);
         let state = deepClone(this.State);
         return new NodeSettingPart(setting, state, this.parent)
-    }
-
-    static emptyNodeSetting(payload: NodeInitPayload, parent: DocumentSelfPart) {
-        let setting = Object.assign(payload, {
-            InGraph: settingTemplateGraph("node"),
-            InPaper: settingTemplatePaper('node')
-        }) as NodeSetting;
-        let state = nodeStateTemplate();
-        return new NodeSettingPart(setting, state, parent) as NodeSettingPart
-    }
-
-    static resolveBackend(setting: NodeSetting, parent: DocumentSelfPart) {
-        let state = nodeStateTemplate();
-        return new NodeSettingPart(setting, state, parent) as NodeSettingPart
     }
 }
 
@@ -242,6 +257,10 @@ export class MediaSettingPart extends ItemSettingPart {
         return this.Setting.InGraph
     }
 
+    get _image() {
+        return ''
+    }
+
     protected constructor(Setting: MediaSetting, State: MediaState, parent: DocumentSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
@@ -250,16 +269,55 @@ export class MediaSettingPart extends ItemSettingPart {
         MediaSettingPart.list.push(this);
     }
 
-    static emptyMediaSetting(payload: MediaInitPayload, parent: DocumentSelfPart) {
-        let setting = mediaSettingTemplate(payload);
+    static mediaSettingDefault(payload: MediaInitPayload) {
+        //todo 改写
+        let {_src, _label} = payload;
+        let setting = {
+            ...payload,
+            InGraph: handleSettingConfAllToValue(mediaSettingInPaper()),
+            InPaper: settingTemplatePaper('media')
+        } as MediaSetting;
+        if (_label === 'image') {
+            let image = new Image();
+            image.src = _src;
+            let checkLoad = function () {
+                if (image.width > 0 || image.height > 0) {
+                    setting.InGraph.Base.size = image.width;
+                    setting.InGraph.Base.scaleX = image.height / image.width;
+                    cancelAnimationFrame(query)
+                }
+            };
+            let query = requestAnimationFrame(checkLoad);
+            image.onload = function () {
+                setting.InGraph.Base.size = image.width;
+                setting.InGraph.Base.scaleX = image.height / image.width;
+                cancelAnimationFrame(query)
+            };
+            checkLoad()
+        }
+        if (_label === 'pdf') {
+            let loadingTask = PDFJS.getDocument(_src);
+            loadingTask.promise.then(function (pdf: any) {
+                pdf.getPage(1).then(function (page: any) {
+                    let viewport = page.getViewport({scale: 1.5});
+                    setting.InGraph.Base.size = viewport.width;
+                    setting.InGraph.Base.scaleX = viewport.height / viewport.width;
+                });
+            })
+        }
+        return setting
+    }
+
+    static initEmpty(payload: MediaInitPayload, parent: DocumentSelfPart) {
+        let setting = this.mediaSettingDefault(payload);
         let state = nodeStateTemplate();
         return new MediaSettingPart(setting, state, parent);
     }
 
     static emptyMediaSettingFromInfo(media: MediaInfoPart, parent: DocumentSelfPart) {
         let {_id, _type, _label} = media
-        let payload = {_id, _type, _label, _name: media.Info.Name, _src: media.Ctrl.FileName} as MediaSetting
-        return MediaSettingPart.emptyMediaSetting(payload, parent)
+        let payload = {_id, _type, _label, _name: media.Info.Name, _src: media.Ctrl.FileName, _isMain: false} as MediaInitPayload
+        return MediaSettingPart.initEmpty(payload, parent)
     }
 
     static resolveBackend(setting: MediaSetting, parent: DocumentSelfPart) {
@@ -277,6 +335,13 @@ export class MediaSettingPart extends ItemSettingPart {
         let setting = deepClone(this.Setting);
         let state = deepClone(this.State);
         return new MediaSettingPart(setting, state, this.parent)
+    }
+
+    updateCrucialProp(prop: keyof MediaSetting, value: any) {
+        crucialRegex.test(prop) && (this.Setting = {
+            [prop]: value,
+            ...this.Setting
+        });
     }
 }
 
@@ -331,12 +396,24 @@ export class LinkSettingPart extends ItemSettingPart {
         return this._start !== undefined && this._end !== undefined
     }
 
+    //是否是纯节点关系
+    get isPureNodeLink() {
+        return isNodeSettingPart(this._start) && isNodeSettingPart(this._end)
+    }
+
     protected constructor(Setting: LinkSetting, State: LinkState, parent: DocumentSelfPart) {
         super(Setting, State, parent);
         this.Setting = Setting;
         this.State = State;
         this._parent = parent;
         LinkSettingPart.list.push(this);
+    }
+
+    updateCrucialProp(prop: keyof MediaSetting, value: any) {
+        crucialRegex.test(prop) && (this.Setting = {
+            [prop]: value,
+            ...this.Setting
+        });
     }
 
     reBoundNode(target: '_start' | '_end', node: VisNodeSettingPart) {
@@ -379,11 +456,16 @@ export class LinkSettingPart extends ItemSettingPart {
         return new LinkSettingPart(setting, state, this.parent)
     }
 
-    static emptyLinkSetting(payload: LinkSetting, parent: DocumentSelfPart) {
-        let setting = Object.assign(payload, {
-            InGraph: settingTemplateGraph("link"),
-            InPaper: settingTemplatePaper('link')
-        });
+    static linkSettingDefault(payload: LinkInitPayload): LinkSetting {
+        return {
+            InGraph: handleSettingConfAllToValue(linkSettingGroupInGraph),
+            InPaper: handleSettingConfAllToValue(linkSettingGroupInGraph),
+            ...payload
+        }
+    }
+
+    static emptyLinkSetting(payload: LinkInitPayload, parent: DocumentSelfPart) {
+        let setting = this.linkSettingDefault(payload);
         let state = linkStateTemplate();
         return new LinkSettingPart(setting, state, parent)
     }
@@ -408,12 +490,12 @@ export class TextSettingPart extends ItemSettingPart {
         return this.Setting._type
     }
 
-    get StyleInGraph() {
-        return this.Setting.InGraph
-    }
-
     get _name() {
         return this.Setting._text
+    }
+
+    get StyleInGraph() {
+        return this.Setting.InGraph
     }
 
     protected constructor(Setting: TextSetting, State: TextState, parent: DocumentSelfPart) {
@@ -424,9 +506,16 @@ export class TextSettingPart extends ItemSettingPart {
         TextSettingPart.list.push(this)
     }
 
-    static emptyRect(_id: id, parent: DocumentSelfPart) {
-        let _points = [] as PointObject[];
-        let setting = textSettingTemplate(_id, 'rect', _points);
+    static textSettingDefault(payload: TextInitPayload) {
+        return {
+            ...payload,
+            InGraph: handleSettingConfAllToValue(textSettingGroupInGraph()),
+            InPaper: handleSettingConfAllToValue(nodeSettingGroupInPaper())
+        } as TextSetting
+    }
+
+    static emptyRect(payload: TextInitPayload, parent: DocumentSelfPart) {
+        let setting = this.textSettingDefault(payload)
         let state = textStateTemplate();
         return new TextSettingPart(setting, state, parent)
     }
@@ -461,18 +550,21 @@ export class NoteSettingPart extends SettingPart {
         NoteSettingPart.list.push(this)
     }
 
-    static emptyNoteSetting(_id: id, parent: DocumentSelfPart, commitToVuex?: boolean) {
-        let setting = Object.assign({
+    static noteSettingDefault(_id: id) {
+        return {
             _id,
             _type: 'note',
             _label: 'text',
             _title: '',
             _content: '',
-            _user: getCookie('user_id')
-        }, {
-            InGraph: settingTemplateGraph('note'),
-            InPaper: {}
-        }) as NoteSetting;
+            _user: getCookie('user_id'),
+            InGraph: handleSettingConfAllToValue(noteSettingGroupInGraph()),
+            InPaper: handleSettingConfAllToValue(nodeSettingGroupInPaper())
+        } as NoteSetting
+    }
+
+    static initEmpty(_id: id, parent: DocumentSelfPart, commitToVuex?: boolean) {
+        let setting = this.noteSettingDefault(_id)
         let state = noteStateTemplate();
         let note = new NoteSettingPart(setting, state, parent);
         commitToVuex === undefined && (commitToVuex = true);
@@ -481,60 +573,43 @@ export class NoteSettingPart extends SettingPart {
     }
 }
 
-export class DocumentConfigure extends SettingPart {
+export class DocumentSelfPart extends SettingPart {
+    //节点 关系等各项内容
+    Content: DocumentContent;
+    //
     State: DocumentState;
     Setting: DocumentSetting;
+    Components: DocumentComponent;
+    //从后端读取
+    protected MetaData: DocumentMetaData;
+    //以下构建时定义
+    protected _treeNode: TreeNodeDoc;
+    static baseList: BackendGraphWithNode[] = []
 
-    get _type() {
-        return this.Setting._type
-    }
-
-    protected constructor(setting: DocumentSetting, state: DocumentState) {
+    protected constructor(
+        content: DocumentContent,
+        comps: DocumentComponent,
+        meta: DocumentMetaData,
+        setting: DocumentSetting,
+        state: DocumentState,
+        parent: DocumentSelfPart | null,
+    ) {
         super(setting, state);
         this.State = state;
         this.Setting = setting;
-    }
-
-    static emptyGraphConf(_id: id) {
-        let setting = documentSettingTemplate(_id)
-        let state = documentStateTemplate()
-        return new DocumentConfigure(setting, state)
-    }
-
-    static resolveBackend(setting: DocumentSetting) {
-        let state = documentStateTemplate()
-        return new DocumentConfigure(setting, state)
-    }
-}
-
-export class DocumentSelfPart {
-    Content: DocumentContent;
-    Conf: DocumentConfigure;
-    Components: DocumentComponents;
-    //以下构建时定义
-    treeNode: TreeNodeDoc;
-    protected MetaData: DocumentMetaData;
-    static baseList: BackendGraphWithNode[] = []
-    protected constructor(
-        Content: DocumentContent,
-        Conf: DocumentConfigure,
-        comps: DocumentComponents,
-        parent: DocumentSelfPart | null,
-        meta: DocumentMetaData
-    ) {
-        this.Conf = Conf;
-        this.Content = Content;
+        this.Content = content;
         this.Components = comps;
         this.MetaData = meta;
-        this.treeNode = new TreeNodeDoc(this, parent);
+        this._treeNode = new TreeNodeDoc(this, parent);
         if (this.nodeSelf === undefined) {
-            let {_id, _type, _label} = Conf;
-            let node = NodeSettingPart.emptyNodeSetting({
+            let {_id, _type, _label} = setting;
+            let node = NodeSettingPart.initEmpty({
                 _id,
                 _type,
                 _label,
                 _name: 'NewDoc' + _id,
-                _image: ''
+                _image: '',
+                _isMain: false,
             }, this);
             this.Content.nodes.push(node);
         } else {
@@ -544,81 +619,122 @@ export class DocumentSelfPart {
         parent && parent.addItems([this.nodeSelf.deepCloneSelf()]);
     }
 
-    static emptyInit(_id: id, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
-        let graphContent = emptyContent();
-        let setting = DocumentConfigure.emptyGraphConf(_id);
-        let meta = {
+    static documentStateDefault() {
+        return {
+            isSaved: false,
+            isDeleted: false,
+            isExplode: true
+        } as DocumentState
+    }
+
+    static documentContentDefault() {
+        return {
+            nodes: [],
+            links: [],
+            medias: [],
+            texts: []
+        } as DocumentContent
+    }
+
+    static documentMetaDataDefault() {
+        return {
             isTemporary: false,
             isRemoteModel: false,
         } as DocumentMetaData
-        let comps = emptyDocumentComp();
-        let nodeQuery = {id: _id, type: 'document', pLabel: '_DocGraph'} as DocumentQuery;
-        let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
-        let graph = new DocumentSelfPart(graphContent, setting, comps, parent, meta);
-        let payload = {graph, info};
-        commitToVuex && commitDocumentAdd({document: graph, strict: false});
-        return payload
     }
 
-    static backendInit(data: BackendGraphWithNode, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
-        DocumentSelfPart.baseList.push(data);
-        let setting = DocumentConfigure.resolveBackend(data.Conf);
-        let graphContent = emptyContent();
-        let Comps = data.Comps;
-        let meta = {
-            isTemporary: false,
-            isRemoteModel: true
-        }
-        let graph = new DocumentSelfPart(graphContent, setting, Comps, parent, meta);
-        let info = NodeInfoPart.resolveBackend(data.Base, commitToVuex);
-        let {nodes, links, medias, texts} = data.Content;
-        graph.Content.nodes = nodes.map(setting => NodeSettingPart.resolveBackend(setting, graph));
-        graph.Content.medias = medias.map(setting => MediaSettingPart.resolveBackend(setting, graph));
-        graph.Content.links = links.map(setting => LinkSettingPart.resolveBackend(setting, graph))
-            .filter(link => link.Setting._start && link.Setting._end);
-        graph.Content.texts = texts.map(setting => TextSettingPart.resolveBackend(setting, graph));
+    static documentSettingDefault(_id: id) {
+        return {
+            _id,
+            _type: 'document',
+            _label: '_Document'
+        } as DocumentSetting
+    }
+
+    static documentComponentsDefault() {
+        return {
+            InGraph: {
+                SubGraph: []
+            },
+            InPaper: {
+                Sections: PaperComponent.initEmptyComponent()
+            }
+        } as DocumentComponent
+    }
+
+    static initEmpty(_id: id, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
+        //default 部分
+        let content = this.documentContentDefault();
+        let setting = this.documentSettingDefault(_id);
+        let state = this.documentStateDefault()
+        let meta = this.documentMetaDataDefault()
+        let comps = this.documentComponentsDefault();
+        //info
+        let nodeQuery = {id: _id, type: 'document', pLabel: '_Document'} as DocumentQuery;
+        let info = NodeInfoPart.emptyNodeInfoPart(nodeQuery, commitToVuex);
+
+        //构建
+        let graph = new DocumentSelfPart(content, comps, meta, setting, state, parent);
         commitToVuex && commitDocumentAdd({document: graph, strict: false});
         return {graph, info}
     }
 
-    static collectInit(payload: DocumentInitPayload, items: ItemSettingPart[], deleteSource: boolean = true) {
-        let {_id, parent, commitToVuex} = payload;
-        let newGraph = DocumentSelfPart.emptyInit(_id, parent, commitToVuex).graph;
-        newGraph.collectItems(items, deleteSource);
-        return newGraph
+    static initBackend(data: BackendGraphWithNode, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
+        DocumentSelfPart.baseList.push(data);
+        let comps = {
+            InGraph: data.Components.InGraph,
+            InPaper: {
+                Sections: PaperComponent.initFromBackend(data.Components.InPaper.Sections)
+            }
+        } as DocumentComponent;
+        let meta = data.MetaData;
+        let setting = data.Setting;
+        let content = this.documentContentDefault();
+        let state = this.documentStateDefault();
+        let graph = new DocumentSelfPart(content, comps, meta, setting, state, parent);
+        let info = NodeInfoPart.resolveBackend(data.Base, commitToVuex);
+
+        let {nodes, links, medias, texts} = data.Content;
+        graph.Content.nodes = nodes.map(setting => NodeSettingPart.initFromBackend(setting, graph));
+        graph.Content.medias = medias.map(setting => MediaSettingPart.resolveBackend(setting, graph));
+        graph.Content.links = links.map(setting => LinkSettingPart.resolveBackend(setting, graph))
+            .filter(link => link.Setting._start && link.Setting._end);
+        graph.Content.texts = texts.map(setting => TextSettingPart.resolveBackend(setting, graph));
+        graph.CompInPaper.Sections.rowAll.map(row => row.injectItems(graph.itemsAll))
+        //提交到vuex
+        commitToVuex && commitDocumentAdd({document: graph, strict: false});
+        return {graph, info}
     }
 
-    // prop
-    get _id() {
-        return this.Conf._id
+    static initCollect(payload: DocumentInitPayload, items: ItemSettingPart[], deleteSource: boolean = true) {
+        let {_id, parent, commitToVuex} = payload;
+        let newGraph = DocumentSelfPart.initEmpty(_id, parent, commitToVuex).graph;
+        newGraph.collectItems(items, deleteSource);
+        return newGraph
     }
 
     get _name() {
         return this.nodeSelf._name
     }
 
-    get _label() {
-        return this.Conf._label
+    get treeNode() {
+        return this._treeNode
     }
 
     get isRemote() {
-        return this.Conf.isRemote
+        return this.MetaData.isRemoteModel
+    }
+
+    set isRemote(value: boolean) {
+        this.MetaData.isRemoteModel = value
     }
 
     get isRoot() {
-        return this.treeNode.isRoot
+        return this._treeNode.isRoot
     }
 
     set isRoot(value: boolean) {
-        this.treeNode.isRoot = value
-    }
-
-    get isGraph() {
-        return this._label === '_DocGraph'
-    }
-
-    get isPaper() {
-        return this._label === '_DocPaper'
+        this._treeNode.isRoot = value
     }
 
     get isSelf() {
@@ -634,21 +750,17 @@ export class DocumentSelfPart {
     }
 
     get isExplodeState() {
-        return this.Conf.State.isExplode
+        return this.State.isExplode
     }
 
     explode(value?: boolean) {
-        value === undefined && (value = !this.Conf.State.isExplode)
-        !this.isRoot && (this.Conf.State.isExplode = value)
-    }
-
-    get isDeleted() {
-        return this.treeNode.isDeleted
+        value === undefined && (value = !this.State.isExplode)
+        !this.isRoot && (this.State.isExplode = value)
     }
 
     get parent() {
-        return this.treeNode.parent
-            ? this.treeNode.parent.boundObject
+        return this._treeNode.parent
+            ? this._treeNode.parent.boundObject
             : null
     }
 
@@ -761,22 +873,29 @@ export class DocumentSelfPart {
         return result
     }
 
+    get itemsAll(): SubItemSettingPart[] {
+        let {nodes, links, medias, texts} = this;
+        let result: SubItemSettingPart[];
+        result = [];
+        return result.concat(nodes).concat(links).concat(medias).concat(texts)
+    }
+
     //doc
     get docsRootList(): DocumentSelfPart[] {
-        return this.treeNode.parentNodeList.map(node => node.boundObject)
+        return this._treeNode.parentNodeList.map(node => node.boundObject)
     }
 
     get docRoot() {
-        return this.treeNode.rootNode.boundObject
+        return this._treeNode.rootNode.boundObject
     }
 
     get docsChildrenAll(): DocumentSelfPart[] {
         // 所有孩子doc
-        return this.treeNode.childrenAll.map(node => node.boundObject)
+        return this._treeNode.childrenAll.map(node => node.boundObject)
     }
 
     get docsChildren(): DocumentSelfPart[] {
-        return this.treeNode.childrenActive.map(node => node.boundObject)
+        return this._treeNode.childrenActive.map(node => node.boundObject)
     }
 
     get docsChildrenWithSelf() {
@@ -787,18 +906,30 @@ export class DocumentSelfPart {
     }
 
     get dataQueryObject() {
-        return this.Conf.queryObject
+        return this.queryObject
     }
 
     get dataBackendDocument() {
-        let Content: Record<string, DocumentItemSetting[]> = {};
-        Object.entries(this.Content).map(([key, items]) => {
-            Content[key] = items.filter((item: ItemSettingPart) => !item.isDeleted).map((item: ItemSettingPart) => item.compress)
+        let {Content, Components, Setting, MetaData} = this;
+
+        //压缩组件在前 隐含了Paper的序列信息
+        let componentsCompressed = {
+            InGraph: Components.InGraph,
+            InPaper: {
+                Sections: Components.InPaper.Sections.compress()
+            }
+        } as DocumentComponentBackend;
+
+        //压缩Content
+        let contentCompressed: Record<string, DocumentItemSetting[]> = {};
+        Object.entries(Content).map(([key, items]) => {
+            contentCompressed[key] = items.filter((item: ItemSettingPart) => !item.isDeleted).map((item: ItemSettingPart) => item.compress)
         });
         return {
-            Content,
-            Conf: this.Conf.Setting,
-            Comps: this.Components
+            Content: contentCompressed,
+            Components: componentsCompressed,
+            Setting,
+            MetaData
         } as BackendDocument
     }
 
@@ -811,19 +942,13 @@ export class DocumentSelfPart {
         }
     }
 
-    get allItems(): SubItemSettingPart[] {
-        let {nodes, links, medias, texts} = this;
-        let result: SubItemSettingPart[];
-        result = [];
-        return result.concat(nodes).concat(links).concat(medias).concat(texts)
-    }
-
     updateStateUpdate() {
-        this.Conf.State.isSaved = true
+        this.State.isSaved = true
     }
 
     updateStateSave() {
         this.updateStateUpdate();
+        this.isRemote = true
     }
 
     getItemListByName(name: ContentTypeS | DocumentItemType): SubItemSettingPart[] {
@@ -877,7 +1002,7 @@ export class DocumentSelfPart {
             item.updateState('isDeleted', true);
             if (_type === 'document') {
                 let graph = this.docsChildrenAll.filter(item => item._id === _id)[0];
-                graph && graph.Conf.updateState('isDeleted', true)
+                graph && graph.updateState('isDeleted', true)
             }
             if (snackBarOn) {
                 let payloadSnack = {
@@ -903,7 +1028,7 @@ export class DocumentSelfPart {
             item.updateState('isDeleted', false);
             if (_type === 'document') {
                 let graph = this.docsChildrenAll.filter(item => item._id === _id)[0];
-                graph && graph.Conf.updateState('isDeleted', false)
+                graph && graph.updateState('isDeleted', false)
             }
             commitSnackbarOff()
         }
@@ -911,11 +1036,10 @@ export class DocumentSelfPart {
 
     addItems(items: ItemSettingPart[]) {
         items.filter(item => !this.checkExistByItem(item)).map(item => {
-            item.State.isAdd = true;
             // 额外处理专题
             if (isNodeSettingPart(item)) {
                 let graph = item.boundDocument;
-                graph && this.treeNode._addNewNode([graph.treeNode])
+                graph && this._treeNode._addNode([graph._treeNode])
                 // 额外处理link
             } else if (isLinkSetting(item)) {
                 let _start = this.getVisNodeById(item._start.Setting);
@@ -961,6 +1085,10 @@ export class DocumentSelfPart {
                 : isLinkSetting(item) && this.Content.links.push(item)
     }
 
+    reGroupPaper() {
+
+    }
+
     addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex: boolean = true) {
         _label || (_label = 'BaseNode');
         let _id = getIndex();
@@ -971,9 +1099,10 @@ export class DocumentSelfPart {
             _type,
             _label,
             _name: 'NewNode' + _id,
-            _image: ''
+            _image: '',
+            _isMain: false
         } as NodeInitPayload
-        let setting = NodeSettingPart.emptyNodeSetting(payload, this);
+        let setting = NodeSettingPart.initEmpty(payload, this);
         this.addItems([setting]);
         return {setting, info}
     }
@@ -989,8 +1118,9 @@ export class DocumentSelfPart {
             _type: 'link',
             _label,
             _start,
-            _end
-        } as LinkSetting
+            _end,
+            _isMain: false
+        } as LinkInitPayload
         let setting = LinkSettingPart.emptyLinkSetting(payload, this);
         this.addItems([setting]);
         return {setting, info};
@@ -998,18 +1128,18 @@ export class DocumentSelfPart {
 
     addEmptyGraph(commitToVuex: boolean = true) {
         let _id = getIndex();
-        let {graph, info} = DocumentSelfPart.emptyInit(_id, this, commitToVuex);
+        let {graph, info} = DocumentSelfPart.initEmpty(_id, this, commitToVuex);
         return {graph, info}
     }
 
     addEmptyNote() {
         let id = getIndex();
-        NoteSettingPart.emptyNoteSetting(id, this, true)
+        NoteSettingPart.initEmpty(id, this, true)
     }
 
     addEmptyText() {
         let _id = getIndex();
-        let rect = TextSettingPart.emptyRect(_id, this);
+        let rect = TextSettingPart.emptyRect({_id, _type: 'text', _label: 'rect', _isMain: false, _text: '', _points: []}, this);
         this.addItems([rect])
     }
 }

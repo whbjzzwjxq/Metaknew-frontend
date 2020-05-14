@@ -10,8 +10,9 @@ export interface BackendDocument {
         medias: Array<MediaSetting>;
         texts: Array<TextSetting>;
     };
-    Conf: DocumentSetting;
-    Comps: DocumentComponents
+    Setting: DocumentSetting;
+    Components: DocumentComponentBackend;
+    MetaData: DocumentMetaData; //其实后端不需要传回 先将就
 }
 
 export interface BackendGraphWithNode extends BackendDocument {
@@ -46,7 +47,6 @@ function documentBulkCreate(docList: BackendDocument[], createType: string = 'US
 export function gateDocumentBulkCreate(documentList: DocumentSelfPart[]) {
     let dataList = documentList.filter(document => !document.isRemote)
         .map(document => document.dataBackendDocument)
-    console.log(documentList, dataList)
     if (dataList.length > 0) {
         return documentBulkCreate(dataList).then(res => {
             let idList = res.data;

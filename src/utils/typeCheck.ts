@@ -1,4 +1,3 @@
-import {PathNode, PathNodeExist} from "@/class/settingPath";
 import {DirectoryItemAll, DirectoryNode, ListText, ListTitle} from "@/interface/interfaceInComponent";
 import {BackendNodeInfoPart} from "@/api/subgraph/node";
 import {BackendLinkInfoPart} from "@/api/subgraph/link";
@@ -65,10 +64,6 @@ export function isLevelConcern(prop: LevelConcern | BooleanConcern | "Labels"): 
 
 export function isMediaInfoPart(info: InfoPart): info is MediaInfoPart {
     return info._type === 'media'
-}
-
-export function isPathNodeExist(item: PathNode): item is PathNodeExist {
-    return (item as PathNodeExist).node !== null
 }
 
 export function isListText(item: ListText | ListTitle): item is ListText {

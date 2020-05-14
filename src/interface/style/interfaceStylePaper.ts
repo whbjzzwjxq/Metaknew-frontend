@@ -9,9 +9,7 @@ declare global {
         //多少节
         section: number,
         //多少行
-        row: number,
-        //多少列
-        order: number,
+        row: number
     }
 
     interface CardStyleInPaper extends Record<string, boolean>{

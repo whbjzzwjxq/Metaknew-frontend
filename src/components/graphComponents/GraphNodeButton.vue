@@ -108,21 +108,13 @@
                             render: this.node._type === 'document'
                         }
                     }
-                } else if (this.boundDocument._label === '_DocGraph') {
+                } else {
                     explodeIcon = {
                         name: getIcon("i-explode", !this.boundDocument.isExplodeState),
                         _func: this.explode,
                         toolTip: !this.boundDocument.isExplodeState ? '展开专题' : '关闭专题',
                         render: this.node._type === 'document',
                         disabled: this.boundDocument.isRoot
-                    }
-                } else {
-                    explodeIcon = {
-                        name: getIcon("i-explode", 'goto'),
-                        _func: this.goto,
-                        toolTip: '转到对应专题',
-                        render: this.node._type === 'document',
-                        disabled: this.node.remoteDocument._id === this.dataManager.currentDocument._id
                     }
                 }
                 return [
@@ -144,7 +136,7 @@
             },
             unShow() {
                 let current = this.node.StyleInGraph.Show.showAll;
-                this.node.updateSetting('InGraph', 'Show', 'showAll', !current);
+                this.node.updateGraphSetting('Show', 'showAll', !current);
             },
 
             addLink() {

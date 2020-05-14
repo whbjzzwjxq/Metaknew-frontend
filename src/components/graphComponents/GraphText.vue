@@ -36,8 +36,7 @@
                     <div :style="divStyle">
                         <markdown-render
                             :edit-mode="isSelected"
-                            :text="itemSetting._text"
-                            @update="updateText"
+                            v-model="itemSetting._text"
                         >
 
                         </markdown-render>

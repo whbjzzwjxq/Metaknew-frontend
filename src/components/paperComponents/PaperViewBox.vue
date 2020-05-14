@@ -8,8 +8,8 @@
                 <!--正式渲染区域-->
                 <v-card class="pr-2 drag-on" :width="rightWidth" :min-height="viewBox.height" flat tile>
                     <v-container fluid class="pa-0 d-flex flex-column" style="height: 100%">
-                        <paper-section
-                            v-for="(section, index) in structure"
+                        <paper-section-render
+                            v-for="(section, index) in sectionList"
                             :key="index"
                             :section="section"
                             :index="index"
@@ -18,8 +18,8 @@
                         >
                             <template v-slot:content>
                                 <v-container class="d-flex flex-column pa-4 pb-2">
-                                    <v-container v-for="(row, index) in section.Setting.Rows" :key="index" :class="`pa-0 pb-2 order-${row.order}`">
-                                        <paper-row
+                                    <v-container v-for="(row, index) in section.children" :key="index" :class="`pa-0 pb-2 order-${row.order}`">
+                                        <paper-row-render
                                             :row="row"
                                             :section="section"
                                             :edit-mode="editMode"
@@ -30,11 +30,11 @@
                                             @drop-card="dropCard"
                                         >
 
-                                        </paper-row>
+                                        </paper-row-render>
                                     </v-container>
                                 </v-container>
                             </template>
-                        </paper-section>
+                        </paper-section-render>
                     </v-container>
                 </v-card>
             </div>
@@ -48,13 +48,13 @@
                     draggable
                     @drag-start="dragStartCard({
                         event: arguments[0],
-                        row: itemListNotRowVirtual,
+                        row: rowVirtual,
                         section: null,
                         item: arguments[2]
                     })"
                     @drag-subitem="dragCard({
                         event: arguments[0],
-                        row: itemListNotRowVirtual,
+                        row: rowVirtual,
                         section: null,
                         item: arguments[2]
                     })"
@@ -83,22 +83,22 @@
     } from "@/class/settingBase";
     import {RectByPoint} from "@/class/geometric";
     import CardPageNodeInfo from "@/components/card/page/CardPageNodeInfo.vue";
-    import PaperSection from "@/components/paperComponents/PaperSection.vue";
+    import PaperSectionRender from "@/components/paperComponents/PaperSectionRender.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import PaperEmptyCard from "@/components/paperComponents/PaperEmptyCard.vue";
     import Queue from "@/components/Queue.vue";
     import CardSimpAll from "@/components/card/standard/CardSimpAll.vue";
-    import CardPaperAll from "@/components/card/paper/CardPaperAll.vue";
-    import PaperRow from "@/components/paperComponents/PaperRow.vue";
+    import CardPaperAll from "@/components/paperComponents/CardPaperAll.vue";
+    import PaperRowRender from "@/components/paperComponents/PaperRowRender.vue";
     import {getIcon} from "@/utils/icon";
     import {commitChangePaperDraggingItem} from "@/store/modules/_mutations";
     import {DragEventWithTarget} from "@/interface/interfaceInComponent";
-    import {paperRowSettingTemplate} from "@/interface/style/templateStylePaper";
+    import {PaperRow, PaperSection} from "@/class/settingPaper";
 
     interface EventPayloadInPaper {
         event: DragEvent,
         item?: ItemSettingPart,
-        row: PaperRowSetting,
+        row: PaperRow,
         section: PaperSection,
     }
 
@@ -110,13 +110,13 @@
         name: "PaperViewBox",
         components: {
             CardPageNodeInfo,
-            PaperSection,
+            PaperSectionRender,
             IconGroup,
             PaperEmptyCard,
             Queue,
             CardSimpAll,
             CardPaperAll,
-            PaperRow
+            PaperRowRender
         },
         data: function () {
             return {
@@ -128,11 +128,13 @@
                 loading: true,
                 //最终渲染矩形
                 page: RectByPoint.emptyRect(),
-                structure: [] as PaperSectionSettingPart[],
                 isDragging: false, // 是否拖拽移动 也就是在上下界才触发
                 lastDragY: 0, //上次drag的Y坐标
                 movingTarget: null as null | Element, //dragOn的目标
                 exchangeTimer: 0,
+                //虚拟Row
+                rowVirtual: null as unknown as PaperRow,
+                rowVirtualRender: false
             }
         },
         props: {
@@ -162,7 +164,7 @@
                 return this.document.texts
             },
             itemList: function (): ItemSettingPart[] {
-                return this.document.allItems
+                return this.document.itemsAll
             },
             containerStyle: function (): CSSProp {
                 return {
@@ -176,8 +178,8 @@
             bottomBarHeight: function (): number {
                 return this.$store.state.styleComponentSize.bottomBar.height
             },
-            sectionList: function (): PaperSectionSettingPart[] {
-                return this.document.CompInPaper.SubSection
+            sectionList: function (): PaperSection[] {
+                return this.document.CompInPaper.Sections.children
             },
             rowIconList: function (): IconItem[] {
                 return [
@@ -225,14 +227,7 @@
                 }
             },
             itemListNotInRow: function (): ItemSettingPart[] {
-                return this.document.allItems.filter(item => !item.State.isInRow)
-            },
-            itemListNotRowVirtual: function (): PaperRowSetting {
-                return {
-                    ...paperRowSettingTemplate(-1),
-                    Items: this.itemListNotInRow,
-                    isVirtual: true,
-                }
+                return this.document.itemsAll.filter(item => !item.State.isInRow)
             },
             viewBoxRealHeight: function (): number {
                 return this.viewBox.height - this.bottomBarHeight
@@ -307,7 +302,7 @@
                 let {draggingRow, draggingItem} = this.draggingState;
                 if (draggingRow && draggingItem && (item === undefined || draggingItem._id !== item._id)) {
                     this.clearMovingTarget()
-                    draggingRow && draggingItem && this.exchangeItem(draggingRow, draggingItem, row, item)
+                    draggingRow.exchangeItem(draggingItem, row, item)
                 }
             },
             dragEndCard: function () {
@@ -316,74 +311,25 @@
             },
 
             buildStructure: function () {
-                let itemList = this.document.allItems
-                this.structure = this.sectionList.map((section, index) => {
-                    let itemsMatchSection = itemList.filter(item => item.StyleInPaper.Base.section === index)
-                    let {Setting, State} = section;
-                    return {
-                        State,
-                        Setting: {
-                            ...Setting,
-                            Rows: section.Setting.Rows.map((row, index) => {
-                                let itemsMatchRow = itemsMatchSection.filter(item => item.StyleInPaper.Base.row === index)
-                                return {
-                                    ...row,
-                                    Items: itemsMatchRow.map(item => {
-                                        item.State.isInRow = true
-                                        return item
-                                    })
-                                } as PaperRowSetting
-                            }),
-                        }
-                    }
-                })
+                //至少渲染一个Section
+                this.sectionList.length === 0 && (this.document.CompInPaper.Sections.addSection(0))
+                //渲染待选队列
+                this.rowVirtual = PaperRow.initEmptyRow(-1, this.sectionList[0])
+                this.rowVirtualRender = true
             },
-
-            exchangeSection: function (source: PaperSectionSettingPart, target: PaperSectionSettingPart) {
-                let index1 = this.structure.indexOf(source)
-                let index2 = this.structure.indexOf(target)
-                this.structure.splice(index1, 1, target)
-                this.structure.splice(index2, 1, source)
-            },
-            exchangeRow: function (section: PaperSectionSettingPart, index1: number, index2: number) {
-                let rows = section.Setting.Rows
-                let row1 = rows[index1]
-                let row2 = rows[index2]
-                if (row1 && row2) {
-                    rows.splice(index1, 1, row2)
-                    rows.splice(index2, 1, row1)
-                }
-            },
-            exchangeItem: function (rowA: PaperRowSetting, itemA: ItemSettingPart, rowB: PaperRowSetting, itemB?: ItemSettingPart) {
-                //itemA一定来自于现有Row或者QueueRow itemB有可能是空行
-                let indexA = rowA.Items.indexOf(itemA)
-                //有实际内容就是实际内容 否则是rowB最后一个
-                let indexB = itemB !== undefined
-                    ? rowB.Items.indexOf(itemB)
-                    : rowB.Items.length
-                //确认itemB存在
-                if (indexB > -1) {
-                    rowB.Items.splice(indexB, 1, itemA)
-                    //如果rowA是QueueRow 那么把itemB置为未排版
-                    rowA.isVirtual && itemB && (itemB.State.isInRow = false)
-                }
-                if (indexA > -1 && itemB !== undefined) {
-                    rowA.Items.splice(indexA, 1, itemB)
-                    rowA.isVirtual && (itemA.State.isInRow = true)
-                } else {
-                    rowA.Items.splice(indexA, 1)
-                    rowA.isVirtual && (itemA.State.isInRow = true)
-                }
-            },
-            _pushUp: function() {
-
-            }
         },
 
         mounted(): void {
             this.onResize()
             this.buildStructure()
         },
+
+        watch: {
+            itemListNotInRow(): void {
+                this.rowVirtual.children = this.itemListNotInRow
+            }
+        },
+
         record: {
             status: 'empty',
             description: ''

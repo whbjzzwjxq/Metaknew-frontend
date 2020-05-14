@@ -155,9 +155,9 @@ export class NodeInfoPart extends InfoPart {
         this.synchronizationAll();
     }
 
-    static emptyNodeInfoPart(payload: NodeQuery, commit: boolean = true, remoteNotFound: boolean = false) {
+    static emptyNodeInfoPart(payload: NodeQuery, commit: boolean = true) {
         let {id, type, pLabel} = payload;
-        let item = new NodeInfoPart(nodeInfoTemplate(id, type, pLabel), nodeCtrlTemplate(), remoteNotFound);
+        let item = new NodeInfoPart(nodeInfoTemplate(id, type, pLabel), nodeCtrlTemplate(), false);
         commit && commitInfoAdd({item, strict: false});
         return item
     }
@@ -186,7 +186,7 @@ export class NodeInfoPart extends InfoPart {
         this.synchronizationSource("_image", newImage);
     }
 
-    synchronizationSource(prop: '_name' | '_image' | '_label' | '_id', value: any) {
+    synchronizationSource(prop: keyof NodeSetting, value: any) {
         crucialRegex.test(prop) &&
         this.allSettingItem.map(node => node.updateCrucialProp(prop, value));
         // 在同步这里完成isEdit改变
@@ -196,10 +196,11 @@ export class NodeInfoPart extends InfoPart {
     synchronizationAll() {
         // 同步所有属性到Setting
         this.allSettingItem.map(node => {
+            node.updateCrucialProp('_id', this.Info.id);
+            node.updateCrucialProp('_type', this.Info.type);
             node.updateCrucialProp("_label", this.Info.PrimaryLabel);
             node.updateCrucialProp("_name", this.Info.Name);
             node.updateCrucialProp("_image", this.Info.MainPic);
-            node.updateCrucialProp('_id', this.Info.id);
         });
     }
 }

@@ -87,6 +87,7 @@
     import {dispatchUploadFile} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
     import {MediaInfoPart} from "@/class/info";
+    import {commitSnackbarOn} from "@/store/modules/_mutations";
 
     export default Vue.extend({
         name: "NodeAvatar",
@@ -163,10 +164,20 @@
                     uploadType: 'mainImage',
                     realFile: file
                 }).then(() => {
-                    alert('Upload Image Success!');
+                    let payload = {
+                        actionName: 'mainImageUpload',
+                        color: 'success',
+                        content: '上传图片成功'
+                    } as SnackBarStatePayload;
+                    commitSnackbarOn(payload);
                     this.$emit('new-main-image', storeName)
                 }).catch(() => {
-                        alert('Just PreView!');
+                        let payload = {
+                            actionName: 'mainImageUpload',
+                            color: 'error',
+                            content: '上传图片失败'
+                        } as SnackBarStatePayload;
+                        commitSnackbarOn(payload);
                         this.$emit('new-main-image', URL.createObjectURL(file))
                     }
                 );

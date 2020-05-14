@@ -17,7 +17,6 @@
     import {getIcon} from "@/utils/icon";
     import {DocumentSelfPart, TextSettingPart} from "@/class/settingBase";
     import IconGroup from "@/components/IconGroup.vue";
-    import {getIndex} from "@/utils/utils";
 
     export default Vue.extend({
         name: "SubToolSvg",

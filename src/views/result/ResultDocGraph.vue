@@ -9,9 +9,6 @@
         <router-view name="toolbarBottom" :graph="graph">
 
         </router-view>
-        <bottom-dynamic-bar>
-
-        </bottom-dynamic-bar>
     </div>
 </template>
 

@@ -1,11 +1,11 @@
-import {mergeObject} from "@/utils/utils";
+import {mergeObject, randomNumber} from "@/utils/utils";
 import {mergeSetting, SettingConfAll, SettingConfGroup} from "@/interface/style/interfaceStyleBase";
 
 const xSetting = () => {
     return {
         x: {
             type: 'Number',
-            default: 0.3,
+            default: randomNumber(0.3, 0.7),
             range: [0, 1],
             tips: '',
             explain: '横向坐标'
@@ -16,7 +16,7 @@ const ySetting = () => {
     return {
         y: {
             type: 'Number',
-            default: 0.3,
+            default: randomNumber(0.3, 0.7),
             range: [0, 1],
             tips: '',
             explain: '纵向坐标'
@@ -109,17 +109,6 @@ const linkViewType = () => {
             tips: '直线，曲线，折线',
             explain: '线条样式'
         },
-    } as SettingConfGroup
-};
-const isMain = () => {
-    return {
-        isMain: {
-            type: 'Boolean',
-            default: false,
-            range: '',
-            tips: '合理地主要节点设置会提高内容可信度',
-            explain: '是否是主要节点'
-        }
     } as SettingConfGroup
 };
 const linkLocation = () => {
@@ -361,27 +350,26 @@ const textBreak = () => {
     } as SettingConfGroup
 };
 
-const BaseSettingGroup = () => mergeSetting(xSetting(), ySetting(), size(), scaleX()) as SettingConfGroup;
+const BaseSettingGroup = () => mergeSetting(xSetting(), ySetting(), size(), scaleX());
 
-const BorderSettingGroup = () => mergeSetting(borderColor(), borderOpacity(), borderWidth(), borderDashArray()) as SettingConfGroup;
+const BorderSettingGroup = () => mergeSetting(borderColor(), borderOpacity(), borderWidth(), borderDashArray());
 
-const TextSettingGroup = () => mergeSetting(textSize(), textColor(), textBreak()) as SettingConfGroup;
+const TextSettingGroup = () => mergeSetting(textSize(), textColor(), textBreak());
 
-const InlineTextSettingGroup = () => mergeSetting(inlineTextSize(), inlineTextColor(), inlineTextBreak()) as SettingConfGroup;
+const InlineTextSettingGroup = () => mergeSetting(inlineTextSize(), inlineTextColor(), inlineTextBreak());
 
-const nodeSetting = () => {
-    let result = {
+export const nodeSettingGroupInGraph = () => {
+    return {
         Base: BaseSettingGroup(),
-        View: mergeSetting(color(), opacity(), nodeViewType(), isMain()),
+        View: mergeSetting(color(), opacity(), nodeViewType()),
         Border: BorderSettingGroup(),
         Show: mergeSetting(showAll(), showBorder(), showName(), showBackground(), showInlineText(), showImage()),
         Text: mergeSetting(inlineText(), InlineTextSettingGroup(), text(), TextSettingGroup())
-    };
-    return result as SettingConfAll
+    } as Record<keyof NodeStyleSettingGraph, SettingConfGroup>
 };
 
-const linkSetting: SettingConfAll = {
-    View: mergeSetting(width(), color(), linkViewType(), linkDirect(), linkLocation(), isMain(), borderDashArray()),
+export const linkSettingGroupInGraph: SettingConfAll = {
+    View: mergeSetting(width(), color(), linkViewType(), linkDirect(), linkLocation(), borderDashArray()),
     Arrow: {
         arrowLength: {
             type: 'Number',
@@ -444,46 +432,13 @@ const linkSetting: SettingConfAll = {
     }
 };
 
-const graphSetting = () => ({
-    Base: {
-        background: {
-            type: 'String',
-            default: '',
-            range: ['galaxy-1', 'galaxy-2', 'galaxy-3'],
-            tips: '暂未开放',
-            explain: '背景图'
-        },
-        backgroundColor: {
-            type: 'Color',
-            default: '#eeeeee',
-            range: '',
-            tips: '暂未开放',
-            explain: '背景颜色'
-        },
-        theme: {
-            type: 'String',
-            default: '',
-            range: ['galaxy-1', 'galaxy-2', 'galaxy-3'],
-            tips: '暂未开放',
-            explain: '主题'
-        },
-        defaultMode: {
-            type: 'String',
-            default: '',
-            range: ['normal', 'imp', 'geo', 'time'],
-            tips: '暂未开放',
-            explain: '默认模式'
-        }
-    }
-} as SettingConfAll);
-
-const mediaSetting = () => {
+export const mediaSettingInPaper = () => {
     let result = {
         Base: BaseSettingGroup(),
         Border: BorderSettingGroup(),
         Show: mergeSetting(showAll(), showBorder(), showAppendText()),
         Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup()),
-        View: mergeSetting(isMain(), opacity())
+        View: mergeSetting(opacity())
     };
     let replace = {
         Base: {
@@ -500,7 +455,7 @@ const mediaSetting = () => {
     return result as SettingConfAll
 };
 
-const noteSetting = () => {
+export const noteSettingGroupInGraph = () => {
     let result = {
         Base: BaseSettingGroup()
     };
@@ -519,7 +474,7 @@ const noteSetting = () => {
     return result as SettingConfAll
 };
 
-const textSetting = () => {
+export const textSettingGroupInGraph = () => {
     let result = {
         Base: BaseSettingGroup(),
         Border: BorderSettingGroup(),
@@ -560,11 +515,11 @@ const textSetting = () => {
     return result as SettingConfAll
 };
 
-export const typeSettingDictGraph: Record<DocumentItemType | 'note', SettingConfAll> = {
-    'node': nodeSetting(),
-    'link': linkSetting,
-    'document': graphSetting(),
-    'media': mediaSetting(),
-    'text': textSetting(),
-    'note': noteSetting()
+export const typeSettingDictGraph: Record<DocumentItemType, SettingConfAll> = {
+    'node': nodeSettingGroupInGraph(),
+    'document': nodeSettingGroupInGraph(),
+    'link': linkSettingGroupInGraph,
+    'media': mediaSettingInPaper(),
+    'text': textSettingGroupInGraph(),
+    'note': noteSettingGroupInGraph(),
 };

@@ -16,3 +16,20 @@ export interface SettingConf {
 export const mergeSetting = (...settingList: SettingConfGroup[]) => {
     return Object.assign({}, ...settingList) as SettingConfGroup
 };
+
+export function handleSettingConfAllToValue<T extends Record<string, Record<string, any>>>(settingGroup: Record<keyof T, SettingConfGroup>) {
+    //@ts-ignore
+    let result: T = {};
+    Object.entries(settingGroup).map(([key, value]) => {
+        let prop = key as keyof T
+        let result2: Record<string, any> = {}
+        Object.entries(settingGroup[prop]).map(([key2, value]) => {
+            result2[key2] = value.default
+        })
+        result = {
+            [prop]: result2,
+            ...result
+        }
+    })
+    return result
+}

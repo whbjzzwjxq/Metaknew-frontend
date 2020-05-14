@@ -50,13 +50,13 @@
                         payload: 'edit'
                     },
                     {
-                        name: this.itemIconGroup._DocPaper,
+                        name: this.itemIconGroup.paper,
                         toolTip: '切换到Paper模式',
                         _func: this.changeView,
                         payload: 'paper'
                     },
                     {
-                        name: this.itemIconGroup._DocGraph,
+                        name: this.itemIconGroup.graph,
                         toolTip: '切换到Graph模式',
                         _func: this.changeView,
                         payload: 'graph'

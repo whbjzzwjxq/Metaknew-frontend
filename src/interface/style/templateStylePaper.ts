@@ -3,8 +3,8 @@ import {mergeSetting, SettingConfAll, SettingConfGroup} from "@/interface/style/
 const section = () => {
     return {
         section: {
-            default: 0,
-            range: [0, 99],
+            default: -1,
+            range: [-1, 99],
             type: "Number",
             explain: '处于多少行',
             tips: ''
@@ -15,22 +15,10 @@ const section = () => {
 const row = () => {
     return {
         row: {
-            default: 0,
-            range: [0, 99],
+            default: -1,
+            range: [-1, 99],
             type: "Number",
             explain: '处于多少行',
-            tips: ''
-        }
-    } as SettingConfGroup
-}
-
-const order = () => {
-    return {
-        order: {
-            default: 1,
-            range: [-1, 13],
-            type: "Number",
-            explain: '处于多少列',
             tips: ''
         }
     } as SettingConfGroup
@@ -216,11 +204,11 @@ const isOutlined = () => {
     } as SettingConfGroup
 }
 
-const BaseSettingGroup = () => mergeSetting(section(), row(), order(), width(), height())
+const BaseSettingGroup = () => mergeSetting(section(), row(), width(), height())
 const BaseShowSettingGroup = () => mergeSetting(showAll(), showTitle(), showLabels(), showProps(), showDescription())
 const CardSettingGroup = () => mergeSetting(isFlat(), isTile(), isOutlined())
 
-const nodeSetting = () => {
+export const nodeSettingGroupInPaper = () => {
     let result = {
         Base: BaseSettingGroup(),
         Card: CardSettingGroup(),
@@ -230,7 +218,7 @@ const nodeSetting = () => {
     return result as SettingConfAll
 }
 
-const linkSetting = () => {
+export const linkSettingGroupInPaper = () => {
     let result = {
         Base: BaseShowSettingGroup(),
         Card: CardSettingGroup(),
@@ -239,12 +227,12 @@ const linkSetting = () => {
 }
 
 export const typeSettingDictPaper: Record<DocumentItemType, SettingConfAll> = {
-    node: nodeSetting(),
-    link: linkSetting(),
-    document: {},
-    media: nodeSetting(),
-    note: {},
-    text: nodeSetting()
+    node: nodeSettingGroupInPaper(),
+    link: linkSettingGroupInPaper(),
+    document: nodeSettingGroupInPaper(),
+    media: nodeSettingGroupInPaper(),
+    note: nodeSettingGroupInPaper(),
+    text: nodeSettingGroupInPaper()
 }
 
 export const nodeShowInPaperTemplate = () => ({
@@ -265,38 +253,6 @@ export const mediaShowInPaperTemplate = () => ({
     showProps: true,
     showTitle: true
 }) as CardShowInPaper
-
-export const paperRowSettingTemplate = (order: number) => ({
-    isAlign: true,
-    isOverflowX: false,
-    isVirtual: false,
-    order,
-    width: 240,
-    height: 240,
-    Items: []
-}) as PaperRowSetting
-
-export const paperSectionTemplate = () => ({
-    Setting: {
-        Left: {
-            info: '',
-            show: true,
-            color: 'white'
-        },
-        Title: {
-            text: '',
-            show: true,
-            color: 'white'
-        },
-        Rows: [
-            paperRowSettingTemplate(0),
-        ]
-    },
-    State: {
-        isDeleted: false,
-        isSelected: false
-    }
-}) as PaperSectionSettingPart
 
 const specialDict: { [prop: string]: any } = {};
 

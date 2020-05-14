@@ -115,9 +115,6 @@
                 _type === 'document' && (_type = 'node');
                 return _type
             },
-            documentInfo: function (): NodeInfoPart {
-                return this.$store.getters.currentGraphInfo
-            },
             allComponentSize: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
@@ -240,7 +237,7 @@
 </script>
 
 <style scoped>
-    @import "/src/style/css/card.css";
+    @import "../../../src/style/css/card.css";
 </style>
 
 /**

@@ -1,6 +1,5 @@
 import {ExtraProps} from "@/utils/fieldResolve";
 import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
-import {PathNodeSettingPart} from "@/class/settingPath";
 
 declare global {
     type id = number | string;
@@ -103,17 +102,10 @@ declare global {
         End: VisNodeSettingPart;
     }
 
-    interface PathConf extends Setting {
-        _type: 'document',
-        _label: 'path'
-    }
-
     interface BasePathInfo extends BaseNodeInfo {
         type: 'document',
-        PrimaryLabel: 'path',
+        PrimaryLabel: '_Path',
     }
-
-    type PathArray = (PathNodeSettingPart | null)[][];
 
     type InfoPartInDataManager = NodeInfoPart | LinkInfoPart | MediaInfoPart
 
@@ -137,7 +129,10 @@ declare global {
         type: 'media'
     }
 
-    type DocumentLabel = '_DocPaper' | '_DocGraph' | 'Path'
+    enum DocumentLabel {
+        document = '_Document',
+        path = '_Path'
+    }
 
     interface DocumentQuery extends NodeQuery {
         type: 'document'

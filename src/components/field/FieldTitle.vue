@@ -58,7 +58,7 @@
                 this.$emit('update-text', $event);
             },
             doNothing() {
-                alert('doNothing')
+
             }
         },
         watch: {},

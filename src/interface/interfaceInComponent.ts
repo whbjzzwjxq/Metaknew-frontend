@@ -121,6 +121,7 @@ export interface CardSize {
     width: number,
 }
 
+//card 标准尺寸 todo 转化为css
 export function getCardSize(props: {large?: boolean, xLarge?: boolean, small?: boolean, xSmall?: boolean}): CardSize {
     if (props.large) {
         return {width: 360, height: 270}
@@ -132,6 +133,21 @@ export function getCardSize(props: {large?: boolean, xLarge?: boolean, small?: b
         return {width: 160, height: 120}
     } else {
         return {width: 240, height: 180}
+    }
+}
+
+//node 标准尺寸 注意是半径 todo 转化为css
+export function getNodeSize(props: {large?: boolean, xLarge?: boolean, small?: boolean, xSmall?: boolean}): CardSize {
+    if (props.large) {
+        return {width: 18, height: 18}
+    } else if (props.xLarge) {
+        return {width: 24, height: 24}
+    } else if (props.small) {
+        return {width: 9, height: 9}
+    } else if (props.xSmall) {
+        return {width: 6, height: 6}
+    } else {
+        return {width: 12, height: 12}
     }
 }
 

@@ -73,6 +73,7 @@
     import {ListItem, ListText, ListTitle} from "@/interface/interfaceInComponent";
     import {isListText} from "@/utils/typeCheck";
     import {dispatchMediaQuery, dispatchNodeQuery} from "@/store/modules/_dispatch";
+    import {documentLabel} from "@/utils/fieldResolve";
 
     export default Vue.extend({
         name: "SearchBar",
@@ -225,26 +226,28 @@
                 }));
                 let nodes = unDuplicateItems.filter(item => item.type === 'node' || item.type === 'document');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let nodeSettingList = nodes.map(node => NodeSettingPart.emptyNodeSetting(
+                let nodeSettingList = nodes.map(node => NodeSettingPart.initEmpty(
                         {
                             _id: node.id,
-                            //@ts-ignore
+                            //@ts-ignore 检查过
                             _type: node.type,
                             _label: node.PrimaryLabel,
                             _name: node.Name['auto'],
                             _image: node.MainPic,
+                            _isMain: false
                         },
                         this.currentDocument)
                 );
                 this.currentDocument.addItems(nodeSettingList);
                 dispatchNodeQuery(nodeSettingList.map(item => item.Setting));
-                let mediaSettingList = medias.map(media => MediaSettingPart.emptyMediaSetting(
+                let mediaSettingList = medias.map(media => MediaSettingPart.initEmpty(
                     {
                         _id: media.id,
                         _type: 'media',
                         _label: media.PrimaryLabel,
                         _name: media.Name['auto'],
                         _src: '',
+                        _isMain: false,
                     } as MediaInitPayload,
                     this.currentDocument
                 ));
@@ -299,7 +302,7 @@
             selection(): void {
                 if (!this.editMode) {
                     if (this.singleSelect && this.selection.length > 0) {
-                        if (this.selection[0].PrimaryLabel === '_DocGraph') {
+                        if (documentLabel.includes(this.selection[0].PrimaryLabel)) {
                             this.$router.push({
                                 name: "graph-normal",
                                 path: "graph/id=:id/normal",

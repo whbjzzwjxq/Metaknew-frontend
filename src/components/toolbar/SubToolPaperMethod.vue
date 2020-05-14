@@ -20,7 +20,7 @@
         },
         data: function () {
             return {
-                paperIcon: getIcon('i-item', '_DocPaper')
+                paperIcon: getIcon('i-item', 'paper')
             }
         },
         props: {},

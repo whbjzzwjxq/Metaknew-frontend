@@ -5,11 +5,6 @@
                 :icon-list="rowIconList"
                 vertical
                 small
-                @arrow-double-up="_arrowDoubleUp(section, row)"
-                @arrow-double-down="_arrowDoubleDown(section, row)"
-                @arrow-up="_arrowUp(section, row)"
-                @arrow-down="_arrowDown(section, row)"
-                @delete="_deleteRow(section, row)"
             >
 
             </icon-group>
@@ -34,12 +29,12 @@
             @delete-item="_deleteItem(subItem)"
             :id="getId(subItem)"
             :key="index"
-            v-for="(subItem, index) in row.Items">
+            v-for="(subItem, index) in row.children">
         </card-paper-all>
         <div @dragenter="dragEnterCard(arguments[0], undefined)"
              @dragover.prevent
              @drop.prevent="dropCard(arguments[0], undefined)"
-             class="pa-0 flex-grow-1"
+             class="pa-0 flex-grow-1 order-last"
              v-if="editMode">
             <paper-empty-card>
 
@@ -51,14 +46,15 @@
 <script lang="ts">
     import Vue from 'vue'
     import PaperEmptyCard from "@/components/paperComponents/PaperEmptyCard.vue";
-    import CardPaperAll from "@/components/card/paper/CardPaperAll.vue";
+    import CardPaperAll from "@/components/paperComponents/CardPaperAll.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
     import {ItemSettingPart} from "@/class/settingBase";
     import {DragEventWithTarget} from "@/interface/interfaceInComponent";
+    import {PaperRow} from "@/class/settingPaper";
 
     export default Vue.extend({
-        name: "PaperRow",
+        name: "PaperRowRender",
         components: {
             PaperEmptyCard,
             CardPaperAll,
@@ -66,8 +62,8 @@
         },
         data: function () {
             return {
-                minHeight: 240,
-                maxHeight: 1080
+                minHeight: PaperRow.minHeight,
+                maxHeight: PaperRow.maxHeight
             }
         },
         props: {
@@ -76,11 +72,7 @@
                 default: false
             },
             row: {
-                type: Object as () => PaperRowSetting,
-                required: true
-            },
-            section: {
-                type: Object as () => PaperSectionSettingPart,
+                type: Object as () => PaperRow,
                 required: true
             }
         },
@@ -94,26 +86,27 @@
                     },
                     {
                         name: getIcon('i-arrow', 'up'),
-                        _isTrigger: true,
-                        _eventName: 'arrow-up',
+                        _func: this._arrowUp,
                         toolTip: '向上移动一行'
                     },
                     {
                         name: getIcon('i-arrow', 'down'),
-                        _isTrigger: true,
-                        _eventName: 'arrow-down',
+                        _func: this._arrowDown,
                         toolTip: '向下移动一行'
                     },
                     {
                         name: getIcon('i-arrow-double', 'down'),
-                        _isTrigger: true,
-                        _eventName: 'arrow-double-down',
+                        _func: this._arrowDoubleDown,
                         toolTip: '向下移动到低端'
                     },
                     {
-                        name: getIcon('i-edit', 'delete'),
-                        _isTrigger: true,
-                        _eventName: 'delete',
+                        name: getIcon('i-edit', 'plus'),
+                        _func: this._insertRow,
+                        toolTip: '在之后插入一行'
+                    },
+                    {
+                        name: getIcon('i-edit', 'decrease'),
+                        _func: this._deleteRow,
                         toolTip: '删除该行'
                     },
                 ]
@@ -160,71 +153,50 @@
             },
             isOverflowX: {
                 get: function (): boolean {
-                    return this.row.isOverflowX
+                    return this.row.Setting.isOverflowX
                 },
                 set: function (value: boolean): void {
-                    this.row.isOverflowX = value
+                    this.row.Setting.isOverflowX = value
                 }
-            },
-            len: function (): number {
-                return this.section.Setting.Rows.length
             }
         },
         methods: {
             _arrowDoubleUp: function () {
-                this.exchangeRow(0)
+                this.row.exchangeRowSoft(0)
             },
 
             _arrowDoubleDown: function () {
-                let len = this.section.Setting.Rows.length;
-                this.exchangeRow(len - 1)
+                let len = this.row.parent.len;
+                this.row.exchangeRowSoft(len - 1)
             },
 
             _arrowUp: function () {
                 let {order} = this.row
-                this.exchangeRow(order - 1)
+                this.row.exchangeRowSoft(order - 1)
             },
 
             _arrowDown: function () {
                 let {order} = this.row
-                this.exchangeRow(order + 1)
+                this.row.exchangeRowSoft(order + 1)
             },
 
-            _deleteRow: function (section: PaperSectionSettingPart, row: PaperRowSetting) {
-                let index = section.Setting.Rows.indexOf(row)
-                let len = section.Setting.Rows.length;
-                if (index >= 0 && index <= len - 1) {
-                    row.Items.map(item => {
-                        item.State.isInRow = false
-                    })
-                    section.Setting.Rows.splice(index, 1)
-                    section.Setting.Rows.map(subRow => {
-                        subRow.order > row.order && (row.order -= 1)
-                    })
-                }
+            _insertRow: function () {
+                this.row.addRowNext()
+            },
+
+            _deleteRow: function () {
+                this.row.deleteSelf()
             },
 
             _deleteItem: function (item: ItemSettingPart) {
-                let index = this.row.Items.indexOf(item)
-                index > -1 && this.row.Items.splice(index, 1)
-                item.State.isInRow = false
+                this.row.deleteItem(item)
             },
 
-            exchangeRow: function (target: number) {
-                if (this.len > target && target > 0) {
-                    let targetRow = this.section.Setting.Rows.filter(row => row.order === target)[0]
-                    if (targetRow) {
-                        targetRow.order = this.row.order
-                        this.row.order = target
-                    }
-                }
-            },
             _emit: function (name: string, $event: DragEvent, item?: ItemSettingPart) {
                 this.$emit(name, {
                     event: $event,
                     item,
                     row: this.row,
-                    section: this.section
                 })
             },
             dragCard: function ($event: DragEvent, item: ItemSettingPart) {

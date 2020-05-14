@@ -34,7 +34,7 @@
     import Vue from 'vue'
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {commitFileTokenRefresh} from "@/store/modules/_mutations";
+    import {commitFileTokenRefresh, commitSnackbarOn} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import {SortProp} from "@/interface/interfaceInComponent";
     import {sortCtrl} from "@/utils/utils";
@@ -96,8 +96,16 @@
                     mediaAppendToNode(node, mediaIdList).then(res => {
                         let num = res.data.length;
                         num === 0
-                            ? alert('保存成功')
-                            : alert('有一些没有保存成功，自动重试');
+                            ? commitSnackbarOn({
+                                actionName: 'mediaAppendToNodeSuccess',
+                                color: 'success',
+                                content: '添加媒体成功'
+                            })
+                            : commitSnackbarOn({
+                                actionName: 'mediaAppendToNodeError',
+                                color: 'error',
+                                content: '有一些媒体未成功，自动重试'
+                            })
                         this.baseData.updateValue('IncludedMedia', mediaIdList);
                     })
                 } else {
@@ -129,7 +137,12 @@
                     if (res.status === 200) {
                         commitFileTokenRefresh(res.data.fileToken);
                     } else {
-                        alert("与图片服务器连接暂时中断")
+                        let payload = {
+                            actionName: 'fileTokenError',
+                            content: '与图片服务器连接中断',
+                            color: 'error'
+                        } as SnackBarStatePayload
+                        commitSnackbarOn(payload)
                     }
                 })
                     .catch()

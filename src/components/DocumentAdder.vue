@@ -31,16 +31,10 @@
             itemDict: function (): Record<string, IconItem> {
                 return {
                     graph: {
-                        name: getIcon('i-item', '_DocGraph'),
-                        text: 'New Graph',
+                        name: getIcon('i-item', 'graph'),
+                        text: 'New Document',
                         isBlock: false,
-                        _func: this.addGraph
-                    },
-                    paper: {
-                        name: getIcon('i-item', '_DocPaper'),
-                        text: 'New Paper',
-                        isBlock: false,
-                        _func: this.addPaper
+                        _func: this.addDocument
                     },
                     fromCloud: {
                         name: getIcon('i-add-media-method', 'fromCloud'),
@@ -58,11 +52,8 @@
             }
         },
         methods: {
-            addGraph() {
-                this.$emit('add-document', '_DocGraph')
-            },
-            addPaper() {
-                this.$emit('add-document', '_DocPaper')
+            addDocument() {
+                this.$emit('add-document')
             },
             doNothing() {
 

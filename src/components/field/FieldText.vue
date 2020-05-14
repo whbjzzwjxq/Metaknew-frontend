@@ -49,9 +49,8 @@
 
             </div>
             <markdown-render
-                :text="text[singleKey]"
-                :edit-base="setting.editable"
-                @update="updateText(singleKey, arguments[0])">
+                v-model="text[singleKey]"
+                :edit-base="setting.editable">
 
             </markdown-render>
         </template>

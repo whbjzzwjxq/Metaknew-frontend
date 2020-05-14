@@ -42,15 +42,6 @@
             },
             allComponentsStyle: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
-            },
-            navigationStyle: function (): CSSProp {
-                let {width} = this.allComponentsStyle.leftCard;
-                let {height} = this.allComponentsStyle.toolBar;
-                return {
-                    position: 'absolute',
-                    left: width + 'px',
-                    top: height + 'px'
-                }
             }
         },
         methods: {
@@ -75,7 +66,7 @@
                 } else {
                     if (this.currentDocument._id === '$_-1') {
                         let _id = getIndex();
-                        let {graph} = DocumentSelfPart.emptyInit(_id, null);
+                        let {graph} = DocumentSelfPart.initEmpty(_id, null);
                         graph.addEmptyNode('node', 'BaseNode')
                         return commitGraph(graph)
                     } else {

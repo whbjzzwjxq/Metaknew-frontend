@@ -44,7 +44,7 @@
     import moment from "moment";
     import {getPoint, RectByPoint} from "@/class/geometric";
     import {isNodeInfoPart} from "@/utils/typeCheck";
-    import {nodeStateTemplate, settingTemplateGraph} from "@/utils/template";
+    import {nodeStateTemplate} from "@/utils/template";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import {MediaInfoPart, NodeInfoPart} from "@/class/info";
 
@@ -145,18 +145,11 @@
                         ? item.info.Info.MainPic
                         : item.info.Ctrl.Thumb;
                     let _name = item.info.Info.Name;
+                    let _isMain = false;
                     let {_id, _type, _label} = item.info;
                     return {
                         State: nodeStateTemplate(),
-                        Setting: Object.assign({
-                            _id,
-                            _type,
-                            _label,
-                            _name,
-                            _image
-                        }, {
-                            InGraph: settingTemplateGraph('node')
-                        }) as NodeSetting
+                        Setting: NodeSettingPart.nodeSettingDefault({_id, _type, _label, _name, _image, _isMain})
                     }
                 })
             },
@@ -211,9 +204,9 @@
                         alignSelf: 'center'
                     };
                 return {
+                    ...addition,
                     height: '64px',
-                    width: this.scale + '%',
-                    ...addition
+                    width: this.scale + '%'
                 }
             },
             delta: function (): number {

@@ -156,7 +156,7 @@
 
             updateValue(prop: string, value: string | number) {
                 this.selection.map(item => {
-                    item.updateSetting('InGraph', this.propGroup, prop, value)
+                    item.updateGraphSetting(this.propGroup, prop, value)
                 })
             },
 

@@ -6,7 +6,6 @@ declare global {
     }
 
     interface DocumentItemState extends BaseState {
-        isAdd: boolean; // 是否是新建的
         isSelected: boolean; // 是否被选中
         isMouseOn: boolean; // 是否鼠标放置在上面
         isInRow: boolean; //是否已经进入Row
@@ -37,6 +36,10 @@ declare global {
     interface DocumentState extends BaseState {
         isSaved: boolean; //是否保存
         isExplode: boolean; // 是否爆炸
+    }
 
+    interface PaperSectionState {
+        isSelected: boolean
+        isDeleted: boolean
     }
 }

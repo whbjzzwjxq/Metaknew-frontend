@@ -176,7 +176,6 @@
 <script lang="ts">
     import Vue from 'vue'
     import {
-        DocumentConfigure,
         DocumentSelfPart,
         ItemSettingPart,
         LinkSettingPart,
@@ -200,6 +199,7 @@
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
     import {NodeInfoPart} from "@/class/info";
+    import {documentLabel} from "@/utils/fieldResolve";
 
     export default Vue.extend({
         name: "GraphViewBox",
@@ -324,12 +324,6 @@
             },
             userDataManager: function (): UserDataManagerState {
                 return this.$store.state.userDataManager
-            },
-            state: function (): DocumentState {
-                return this.graph.Conf.State
-            },
-            setting: function (): DocumentConfigure {
-                return this.graph.Conf
             },
             containerRect: function (): AreaRect {
                 // containerRect形式
@@ -544,7 +538,7 @@
             },
 
             notes: function (): NoteSettingPart[] {
-                return this.userDataManager.userNoteInDoc.filter(item => !item.isDeleted && item.Setting._parent === this.graph._id)
+                return this.userDataManager.userNoteInDoc.filter(item => !item.isDeleted && item.parent._id === this.graph._id)
             },
 
             texts: function (): TextSettingPart[] {
@@ -560,7 +554,7 @@
                     });
                     return result
                 };
-                let docLabel = ['_DocGraph', '_DocPaper'];
+                let docLabel = documentLabel;
                 let normalNodes = this.nodes.filter(item => !docLabel.includes(item._label));
                 return {
                     'node': getLabels(normalNodes),
@@ -918,7 +912,7 @@
             clearSelected(items: 'all' | ItemSettingPart[]) {
                 if (items === 'all') {
                     Object.values(this.dataManager.documentManager).map(document => {
-                        document.allItems.map(item => item.updateState('isSelected', false))
+                        document.itemsAll.map(item => item.updateState('isSelected', false))
                     });
                 } else {
                     items.map(item => item.updateState('isSelected', false));

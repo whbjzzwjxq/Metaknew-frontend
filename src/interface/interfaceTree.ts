@@ -23,13 +23,14 @@ export interface VirtualNodeBase<T, L extends VirtualNodeBase<T, L>> {
 export type VirtualNodeContent<T, L extends VirtualNodeBase<T, L>> = Omit<L, keyof VirtualNodeBase<T, L>>
 
 export class TreeNode<T> {
-    static virtualTreeList: VirtualTree<any, any, any>[] = []
-    boundObject: T
+    static virtualTreeList: VirtualTree<any, any, any>[] = [] //虚拟tree
+    boundObject: T //绑定的object
     children: TreeNode<T>[] // 孩子节点
     query: QueryObject // 身份标识
     _parent: ParentTreeNode<T> //父亲节点
-    _isRoot: boolean // 是否是根节点 注意为了维护一致性
+    _isRoot: boolean // 是否是根节点
     _isDeleted: boolean // 是否被删除
+
     protected constructor(boundObject: T, query: QueryObject, _parent: ParentTreeNode<T>) {
         this.boundObject = boundObject
         this.children = []
@@ -130,19 +131,19 @@ export class TreeNode<T> {
         return this.children.filter(node => node.queryNode(query, this, false))
     }
 
-    _addNewNode(nodeList: TreeNode<T>[]) {
+    _addNode(nodeList: TreeNode<T>[]) {
         nodeList.map(node => {
-            //同步到内容之中
-            let nodeSelf = this;
+            //直到根节点的所有id list
             let parentIdList = this.parentNodeList.map(parent => parent.id)
             parentIdList.push(this.id)
             //子节点和父亲节点都没有目标专题
             if (this.checkNodeExist(node.query).length === 0 && !parentIdList.includes(node.id)) {
                 this.children.push(node)
                 node.parent = this;
+                //同步到virtualTree
                 TreeNode.virtualTreeList.map(tree => {
-                    let virtualNode = tree.queryNodeByOrigin(nodeSelf) as VirtualNodeBase<any, any>
-                    virtualNode._children.push(tree.buildNode(nodeSelf, node, virtualNode))
+                    let virtualNode = tree.queryNodeByOrigin(this) as VirtualNodeBase<any, any>
+                    virtualNode._children.push(tree.buildNode(this, node, virtualNode))
                 })
                 return true
             } else {
@@ -157,7 +158,7 @@ export class TreeNode<T> {
         }
     }
 
-    _insertNode(nodeList: TreeNode<T>[]) {
+    _moveNode(nodeList: TreeNode<T>[]) {
 
     }
 }
@@ -240,7 +241,7 @@ export class VirtualTree<T, L extends VirtualNodeBase<T, L>, P> {
 
 export class TreeNodeDoc extends TreeNode<DocumentSelfPart> {
     get isDeleted() {
-        return this.boundObject.Conf.isDeleted
+        return this.boundObject.isDeleted
     }
 
     constructor(doc: DocumentSelfPart, parent: DocumentSelfPart | null) {

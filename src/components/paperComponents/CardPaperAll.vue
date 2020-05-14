@@ -27,7 +27,7 @@
                 </card-page-media-info>
             </template>
             <template v-else-if="type === 'text'">
-                <markdown-render :text="setting._text" :edit-base="editMode" :render-tool-bar="editMode" @update-text="updateText">
+                <markdown-render v-model="setting._text" :edit-base="editMode" :render-tool-bar="editMode">
 
                 </markdown-render>
             </template>
@@ -48,6 +48,7 @@
     import {InfoPart} from "@/class/info";
     import {DocumentSelfPart} from "@/class/settingBase";
     import {getIcon, iconMap} from "@/utils/icon";
+    import {PaperRow} from "@/class/settingPaper";
 
     export default Vue.extend({
         name: "CardPaperAll",
@@ -68,7 +69,7 @@
         },
         props: {
             row: {
-                type: Object as () => PaperRowSetting,
+                type: Object as () => PaperRow,
                 required: true
             },
             setting: {
@@ -110,8 +111,8 @@
                     }, {
                         name: this.sizeIconGroup.double,
                         _func: this.changeSize,
-                        payload: this.maxWidth - this.rowTotalWidth,
-                        disabled: !this.checkAvailable(this.maxWidth - this.rowTotalWidth),
+                        payload: this.maxWidth - this.row.totalWidth,
+                        disabled: !this.checkAvailable(this.maxWidth - this.row.totalWidth),
                         toolTip: '宽度最大'
                     },
                     {
@@ -185,15 +186,8 @@
                     this.styleSetting.Base.width = value
                 }
             },
-            rowTotalWidth: function (): number {
-                let result = 0;
-                this.row.Items.map(item => {
-                    result += item.StyleInPaper.Base.width
-                })
-                return result
-            },
             height: function (): number {
-                return this.row.isAlign ? this.row.height : this.styleSetting.Base.height
+                return this.row.Setting.isAlign ? this.row.height : this.styleSetting.Base.height
             },
             divStyle: function (): CSSProp {
                 return {
@@ -207,7 +201,7 @@
                 this.setting.InPaper.Card[prop] = !this.setting.InPaper.Card[prop]
             },
             checkAvailable: function (num: number) {
-                return this.width + num >= this.minWidth && this.rowTotalWidth + num <= this.maxWidth
+                return this.width + num >= this.minWidth && this.row.totalWidth + num <= this.maxWidth
             },
             changeSize: function (num: number) {
                 this.checkAvailable(num) && (this.width += num)
@@ -230,16 +224,13 @@
                 this.$emit('drag-end-card', $event)
             },
             dragOver: function () {
-
+                //doNothing
             },
             drop: function ($event: DragEvent) {
                 this.$emit('drop-card', $event)
             },
             deleteItem: function () {
                 this.$emit('delete-item')
-            },
-            updateText: function (value: string) {
-                this.setting._text = value
             }
         },
         record: {

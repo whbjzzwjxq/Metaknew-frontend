@@ -33,7 +33,7 @@
 
         <foreignObject :x="midLocation.x - textSetting.width / 2" :y="midLocation.y"
                        :width="textSetting.width" :height="textSetting.height">
-            <p :style="textStyle">{{ setting._label }}</p>
+            <p :style="textStyle">{{ itemSetting._label }}</p>
         </foreignObject>
     </g>
 </template>

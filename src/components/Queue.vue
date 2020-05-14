@@ -163,7 +163,6 @@
                 this.max = this.min + this.maxNum
                 while (this.activeItems[this.max - 1] === undefined && this.min > 0) {
                     this.moveBack()
-                    console.log(this.max)
                 }
             }
         },

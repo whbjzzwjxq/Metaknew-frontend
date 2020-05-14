@@ -10,11 +10,11 @@
                 <v-row no-gutters class="pa-0 flex-nowrap flex-row-reverse" style="height: 48px">
                     <v-col cols="12" class="pa-4 pb-0">
                         <field-title
-                            :text="setting.Title.text"
+                            :text="setting.title.text"
                             :edit-mode="editMode"
                             label="Title"
                             :hide-details="false"
-                            @update-text="setting.Title.text = $event">
+                            @update-text="setting.title.text = $event">
 
                         </field-title>
                     </v-col>
@@ -22,10 +22,10 @@
                         <v-card width="120" :elevation="hover ? 6 : 0">
                             <v-card-text>
                                 <field-title
-                                    :text="setting.Left.info"
+                                    :text="setting.left.text"
                                     :edit-mode="editMode"
                                     label="Tag"
-                                    @update-text="setting.Left.info = $event">
+                                    @update-text="leftUpdate">
 
                                 </field-title>
                             </v-card-text>
@@ -51,11 +51,10 @@
     import IconGroup from "@/components/IconGroup.vue";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import {getIcon} from "@/utils/icon";
-    import {paperRowSettingTemplate} from "@/interface/style/templateStylePaper";
-    import {maxRow} from "@/interface/interfaceInComponent";
+    import {PaperSection, PaperSectionCtrlSetting} from "@/class/settingPaper";
 
     export default Vue.extend({
-        name: "PaperSection",
+        name: "PaperSectionRender",
         components: {
             IconGroup,
             FieldTitle
@@ -67,7 +66,7 @@
         },
         props: {
             section: {
-                type: Object as () => PaperSectionSettingPart,
+                type: Object as () => PaperSection,
                 required: true
             },
             editMode: {
@@ -113,9 +112,13 @@
                 return [
                     {
                         name: getIcon('i-edit', 'add'),
-                        _func: this.addRow,
-                        disabled: this.len >= maxRow,
-                        toolTip: '添加一行',
+                        _func: this.addSectionNext,
+                        toolTip: '在之后插入一节',
+                    },
+                    {
+                        name: getIcon('i-edit', 'decrease'),
+                        _func: this.deleteSelf,
+                        toolTip: '删除这一节',
                     },
                     {
                         name: getIcon('i-eye', this.showLeft),
@@ -124,25 +127,16 @@
                     }
                 ]
             },
-            setting: function (): PaperSectionSetting {
+            setting: function (): PaperSectionCtrlSetting {
                 return this.section.Setting
             },
             showLeft: function (): boolean {
-                return this.setting.Left.show
-            },
-            len: function (): number {
-                return this.setting.Rows.length
+                return this.setting.left.show
             }
         },
         methods: {
             collapse: function () {
                 this.isCollapse = !this.isCollapse
-            },
-            addRow: function () {
-                this.len < maxRow && this.setting.Rows.push(paperRowSettingTemplate(this.len))
-            },
-            leftOff: function () {
-                this.setting.Left.show = !this.showLeft
             },
             pushUp: function () {
                 this.$emit('push-up')
@@ -155,6 +149,18 @@
             },
             pushBottom: function () {
                 this.$emit('push-bottom')
+            },
+            leftOff: function () {
+                this.setting.left.show = !this.setting.left.show
+            },
+            leftUpdate: function (value: string) {
+                this.setting.left.text = value
+            },
+            addSectionNext: function() {
+                this.section.addSectionNext()
+            },
+            deleteSelf: function() {
+                this.section.deleteSelf()
             }
         },
         record: {

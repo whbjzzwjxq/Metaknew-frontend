@@ -16,14 +16,14 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {DocumentSelfPart, NoteSettingPart} from "@/class/settingBase";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import PaperViewBox from "@/components/paperComponents/PaperViewBox.vue";
     import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
     import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
 
     export default Vue.extend({
-        name: "Result_DocPaper",
+        name: "ResultDocPaper",
         components: {
             ToolbarBottom,
             PaperViewBox,

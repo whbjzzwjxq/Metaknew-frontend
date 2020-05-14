@@ -128,6 +128,10 @@
                 return this.state.isSelected
             },
 
+            isMain: function (): boolean {
+                return this.itemSetting._isMain
+            },
+
             getId: function (): string {
                 return 'normalNode' + this.setting._id
             },
@@ -168,7 +172,7 @@
                         ? 0
                         : this.isSelected
                             ? 1
-                            : this.setting.View.isMain
+                            : this.isMain
                                 ? 0.7
                                 : 0.5
                 }
@@ -202,7 +206,7 @@
                 }
             },
             hoverColor: function (): string {
-                return this.setting.View.isMain
+                return this.isMain
                     ? '#FFCA28'
                     : this.setting.View.color
             },

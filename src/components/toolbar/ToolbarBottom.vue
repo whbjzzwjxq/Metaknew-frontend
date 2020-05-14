@@ -8,7 +8,7 @@
                             <v-icon color="#111111"> {{ noteIcon }}</v-icon>
                         </v-btn>
                     </template>
-                    <personal-note @add-empty-note="addNoteToDocument"></personal-note>
+                    <personal-note></personal-note>
                 </v-menu>
             </div>
             <div class="button-normal pb-4">
@@ -96,10 +96,6 @@
                 commitBottomBarCollapse(height);
                 this.toolbarOn = !this.toolbarOn
             },
-
-            addNoteToDocument() {
-                this.$emit('add-empty-note')
-            }
         },
         watch: {},
         record: {

@@ -1,16 +1,21 @@
 <template>
     <div>
         <template v-if="type === 'node' || type === 'document'">
-            <card-node-simp
-                :large="large"
-                :x-large="xLarge"
-                :small="small"
-                :x-small="xSmall"
-                :setting="item.Setting"
-                :state="item.State"
-            >
+            <template v-if="type === 'document' && renderDocument">
 
-            </card-node-simp>
+            </template>
+            <template v-else>
+                <card-node-simp
+                    :large="large"
+                    :x-large="xLarge"
+                    :small="small"
+                    :x-small="xSmall"
+                    :setting="item.Setting"
+                    :state="item.State"
+                >
+
+                </card-node-simp>
+            </template>
         </template>
         <template v-else-if="type === 'link'">
             <card-link-simp

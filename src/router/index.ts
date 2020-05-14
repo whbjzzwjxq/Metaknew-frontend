@@ -2,10 +2,11 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 Vue.use(VueRouter);
-export const IndexUrl = '/index';
-export const ResultUrl = '/result';
-export const EditUrl = '/edit';
-export const TestUrl = '/test';
+const IndexUrl = '/index';
+const ResultUrl = '/result';
+const EditUrl = '/edit';
+const TestUrl = '/test';
+const PathUrl = '/path';
 
 const routes = [
     {
@@ -115,13 +116,16 @@ const routes = [
                             content: {
                                 editMode: true,
                             },
-                            toolbarBottom: {
-
-                            }
+                            toolbarBottom: {}
                         }
                     }
                 ]
             },
+            {
+                path: 'path',
+                name: 'path',
+                component: () => import('@/views/result/ResultPath.vue')
+            }
         ]
     },
 

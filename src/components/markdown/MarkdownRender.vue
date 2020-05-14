@@ -105,7 +105,7 @@
             },
             update: function () {
                 this.renderHtml()
-                this.$emit('update-text', this.value)
+                this.$emit('update', this.value)
             },
             updateState: function () {
                 //@ts-ignore

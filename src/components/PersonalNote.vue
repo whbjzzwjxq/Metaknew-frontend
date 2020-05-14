@@ -93,9 +93,8 @@
                                 <markdown-render
                                     :div-style="textAreaStyle"
                                     :edit-base="isEditing"
-                                    :text="currentNote.Text"
                                     :rows="20"
-                                    @update="updateValue('Text', arguments[0])"
+                                    v-model="currentNote.Text"
                                 >
                                 </markdown-render>
                             </v-card-text>
@@ -131,6 +130,7 @@
     import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
     import MarkdownToolbar from "@/components/markdown/MarkdownToolbar.vue";
     import {dispatchNoteBookPush} from '@/store/modules/_dispatch';
+    import {DocumentSelfPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "PersonalNote",
@@ -165,6 +165,12 @@
             },
             styleManager: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
+            },
+            dataManager: function (): DataManagerState {
+                return this.$store.state.dataManager
+            },
+            currentDocument: function(): DocumentSelfPart {
+                return this.dataManager.currentDocument
             },
             container: function (): ComponentSize {
                 return this.styleManager.noteBook
@@ -288,12 +294,8 @@
                 //todo 删除笔记 已经列入文档
             },
 
-            editNote: function () {
-                this.currentNote.State.isEditing = !this.isEditing
-            },
-
             addNoteToDocument: function () {
-                this.$emit('add-empty-note')
+                this.currentDocument.addEmptyNote()
             },
 
             save: function () {

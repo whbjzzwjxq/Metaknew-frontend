@@ -1,120 +1,13 @@
-import {currentTime, getCookie, randomNumberInRange} from '@/utils/utils';
+import {currentTime, getCookie} from '@/utils/utils';
 import {fieldDefaultValue, nodeLabelToStandardProps, PropDescription, ValueWithType} from "@/utils/fieldResolve";
 import PDFJS from 'pdfjs-dist';
 import store from '@/store/index';
-import {typeSettingDictGraph} from "@/interface/style/templateStyleGraph";
-import {settingTemplatePaper} from "@/interface/style/templateStylePaper";
-
-export function settingTemplateGraph(_type: DocumentItemType | 'note') {
-    let settingConf = typeSettingDictGraph[_type];
-    const specialDict: { [prop: string]: any } = {
-        'x': randomNumberInRange(0.3, 0.7),
-        'y': randomNumberInRange(0.3, 0.7)
-    };
-    let result: { [prop: string]: Object } = {};
-    Object.entries(settingConf).forEach(([key, value]) => {
-        let settingInstance: { [prop: string]: any } = {};
-        Object.entries(value).forEach(([settingName, settingConf]) => {
-            const name = settingName;
-            specialDict[name] === undefined
-                ? (settingInstance[name] = settingConf.default)
-                : (settingInstance[name] = specialDict[name]);
-        });
-        result[key] = settingInstance
-    });
-    return result
-}
-
-export function mediaSettingTemplate(payload: MediaInitPayload) {
-    let {_src, _label} = payload;
-    let setting = Object.assign(payload, {
-        InGraph: settingTemplateGraph("media"),
-        InPaper: settingTemplatePaper('media')
-    }) as MediaSetting;
-    if (_label === 'image') {
-        let image = new Image();
-        image.src = _src;
-        let checkLoad = function () {
-            if (image.width > 0 || image.height > 0) {
-                setting.InGraph.Base.size = image.width;
-                setting.InGraph.Base.scaleX = image.height / image.width;
-                cancelAnimationFrame(query)
-            }
-        };
-        let query = requestAnimationFrame(checkLoad);
-        image.onload = function () {
-            setting.InGraph.Base.size = image.width;
-            setting.InGraph.Base.scaleX = image.height / image.width;
-            cancelAnimationFrame(query)
-        };
-        checkLoad()
-    }
-    if (_label === 'pdf') {
-        let loadingTask = PDFJS.getDocument(_src);
-        loadingTask.promise.then(function (pdf: any) {
-            pdf.getPage(1).then(function (page: any) {
-                let viewport = page.getViewport({scale: 1.5});
-                setting.InGraph.Base.size = viewport.width;
-                setting.InGraph.Base.scaleX = viewport.height / viewport.width;
-            });
-        })
-    }
-    return setting;
-}
-
-export function documentSettingTemplate(_id: id) {
-    let setting = <DocumentSetting>{
-        _id,
-        _type: "document",
-        _label: "_DocGraph"
-    };
-    Object.assign(setting, settingTemplateGraph("document"));
-    return setting;
-}
-
-export function pathSettingTemplate(_id: id) {
-    let setting = <PathConf>{
-        _id,
-        _type: 'document',
-        _label: "path"
-    };
-    Object.assign(setting, {});
-    return setting
-}
-
-export function noteSettingTemplate(_id: id, _label: string, _title: string, _content: string, _parent: id) {
-    let setting = {
-        _id,
-        _type: 'note',
-        _label,
-        _title,
-        _content,
-        _parent
-    } as NoteSetting;
-    Object.assign(setting, settingTemplateGraph('note'));
-    return setting
-}
-
-export function textSettingTemplate(_id: id, _label: TextLabel, _points: PointObject[]) {
-    let setting = {
-        _id,
-        _type: 'text',
-        _label,
-        _points,
-        _text: '测试使用的文字'
-    } as TextSetting;
-    return Object.assign(setting, {
-        InGraph: settingTemplateGraph('text'),
-        InPaper: settingTemplatePaper('node')
-    });
-}
 
 export function nodeStateTemplate() {
     return {
         isSelected: false,
         isMouseOn: false,
         isDeleted: false,
-        isAdd: false,
         isInRow: false
     } as NodeState;
 }
@@ -124,7 +17,6 @@ export function linkStateTemplate() {
         isSelected: false,
         isMouseOn: false,
         isDeleted: false,
-        isAdd: false,
         isInRow: false
     } as LinkState;
 }
@@ -133,7 +25,6 @@ export function noteStateTemplate() {
     return {
         isSelected: false,
         isMouseOn: false,
-        isAdd: false,
         isLock: false,
         isDark: false,
         isDeleted: false,
@@ -142,18 +33,9 @@ export function noteStateTemplate() {
     } as NoteState
 }
 
-export function documentStateTemplate() {
-    return <DocumentState>{
-        isDeleted: false,
-        isExplode: true,
-        isSaved: false
-    };
-}
-
 export function textStateTemplate() {
     return {
         isDeleted: false,
-        isAdd: true,
         isEditing: false,
         isMouseOn: false,
         isSelected: false,

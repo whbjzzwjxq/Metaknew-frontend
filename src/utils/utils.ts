@@ -1,4 +1,4 @@
-import {CardSize, SortProp} from "@/interface/interfaceInComponent";
+import {SortProp} from "@/interface/interfaceInComponent";
 import {
     commitFileTokenRefresh,
     commitLoginDialogChange,
@@ -12,7 +12,6 @@ import store from '@/store/index'
 import Vue from "vue";
 import {InfoPart} from "@/class/info";
 import {ItemSettingPart} from "@/class/settingBase";
-import {paperSectionTemplate} from "@/interface/style/templateStylePaper";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -122,7 +121,9 @@ export function guid() {
     return (S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4());
 }
 
-export const randomNumberInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+export function randomNumber(min: number, max: number) {
+    return Math.random() * (max - min) + min
+}
 
 export const indexToColor = (index: number) => rainBowColor[index % 7];
 
@@ -301,26 +302,6 @@ export const currentTime = () => {
     let time = new Date();
     return time.getTime();
 };
-
-export const emptyContent = () => {
-    return {
-        nodes: [],
-        links: [],
-        medias: [],
-        texts: []
-    } as DocumentContent
-};
-
-export const emptyDocumentComp = () => {
-    return {
-        InGraph: {
-            SubGraph: []
-        },
-        InPaper: {
-            SubSection: [paperSectionTemplate(), paperSectionTemplate()]
-        }
-    } as DocumentComponents
-}
 
 const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];
 

@@ -94,6 +94,7 @@
     import {dispatchUserConcernQuery} from "@/store/modules/_dispatch";
     import {MediaInfoPart} from "@/class/info";
     import {mediaShowInPaperTemplate} from '@/interface/style/templateStylePaper';
+    import {commitSnackbarOn} from "@/store/modules/_mutations";
 
     export default Vue.extend({
         name: "CardPageMediaInfo",
@@ -239,7 +240,7 @@
             showDeleteIcon: function (): boolean {
                 return this.inViewBox
                     ? this.nodeIsSelf
-                    : this.dataManager.currentDocument.Conf.State.isSelf;
+                    : this.dataManager.currentDocument.isSelf;
             },
 
             //能够变成media节点:不在画布里而且画布是isSelf的
@@ -311,9 +312,12 @@
                 let status = this.media.status;
                 if (status === "success" || this.media.isRemote) {
                     mediaUpdate(this.media).then(res => {
-                        res.status === 200
-                            ? alert("保存成功")
-                            : alert("保存失败 请重试");
+                        let payload = {
+                            actionName: 'mediaUpload',
+                            color: 'success',
+                            content: '媒体文件保存成功'
+                        } as SnackBarStatePayload
+                        commitSnackbarOn(payload)
                     });
                 }
             },

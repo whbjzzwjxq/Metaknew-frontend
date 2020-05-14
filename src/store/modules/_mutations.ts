@@ -4,6 +4,7 @@ import {DocumentSelfPart, ItemSettingPart, NoteSettingPart} from "@/class/settin
 import {NoteBook} from "@/store/modules/userDataManager";
 import {LinkInfoPart, NodeInfoPart} from "@/class/info";
 import {MarkdownInputState} from "@/components/markdown/_markdownInterface";
+import {PaperRow} from "@/class/settingPaper";
 
 export const commitLoginIn = (payload: userLoginPayload) => {
     return store.commit('loginSet', payload)
@@ -69,7 +70,7 @@ export const commitInfoIdChange = (payload: { _type: string, idMap: IdMap }) => 
     return store.commit('infoIdChange', payload)
 };
 
-export const commitDocumentAdd = (payload: { document: DocumentSelfPart | DocumentSelfPart, strict?: boolean }) => {
+export const commitDocumentAdd = (payload: { document: DocumentSelfPart, strict?: boolean }) => {
     return store.commit('documentAdd', payload)
 };
 
@@ -142,6 +143,6 @@ export const commitChangePaperQueue = (payload: {on?: boolean}) => {
     return store.commit('changePaperQueue', payload)
 }
 
-export const commitChangePaperDraggingItem = (payload: {item: ItemSettingPart, row: PaperRowSetting}) => {
+export const commitChangePaperDraggingItem = (payload: {item: ItemSettingPart, row: PaperRow}) => {
     return store.commit('changePaperDraggingItem', payload)
 }

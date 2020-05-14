@@ -1,82 +1,64 @@
 import {
     nodeCtrlTemplate,
     nodeInfoTemplate,
-    nodeStateTemplate,
-    pathSettingTemplate,
 } from "@/utils/template";
-import {nodeTemplateTheme} from "@/utils/templateStandard";
 import {getIndex} from "@/utils/utils";
 import {NodeInfoPart} from "@/class/info";
+import {TreeNode} from "@/interface/interfaceTree";
+import {DocumentSelfPart, SettingPart} from "@/class/settingBase";
 
-export class PathSelfPart {
-    Conf: PathConf;
-    InfoPart: PathInfoPart;
-    protected _array: PathArray;
+interface PathMetaData {
+    isRemoteModel: boolean
+}
 
-    get depth() {
-        let max = 0;
-        this.array.map(array => {
-            array.length > max && (max = array.length)
-        });
-        return max
+interface PathSetting extends Setting {
+    _type: 'path',
+    _label: 'path',
+}
+
+interface PathState extends BaseState {
+
+}
+
+interface PathNodeBackend {
+
+}
+
+interface PathLinkBackend {
+
+}
+
+interface PathContentBackend {
+    nodes: PathNodeBackend[]
+    links: PathLinkBackend[]
+}
+
+export class PathSelfPart extends SettingPart {
+    //元数据
+    readonly MetaData: PathMetaData
+    //构成的树根
+    protected _treeNodeRoot?: TreeNode<DocumentSelfPart>
+    Setting: PathSetting
+    State: PathState
+
+    protected constructor(setting: PathSetting, state: PathState, meta: PathMetaData, treeNode?: TreeNode<DocumentSelfPart>) {
+        super(setting, state)
+        this.Setting = setting
+        this.State = state
+        this.MetaData = meta
+        this._treeNodeRoot = treeNode
     }
 
-    get breadth() {
-        return this.array.length
+    static pathSettingDefault(_id: id): PathSetting {
+        return {
+            _id,
+            _type: "path",
+            _label: "path"
+        }
     }
 
-    get array () {
-        return this._array
-    }
+    static initEmpty() {
 
-    get _id() {
-        return this.Conf._id
-    }
-
-    get root() {
-        return this.array[0][0]
-    }
-
-    constructor(conf: PathConf, _array: PathArray, info: PathInfoPart) {
-        this.InfoPart = info;
-        this.Conf = conf;
-        this._array = _array;
-    }
-
-    static emptyPathSelfPart() {
-        let _id = getIndex();
-        let conf = pathSettingTemplate(_id);
-        let subArray = [] as (PathNodeSettingPart | null)[];
-        subArray.length = 12;
-        subArray.fill(null);
-        let _array = [] as PathArray;
-        _array.length = 4;
-        _array.fill(subArray);
-        let info = PathInfoPart.emptyPathInfoPart();
-        return new PathSelfPart(conf, _array, info)
-    }
-
-    depthFirstSearch() {
-        let array = [] as PathNodeSettingPart[];
-        let search = function (node: PathNodeSettingPart | null) {
-            node !== null &&
-            node.children.map((node, index) => {
-                array.push(node);
-                search(node);
-            })
-        };
-        search(this.root);
-        return array
-    }
-
-    addLayer() {
-        this.array.push([])
-    }
-
-    decreaseLayer(index: number) {
-        let array = this.array[index];
-        let nodeList = array.filter(item => item !== null);
-        nodeList.length === 0 && this.array.splice(index, 1);
     }
 }
 
@@ -84,13 +66,13 @@ export class PathInfoPart extends NodeInfoPart {
     Info: BasePathInfo;
     Ctrl: BaseNodeCtrl;
 
-    constructor(info: BasePathInfo, ctrl: BaseNodeCtrl, isRemote: boolean) {
+    protected constructor(info: BasePathInfo, ctrl: BaseNodeCtrl, isRemote: boolean) {
         super(info, ctrl, isRemote);
         this.Info = info;
         this.Ctrl = ctrl;
     }
 
-    static emptyPathInfoPart() {
+    static initEmpty() {
         let _id = getIndex();
         let info = nodeInfoTemplate(_id, "document", "path") as BasePathInfo;
         let ctrl = nodeCtrlTemplate();
@@ -98,67 +80,38 @@ export class PathInfoPart extends NodeInfoPart {
     }
 }
 
-export class PathLinkSettingPart {
-    State: LinkState;
-    start: PathNodeSettingPart;
-    end: PathNodeSettingPart;
-    time: number;
-    animate: object;
+enum PathItemLabel {
+    'text' = 'TEXT',
+    'document' = 'DOC',
+    'path' = 'PATH',
+}
 
-    constructor(state: LinkState, start: PathNodeSettingPart, end: PathNodeSettingPart, time: number, animate: object) {
-        this.start = start;
-        this.end = end;
-        this.State = state;
-        this.time = time;
-        this.animate = animate
+interface PathNodeSetting extends Setting {
+    _type: 'path'
+    _label: PathItemLabel
+    InPath: {
+        Base: {
+            x: number,
+            y: number,
+            width: number,
+            height: number
+        }
     }
 }
 
-export class PathNodeSettingPart {
-    State: NodeState;
-    Setting: NodeSetting;
-    children: PathNodeSettingPart[];
-    parent: PathNodeSettingPart | null;
+interface PathNodeState extends BaseState {
 
-    get _id() {
-        return this.Setting._id
-    }
+}
 
-    constructor(state: NodeState, setting: NodeSetting, parent: PathNodeSettingPart | null, children?:PathNodeSettingPart[]) {
-        this.State = state;
+export class PathNodeSettingPart extends SettingPart {
+    Setting: PathNodeSetting
+    State: PathNodeState
+    boundDocument?: DocumentSelfPart
+    boundPath?: PathSelfPart
+    boundText?: string
+    protected constructor(setting: PathNodeSetting, state: PathNodeState) {
+        super(setting, state);
         this.Setting = setting;
-        children
-            ? this.children = children
-            : this.children = [];
-        this.parent = parent;
-    }
-
-    static emptyPathNodeSSettingPart() {
-        let _id = getIndex();
-        let state = nodeStateTemplate();
-        let setting = {
-            _id,
-            _type: 'node',
-            _label: 'pathNode',
-            _name: '',
-            _image: ''
-        } as NodeSetting;
-        Object.assign(setting, nodeTemplateTheme.inPath());
-        return new PathNodeSettingPart(state, setting, null)
+        this.State = state;
     }
 }
-
-export interface IndexDouble {
-    depth: number;
-    breadth: number;
-}
-
-export interface PathNodeEmpty extends IndexDouble {
-    node: null
-}
-
-export interface PathNodeExist extends IndexDouble {
-    node: PathNodeSettingPart
-}
-
-export type PathNode = PathNodeEmpty | PathNodeExist;

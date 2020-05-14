@@ -38,7 +38,7 @@ export const getManager = (_type: ItemType) =>
         ? state.mediaManager
         : state.nodeManager;
 
-const initGraph = DocumentSelfPart.emptyInit('$_-1', null, false);
+const initGraph = DocumentSelfPart.initEmpty('$_-1', null, false);
 
 declare global {
     interface DataManagerState {
@@ -178,7 +178,7 @@ const mutations = {
         let {oldId, newId} = payload;
         let oldGraph = state.documentManager[oldId];
         if (oldGraph) {
-            oldGraph.Conf._id = newId;
+            oldGraph._id = newId;
             commitDocumentAdd({document: oldGraph});
             commitDocumentRemove(oldId);
         } else {
@@ -235,7 +235,7 @@ const actions = {
         if (context.state.documentManager[_id] === undefined) {
             await gateDocumentQuery(_id).then(res => {
                 let {data} = res;
-                let {graph} = DocumentSelfPart.backendInit(data, parent);
+                let {graph} = DocumentSelfPart.initBackend(data, parent);
                 dispatchNodeQuery(graph.nodesWithoutSelf.map(item => item.Setting));
                 dispatchLinkQuery(graph.links.map(item => item.Setting));
                 dispatchMediaQuery(graph.medias.map(item => item._id));
@@ -319,7 +319,7 @@ const actions = {
                 fileToken = res.data.fileToken;
             })
                 .catch(() => {
-                    alert('暂时无法上传')
+
                 })
         }
 
@@ -402,7 +402,7 @@ const actions = {
     },
 
     async documentSave(context: Context, payload: { isDraft: boolean, isAuto: boolean }) {
-        let {state, getters} = context;
+        let {getters} = context;
         let {isDraft, isAuto} = payload;
         // 保存Link和Node
         await dispatchVisNodeCreate();
