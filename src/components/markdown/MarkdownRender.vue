@@ -1,5 +1,5 @@
 <template>
-    <div class="pa-2">
+    <div>
         <div style="height: 100%; width: 100%">
             <template v-if="!editMode">
                 <div v-html="renderResult">
@@ -11,6 +11,7 @@
                     :disabled="disabled"
                     :placeholder="placeholder"
                     :rows="rows"
+                    :value="value"
                     @focus="updateState"
                     @focusout="update"
                     @select="updateState"
@@ -18,7 +19,6 @@
                     filled
                     ref="markdownInput"
                     class="cardItem"
-                    v-model="value"
                 >
 
                 </v-textarea>
@@ -37,6 +37,7 @@
     import MarkdownIt from "markdown-it/lib";
     import {commitMarkdownState} from "@/store/modules/_mutations";
     import {MarkdownInputState} from "@/components/markdown/_markdownInterface";
+    import {throttle} from 'lodash';
 
     export default Vue.extend({
         name: "MarkdownRender",
@@ -45,7 +46,6 @@
         },
         data: function () {
             return {
-                value: '',
                 renderResult: '',
                 renderDict: {
                     'simply': markdownSimply,
@@ -58,7 +58,7 @@
             }
         },
         props: {
-            text: {
+            value: {
                 type: String,
                 default: ''
             },
@@ -97,15 +97,17 @@
             },
             editMode: function (): boolean {
                 return this.instance.editMode
-            }
+            },
+            renderHtml: function (): Function {
+                let _vm = this;
+                return throttle(function () {
+                    _vm.renderResult = _vm.renderer.render(_vm.value, {})
+                }, 1000)
+            },
         },
         methods: {
-            renderHtml: function () {
-                this.renderResult = this.renderer.render(this.value, {})
-            },
-            update: function () {
-                this.renderHtml()
-                this.$emit('update', this.value)
+            update: function ($event: string) {
+                this.$emit('update', $event)
             },
             updateState: function () {
                 //@ts-ignore
@@ -116,12 +118,14 @@
                 this.instance.editMode = !this.instance.editMode
             }
         },
-        mounted(): void {
-            this.value = this.text;
-            this.renderHtml()
-        },
         created(): void {
+            this.renderHtml()
             this.updateState()
+        },
+        watch: {
+            value: function (): void {
+                this.renderHtml()
+            }
         },
         record: {
             status: 'empty',

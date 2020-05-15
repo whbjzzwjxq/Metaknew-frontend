@@ -99,6 +99,7 @@ const routes = [
                 children: [
                     {
                         path: 'id=:id/normal',
+                        alias: 'normal',
                         name: 'paper-normal',
                         components: {
                             content: () => import('@/components/paperComponents/PaperViewBox.vue'),

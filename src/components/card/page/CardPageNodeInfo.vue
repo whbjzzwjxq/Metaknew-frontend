@@ -1,7 +1,5 @@
 <template>
-    <div
-        v-if="!loading"
-        class="unselected">
+    <div class="unselected">
         <card-sub-row :text="nameTrans[type] + '标题'" :close-able="editInPaper" v-model="settingInPaper.showTitle">
             <template v-slot:content>
                 <v-row no-gutters>
@@ -221,7 +219,7 @@
     import {LabelGroup} from "@/interface/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
     import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
-    import {dispatchMediaQuery, dispatchUserConcernQuery, dispatchUserLabelProps} from "@/store/modules/_dispatch";
+    import {dispatchUserConcernQuery, dispatchUserLabelProps} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
     import {userConcernTemplate} from "@/utils/template";
     import {MediaInfoPart, NodeInfoPart} from "@/class/info";
@@ -252,7 +250,6 @@
                 nodeLabels: availableLabel,
                 topicItems: topicItems,
                 labelItems: labelItems,
-                loading: true,
                 plusIcon: getIcon('i-edit', 'add'),
                 userConcern: userConcernTemplate(),
                 editBase: false
@@ -478,17 +475,13 @@
                 this.editBase = !this.editBase
             }
         },
-        watch: {},
+        watch: {
+
+        },
         created(): void {
-            dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
-                this.loading = false
-            });
         },
 
         mounted(): void {
-            dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
-                this.loading = false
-            });
             if (this.baseData.isRemote) {
                 dispatchUserConcernQuery([this.baseData._id]).then(() => {
                     let concern = this.userDataManager.userConcernDict[this.baseData._type][this.baseData._id];

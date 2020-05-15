@@ -36,7 +36,7 @@ export function mediaUpdate(data: MediaInfoPart) {
 
 export function mediaAppendToNode(node: QueryObject, mediaList: Array<id>) {
     return instance.request<id[]>({
-        url: '/item/node/update_media',
+        url: '/item/media/upload_to_node',
         method: 'post',
         data: {
             node: node,

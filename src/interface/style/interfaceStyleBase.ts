@@ -33,3 +33,11 @@ export function handleSettingConfAllToValue<T extends Record<string, Record<stri
     })
     return result
 }
+
+export enum SizeName {
+    XS = 'xSmall',
+    SM = 'small',
+    NO = 'normal',
+    LA = 'large',
+    XL = 'xLarge'
+}

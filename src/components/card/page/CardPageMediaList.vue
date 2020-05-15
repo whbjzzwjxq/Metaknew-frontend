@@ -10,7 +10,7 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row text="Current Media">
+        <card-sub-row text="Current Media" v-if="!isLoading">
             <template v-slot:content>
                 <div v-for="(file, index) in reRankedList" :key="index">
                     <v-row class="ma-0 justify-content-between">
@@ -42,6 +42,7 @@
     import {mediaAppendToNode} from "@/api/subgraph/media";
     import {MediaInfoPart, NodeInfoPart} from "@/class/info";
     import {MediaSettingPart} from "@/class/settingBase";
+    import {dispatchMediaQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "CardPageMediaList",
@@ -61,6 +62,7 @@
                 },
                 loading: true,
                 reRankedList: [] as MediaInfoPart[],
+                isLoading: true
             }
         },
         props: {
@@ -121,14 +123,23 @@
                 let sorter = sortCtrl(this.filterProp);
                 this.reRankedList = this.mediaList;
                 this.reRankedList.sort(sorter);
-            }
-        },
-        watch: {
-            mediaList() {
+            },
+            loadMedia: function() {
+                this.mediaIdList !== []
+                    ? dispatchMediaQuery(this.mediaIdList).then(() => {
+                        this.isLoading = false
+                    })
+                    : (this.isLoading = false)
                 this.reRankFile()
             }
         },
+        watch: {
+            mediaIdList: function(): void {
+                this.loadMedia()
+            }
+        },
         created(): void {
+            this.loadMedia()
             let fileToken = this.fileToken;
             let now = (new Date()).valueOf();
             //先判断Token情况
@@ -147,7 +158,6 @@
                 })
                     .catch()
             }
-            this.reRankedList = this.mediaList;
         },
         record: {
             status: 'done',

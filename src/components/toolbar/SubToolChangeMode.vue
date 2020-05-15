@@ -21,7 +21,8 @@
         data: function () {
             return {
                 modeIconGroup: iconMap['i-mode'],
-                itemIconGroup: iconMap['i-item']
+                itemIconGroup: iconMap['i-item'],
+                editRegex: /.*-edit/
             }
         },
         props: {},
@@ -62,6 +63,9 @@
                         payload: 'graph'
                     }
                 ]
+            },
+            editMode: function (): boolean {
+                return this.$route.name !== undefined && this.editRegex.test(this.$route.name)
             }
         },
         methods: {
@@ -69,7 +73,10 @@
                 this.$router.push({name: 'graph-' + type})
             },
             changeView(type: 'graph' | 'paper') {
-                this.$router.push({name: `${type}-normal`, params: {id: this.document._id.toString()}})
+                let mode = this.editMode
+                    ? 'normal'
+                    : 'edit'
+                this.$router.push({name: `${type}-${mode}`, params: {id: this.document._id.toString()}})
             }
         },
         record: {

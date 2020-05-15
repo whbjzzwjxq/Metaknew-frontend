@@ -28,15 +28,15 @@
                 <markdown-render
                     :edit-base="setting.editable"
                     :placeholder="placeholder"
-                    :text="value"
-                    @update-text="updateText(key, arguments[0])">
+                    v-model="text[key]"
+                >
 
                 </markdown-render>
             </v-tab-item>
 
             <v-tab-item :value="'tab-default'">
                 <markdown-render
-                    text=""
+                    value=""
                     placeholder="请在上方输入语言类型"
                     disabled>
 

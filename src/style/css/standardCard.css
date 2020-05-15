@@ -1,0 +1,44 @@
+.small-card {
+    width: 240px;
+    height: 200px;
+}
+
+.small-card-avatar {
+    width: 96px;
+    height: 96px;
+}
+
+.small-card-label {
+    width: 128px;
+    height: 96px;
+}
+
+.small-card-content {
+    width: 240px;
+    height: 60px;
+}
+
+.small-card-foot {
+    width: 240px;
+    height: 36px;
+}
+
+.xSmall-card {
+    width: 200px;
+    height: 160px;
+}
+
+.normal-card {
+    width: 360px;
+    height: 300px;
+}
+
+.large-card {
+    width: 480px;
+    height: 400px;
+}
+
+.xLarge-card {
+    width: 600px;
+    height: 500px;
+}

@@ -1,13 +1,8 @@
 import {Point, RectByPoint} from "@/class/geometric";
 import {IndexedInfo} from "@/api/search/search";
 import {VirtualNodeBase} from "@/interface/interfaceTree";
-import {
-    DocumentSelfPart,
-    ItemSettingPart,
-    LinkSettingPart,
-    MediaSettingPart,
-    NodeSettingPart
-} from "@/class/settingBase";
+import {DocumentSelfPart, LinkSettingPart, MediaSettingPart, NodeSettingPart} from "@/class/settingBase";
+import {SizeName} from "@/interface/style/interfaceStyleBase";
 
 export type LabelExistProp = 'Info' | 'Ctrl' | 'UserConcern'
 
@@ -132,7 +127,21 @@ export function getCardSize(props: {large?: boolean, xLarge?: boolean, small?: b
     } else if (props.xSmall) {
         return {width: 160, height: 120}
     } else {
-        return {width: 240, height: 180}
+        return {width: 240, height: 200}
+    }
+}
+
+export function getSizeName(props: {large?: boolean, xLarge?: boolean, small?: boolean, xSmall?: boolean}): SizeName {
+    if (props.large) {
+        return SizeName.LA
+    } else if (props.xLarge) {
+        return SizeName.XL
+    } else if (props.small) {
+        return SizeName.SM
+    } else if (props.xSmall) {
+        return SizeName.XS
+    } else {
+        return SizeName.NO
     }
 }
 

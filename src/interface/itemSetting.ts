@@ -37,10 +37,7 @@ declare global {
         _type: DocumentItemType
         _isMain: boolean
         InGraph: SettingGroup
-        InPaper: {
-            Base: BaseSizeInPaper,
-            [prop: string]: SettingComponent
-        }
+        InPaper: ItemStyleSettingPaper
     }
 
     type StateKeyBase = keyof DocumentItemState

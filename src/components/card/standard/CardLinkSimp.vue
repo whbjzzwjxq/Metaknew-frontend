@@ -20,7 +20,7 @@
             <slot name="content" :setting="setting" :state="state">
 
             </slot>
-            <markdown-render :text="info.description" v-if="!notRenderDescription">
+            <markdown-render v-model="info.description" v-if="!notRenderDescription">
 
             </markdown-render>
         </v-card-text>
@@ -98,7 +98,7 @@
         },
         computed: {
             name: function (): string {
-                return this.setting._name
+                return this.setting._start._name + '->' + this.setting._end._name
             },
             type: function (): string {
                 return this.setting._type

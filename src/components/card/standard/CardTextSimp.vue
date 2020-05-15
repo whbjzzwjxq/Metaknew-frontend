@@ -1,6 +1,6 @@
 <template>
     <v-card :width="cardSize.width" :height="cardSize.height" flat>
-        <markdown-render :text="text" class="pa-2">
+        <markdown-render v-model="text" class="pa-2">
 
         </markdown-render>
     </v-card>

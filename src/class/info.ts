@@ -380,6 +380,7 @@ export class MediaInfoPart extends InfoPart {
 
     synchronizationAll() {
         this.allSettingItem.map(node => {
+            node.updateCrucialProp('_id', this.Info.id);
             node.updateCrucialProp("_src", this.Ctrl.FileName);
             node.updateCrucialProp("_name", this.Info.Name);
             node.updateCrucialProp('_label', this.Info.PrimaryLabel)

@@ -33,7 +33,7 @@
                     graph: {
                         name: getIcon('i-item', 'graph'),
                         text: 'New Document',
-                        isBlock: false,
+                        isBlock: true,
                         _func: this.addDocument
                     },
                     fromCloud: {

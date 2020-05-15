@@ -10,9 +10,9 @@
                 </sub-tool-style>
             </v-col>
             <v-col cols="2" class="pa-0 ma-0">
-                <sub-tool-path :edit-mode="true" @path-open-current="openCurrent">
+                <sub-tool-change-mode>
 
-                </sub-tool-path>
+                </sub-tool-change-mode>
             </v-col>
             <v-col cols="2" class="pa-0 ma-0">
                 <sub-tool-svg>
@@ -42,6 +42,7 @@
     import SubToolSvg from "@/components/toolbar/SubToolSvg.vue";
     import SubToolDocSave from "@/components/toolbar/SubToolDocSave.vue";
     import SubToolSelectionMethod from "@/components/toolbar/SubToolSelectionMethod.vue";
+    import SubToolChangeMode from "@/components/toolbar/SubToolChangeMode.vue";
     import {DocumentSelfPart} from "@/class/settingBase";
     import {commitBottomDynamicBarChange} from "@/store/modules/_mutations";
 
@@ -54,7 +55,8 @@
             SubToolPath,
             SubToolSvg,
             SubToolDocSave,
-            SubToolSelectionMethod
+            SubToolSelectionMethod,
+            SubToolChangeMode
         },
         data: function () {
             return {}

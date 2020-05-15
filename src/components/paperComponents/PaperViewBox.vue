@@ -61,7 +61,7 @@
                     @drag-end="dragEndCard"
                 >
                     <template v-slot:content="{item}">
-                        <card-simp-all :item="item">
+                        <card-simp-all :item="item" small>
 
                         </card-simp-all>
                     </template>

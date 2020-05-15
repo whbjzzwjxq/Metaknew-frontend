@@ -1,13 +1,13 @@
 <template>
-    <v-card :width="cardSize.width" :height="cardSize.height" flat>
+    <v-card :class="`${className}-card`" flat>
         <v-card-title class="pa-2 pb-0">
-            <v-row no-gutters>
-                <v-col class="pa-2 pb-0" cols="5">
+            <div class="d-flex flex-row">
+                <div :class="['pa-2', `${className}-card-avatar`]">
                     <node-avatar :source-url="mainImage">
 
                     </node-avatar>
-                </v-col>
-                <v-col class="pa-2 pb-0" cols="7">
+                </div>
+                <div :class="['pa-2', `${className}-card-label`]">
                     <v-text-field
                         v-model="name"
                         label="Name"
@@ -22,20 +22,20 @@
                         class="mt-n4">
 
                     </p-label-selector>
-                </v-col>
-            </v-row>
+                </div>
+            </div>
         </v-card-title>
-        <v-card-text class="pa-2 pb-0">
-            <slot name="content" :setting="setting" :state="state">
+        <v-card-text :class="['pa-2 py-0', `${className}-card-content`]" style="overflow: hidden">
+            <slot name="content" :setting="setting" :state="state" class="pa-2 py-0">
 
             </slot>
-            <markdown-render :text="info.description" v-if="!notRenderDescription">
+            <markdown-render v-model="info.description" v-if="!notRenderDescription" class="pa-2 py-0">
 
             </markdown-render>
         </v-card-text>
-        <v-card-actions class="pa-2 pb-0" style="position: absolute; bottom: 4px">
+        <v-card-actions :class="['px-4 py-1', `${className}-card-foot`]">
             <div class="flex-shrink-1">
-                <icon-group :icon-list="iconList" small v-if="!notRenderDefaultIcon">
+                <icon-group :icon-list="iconList" v-bind="$props" v-if="!notRenderDefaultIcon">
 
                 </icon-group>
             </div>
@@ -52,11 +52,11 @@
     import PLabelSelector from "@/components/PLabelSelector.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
-    import {getSrc} from "@/utils/utils";
     import {getIcon} from "@/utils/icon";
     import {commitItemChange} from "@/store/modules/_mutations";
-    import {CardSize, getCardSize} from "@/interface/interfaceInComponent";
+    import {CardSize, getCardSize, getSizeName} from "@/interface/interfaceInComponent";
     import {NodeInfoPart} from "@/class/info";
+    import {SizeName} from "@/interface/style/interfaceStyleBase";
     //todo mixin 估计Vue3才解决了 笑死
 
     export default Vue.extend({
@@ -110,7 +110,7 @@
         },
         computed: {
             mainImage: function (): string {
-                return getSrc(this.setting._image)
+                return this.setting._image
             },
             name: function (): string {
                 return this.setting._name
@@ -137,6 +137,9 @@
             },
             info: function (): NodeInfoPart {
                 return this.$store.state.dataManager.nodeManager[this.setting._id]
+            },
+            className: function (): SizeName {
+                return getSizeName(this.$props)
             }
         },
         methods: {
@@ -152,5 +155,5 @@
 </script>
 
 <style scoped>
-
+    @import "../../../style/css/standardCard.css";
 </style>

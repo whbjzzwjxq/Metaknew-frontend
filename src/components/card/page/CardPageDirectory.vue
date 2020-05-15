@@ -214,7 +214,7 @@
                     type: 'document',
                     label: document._label,
                     name: document._name,
-                    icon: getIcon('i-item', document._label),
+                    icon: getIcon('i-item', 'graph'),
                     deletable: !document.isRoot,
                     editable: document.isSelf,
                     children: [], //子节点和叶子节点
