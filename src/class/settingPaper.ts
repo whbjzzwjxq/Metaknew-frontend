@@ -1,10 +1,11 @@
 import {ItemSettingPart} from "@/class/settingBase";
 
-const setNumberInRange = (num: number, min: number, max: number) => num < min
+const setNumberInRange = (num: number, min: number, max: number) =>
+    num < min
     ? min
     : num > max
         ? max
-        : min
+        : num
 
 abstract class PaperOrderObject<T, C> {
     _pos: PaperItemPosition
@@ -44,7 +45,7 @@ abstract class PaperOrderObject<T, C> {
     }
 
     set width(value: number) {
-        this._pos.height = setNumberInRange(value, this.classSelf.minWidth, this.classSelf.minWidth)
+        this._pos.width = setNumberInRange(value, this.classSelf.minWidth, this.classSelf.maxWidth)
     }
 
     get height() {
@@ -52,7 +53,7 @@ abstract class PaperOrderObject<T, C> {
     }
 
     set height(value: number) {
-        this._pos.height = setNumberInRange(value, this.classSelf.minHeight, this.classSelf.minHeight)
+        this._pos.height = setNumberInRange(value, this.classSelf.minHeight, this.classSelf.maxHeight)
     }
 
     get children(): C[] {
@@ -77,7 +78,7 @@ export interface PaperRowBackend {
 export class PaperRow extends PaperOrderObject<PaperSection, ItemSettingPart> {
     //列级别通过数组排序控制位置
     Setting: PaperRowCtrlSetting
-    static minHeight: number = 120
+    static minHeight: number = 120``
     static maxHeight: number = 960
     static minWidth: number = 120
     static maxWidth: number = 1440
