@@ -432,7 +432,7 @@ export const linkSettingGroupInGraph: SettingConfAll = {
     }
 };
 
-export const mediaSettingInPaper = () => {
+export const mediaSettingInGraph = () => {
     let result = {
         Base: BaseSettingGroup(),
         Border: BorderSettingGroup(),
@@ -519,7 +519,7 @@ export const typeSettingDictGraph: Record<DocumentItemType, SettingConfAll> = {
     'node': nodeSettingGroupInGraph(),
     'document': nodeSettingGroupInGraph(),
     'link': linkSettingGroupInGraph,
-    'media': mediaSettingInPaper(),
+    'media': mediaSettingInGraph(),
     'text': textSettingGroupInGraph(),
     'note': noteSettingGroupInGraph(),
 };

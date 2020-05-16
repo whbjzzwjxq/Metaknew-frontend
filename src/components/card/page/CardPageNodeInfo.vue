@@ -328,7 +328,8 @@
                     return this.info.Name
                 },
                 set(value: string) {
-                    this.baseData.changeName(value)
+                    let node = this.baseData as NodeInfoPart;
+                    node.changeName(value)
                 }
             },
 
@@ -348,7 +349,8 @@
                     return this.baseData._label
                 },
                 set(value: string) {
-                    this.baseData.changePrimaryLabel(value)
+                    let node = this.baseData as NodeInfoPart;
+                    node.changePrimaryLabel(value)
                 }
             },
 

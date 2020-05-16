@@ -288,7 +288,7 @@ const actions = {
     // 请求Media
     mediaQuery(context: Context, payload: Array<id>) {
         payload || (payload = []);
-        let noCacheMedia = payload.filter(_id => !state.nodeManager[_id]);
+        let noCacheMedia = payload.filter(_id => !state.mediaManager[_id]);
 
         if (noCacheMedia.length > 0) {
             noCacheMedia.map(_id => {

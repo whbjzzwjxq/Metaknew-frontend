@@ -499,6 +499,7 @@
                     return {
                         ...media.Setting,
                         InGraph: {
+                            ...media.Setting.InGraph,
                             Base
                         }
                     } as MediaSetting

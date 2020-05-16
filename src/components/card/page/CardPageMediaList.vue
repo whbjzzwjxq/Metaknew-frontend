@@ -12,11 +12,11 @@
 
         <card-sub-row text="Current Media" v-if="!isLoading">
             <template v-slot:content>
-                <div v-for="(file, index) in reRankedList" :key="index">
+                <div v-for="(media, index) in reRankedList" :key="index">
                     <v-row class="ma-0 justify-content-between">
                         <keep-alive>
                             <card-page-media-info
-                                :media="file"
+                                :media="media"
                                 :nodeIsSelf="nodeIsSelf"
                                 :width="width"
                                 @add-media-to-graph="addMediaToGraph">

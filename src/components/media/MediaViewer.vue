@@ -4,8 +4,7 @@
         :max-height="maxHeight"
         flat
         tile
-        style="overflow: hidden"
-        class="test">
+    >
         <div :style="floatStyle" v-show="showFloat">
             <slot name="float">
 

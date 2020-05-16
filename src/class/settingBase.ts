@@ -24,7 +24,7 @@ import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
 import {nodeSettingGroupInPaper, settingTemplatePaper} from "@/interface/style/templateStylePaper";
 import {PaperComponent} from "@/class/settingPaper";
 import {
-    linkSettingGroupInGraph, mediaSettingInPaper,
+    linkSettingGroupInGraph, mediaSettingInGraph,
     nodeSettingGroupInGraph,
     noteSettingGroupInGraph,
     textSettingGroupInGraph
@@ -274,7 +274,7 @@ export class MediaSettingPart extends ItemSettingPart {
         let {_src, _label} = payload;
         let setting = {
             ...payload,
-            InGraph: handleSettingConfAllToValue(mediaSettingInPaper()),
+            InGraph: handleSettingConfAllToValue(mediaSettingInGraph()),
             InPaper: settingTemplatePaper('media')
         } as MediaSetting;
         if (_label === 'image') {
@@ -339,8 +339,8 @@ export class MediaSettingPart extends ItemSettingPart {
 
     updateCrucialProp(prop: keyof MediaSetting, value: any) {
         crucialRegex.test(prop) && (this.Setting = {
-            [prop]: value,
-            ...this.Setting
+            ...this.Setting,
+            [prop]: value
         });
     }
 }
@@ -411,8 +411,8 @@ export class LinkSettingPart extends ItemSettingPart {
 
     updateCrucialProp(prop: keyof MediaSetting, value: any) {
         crucialRegex.test(prop) && (this.Setting = {
-            [prop]: value,
-            ...this.Setting
+            ...this.Setting,
+            [prop]: value
         });
     }
 
@@ -449,18 +449,18 @@ export class LinkSettingPart extends ItemSettingPart {
     deepCloneSelf(): LinkSettingPart {
         let state = deepClone(this.State);
         let setting = {
+            ...deepClone(this.Setting, ['_start', '_end']),
             _start: this.Setting._start,
-            _end: this.Setting._end,
-            ...deepClone(this.Setting, ['_start', '_end'])
+            _end: this.Setting._end
         };
         return new LinkSettingPart(setting, state, this.parent)
     }
 
     static linkSettingDefault(payload: LinkInitPayload): LinkSetting {
         return {
+            ...payload,
             InGraph: handleSettingConfAllToValue(linkSettingGroupInGraph),
             InPaper: handleSettingConfAllToValue(linkSettingGroupInGraph),
-            ...payload
         }
     }
 

@@ -196,7 +196,6 @@ export class NodeInfoPart extends InfoPart {
     synchronizationAll() {
         // 同步所有属性到Setting
         this.allSettingItem.map(node => {
-            node.updateCrucialProp('_id', this.Info.id);
             node.updateCrucialProp('_type', this.Info.type);
             node.updateCrucialProp("_label", this.Info.PrimaryLabel);
             node.updateCrucialProp("_name", this.Info.Name);
@@ -273,7 +272,7 @@ export class LinkInfoPart extends InfoPart {
         }
     }
 
-    synchronizationSource(prop: '_label', value: string) {
+    synchronizationSource(prop: '_id' | '_label', value: string) {
         this.allSettingItem.map(link => link.updateCrucialProp(prop, value));
         this.isEdit = true
     }
@@ -342,6 +341,7 @@ export class MediaInfoPart extends InfoPart {
     }
 
     static emptyMediaInfo(_id: id, file?: File, commit: boolean = true, remoteNotFound: boolean = false) {
+        console.log(file)
         let item = new MediaInfoPart(mediaInfoTemplate(_id, file), mediaCtrlTemplate(file), remoteNotFound, file);
         commit && commitInfoAdd({item, strict: false});
         return item

@@ -10,7 +10,7 @@
     import Vue from 'vue'
     import SubToolBlock from "@/components/toolbar/SubToolBlock.vue";
     import IconGroup from "@/components/IconGroup.vue";
-    import {iconMap} from "@/utils/icon";
+    import {getIcon, iconMap} from "@/utils/icon";
     import {DocumentSelfPart} from "@/class/settingBase";
     export default Vue.extend({
         name: "SubToolChangeMode",
@@ -45,12 +45,6 @@
                         payload: 'geo'
                     },
                     {
-                        name: this.modeIconGroup.edit,
-                        toolTip: '切换到编辑模式',
-                        _func: this.changeMode,
-                        payload: 'edit'
-                    },
-                    {
                         name: this.itemIconGroup.paper,
                         toolTip: '切换到Paper模式',
                         _func: this.changeView,
@@ -61,22 +55,38 @@
                         toolTip: '切换到Graph模式',
                         _func: this.changeView,
                         payload: 'graph'
-                    }
+                    },
+                    {
+                        name: getIcon('i-edit-able', this.editMode),
+                        toolTip: this.editMode ? '切换到普通模式' : '切换到编辑模式',
+                        _func: this.changeEdit,
+                    },
                 ]
             },
             editMode: function (): boolean {
                 return this.$route.name !== undefined && this.editRegex.test(this.$route.name)
+            },
+            viewMode: function (): string {
+                return this.$route.name === undefined
+                    ? 'graph'
+                    : this.$route.name.split('-')[0]
             }
         },
         methods: {
-            changeMode(type: 'normal' | 'geo' | 'timeline' | 'edit') {
+            changeMode(type: 'normal' | 'geo' | 'timeline') {
                 this.$router.push({name: 'graph-' + type})
             },
             changeView(type: 'graph' | 'paper') {
                 let mode = this.editMode
+                    ? 'edit'
+                    : 'normal'
+                this.$router.push({name: `${type}-${mode}`, params: {id: this.document._id.toString()}})
+            },
+            changeEdit() {
+                let mode = this.editMode
                     ? 'normal'
                     : 'edit'
-                this.$router.push({name: `${type}-${mode}`, params: {id: this.document._id.toString()}})
+                this.$router.push({name: `${this.viewMode}-${mode}`, params: {id: this.document._id.toString()}})
             }
         },
         record: {

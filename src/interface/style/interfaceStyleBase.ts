@@ -27,8 +27,8 @@ export function handleSettingConfAllToValue<T extends Record<string, Record<stri
             result2[key2] = value.default
         })
         result = {
+            ...result,
             [prop]: result2,
-            ...result
         }
     })
     return result

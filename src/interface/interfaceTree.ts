@@ -6,8 +6,8 @@ import {DocumentSelfPart} from "@/class/settingBase";
 export type SortFunction<L> = (a: L, b: L) => number
 
 //虚拟化函数
-export type VirtualFunc<T, L extends VirtualNodeBase<T, L>, P> = (parent: ParentTreeNode<T>, node: TreeNode<T>, parentItem: VirtualNodeBase<T, L> | null, payload: P)
-    => VirtualNodeContent<T, L>
+export type VirtualFunc<T, L extends VirtualNodeBase<T, L>, P> =
+    (parent: ParentTreeNode<T>, node: TreeNode<T>, parentItem: VirtualNodeBase<T, L> | null, payload: P) => VirtualNodeContent<T, L>
 
 //父亲节点的表示
 export type ParentTreeNode<T> = TreeNode<T> | null
@@ -163,6 +163,13 @@ export class TreeNode<T> {
     }
 }
 
+const updater = {
+    set: function (object: any, prop: string | number, value: any) {
+        object[prop] = value
+        return true
+    }
+} as ProxyHandler<any>
+
 export class VirtualTree<T, L extends VirtualNodeBase<T, L>, P> {
     //T: TreeNode S:子节点实际类型 P: payload类型
     readonly _name: string //名字 不能够重复
@@ -196,10 +203,10 @@ export class VirtualTree<T, L extends VirtualNodeBase<T, L>, P> {
     //节点初始化
     protected initNode(parent: ParentTreeNode<T>, node: TreeNode<T>, parentItem: VirtualNodeBase<T, L> | null): L {
         return {
+            ...this._buildFunc(parent, node, parentItem, this._payload),
             _parent: parentItem,
             _origin: node,
-            _children: [],
-            ...this._buildFunc(parent, node, parentItem, this._payload)
+            _children: []
         } as unknown as L
     }
 
