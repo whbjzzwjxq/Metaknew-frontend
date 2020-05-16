@@ -78,7 +78,7 @@ export interface PaperRowBackend {
 export class PaperRow extends PaperOrderObject<PaperSection, ItemSettingPart> {
     //列级别通过数组排序控制位置
     Setting: PaperRowCtrlSetting
-    static minHeight: number = 120``
+    static minHeight: number = 120
     static maxHeight: number = 960
     static minWidth: number = 120
     static maxWidth: number = 1440

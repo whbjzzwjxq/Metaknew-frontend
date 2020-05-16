@@ -90,7 +90,6 @@
     import CardSimpAll from "@/components/card/standard/CardSimpAll.vue";
     import CardPaperAll from "@/components/paperComponents/CardPaperAll.vue";
     import PaperRowRender from "@/components/paperComponents/PaperRowRender.vue";
-    import {getIcon} from "@/utils/icon";
     import {commitChangePaperDraggingItem} from "@/store/modules/_mutations";
     import {DragEventWithTarget} from "@/interface/interfaceInComponent";
     import {PaperRow, PaperSection} from "@/class/settingPaper";
@@ -180,40 +179,6 @@
             },
             sectionList: function (): PaperSection[] {
                 return this.document.CompInPaper.Sections.children
-            },
-            rowIconList: function (): IconItem[] {
-                return [
-                    {
-                        name: getIcon('i-arrow-double', 'up'),
-                        _isTrigger: true,
-                        _eventName: 'arrow-double-up',
-                        toolTip: '向上移动到顶端'
-                    },
-                    {
-                        name: getIcon('i-arrow', 'up'),
-                        _isTrigger: true,
-                        _eventName: 'arrow-up',
-                        toolTip: '向上移动一行'
-                    },
-                    {
-                        name: getIcon('i-arrow', 'down'),
-                        _isTrigger: true,
-                        _eventName: 'arrow-down',
-                        toolTip: '向下移动一行'
-                    },
-                    {
-                        name: getIcon('i-arrow-double', 'down'),
-                        _isTrigger: true,
-                        _eventName: 'arrow-double-down',
-                        toolTip: '向下移动到低端'
-                    },
-                    {
-                        name: getIcon('i-edit', 'delete'),
-                        _isTrigger: true,
-                        _eventName: 'delete',
-                        toolTip: '删除该行'
-                    },
-                ]
             },
 
             floatBarStyle: function (): CSSProp {

@@ -9,7 +9,7 @@ import {
     findItem,
     frontendIdRegex,
     getCookie,
-    getIndex
+    getIndex, getSrc
 } from "@/utils/utils";
 import {commitDocumentAdd, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
 import {
@@ -270,7 +270,6 @@ export class MediaSettingPart extends ItemSettingPart {
     }
 
     static mediaSettingDefault(payload: MediaInitPayload) {
-        //todo 改写
         let {_src, _label} = payload;
         let setting = {
             ...payload,
@@ -279,21 +278,10 @@ export class MediaSettingPart extends ItemSettingPart {
         } as MediaSetting;
         if (_label === 'image') {
             let image = new Image();
-            image.src = _src;
-            let checkLoad = function () {
-                if (image.width > 0 || image.height > 0) {
-                    setting.InGraph.Base.size = image.width;
-                    setting.InGraph.Base.scaleX = image.height / image.width;
-                    cancelAnimationFrame(query)
-                }
-            };
-            let query = requestAnimationFrame(checkLoad);
-            image.onload = function () {
-                setting.InGraph.Base.size = image.width;
+            image.addEventListener('load', function () {
                 setting.InGraph.Base.scaleX = image.height / image.width;
-                cancelAnimationFrame(query)
-            };
-            checkLoad()
+            }, false)
+            image.src = getSrc(_src);
         }
         if (_label === 'pdf') {
             let loadingTask = PDFJS.getDocument(_src);

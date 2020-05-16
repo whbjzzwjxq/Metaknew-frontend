@@ -75,11 +75,11 @@
         </rect-container>
 
         <graph-node-button
-            v-for="(node, index) in renderButtons"
+            v-for="(node, index) in renderNodeButtons"
             :key="index"
             :node-setting="getTargetInfo(node)"
             :node="node"
-            :hide="!(node.State.isMouseOn && showNode[index])"
+            :hide="!(node.State.isMouseOn && showNode[index] && realScale >= 0.4)"
             @mouseenter.native="mouseEnter(node, index)"
             @mouseleave.native="mouseLeave(node)"
             @add-link="addLink(node)"
@@ -94,8 +94,6 @@
             :setting="mediaRewriteSettingList[index]"
             :state="media.State"
             :position="mediaLocation[index]"
-            :scale="realScale"
-            :index="index"
             @mouseenter.native="mouseEnter(media)"
             @mouseleave.native="mouseLeave(media)"
             @mousedown.native="dragStart"
@@ -103,10 +101,24 @@
             @mouseup.native="dragEnd(media, $event)"
             @dblclick.native.stop="dbClickNode(media)"
             @add-link="addLink(media)"
-            @update-size="updateSize"
+            @update-size="updateSize(arguments[0], arguments[1], media.Setting)"
         >
 
         </graph-media>
+
+        <graph-media-button
+            v-for="(media, index) in renderMediaButtons"
+            :key="'media-button' + index"
+            :media-setting="getTargetInfo(media)"
+            :media="media"
+            :hide="!(media.State.isMouseOn && showMedia[index] && realScale >= 0.4)"
+            @mouseenter.native="mouseEnter(media, index)"
+            @mouseleave.native="mouseLeave(media)"
+            @add-link="addLink(media)"
+            @update-size="updateSize(arguments[0], arguments[1], media.Setting)"
+            >
+
+        </graph-media-button>
 
         <graph-text
             v-for="(text, index) in texts"
@@ -193,6 +205,7 @@
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
     import GraphText from "@/components/graphComponents/GraphText.vue";
+    import GraphMediaButton from "@/components/graphComponents/GraphMediaButton.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {isLinkSetting, isMediaSetting, isNodeSettingPart, isVisAreaSetting, isVisNodeSetting} from "@/utils/typeCheck";
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
@@ -212,6 +225,7 @@
             RectContainer,
             GraphNote,
             GraphText,
+            GraphMediaButton
         },
         data() {
             return {
@@ -426,9 +440,15 @@
             },
 
             //渲染按钮
-            renderButtons: function (): NodeSettingPart[] {
+            renderNodeButtons: function (): NodeSettingPart[] {
                 return this.editMode
                     ? this.nodes
+                    : []
+            },
+
+            renderMediaButtons: function (): MediaSettingPart[] {
+                return this.editMode
+                    ? this.medias
                     : []
             },
 
@@ -489,17 +509,17 @@
 
             mediaRewriteSettingList: function (): MediaSetting[] {
                 return this.medias.map((media) => {
-                    let setting = media.StyleInGraph;
-                    let size = (setting.Base.size) * this.realScale;
+                    let {InGraph} = media.Setting;
+                    let size = (InGraph.Base.size) * this.realScale;
                     size <= 50 && (size = 50);
                     let Base = {
-                        ...setting.Base,
+                        ...InGraph.Base,
                         size
                     } as BaseSizeInGraph;
                     return {
                         ...media.Setting,
                         InGraph: {
-                            ...media.Setting.InGraph,
+                            ...InGraph,
                             Base
                         }
                     } as MediaSetting
@@ -650,7 +670,7 @@
                         y,
                         show: this.showNode[index] && node.StyleInGraph.Show.showAll,
                         isSelected: node.State.isSelected,
-                        isDeleted: node.isDeleted
+                        isDeleted: node.isDeleted,
                     }
                 });
             },
@@ -671,7 +691,7 @@
                         y: realY,
                         show: this.showMedia[index],
                         isSelected: media.State.isSelected,
-                        isDeleted: media.isDeleted
+                        isDeleted: media.isDeleted,
                     }
                 })
             },
@@ -1013,16 +1033,22 @@
                 // 视觉上的更新尺寸start, end
                 let scale = this.realScale;
                 // 更新起始点
-                setting.InGraph.Base.x += start.x / (this.containerRect.width * scale);
-                setting.InGraph.Base.y += start.y / (this.containerRect.height * scale);
+                let x = setting.InGraph.Base.x + start.x / (this.containerRect.width * scale);
+                let y = setting.InGraph.Base.y + start.y / (this.containerRect.height * scale);
                 //更新长宽
                 let width = setting.InGraph.Base.size;
                 let height = setting.InGraph.Base.scaleX * width;
                 let delta = getPoint(end).decrease(start).divide(scale);
                 width += delta.x;
                 height += delta.y;
-                setting.InGraph.Base.scaleX = height / width;
-                setting.InGraph.Base.size = width;
+                let scaleX = height / width;
+                let size = width;
+                setting.InGraph.Base = {
+                    x,
+                    y,
+                    scaleX,
+                    size
+                }
             },
 
             getItemList(_type: DocumentItemType) {
@@ -1074,6 +1100,11 @@
             //显示节点或者关系卡片
             cardOn(node: NodeSettingPart | LinkSettingPart, location: PointObject) {
 
+            },
+
+            showButtonMedia(index: number) {
+                let media = this.medias[index]
+                return this.showMedia[index] && this.editMode && this.mediaRewriteSettingList[index].InGraph.Base.size > 100 && media.State.isMouseOn
             }
         },
 

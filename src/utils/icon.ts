@@ -24,7 +24,6 @@ declare global {
         //提示
         toolTip?: string,
         toolTipOn?: boolean,
-        [prop: string]: any
     }
 }
 

@@ -312,12 +312,14 @@ export class MediaInfoPart extends InfoPart {
         return this.Info.type
     }
 
-    get realSrc() {
-        return getSrc(this.Ctrl.FileName)
+    get _name() {
+        return this.Info.Name
     }
 
     get fileName() {
-        return this.Ctrl.FileName
+        return this.currentUrl !== ''
+            ? this.currentUrl
+            : this.Ctrl.FileName
     }
 
     static statusDict: Record<MediaStatus, string> = {
@@ -341,7 +343,6 @@ export class MediaInfoPart extends InfoPart {
     }
 
     static emptyMediaInfo(_id: id, file?: File, commit: boolean = true, remoteNotFound: boolean = false) {
-        console.log(file)
         let item = new MediaInfoPart(mediaInfoTemplate(_id, file), mediaCtrlTemplate(file), remoteNotFound, file);
         commit && commitInfoAdd({item, strict: false});
         return item

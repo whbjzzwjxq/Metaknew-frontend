@@ -25,7 +25,7 @@
         </media-viewer>
         <field-title
             :edit-mode="editMode"
-            :text="media.Info.Name"
+            :text="media._name"
             @update-text="updateName"
             v-show="showText"
             class="pa-4"
@@ -170,9 +170,6 @@
 
         },
         computed: {
-            realSrc: function (): string {
-                return this.media.realSrc
-            },
             info: function (): BaseMediaInfo {
                 return this.media.Info;
             },
@@ -259,7 +256,7 @@
                     {name: sizeIconGroup.three, _func: vm.oneThird, render: vm.inViewBox, toolTip: '缩放到三分之一'},
                     {name: sizeIconGroup.two, _func: vm.half, render: vm.inViewBox, toolTip: '缩放到二分之一'},
                     {name: sizeIconGroup.double, _func: vm.double, render: vm.inViewBox, toolTip: '放大到两倍'},
-                    {name: getIcon('i-item', 'link'), _func: vm.addLink, render: vm.inViewBox},
+                    {name: getIcon('i-item', 'link'), _func: vm.addLink, render: vm.inViewBox, toolTip: '添加关系'},
                     {name: "", _func: vm.doNothing},
                     {name: "mdi-magnify", _func: vm.dialogDetailWatch},
                     {name: getIcon("i-arrow-double", vm.detailOn), _func: vm.changeDetail},

@@ -7,16 +7,16 @@
         expand
     >
         <template v-slot:content>
-            <card-page-media-info
-                :media="mediaInfo"
+            <media-viewer
+                :label="setting._label"
+                :max-height="containerRect.height"
+                :src="setting._src"
                 :width="containerRect.width"
-                :height="containerRect.height"
-                @media-resize="updateSizeByNumber"
-                @add-link="addLink"
-                in-view-box
+                v-show="setting.InGraph.Show.showAll"
             >
 
-            </card-page-media-info>
+            </media-viewer>
+            <p class="text-center title" v-show="showTitle"> {{ setting._name }}</p>
         </template>
     </rect-container>
 </template>
@@ -24,15 +24,18 @@
 <script lang="ts">
     import Vue from 'vue'
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {getPostRectFromBase, Point, RectByPoint} from "@/class/geometric";
     import RectContainer from "@/components/container/RectContainer.vue";
-    import {MediaInfoPart} from "@/class/info";
+    import IconGroup from "@/components/IconGroup.vue";
+    import MediaViewer from "@/components/media/MediaViewer.vue";
+    import {RectByPoint} from "@/class/geometric";
 
     export default Vue.extend({
         name: "GraphMedia",
         components: {
             CardPageMediaInfo,
-            RectContainer
+            RectContainer,
+            IconGroup,
+            MediaViewer
         },
         data() {
             return {}
@@ -50,21 +53,10 @@
                 required: true
             },
 
-            //缩放情况
-            scale: {
-                type: Number as () => number,
-                default: 1
-            },
-
-            index: {
-                type: Number as () => number,
-                required: true
-            },
-
             position: {
                 type: Object as () => RectByPoint,
                 required: true
-            }
+            },
         },
         computed: {
             containerRect: function (): AreaRect {
@@ -79,27 +71,16 @@
                     'top': this.containerRect.y + 'px',
                 }
             },
-            mediaInfo: function (): MediaInfoPart {
-                return this.$store.state.dataManager.mediaManager[this.setting._id]
+
+            showTitle: function (): boolean {
+                let {showAll, showName} = this.setting.InGraph.Show
+                return showAll && showName && !this.state.isMouseOn
             }
         },
         methods: {
             updateSize(start: PointMixed, end: PointMixed) {
-                this.$emit('update-size', start, end, this.setting)
+                this.$emit('update-size', start, end)
             },
-
-            updateSizeByNumber(newWidth: number): void {
-                let {width, height} = this.containerRect;
-                // 成比例更新
-                let x = newWidth - width;
-                let y = this.setting.InGraph.Base.scaleX * newWidth - height;
-                let delta = new Point(x, y).multi(0.5);
-                this.updateSize(delta.copy().multi(-1), delta);
-            },
-
-            addLink() {
-                this.$emit('add-link')
-            }
         },
         watch: {},
         created(): void {
