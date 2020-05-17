@@ -2,12 +2,9 @@
 
 //排序用函数
 import {DocumentSelfPart} from "@/class/settingBase";
+import {isObjectCallable} from "@/utils/typeCheck";
 
 export type SortFunction<L> = (a: L, b: L) => number
-
-//虚拟化函数
-export type VirtualFunc<T, L extends VirtualNodeBase<T, L>, P> =
-    (parent: ParentTreeNode<T>, node: TreeNode<T>, parentItem: VirtualNodeBase<T, L> | null, payload: P) => VirtualNodeContent<T, L>
 
 //父亲节点的表示
 export type ParentTreeNode<T> = TreeNode<T> | null
@@ -21,6 +18,9 @@ export interface VirtualNodeBase<T, L extends VirtualNodeBase<T, L>> {
 }
 
 export type VirtualNodeContent<T, L extends VirtualNodeBase<T, L>> = Omit<L, keyof VirtualNodeBase<T, L>>
+
+type VirtualValue<T, P> = (source: T, payload: P) => any
+export type VirtualFunc<T, P, L extends VirtualNodeBase<T, L>> = Record<keyof VirtualNodeContent<T, L>, VirtualValue<T, P> | object>
 
 export class TreeNode<T> {
     static virtualTreeList: VirtualTree<any, any, any>[] = [] //虚拟tree
@@ -163,21 +163,14 @@ export class TreeNode<T> {
     }
 }
 
-const updater = {
-    set: function (object: any, prop: string | number, value: any) {
-        object[prop] = value
-        return true
-    }
-} as ProxyHandler<any>
-
-export class VirtualTree<T, L extends VirtualNodeBase<T, L>, P> {
-    //T: TreeNode S:子节点实际类型 P: payload类型
+export class VirtualTree<T, P, L extends VirtualNodeBase<T, L>> {
+    //T: TreeNode P: payload类型 L: 最终类型
     readonly _name: string //名字 不能够重复
-    _buildFunc: VirtualFunc<T, L, P> // 建构函数
+    _buildFunc: VirtualFunc<T, P, L> // 建构函数
     _root: L //转化后的虚拟根节点
     _nodeList: L[] // 虚拟节点集
     _payload: P // 函数需要的载荷
-    constructor(_root: TreeNode<T>, _func: VirtualFunc<T, L, P>, payload: P, treeName: string = 'NewTree') {
+    constructor(_root: TreeNode<T>, _func: VirtualFunc<T, P, L>, payload: P, treeName: string = 'NewTree') {
         this._buildFunc = _func
         this._name = treeName
         this._payload = payload
@@ -194,20 +187,38 @@ export class VirtualTree<T, L extends VirtualNodeBase<T, L>, P> {
         return this._nodeList.filter(node => !node._origin.isDeleted)
     }
 
-    update(nodeList: TreeNode<T>[]) {
-        nodeList.map(node => {
-
-        })
-    }
-
     //节点初始化
     protected initNode(parent: ParentTreeNode<T>, node: TreeNode<T>, parentItem: VirtualNodeBase<T, L> | null): L {
-        return {
-            ...this._buildFunc(parent, node, parentItem, this._payload),
+        let virtualNode = {
             _parent: parentItem,
             _origin: node,
             _children: []
-        } as unknown as L
+        }
+        let {_buildFunc, _payload} = this
+        Object.keys(_buildFunc).map((key) => {
+            //@ts-ignore
+            let value: VirtualValue<T, P> | object = _buildFunc[key]
+            if (isObjectCallable(value)) {
+                Object.defineProperty(virtualNode, key, {
+                    get(): any {
+                        //@ts-ignore
+                        return value(node.boundObject, _payload)
+                    },
+                    configurable: true,
+                    enumerable: true,
+                })
+            } else {
+                Object.defineProperty(virtualNode, key, {
+                    configurable: true,
+                    enumerable: true,
+                    value: value
+                })
+            }
+        })
+        Object.defineProperties(virtualNode, {
+
+        })
+        return virtualNode as unknown as L
     }
 
     //节点构建
@@ -219,15 +230,6 @@ export class VirtualTree<T, L extends VirtualNodeBase<T, L>, P> {
         )
         this._nodeList.push(virtualNode)
         return virtualNode
-    }
-
-    //节点替换也就是不改变结构 只改变节点本身信息
-    updateNode(targetItem: VirtualNodeBase<T, L>): VirtualNodeBase<T, L> {
-        let node = targetItem._origin
-        let children = targetItem._children
-        targetItem = this.initNode(node.parent, node, targetItem._parent)
-        targetItem._children = children
-        return targetItem
     }
 
     //遍历节点

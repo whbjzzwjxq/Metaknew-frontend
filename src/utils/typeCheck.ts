@@ -1,6 +1,4 @@
 import {DirectoryItemAll, DirectoryNode, ListText, ListTitle} from "@/interface/interfaceInComponent";
-import {BackendNodeInfoPart} from "@/api/subgraph/node";
-import {BackendLinkInfoPart} from "@/api/subgraph/link";
 import {InfoPart, MediaInfoPart} from "@/class/info";
 import {
     ItemSettingPart,
@@ -9,11 +7,6 @@ import {
     NodeSettingPart,
     TextSettingPart
 } from "@/class/settingBase";
-
-export function isNodeBackend(item: BackendNodeInfoPart | BackendLinkInfoPart): item is BackendNodeInfoPart {
-    let type = (item as BackendNodeInfoPart).Info.type;
-    return type === 'node' || type === 'document'
-}
 
 export function isNodeInfoPart(item: BaseNodeInfo | BaseMediaInfo | BaseLinkInfo): item is BaseNodeInfo {
     return (item as BaseNodeInfo).type === 'node' ||
@@ -72,4 +65,8 @@ export function isListText(item: ListText | ListTitle): item is ListText {
 
 export function isDirectoryItemDocument(item: DirectoryItemAll): item is DirectoryNode {
     return (item as DirectoryNode).type === 'document'
+}
+
+export function isObjectCallable(obj: any): obj is Function {
+    return typeof (obj as Function) === 'function'
 }

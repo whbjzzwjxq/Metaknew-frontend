@@ -59,7 +59,6 @@
     import {VirtualFunc, VirtualNodeContent, VirtualTree} from "@/interface/interfaceTree";
     import {isDirectoryItemDocument} from "@/utils/typeCheck";
     import {
-        DirectoryBuildPayload,
         DirectoryItem,
         DirectoryItemAll,
         DirectoryNode
@@ -71,7 +70,7 @@
         components: {},
         data() {
             return {
-                tree: [] as VirtualTree<DocumentSelfPart, DirectoryNode, DirectoryBuildPayload>[],
+                tree: [] as VirtualTree<DocumentSelfPart, undefined, DirectoryNode>[],
             }
         },
         props: {
@@ -165,11 +164,20 @@
         },
         methods: {
             buildDirectory: function () {
-                let _func: VirtualFunc<DocumentSelfPart, DirectoryNode, DirectoryBuildPayload> =
-                    (parent, document) => {
-                        return this.documentToItem(document.boundObject)
-                    }
-                this.tree = this.rootDocumentList.map((doc, index) => new VirtualTree<DocumentSelfPart, DirectoryNode, DirectoryBuildPayload>(doc.treeNode, _func, {}, 'Directory' + index))
+                let _func: VirtualFunc<DocumentSelfPart, undefined, DirectoryNode> = {
+                    id: (source: DocumentSelfPart) => source._id,
+                    type: (source: DocumentSelfPart) => source._type,
+                    label: (source: DocumentSelfPart) => source._label,
+                    name: (source: DocumentSelfPart) => source._name,
+                    icon: () => getIcon('i-item', 'graph'),
+                    deletable: (source: DocumentSelfPart) => !source.isRoot,
+                    editable: (source: DocumentSelfPart) => source.isSelf,
+                    children: [], //子节点和叶子节点
+                    origin: (source: DocumentSelfPart) => source,
+                    isCurrent: (source: DocumentSelfPart) => source._id === this.dataManager.currentDocument._id
+                }
+                this.tree = this.rootDocumentList.map((doc, index) =>
+                    new VirtualTree<DocumentSelfPart, undefined, DirectoryNode>(doc.treeNode, _func, undefined, 'Directory' + index))
             },
 
             nodeToItem: (node: NodeSettingPart) => {

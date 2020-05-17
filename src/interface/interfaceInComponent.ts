@@ -104,12 +104,11 @@ export type DirectorySubItemAll =
     | DirectoryItem<MediaSettingPart>
 
 export interface DirectoryNode extends VirtualNodeBase<DocumentSelfPart, DirectoryNode>, DirectoryItem<DocumentSelfPart> {
-    _children: DirectoryNode[]
+    _children: DirectoryNode[],
+    isCurrent: boolean
 }
 
 export type DirectoryItemAll = DirectorySubItemAll | DirectoryNode
-
-export type DirectoryBuildPayload = {}
 
 export interface CardSize {
     height: number,
