@@ -1,10 +1,10 @@
-import {NodeInfoPart} from "@/class/info";
+import {MediaInfoPart, NodeInfoPart} from "@/class/info";
 
 export type Time = number // 时间戳
 export type Rate = number // 0-1
 
 export interface TimelineItem {
-    info: NodeInfoPart,
+    info: NodeInfoPart | MediaInfoPart,
     time: Time,
     key: string
 }

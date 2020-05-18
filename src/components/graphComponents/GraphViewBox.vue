@@ -145,7 +145,7 @@
 
         </graph-note>
 
-        <div class="d-flex flex-row" style="position: absolute; left: 80%; top: 65%">
+        <div class="d-flex flex-row" style="position: absolute; left: 80%; top: 55%">
             <div class="d-flex flex-column align-end">
                 <div class="py-2">
                     <graph-label-selector
@@ -830,19 +830,15 @@
                 if (this.isLinking && isVisNodeSetting(node) && this.startNode) {
                     if (node.parent._id === this.startNode.parent._id) {
                         // 如果是同一张图里的
-                        let document = node.parent as DocumentSelfPart;
+                        let document = this.startNode.parent as DocumentSelfPart;
                         document.addEmptyLink(this.startNode, node);
-                        this.isLinking = false;
                     } else {
-                        let payload = {
-                            "timeout": 2000,
-                            "content": "对不起, 暂时不支持跨专题建立关系",
-                            "color": "warn",
-                            "actionName": "addLinkViaTwoDocument",
-                            "once": false,
-                        } as SnackBarStatePayload;
-                        commitSnackbarOn(payload);
+                        let document = this.startNode.parent as DocumentSelfPart;
+                        let newNode = node.deepCloneSelf();
+                        document.addItems([newNode])
+                        document.addEmptyLink(this.startNode, newNode)
                     }
+                    this.isLinking = false;
                 } else {
                     //
                 }

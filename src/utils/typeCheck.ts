@@ -1,5 +1,5 @@
 import {DirectoryItemAll, DirectoryNode, ListText, ListTitle} from "@/interface/interfaceInComponent";
-import {InfoPart, MediaInfoPart} from "@/class/info";
+import {InfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
 import {
     ItemSettingPart,
     LinkSettingPart,
@@ -8,9 +8,9 @@ import {
     TextSettingPart
 } from "@/class/settingBase";
 
-export function isNodeInfoPart(item: BaseNodeInfo | BaseMediaInfo | BaseLinkInfo): item is BaseNodeInfo {
-    return (item as BaseNodeInfo).type === 'node' ||
-        (item as BaseNodeInfo).type === 'document'
+export function isNodeInfoPart(item: InfoPart): item is NodeInfoPart {
+    return (item as NodeInfoPart)._type === 'node' ||
+        (item as NodeInfoPart)._type === 'document'
 }
 
 export function isDocumentType(str: string): str is DocumentItemType {

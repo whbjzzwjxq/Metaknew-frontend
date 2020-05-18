@@ -47,12 +47,14 @@
                     {
                         name: this.itemIconGroup.paper,
                         toolTip: '切换到Paper模式',
+                        disabled: this.$route.name === 'paper-normal' || this.$route.name === 'paper-edit',
                         _func: this.changeView,
                         payload: 'paper'
                     },
                     {
                         name: this.itemIconGroup.graph,
                         toolTip: '切换到Graph模式',
+                        disabled: this.$route.name === 'graph-normal' || this.$route.name === 'graph-edit',
                         _func: this.changeView,
                         payload: 'graph'
                     },
@@ -74,7 +76,7 @@
         },
         methods: {
             changeMode(type: 'normal' | 'geo' | 'timeline') {
-                this.$router.push({name: 'graph-' + type})
+                this.$router.push({name: 'graph-' + type, params: {id: this.document._id.toString()}})
             },
             changeView(type: 'graph' | 'paper') {
                 let mode = this.editMode

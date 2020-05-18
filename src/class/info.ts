@@ -148,6 +148,14 @@ export class NodeInfoPart extends InfoPart {
         return this.Info.Description['auto']
     }
 
+    get image() {
+        return this.Info.MainPic
+    }
+
+    get _name() {
+        return this.Info.Name
+    }
+
     protected constructor(info: BaseNodeInfo, ctrl: BaseNodeCtrl, isRemoteModel: boolean) {
         super(info, ctrl, isRemoteModel);
         this.Info = info;
@@ -320,6 +328,10 @@ export class MediaInfoPart extends InfoPart {
         return this.currentUrl !== ''
             ? this.currentUrl
             : this.Ctrl.FileName
+    }
+
+    get image() {
+        return this.Ctrl.Thumb
     }
 
     static statusDict: Record<MediaStatus, string> = {

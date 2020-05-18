@@ -5,15 +5,18 @@
         ref="viewBox"
         v-resize="onResize"
         @wheel="onScroll"
+        @mousedown="mouseDown"
+        @mousemove="mouseMove"
     >
-        <div :style="sliderStyle" class="pt-8 slider">
+        <div :style="styleSlider" class="pt-8 slider">
             <v-range-slider
-                :max="max"
-                :min="min"
+                :max="timeMax"
+                :min="timeMin"
                 :thumb-size="30"
                 tick-size="6"
                 ticks="always"
-                :step="step"
+                :step="timeStep"
+                :tick-labels="timeLabel"
                 dense
                 thumb-label="always"
                 v-model="range">
@@ -26,7 +29,7 @@
             <graph-node
                 v-for="(node, index) in nodes"
                 v-show="showItems[index] && position[index].x >= 0"
-                :key="index"
+                :key="node._id"
                 :item-setting="node.Setting"
                 :state="node.State"
                 :position="position[index]"
@@ -34,6 +37,11 @@
 
             </graph-node>
         </svg>
+        <div :style="styleYAxis" class="plugin-axis-y">
+            <div class="plugin-axis-y-tab">
+                <p> {{ getTimeString(timeMouseOn)}}</p>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -42,8 +50,7 @@
     import {DocumentSelfPart, MediaSettingPart, NodeSettingPart} from "@/class/settingBase";
     import {FakeNodeSettingPart, Rate, Time, TimelineItem} from "@/interface/interfaceTimeline";
     import moment from "moment";
-    import {getPoint, RectByPoint} from "@/class/geometric";
-    import {isNodeInfoPart} from "@/utils/typeCheck";
+    import {getPoint, Point, RectByPoint} from "@/class/geometric";
     import {nodeStateTemplate} from "@/utils/template";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
     import {MediaInfoPart, NodeInfoPart} from "@/class/info";
@@ -56,6 +63,27 @@
         }
         return result
     };
+
+    enum TimeLevel {
+        Second = "S",
+        Minute = "M",
+        Hour = "H",
+        Day = "D",
+        Month = "Mo",
+        Year = "Y",
+        Century = "C"
+    }
+
+    const TimeLevelRange = {
+        [TimeLevel.Second]: 1000,
+        [TimeLevel.Minute]: 60,
+        [TimeLevel.Hour]: 60,
+        [TimeLevel.Day]: 24,
+        [TimeLevel.Month]: 30,
+        [TimeLevel.Year]: 12,
+        [TimeLevel.Century]: 100
+    }
+
     export default Vue.extend({
         name: "GraphTimeline",
         components: {
@@ -68,8 +96,8 @@
                 range: [0, 1000] as [Time, Time],
                 //视觉Box
                 viewBox: new RectByPoint({x: 404, y: 102}, {x: 960, y: 540}),
-                // 允许重复
-                duplicate: true,
+                //视觉中心
+                viewPoint: new Point(500, 500),
                 //每100值显示20个tick
                 ticks: 20,
                 // 一个Info只显示一个内容
@@ -79,6 +107,7 @@
                 // 占据比例
                 currentMin: 0 as Rate,
                 currentMax: 1 as Rate,
+                mousePosition: new Point(0, 0)
             }
         },
         props: {},
@@ -89,10 +118,11 @@
             document: function (): DocumentSelfPart {
                 return this.dataManager.currentDocument
             },
-
+            //所有节点
             originNodes: function (): NodeSettingPart[] {
                 return this.document.nodesAllSubDoc
             },
+            //所有媒体
             originMedias: function (): MediaSettingPart[] {
                 return this.document.medias
             },
@@ -141,15 +171,20 @@
             },
             nodes: function (): FakeNodeSettingPart[] {
                 return this.availableTimeItems.map(item => {
-                    let _image = isNodeInfoPart(item.info.Info)
-                        ? item.info.Info.MainPic
-                        : item.info.Ctrl.Thumb;
-                    let _name = item.info.Info.Name;
+                    let _image = item.info.image
+                    let _name = item.info._name;
                     let _isMain = false;
-                    let {_id, _type, _label} = item.info;
+                    let {_id, _label} = item.info;
                     return {
                         State: nodeStateTemplate(),
-                        Setting: NodeSettingPart.nodeSettingDefault({_id, _type, _label, _name, _image, _isMain})
+                        Setting: NodeSettingPart.nodeSettingDefault({
+                            _id,
+                            _type: 'node',
+                            _label,
+                            _name,
+                            _image,
+                            _isMain
+                        })
                     }
                 })
             },
@@ -179,21 +214,79 @@
                 })
             },
             // 所有项目的最小值
-            min: function (): Time {
+            timeMin: function (): Time {
                 let min = this.availableTimeItems[0];
                 return min
                     ? min.time - Math.abs(min.time * 0.2) //min再小一些 防止边界情况
                     : 0
             },
             // 所有项目的最大值
-            max: function (): Time {
+            timeMax: function (): Time {
                 let max = this.availableTimeItems[this.availableTimeItems.length - 1];
-                return max && max.time !== this.min
+                return max && max.time !== this.timeMin
                     ? max.time + Math.abs(max.time * 0.2) // max 再大一些 防止边界情况
                     : 1000 * 60 * 30 * 365 // 一年
             },
 
-            sliderStyle: function (): CSSProp {
+            //时间跨度 以毫秒计
+            timeDelta: function (): number {
+                return this.timeMax - this.timeMin <= 0
+                    ? 1000
+                    : this.timeMax - this.timeMin
+            },
+
+            //每段多少时间
+            timeStep: function (): number {
+                return (this.timeDelta) / this.timeTicks
+            },
+
+            //标签
+            timeLabel: function (): number[] {
+                let result: number[] = Array(this.timeTicks + 1)
+                result.fill(this.timeMin, 0, this.timeTicks + 1)
+                return result.map((time, index) => {
+                    let currentTime = time + index * this.timeStep
+                    return this.getTimeString(currentTime)
+                })
+            },
+
+            //时间的级别
+            timeLevel: function (): TimeLevel {
+                let delta = this.timeDelta * 100 / this.scale
+                let count = 1
+                let result = TimeLevel.Century
+                Object.keys(TimeLevelRange).map(key => {
+                    let time = key as TimeLevel
+                    //累乘
+                    count *= TimeLevelRange[time]
+                    delta / count < 10 && (result = time)
+                })
+                return result
+            },
+
+            timeTicks: function (): number {
+                return this.scale >= 100
+                    ? Math.round(10 * this.scale / 100)
+                    : 10
+            },
+
+            timeMouseOn: function(): number {
+                let x = (this.mousePosition.x - this.viewBox.start.x) / this.viewBox.width
+                return this.currentRangeCount(x) * this.timeDelta
+            },
+
+            //统计现有属性
+            props: function (): string[] {
+                let result: string[] = [];
+                this.availableTimeItems.map(item => {
+                    let prop = item.key;
+                    !result.includes(prop) && (result.push(prop))
+                });
+                return result.sort()
+            },
+
+            //slider的样式
+            styleSlider: function (): CSSProp {
                 let addition: CSSProp;
                 this.scale > 100
                     ? addition = {
@@ -209,26 +302,34 @@
                     width: this.scale + '%'
                 }
             },
-            delta: function (): number {
-                return this.max - this.min <= 0
-                    ? 1000
-                    : this.max - this.min
+
+            styleYAxis: function (): CSSProp {
+                return {
+                    position: "absolute",
+                    left: (this.mousePosition.x - 4) + 'px',
+                    height: this.viewBox.height + 36 + 'px',
+                    top: this.viewBox.start.y - 36 + 'px',
+                    width: '2px',
+                    backgroundColor: "grey",
+                    zIndex: 15
+                }
             },
 
-            step: function (): number {
-                return (this.delta) / this.ticks
-            },
+            styleCurrentTab: function(): CSSProp {
+                return {
 
-            props: function (): string[] {
-                let result: string[] = [];
-                this.availableTimeItems.map(item => {
-                    let prop = item.key;
-                    !result.includes(prop) && (result.push(prop))
-                });
-                return result.sort()
+                }
             }
         },
         methods: {
+            mouseMove($event: MouseEvent) {
+                window.requestAnimationFrame(() => {
+                    this.mousePosition = getPoint($event)
+                })
+            },
+            mouseDown() {
+
+            },
             onScroll($event: WheelEvent) {
                 let oldScale = this.scale;
                 let delta;
@@ -258,7 +359,7 @@
                 Object.entries(props).map(([key, prop]) => {
                     if (prop.resolve === 'time') {
                         let item = {
-                            info: info,
+                            info,
                             key,
                             time: this.resolveTime(prop.value),
                         } as TimelineItem;
@@ -280,8 +381,24 @@
                 }
             },
 
-            getTimeString(value: number) {
-                return moment.unix(value).utc().year()
+            getTimeString(value: number): number {
+                let time = moment.unix(value).utc()
+                switch (this.timeLevel) {
+                    case TimeLevel.Second:
+                        return time.second()
+                    case TimeLevel.Minute:
+                        return time.minutes()
+                    case TimeLevel.Hour:
+                        return time.hours()
+                    case TimeLevel.Day:
+                        return time.day()
+                    case TimeLevel.Month:
+                        return time.month()
+                    case TimeLevel.Year:
+                        return time.year()
+                    case TimeLevel.Century:
+                        return time.year()
+                }
             },
 
             //根据比例计算min max之间的值
@@ -291,7 +408,7 @@
 
             //总的计算
             totalRangeCount(v: Rate) {
-                return this.rangeCount(this.max, this.min, v)
+                return this.rangeCount(this.timeMax, this.timeMin, v)
             },
 
             //现有的计算
@@ -301,7 +418,7 @@
 
             //计算全局比例
             totalRateCount(v: Time) {
-                return (v - this.min) / (this.delta) as Rate;
+                return (v - this.timeMin) / (this.timeDelta) as Rate;
             },
 
             //计算屏幕内比例
@@ -327,8 +444,8 @@
             description: ''
         },
         created(): void {
-            this.range[0] = this.min;
-            this.range[1] = this.max;
+            this.range[0] = this.timeMin;
+            this.range[1] = this.timeMax;
         },
         mounted(): void {
             this.onResize();

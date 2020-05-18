@@ -56,7 +56,7 @@
     import {getIcon} from "@/utils/icon";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
     import {frontendIdRegex} from "@/utils/utils";
-    import {VirtualFunc, VirtualNodeContent, VirtualTree} from "@/interface/interfaceTree";
+    import {VirtualFunc, VirtualTree} from "@/interface/interfaceTree";
     import {isDirectoryItemDocument} from "@/utils/typeCheck";
     import {
         DirectoryItem,
@@ -215,21 +215,6 @@
                 editable: media.isSelf,
                 origin: media,
             }) as DirectoryItem<MediaSettingPart>,
-
-            documentToItem: function (document: DocumentSelfPart) {
-                return {
-                    id: document._id,
-                    type: 'document',
-                    label: document._label,
-                    name: document._name,
-                    icon: getIcon('i-item', 'graph'),
-                    deletable: !document.isRoot,
-                    editable: document.isSelf,
-                    children: [], //子节点和叶子节点
-                    origin: document,
-                    isCurrent: document._id === this.dataManager.currentDocument._id
-                } as VirtualNodeContent<DocumentSelfPart, DirectoryNode>;
-            },
 
             deleteItem(item: DirectoryItemAll) {
                 this.getOriginItem(item).parent.deleteItem({_id: item.id, _type: item.type})

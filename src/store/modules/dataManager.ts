@@ -103,21 +103,6 @@ const getters = {
         return Object.values(state.mediaManager)
     },
 
-    graphs: (state: DataManagerState) => {
-        return Object.values(state.documentManager)
-    },
-
-    currentGraphInfo: (state: DataManagerState) => {
-        return state.nodeManager[state.currentDocument._id]
-    },
-
-    rootDocumentList: (state: DataManagerState, getters: DataManagerGetters) => {
-        let result = [] as DocumentSelfPart[];
-        result.push(...getters.graphs);
-        result.push(...getters.papers);
-        return result
-    },
-
     allInfoPart: (state: DataManagerState, getters: DataManagerGetters) => {
         let result = [] as InfoPartInDataManager[];
         result.push(...getters.nodes);
@@ -150,7 +135,8 @@ const mutations = {
     rootDocumentPush(state: DataManagerState, payload: { document: DocumentSelfPart }) {
         let {document} = payload;
         document.isRoot = true
-        state.rootDocument.push(document)
+        let current = state.rootDocument.filter(doc => doc._id === document._id)[0]
+        current === undefined && state.rootDocument.push(document)
     },
 
     currentItemChange(state: DataManagerState, payload: NodeInfoPart | LinkInfoPart) {
