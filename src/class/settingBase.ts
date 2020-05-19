@@ -706,9 +706,7 @@ export class DocumentSelfPart extends SettingPart {
     }
 
     get _uniqueId() {
-        return this.parent
-            ? this.parent._id.toString() + this._id.toString()
-            : 'null' + this._id
+        return this.nodeSelf._uniqueId
     }
 
     get treeNode() {

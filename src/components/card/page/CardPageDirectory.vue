@@ -1,7 +1,7 @@
 <template>
     <v-treeview
         :items="directory"
-        item-key="_id"
+        item-key="_uniqueId"
         :selectable="editMode"
         :load-children="getDocument"
         :selection-type="'independent'"
@@ -132,12 +132,12 @@
                     return root.concat(sub)
                 },
                 set(value: DirectoryItemAll[]) {
-                    let idList = value.map(item => item.id);
+                    let idList = value.map(item => item._uniqueId);
                     this.itemList.map(item => this.getOriginItem(item)).map(
-                        item => item.updateState('isSelected', idList.includes(item._id))
+                        item => item.updateState('isSelected', idList.includes(item._uniqueId))
                     );
                     this.documentItemList.map(docItem => docItem.origin.nodeSelf).map(
-                        item => item.updateState('isSelected', idList.includes(item._id))
+                        item => item.updateState('isSelected', idList.includes(item._uniqueId))
                     )
                 }
             },
@@ -151,12 +151,12 @@
                     return root.concat(sub)
                 },
                 set(value: DirectoryItemAll[]) {
-                    let idList = value.map(item => item.id);
+                    let idList = value.map(item => item._uniqueId);
                     this.itemList.map(item => this.getOriginItem(item)).map(
-                        item => item.updateState('isMouseOn', idList.includes(item._id))
+                        item => item.updateState('isMouseOn', idList.includes(item._uniqueId))
                     );
                     this.documentItemList.map(docItem => docItem.origin.nodeSelf).map(
-                        item => item.updateState('isMouseOn', idList.includes(item._id))
+                        item => item.updateState('isMouseOn', idList.includes(item._uniqueId))
                     )
                 }
             }
@@ -164,7 +164,7 @@
         methods: {
             buildDirectory: function () {
                 let _func: VirtualFunc<DocumentSelfPart, undefined, DirectoryNode> = {
-                    _id: (source: DocumentSelfPart) => source._uniqueId,
+                    _uniqueId: (source: DocumentSelfPart) => source._uniqueId,
                     id: (source: DocumentSelfPart) => source._id,
                     type: (source: DocumentSelfPart) => source._type,
                     label: (source: DocumentSelfPart) => source._label,
@@ -182,7 +182,7 @@
 
             nodeToItem: (node: NodeSettingPart) => {
                 return {
-                    _id: node._uniqueId,
+                    _uniqueId: node._uniqueId,
                     id: node._id,
                     type: 'node', //这里是目录意义上的节点
                     label: node._label,
@@ -196,7 +196,7 @@
             },
 
             linkToItem: (link: LinkSettingPart) => ({
-                _id: link._uniqueId,
+                _uniqueId: link._uniqueId,
                 id: link._id,
                 type: link._type,
                 label: link._label,
@@ -208,7 +208,7 @@
             }) as DirectoryItem<LinkSettingPart>,
 
             mediaToItem: (media: MediaSettingPart) => ({
-                _id: media._uniqueId,
+                _uniqueId: media._uniqueId,
                 id: media._id,
                 type: media._type,
                 label: media._label,

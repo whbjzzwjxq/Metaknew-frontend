@@ -87,7 +87,7 @@ export interface FastRegisterData {
 
 // 目录使用的内容
 export interface DirectoryItem<T> {
-    _id: id,
+    _uniqueId: id,
     id: id,
     type: DocumentItemType,
     label: string,

@@ -68,6 +68,7 @@
             :key="metaData.self._id"
             :border-width="graphContainerWidth"
             always-show-border
+            render-as-border
             expand
             v-for="(metaData, index) in activeGraphRectList"
             v-show="metaData.self.isExplode">

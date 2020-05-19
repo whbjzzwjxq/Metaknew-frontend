@@ -6,7 +6,7 @@
         class="media"
         expand
     >
-        <template v-slot:content>
+        <template v-slot:full-content>
             <media-viewer
                 :label="setting._label"
                 :max-height="containerRect.height"

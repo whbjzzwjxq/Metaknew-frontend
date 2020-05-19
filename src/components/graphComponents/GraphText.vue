@@ -4,7 +4,7 @@
         expand
         @update-size="updateSize"
         :is-selected="isSelected">
-        <template v-slot:content>
+        <template v-slot:full-content>
             <svg :width="rect.width" :height="rect.height">
                 <polyline
                     v-if="label === 'polyline'"
