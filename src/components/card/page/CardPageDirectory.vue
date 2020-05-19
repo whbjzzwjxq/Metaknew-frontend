@@ -1,6 +1,7 @@
 <template>
     <v-treeview
         :items="directory"
+        item-key="_id"
         :selectable="editMode"
         :load-children="getDocument"
         :selection-type="'independent'"
@@ -106,7 +107,7 @@
                 return result
             },
 
-            //所有的GraphSelfPart
+            //所有的DocumentItemList转化的内容
             documentItemList: function (): DirectoryNode[] {
                 return this.tree.map(tree => tree.activeNode).flat(1)
             },
@@ -125,7 +126,7 @@
             selection: {
                 get(): DirectoryItemAll[] {
                     let root: DirectoryItemAll[] = this.documentItemList.filter(docItem =>
-                        this.documentList.filter(doc => doc._id === docItem.id)[0].nodeSelf.State.isSelected
+                        docItem.origin.nodeSelf.State.isSelected
                     );
                     let sub = this.itemList.filter(item => this.getOriginItem(item).State.isSelected);
                     return root.concat(sub)
@@ -135,8 +136,7 @@
                     this.itemList.map(item => this.getOriginItem(item)).map(
                         item => item.updateState('isSelected', idList.includes(item._id))
                     );
-                    this.documentItemList.map(docItem =>
-                        this.documentList.filter(doc => doc._id === docItem.id)[0].nodeSelf).map(
+                    this.documentItemList.map(docItem => docItem.origin.nodeSelf).map(
                         item => item.updateState('isSelected', idList.includes(item._id))
                     )
                 }
@@ -145,7 +145,7 @@
             activeList: {
                 get(): DirectoryItemAll[] {
                     let root: DirectoryItemAll[] = this.documentItemList.filter(docItem =>
-                        this.documentList.filter(doc => doc._id === docItem.id)[0].nodeSelf.State.isMouseOn
+                        docItem.origin.nodeSelf.State.isMouseOn
                     );
                     let sub = this.itemList.filter(item => this.getOriginItem(item).State.isMouseOn);
                     return root.concat(sub)
@@ -155,8 +155,7 @@
                     this.itemList.map(item => this.getOriginItem(item)).map(
                         item => item.updateState('isMouseOn', idList.includes(item._id))
                     );
-                    this.documentItemList.map(docItem =>
-                        this.documentList.filter(doc => doc._id === docItem.id)[0].nodeSelf).map(
+                    this.documentItemList.map(docItem => docItem.origin.nodeSelf).map(
                         item => item.updateState('isMouseOn', idList.includes(item._id))
                     )
                 }
@@ -165,6 +164,7 @@
         methods: {
             buildDirectory: function () {
                 let _func: VirtualFunc<DocumentSelfPart, undefined, DirectoryNode> = {
+                    _id: (source: DocumentSelfPart) => source._uniqueId,
                     id: (source: DocumentSelfPart) => source._id,
                     type: (source: DocumentSelfPart) => source._type,
                     label: (source: DocumentSelfPart) => source._label,
@@ -182,6 +182,7 @@
 
             nodeToItem: (node: NodeSettingPart) => {
                 return {
+                    _id: node._uniqueId,
                     id: node._id,
                     type: 'node', //这里是目录意义上的节点
                     label: node._label,
@@ -195,6 +196,7 @@
             },
 
             linkToItem: (link: LinkSettingPart) => ({
+                _id: link._uniqueId,
                 id: link._id,
                 type: link._type,
                 label: link._label,
@@ -206,6 +208,7 @@
             }) as DirectoryItem<LinkSettingPart>,
 
             mediaToItem: (media: MediaSettingPart) => ({
+                _id: media._uniqueId,
                 id: media._id,
                 type: media._type,
                 label: media._label,

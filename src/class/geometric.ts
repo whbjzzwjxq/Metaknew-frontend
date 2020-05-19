@@ -311,10 +311,7 @@ export const getPostRectFromBase = (base: BaseSizeInGraph) => {
 };
 
 export const getMidPoint = (pointA: PointMixed, pointB: PointMixed) => {
-    return {
-        x: (pointA.x + pointB.x) / 2,
-        y: (pointA.y + pointB.y) / 2
-    }
+    return new Point((pointA.x + pointB.x) / 2, (pointA.y + pointB.y) / 2)
 };
 
 export const getPointDistance = (pointA: PointObject, pointB: PointObject) => {

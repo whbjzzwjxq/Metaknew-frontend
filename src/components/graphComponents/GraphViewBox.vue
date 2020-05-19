@@ -66,12 +66,14 @@
             @update-size="updateGraphSize(arguments[0], arguments[1], index)"
             :container="getSubGraphByRect(metaData.rect)"
             :key="metaData.self._id"
+            :border-width="graphContainerWidth"
             always-show-border
-            render-as-border
             expand
             v-for="(metaData, index) in activeGraphRectList"
             v-show="metaData.self.isExplode">
-
+            <template v-slot:content>
+                <p class="text--secondary unselected" :style="graphContainerFontsize"> {{metaData.self._name}}</p>
+            </template>
         </rect-container>
 
         <graph-node-button
@@ -116,7 +118,7 @@
             @mouseleave.native="mouseLeave(media)"
             @add-link="addLink(media)"
             @update-size="updateSize(arguments[0], arguments[1], media.Setting)"
-            >
+        >
 
         </graph-media-button>
 
@@ -207,7 +209,13 @@
     import GraphText from "@/components/graphComponents/GraphText.vue";
     import GraphMediaButton from "@/components/graphComponents/GraphMediaButton.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
-    import {isLinkSetting, isMediaSetting, isNodeSettingPart, isVisAreaSetting, isVisNodeSetting} from "@/utils/typeCheck";
+    import {
+        isLinkSetting,
+        isMediaSetting,
+        isNodeSettingPart,
+        isVisAreaSetting,
+        isVisNodeSetting
+    } from "@/utils/typeCheck";
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import RectContainer from "@/components/container/RectContainer.vue";
@@ -494,6 +502,13 @@
                         ...InGraph.Text,
                         textSize
                     };
+                    let showName = this.realScale >= 0.6
+                        ? InGraph.Show.showName
+                        : false
+                    let Show = {
+                        ...InGraph.Show,
+                        showName
+                    }
                     return {
                         ...node.Setting,
                         _name,
@@ -501,7 +516,8 @@
                             ...InGraph,
                             Base,
                             View,
-                            Text
+                            Text,
+                            Show
                         }
                     } as NodeSetting
                 })
@@ -743,6 +759,20 @@
 
             importanceChipText: function (): string {
                 return this.importanceOn ? '重要度模式: 开' : '重要度模式: 关'
+            },
+
+            graphContainerWidth: function (): number {
+                return this.realScale < 0.4
+                    ? 1
+                    : this.realScale > 4
+                        ? 4
+                        : 2
+            },
+
+            graphContainerFontsize: function (): CSSProp {
+                return {
+                    fontSize: 16 * this.realScale + 'px'
+                }
             },
 
         },
@@ -1097,11 +1127,6 @@
             cardOn(node: NodeSettingPart | LinkSettingPart, location: PointObject) {
 
             },
-
-            showButtonMedia(index: number) {
-                let media = this.medias[index]
-                return this.showMedia[index] && this.editMode && this.mediaRewriteSettingList[index].InGraph.Base.size > 100 && media.State.isMouseOn
-            }
         },
 
         watch: {

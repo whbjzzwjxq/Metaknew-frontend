@@ -30,14 +30,14 @@
                 :max-height="600"
                 class="scrollY cardItem">
                 <v-card-subtitle style="font-size: 18px">
-                    {{ item.title }}
+                    {{ 'Selection' + key }}
                 </v-card-subtitle>
                 <card-page-style-editor
                     :comp-type="key"
                     :setting-list="
                     key !== 'document'
                     ? document.getItemByState(key, 'isSelected')
-                    : [document.Conf]"
+                    : [document.Setting]"
                 >
 
                 </card-page-style-editor>
@@ -68,19 +68,15 @@
                 return {
                     'node': {
                         name: getIcon('i-item', 'node'),
-                        title: 'Selection Node'
                     },
                     'media': {
                         name: getIcon('i-item', 'media'),
-                        title: 'Selection Media'
                     },
                     'link': {
                         name: getIcon('i-item', 'link'),
-                        title: 'Selection Link'
                     },
                     'document': {
                         name: getIcon('i-item', 'document'),
-                        title: 'Current Graph'
                     }
                 }
             },

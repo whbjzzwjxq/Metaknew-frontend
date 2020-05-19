@@ -21,7 +21,7 @@
                 thumb-label="always"
                 v-model="range">
                 <template v-slot:thumb-label="{value}">
-                    {{ getTimeString(value) }}
+                    {{ getTimeCount(value) }}
                 </template>
             </v-range-slider>
         </div>
@@ -38,8 +38,8 @@
             </graph-node>
         </svg>
         <div :style="styleYAxis" class="plugin-axis-y">
-            <div class="plugin-axis-y-tab">
-                <p> {{ getTimeString(timeMouseOn)}}</p>
+            <div class="plugin-axis-y-tab" :style="styleTimeTab">
+                <p class="title text-no-wrap"> {{ outputTime(timeMouseOn)}}</p>
             </div>
         </div>
     </div>
@@ -92,7 +92,7 @@
         data: function () {
             return {
                 scale: 100,
-                //两个标签占据百分之多少的时间轴
+                //两个标签占据时间轴位置的时间戳表示
                 range: [0, 1000] as [Time, Time],
                 //视觉Box
                 viewBox: new RectByPoint({x: 404, y: 102}, {x: 960, y: 540}),
@@ -107,7 +107,10 @@
                 // 占据比例
                 currentMin: 0 as Rate,
                 currentMax: 1 as Rate,
-                mousePosition: new Point(0, 0)
+                mousePosition: new Point(0, 0),
+                timelineTop: 64,
+                timeTabTop: 108,
+                leftPadding: 4
             }
         },
         props: {},
@@ -172,7 +175,7 @@
             nodes: function (): FakeNodeSettingPart[] {
                 return this.availableTimeItems.map(item => {
                     let _image = item.info.image
-                    let _name = item.info._name;
+                    let _name = item.info._name + item.key + this.getTimeCount(item.time);
                     let _isMain = false;
                     let {_id, _label} = item.info;
                     return {
@@ -213,19 +216,34 @@
                     }
                 })
             },
-            // 所有项目的最小值
+            // 时间最小值
             timeMin: function (): Time {
-                let min = this.availableTimeItems[0];
+                let min = this.timeItemMin;
                 return min
-                    ? min.time - Math.abs(min.time * 0.2) //min再小一些 防止边界情况
+                    ? min - Math.abs(min * 0.2) //min再小一些 防止边界情况
                     : 0
             },
-            // 所有项目的最大值
+            // 时间最大值
             timeMax: function (): Time {
-                let max = this.availableTimeItems[this.availableTimeItems.length - 1];
-                return max && max.time !== this.timeMin
-                    ? max.time + Math.abs(max.time * 0.2) // max 再大一些 防止边界情况
+                let max = this.timeItemMax;
+                return max && max !== this.timeMin
+                    ? max + Math.abs(max * 0.2) // max 再大一些 防止边界情况
                     : 1000 * 60 * 30 * 365 // 一年
+            },
+
+            //所有项目的最小值
+            timeItemMin: function(): Time {
+                return this.availableTimeItems[0]
+                    ? this.availableTimeItems[0].time
+                    : 0
+            },
+
+            //所有项目的最大值
+            timeItemMax: function(): Time {
+                let max = this.availableTimeItems[this.availableTimeItems.length - 1]
+                return max
+                    ? max.time
+                    : 19600
             },
 
             //时间跨度 以毫秒计
@@ -242,12 +260,13 @@
 
             //标签
             timeLabel: function (): number[] {
-                let result: number[] = Array(this.timeTicks + 1)
-                result.fill(this.timeMin, 0, this.timeTicks + 1)
-                return result.map((time, index) => {
-                    let currentTime = time + index * this.timeStep
-                    return this.getTimeString(currentTime)
+                let result: number[] = Array(this.timeTicks - 3)
+                result.fill(this.timeItemMin, 0, this.timeTicks - 3)
+                result.map((time, index) => {
+                    result[index] = time + (index + 1) * this.timeStep
                 })
+                result = [this.timeMin, this.timeItemMin, ...result, this.timeItemMax, this.timeMax]
+                return result.map(time => this.getTimeCount(time))
             },
 
             //时间的级别
@@ -271,8 +290,9 @@
             },
 
             timeMouseOn: function(): number {
-                let x = (this.mousePosition.x - this.viewBox.start.x) / this.viewBox.width
-                return this.currentRangeCount(x) * this.timeDelta
+                let padding = this.leftPadding;
+                let x = (this.mousePosition.x - this.viewBox.start.x - padding) / (this.viewBox.width - padding * 2)
+                return this.totalRangeCount(this.currentRangeCount(x))
             },
 
             //统计现有属性
@@ -283,6 +303,11 @@
                     !result.includes(prop) && (result.push(prop))
                 });
                 return result.sort()
+            },
+
+            //当前最小值在全部时间轴的比重
+            rateCurrentMin: function (): Rate {
+                return this.viewPoint.x / this.viewBox.width / this.scale * 100
             },
 
             //slider的样式
@@ -298,7 +323,7 @@
                     };
                 return {
                     ...addition,
-                    height: '64px',
+                    height: this.timelineTop + 'px',
                     width: this.scale + '%'
                 }
             },
@@ -311,13 +336,15 @@
                     top: this.viewBox.start.y - 36 + 'px',
                     width: '2px',
                     backgroundColor: "grey",
-                    zIndex: 15
+                    zIndex: 15,
+                    opacity: 0.5
                 }
             },
 
-            styleCurrentTab: function(): CSSProp {
+            styleTimeTab: function(): CSSProp {
                 return {
-
+                    position: 'relative',
+                    top: this.timeTabTop + 'px',
                 }
             }
         },
@@ -326,6 +353,16 @@
                 window.requestAnimationFrame(() => {
                     this.mousePosition = getPoint($event)
                 })
+                if ($event.ctrlKey) {
+                    window.requestAnimationFrame(() => {
+                        let {movementX} = $event
+                        let delta = movementX / this.viewBox.width / this.scale * 100
+                        this.currentMin += delta
+                        this.currentMin <= 0 && (this.currentMin = 0)
+                        this.currentMax += delta
+                        this.currentMax >= 1 && (this.currentMax = 1)
+                    })
+                }
             },
             mouseDown() {
 
@@ -333,7 +370,7 @@
             onScroll($event: WheelEvent) {
                 let oldScale = this.scale;
                 let delta;
-                let [min, max] = [60, 1000];
+                let [min, max] = [100, 1000];
                 $event.deltaY < 0
                     ? delta = 20
                     : delta = -20;
@@ -381,7 +418,8 @@
                 }
             },
 
-            getTimeString(value: number): number {
+            //获取基本单位的时间
+            getTimeCount(value: number): number {
                 let time = moment.unix(value).utc()
                 switch (this.timeLevel) {
                     case TimeLevel.Second:
@@ -401,17 +439,21 @@
                 }
             },
 
+            outputTime(value: number) {
+                return moment.unix(value).format("DD, MMM, YYYY")
+            },
+
             //根据比例计算min max之间的值
             rangeCount(a: Time, b: Time, v: Rate): Time {
                 return (a - b) * v + b
             },
 
-            //总的计算
+            //总时间跨度比例的计算
             totalRangeCount(v: Rate) {
                 return this.rangeCount(this.timeMax, this.timeMin, v)
             },
 
-            //现有的计算
+            //现有时间跨度比例的计算
             currentRangeCount(v: Rate) {
                 return this.rangeCount(this.currentMax, this.currentMin, v)
             },
@@ -443,12 +485,13 @@
             status: 'editing',
             description: ''
         },
-        created(): void {
-            this.range[0] = this.timeMin;
-            this.range[1] = this.timeMax;
-        },
         mounted(): void {
             this.onResize();
+            this.viewPoint = this.viewBox.midPoint();
+            window.requestAnimationFrame(() => {
+                this.range[0] = this.timeItemMin;
+                this.range[1] = this.timeItemMax;
+            })
         }
     })
 </script>
