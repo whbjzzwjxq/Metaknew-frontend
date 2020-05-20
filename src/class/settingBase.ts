@@ -3,28 +3,17 @@ import store from "@/store";
 import {BackendDocument, BackendGraphWithNode} from "@/api/document/document";
 import {DocumentDraft} from "@/api/subgraph/commonApi";
 import {isDocumentType, isLinkSetting, isMediaSetting, isNodeSettingPart, isTextSetting} from "@/utils/typeCheck";
-import {
-    crucialRegex,
-    deepClone,
-    findItem,
-    frontendIdRegex,
-    getCookie,
-    getIndex, getSrc
-} from "@/utils/utils";
+import {crucialRegex, deepClone, findItem, frontendIdRegex, getCookie, getIndex, getSrc} from "@/utils/utils";
 import {commitDocumentAdd, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
-import {
-    linkStateTemplate,
-    nodeStateTemplate,
-    noteStateTemplate,
-    textStateTemplate
-} from "@/utils/template";
+import {linkStateTemplate, nodeStateTemplate, noteStateTemplate, textStateTemplate} from "@/utils/template";
 import {dispatchNoteInDocPush} from "@/store/modules/_dispatch";
 import {getManager} from "@/store/modules/dataManager";
 import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
 import {nodeSettingGroupInPaper, settingTemplatePaper} from "@/interface/style/templateStylePaper";
 import {PaperComponent} from "@/class/settingPaper";
 import {
-    linkSettingGroupInGraph, mediaSettingInGraph,
+    linkSettingGroupInGraph,
+    mediaSettingInGraph,
     nodeSettingGroupInGraph,
     noteSettingGroupInGraph,
     textSettingGroupInGraph
@@ -199,6 +188,7 @@ export class NodeSettingPart extends ItemSettingPart {
         let state = nodeStateTemplate();
         return new NodeSettingPart(setting, state, parent) as NodeSettingPart
     }
+
     get _type() {
         return this.Setting._type
     }
@@ -207,11 +197,17 @@ export class NodeSettingPart extends ItemSettingPart {
         return this.Setting._name
     }
 
-    get boundDocument(): DocumentSelfPart {
-        return this.parent.docsChildrenWithSelf.filter(graph => graph._id === this._id)[0]
+    get boundDocument(): DocumentSelfPart | undefined {
+        return this.parent._id === this._id
+            ? this.parent
+            : this.remoteDocument && this.remoteDocument.parent
+                ? this.remoteDocument.parent._id === this.parent._id
+                    ? this.remoteDocument
+                    : undefined
+                : undefined
     }
 
-    get remoteDocument() {
+    get remoteDocument(): DocumentSelfPart | undefined {
         return store.state.dataManager.documentManager[this._id]
     }
 
@@ -304,7 +300,14 @@ export class MediaSettingPart extends ItemSettingPart {
 
     static emptyMediaSettingFromInfo(media: MediaInfoPart, parent: DocumentSelfPart) {
         let {_id, _type, _label} = media
-        let payload = {_id, _type, _label, _name: media.Info.Name, _src: media.Ctrl.FileName, _isMain: false} as MediaInitPayload
+        let payload = {
+            _id,
+            _type,
+            _label,
+            _name: media.Info.Name,
+            _src: media.Ctrl.FileName,
+            _isMain: false
+        } as MediaInitPayload
         return MediaSettingPart.initEmpty(payload, parent)
     }
 
@@ -604,7 +607,10 @@ export class DocumentSelfPart extends SettingPart {
             // 检查完成
         }
         // 专题已经添加到父亲中去了
-        parent && parent.addItems([this.nodeSelf.deepCloneSelf()]);
+        if (parent) {
+            parent.addItems([this.nodeSelf.deepCloneSelf()]);
+            parent.treeNode._addNode([this.treeNode])
+        }
     }
 
     static documentStateDefault() {
@@ -1131,7 +1137,14 @@ export class DocumentSelfPart extends SettingPart {
 
     addEmptyText() {
         let _id = getIndex();
-        let rect = TextSettingPart.emptyRect({_id, _type: 'text', _label: 'rect', _isMain: false, _text: '', _points: []}, this);
+        let rect = TextSettingPart.emptyRect({
+            _id,
+            _type: 'text',
+            _label: 'rect',
+            _isMain: false,
+            _text: '',
+            _points: []
+        }, this);
         this.addItems([rect])
     }
 }

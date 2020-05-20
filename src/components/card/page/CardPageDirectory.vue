@@ -114,9 +114,9 @@
 
             directory: function (): DirectoryNode[] {
                 let updateFunc = (node: DirectoryNode) => {
-                    node.children = this.getDocumentChildList(node._origin.boundObject)
                     //push 那些没被删除的专题
-                    let nodes = node._children.filter(child => !child._origin.isDeleted).map(node => updateFunc(node))
+                    node.children = node._children.filter(child => !child._origin.isDeleted).map(node => updateFunc(node))
+                    let nodes = this.getDocumentChildList(node._origin.boundObject)
                     node.children.push(...nodes)
                     return node
                 }

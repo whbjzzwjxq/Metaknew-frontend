@@ -10,8 +10,11 @@
                     :x-large="xLarge"
                     :small="small"
                     :x-small="xSmall"
-                    :setting="item.Setting"
-                    :state="item.State"
+                    :setting="setting"
+                    :state="state"
+                    :not-render-default-icon="notRenderDefaultIcon"
+                    :not-render-description="notRenderDescription"
+                    :append-icon-list="appendIconList"
                 >
 
                 </card-node-simp>
@@ -23,8 +26,11 @@
                 :x-large="xLarge"
                 :small="small"
                 :x-small="xSmall"
-                :setting="item.Setting"
-                :state="item.State">
+                :setting="setting"
+                :state="state"
+                :not-render-default-icon="notRenderDefaultIcon"
+                :not-render-description="notRenderDescription"
+                :append-icon-list="appendIconList">
 
             </card-link-simp>
         </template>
@@ -34,8 +40,8 @@
                 :x-large="xLarge"
                 :small="small"
                 :x-small="xSmall"
-                :setting="item.Setting"
-                :state="item.State">
+                :setting="setting"
+                :state="state">
 
             </card-media-simp>
         </template>
@@ -45,8 +51,8 @@
                 :x-large="xLarge"
                 :small="small"
                 :x-small="xSmall"
-                :setting="item.Setting"
-                :state="item.State">
+                :setting="setting"
+                :state="state">
 
             </card-text-simp>
         </template>
@@ -59,7 +65,6 @@
     import CardTextSimp from "@/components/card/standard/CardTextSimp.vue";
     import CardLinkSimp from "@/components/card/standard/CardLinkSimp.vue";
     import CardMediaSimp from "@/components/card/standard/CardMediaSimp.vue";
-    import {ItemSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: "CardSimpAll",
@@ -73,14 +78,18 @@
             return {}
         },
         props: {
+            setting: {
+                type: Object as () => DocumentItemSetting,
+                required: true
+            },
+            state: {
+                type: Object as () => DocumentItemState,
+                required: true
+            },
             //document特征render
             renderDocument: {
                 type: Boolean,
                 default: false
-            },
-            item: {
-                type: Object as () => ItemSettingPart,
-                required: true
             },
             large: {
                 type: Boolean,
@@ -97,11 +106,23 @@
             xSmall: {
                 type: Boolean,
                 default: false
+            },
+            notRenderDefaultIcon: {
+                type: Boolean,
+                default: false
+            },
+            notRenderDescription: {
+                type: Boolean,
+                default: false
+            },
+            appendIconList: {
+                type: Array as () => IconItem[],
+                default: () => []
             }
         },
         computed: {
             type: function (): DocumentItemType {
-                return this.item._type
+                return this.setting._type
             }
         },
         methods: {},

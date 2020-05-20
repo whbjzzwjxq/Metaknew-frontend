@@ -1,39 +1,29 @@
 <template>
     <v-card :class="`${className}-card`" flat>
-        <v-card-title class="pa-2 pb-0">
+        <div>
             <div class="d-flex flex-row">
-                <div :class="['pa-2', `${className}-card-avatar`]">
+                <div :class="[`${className}-card-avatar`]">
                     <node-avatar :source-url="mainImage">
 
                     </node-avatar>
                 </div>
-                <div :class="['pa-2', `${className}-card-label`]">
-                    <v-text-field
-                        v-model="name"
-                        label="Name"
-                        disabled
-                        dense
-                        class="mt-2">
-
-                    </v-text-field>
-                    <p-label-selector
-                        :label="label"
-                        disabled
-                        class="mt-n4">
-
-                    </p-label-selector>
+                <div :class="[`${className}-card-label`]">
+                    <p class="ma-0"> Name </p>
+                    <p class="ma-0 text--black"> {{ name }}</p>
+                    <p class="ma-0"> PrimaryLabel </p>
+                    <p class="ma-0 text--black"> {{ label }}</p>
                 </div>
             </div>
-        </v-card-title>
-        <v-card-text :class="['pa-2 py-0', `${className}-card-content`]" style="overflow: hidden">
-            <slot name="content" :setting="setting" :state="state" class="pa-2 py-0">
+        </div>
+        <div :class="[`${className}-card-content`]" style="overflow: hidden">
+            <slot name="content" :setting="setting" :state="state">
 
             </slot>
-            <markdown-render v-model="info.description" v-if="!notRenderDescription" class="pa-2 py-0">
+            <markdown-render v-model="info.description" v-if="!notRenderDescription">
 
             </markdown-render>
-        </v-card-text>
-        <v-card-actions :class="['px-4 py-1', `${className}-card-foot`]">
+        </div>
+        <div :class="[`${className}-card-foot`]">
             <div class="flex-shrink-1">
                 <icon-group :icon-list="iconList" v-bind="$props" v-if="!notRenderDefaultIcon">
 
@@ -42,7 +32,7 @@
             <slot name="iconContent" :setting="setting" :state="state">
 
             </slot>
-        </v-card-actions>
+        </div>
     </v-card>
 </template>
 

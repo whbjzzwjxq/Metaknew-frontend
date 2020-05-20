@@ -2,21 +2,20 @@
     <div
         style="height: 100%; width: 100%; overflow-x: hidden"
         class="d-flex flex-column"
-        ref="viewBox"
-        v-resize="onResize"
-        @wheel="onScroll"
         @mousedown="mouseDown"
         @mousemove="mouseMove"
+        @mouseup="mouseUp"
     >
-        <div :style="styleSlider" class="pt-8 slider">
+        <div class="plugin-axis-y" :style="styleYAxis" @mousemove.stop="doNothing" v-show="!isMoving">
+            <div class="plugin-axis-y-tab unselected" :style="styleTimeTab">
+                <p class="subtitle text-no-wrap"> {{ outputTime(timeMouseOn)}}</p>
+            </div>
+        </div>
+        <div class="pt-8 plugin-slider" :style="styleSlider">
             <v-range-slider
                 :max="timeMax"
                 :min="timeMin"
                 :thumb-size="30"
-                tick-size="6"
-                ticks="always"
-                :step="timeStep"
-                :tick-labels="timeLabel"
                 dense
                 thumb-label="always"
                 v-model="range">
@@ -25,22 +24,59 @@
                 </template>
             </v-range-slider>
         </div>
-        <svg style="width: 100%; height: 100%">
-            <graph-node
-                v-for="(node, index) in nodes"
-                v-show="showItems[index] && position[index].x >= 0"
-                :key="node._id"
-                :item-setting="node.Setting"
-                :state="node.State"
-                :position="position[index]"
-            >
+        <div class="plugin-time-ticks d-flex flex-row" :style="styleTimeTickGroup">
+            <v-col cols="1" v-for="n in timeTicks" :key="'timeTick' + n" class="pa-0">
+                <div style="height: 12px; width: 2px; background-color: black; opacity: 0.2">
+                </div>
+                <p class="overline ma-0 unselected"> {{ timeLabel[n - 1] }}</p>
+            </v-col>
+        </div>
+        <v-card
+            class="plugin-card"
+            :style="styleCard"
+            v-if="nodeMouseOn"
+            @mouseenter.stop="cancelNodeLeave"
+            @mouseleave.stop="mouseLeaveNode(nodeMouseOn)"
+        >
+            <template>
+                <card-node-simp
+                    v-if="nodeMouseOn.Setting._type === 'node' || nodeMouseOn.Setting._type === 'document'"
+                    :setting="nodeMouseOn.Setting"
+                    :state="nodeMouseOn.State"
+                    not-render-description
+                    x-small>
+                    <template v-slot:content>
+                        <p class="subtitle-2 ma-0"> {{ nodeMouseOn._origin.key}}</p>
+                        <p class="subtitle-2 ma-0"> {{ outputTime(nodeMouseOn._origin.time)}}</p>
+                    </template>
+                </card-node-simp>
+                <card-media-simp
+                    v-if="nodeMouseOn.Setting._type === 'media'"
+                    :setting="nodeMouseOn.Setting"
+                    :state="nodeMouseOn.State"
+                    x-small>
 
-            </graph-node>
-        </svg>
-        <div :style="styleYAxis" class="plugin-axis-y">
-            <div class="plugin-axis-y-tab" :style="styleTimeTab">
-                <p class="title text-no-wrap"> {{ outputTime(timeMouseOn)}}</p>
-            </div>
+                </card-media-simp>
+            </template>
+        </v-card>
+        <div ref="viewBox"
+             v-resize="onResize"
+             @wheel="onScroll"
+             class="flex-grow-1">
+            <svg style="width: 100%; height: 100%">
+                <graph-node
+                    v-for="(node, index) in nodes"
+                    v-show="showItems[index]"
+                    :key="node._id"
+                    :item-setting="node.Setting"
+                    :state="node.State"
+                    :position="nodePosition[index]"
+                    @mouseenter.native.stop="mouseEnterNode(node, nodePosition[index])"
+                    @mouseleave.native.stop="mouseLeaveNode(node)"
+                >
+
+                </graph-node>
+            </svg>
         </div>
     </div>
 </template>
@@ -53,16 +89,10 @@
     import {getPoint, Point, RectByPoint} from "@/class/geometric";
     import {nodeStateTemplate} from "@/utils/template";
     import GraphNode from "@/components/graphComponents/GraphNode.vue";
+    import CardNodeSimp from "@/components/card/standard/CardNodeSimp.vue";
+    import CardMediaSimp from "@/components/card/standard/CardMediaSimp.vue";
     import {MediaInfoPart, NodeInfoPart} from "@/class/info";
-
-    const divide = 5; // 分成10部分
-    const getLocationDict = (divide: number) => {
-        let result: Record<number, any[]> = {};
-        for (let i = 0; i < divide; i++) {
-            result[i] = []
-        }
-        return result
-    };
+    import {sortByTime} from "@/utils/utils";
 
     enum TimeLevel {
         Second = "S",
@@ -87,7 +117,9 @@
     export default Vue.extend({
         name: "GraphTimeline",
         components: {
-            GraphNode
+            GraphNode,
+            CardNodeSimp,
+            CardMediaSimp
         },
         data: function () {
             return {
@@ -96,7 +128,7 @@
                 range: [0, 1000] as [Time, Time],
                 //视觉Box
                 viewBox: new RectByPoint({x: 404, y: 102}, {x: 960, y: 540}),
-                //视觉中心
+                //视觉中心 代表0位置和当前屏幕中心的差值
                 viewPoint: new Point(500, 500),
                 //每100值显示20个tick
                 ticks: 20,
@@ -104,13 +136,20 @@
                 oneInfoOneItem: false,
                 // 不选择的属性
                 unSelectKeys: [] as string[],
-                // 占据比例
-                currentMin: 0 as Rate,
-                currentMax: 1 as Rate,
                 mousePosition: new Point(0, 0),
                 timelineTop: 64,
                 timeTabTop: 108,
-                leftPadding: 4
+                leftPadding: 0,
+                timeTicks: 13,
+
+                //moving
+                isMoving: false,
+
+                nodeWidth: 16,
+                nodeHeight: 16,
+                nodeMouseOn: null as FakeNodeSettingPart<TimelineItem> | null,
+                nodeMouseOnPosition: {x: 0, y: 0, width: 16, height: 16} as AreaRect,
+                nodeLeaveTimer: 0
             }
         },
         props: {},
@@ -139,7 +178,11 @@
                 let result = [];
                 result.push(...this.originNodeInfo);
                 result.push(...this.originMediaInfo);
+                result.sort(sortByTime)
                 return result
+            },
+            infoIdList: function (): id[] {
+                return this.infoList.map(info => info._id)
             },
             allTimeItems: function (): Record<id, TimelineItem[]> {
                 let result: Record<id, TimelineItem[]> = {};
@@ -172,13 +215,13 @@
                     return !result.includes(false)
                 });
             },
-            nodes: function (): FakeNodeSettingPart[] {
+            nodes: function (): FakeNodeSettingPart<TimelineItem>[] {
                 return this.availableTimeItems.map(item => {
-                    let _image = item.info.image
-                    let _name = item.info._name + item.key + this.getTimeCount(item.time);
+                    let _image = item.info.image;
+                    let _name = item.info._name;
                     let _isMain = false;
                     let {_id, _label} = item.info;
-                    return {
+                    let node = {
                         State: nodeStateTemplate(),
                         Setting: NodeSettingPart.nodeSettingDefault({
                             _id,
@@ -186,35 +229,33 @@
                             _label,
                             _name,
                             _image,
-                            _isMain
-                        })
+                            _isMain,
+                        }),
+                        _origin: item
+                    }
+                    node.Setting.InGraph.Base = {
+                        ...node.Setting.InGraph.Base,
+                        size: this.nodeHeight,
+                        scaleX: 1
+                    }
+                    return node
+                })
+            },
+            nodePosition: function (): AreaRect[] {
+                return this.availableTimeItems.map(item => {
+                    let x = this.countTimeToRate(item.time) * this.viewBox.width; // 屏幕上的 0 - 1
+                    let y = this.infoIdList.indexOf(item.info._id) * (this.nodeHeight * 2 + 24) + (this.viewBox.midPoint().y - this.viewPoint.y)
+                    return {
+                        x,
+                        y,
+                        width: this.nodeWidth,
+                        height: this.nodeHeight
                     }
                 })
             },
-            position: function (): PointObject[] {
-                let locationDict = getLocationDict(divide);
-                return this.availableTimeItems.map((item, index) => {
-                    let x = this.currentRateCount(item.time); // 屏幕上的 0 - 1
-                    let location = Math.floor(x * divide); // 位置区间
-                    location === divide && (location = divide - 1); // 处理边界情况
-                    // 屏幕外和本就不渲染的内容不渲染
-                    if (x < 0 || x > 1 || !this.showItems[index]) {
-                        return {x: -100, y: -100}
-                    } else {
-                        locationDict[location].push(item);
-                        let index = locationDict[location].length;
-                        if (this.scale > 100) {
-                            // 时间轴是满的
-                            return {x: x * this.viewBox.width, y: index * 54 + 24}
-                        } else {
-                            // 时间轴没有铺满屏幕
-                            return {
-                                x: (1 / 2 + (x - 1 / 2) * (this.scale / 100)) * this.viewBox.width,
-                                y: index * 54 + 24
-                            }
-                        }
-                    }
-                })
+
+            realScale: function (): number {
+                return this.scale / 100
             },
             // 时间最小值
             timeMin: function (): Time {
@@ -232,14 +273,14 @@
             },
 
             //所有项目的最小值
-            timeItemMin: function(): Time {
+            timeItemMin: function (): Time {
                 return this.availableTimeItems[0]
                     ? this.availableTimeItems[0].time
                     : 0
             },
 
             //所有项目的最大值
-            timeItemMax: function(): Time {
+            timeItemMax: function (): Time {
                 let max = this.availableTimeItems[this.availableTimeItems.length - 1]
                 return max
                     ? max.time
@@ -253,25 +294,20 @@
                     : this.timeMax - this.timeMin
             },
 
-            //每段多少时间
-            timeStep: function (): number {
-                return (this.timeDelta) / this.timeTicks
-            },
-
             //标签
             timeLabel: function (): number[] {
-                let result: number[] = Array(this.timeTicks - 3)
-                result.fill(this.timeItemMin, 0, this.timeTicks - 3)
+                let result: number[] = Array(this.timeTicks)
+                result.fill(this.rateCurrentMin, 0, this.timeTicks)
+                let step = (this.rateCurrentMax - this.rateCurrentMin) / (this.timeTicks - 1)
                 result.map((time, index) => {
-                    result[index] = time + (index + 1) * this.timeStep
+                    result[index] = time + index * step
                 })
-                result = [this.timeMin, this.timeItemMin, ...result, this.timeItemMax, this.timeMax]
-                return result.map(time => this.getTimeCount(time))
+                return result.map(time => this.getTimeCount(this.countTotalTime(time)))
             },
 
             //时间的级别
             timeLevel: function (): TimeLevel {
-                let delta = this.timeDelta * 100 / this.scale
+                let delta = this.timeDelta * this.realScale
                 let count = 1
                 let result = TimeLevel.Century
                 Object.keys(TimeLevelRange).map(key => {
@@ -283,16 +319,8 @@
                 return result
             },
 
-            timeTicks: function (): number {
-                return this.scale >= 100
-                    ? Math.round(10 * this.scale / 100)
-                    : 10
-            },
-
-            timeMouseOn: function(): number {
-                let padding = this.leftPadding;
-                let x = (this.mousePosition.x - this.viewBox.start.x - padding) / (this.viewBox.width - padding * 2)
-                return this.totalRangeCount(this.currentRangeCount(x))
+            timeMouseOn: function (): number {
+                return this.countTotalTime(this.rateMouseOn)
             },
 
             //统计现有属性
@@ -305,18 +333,36 @@
                 return result.sort()
             },
 
-            //当前最小值在全部时间轴的比重
+            //当前屏幕中央在全部时间轴比重
+            rateCurrentMiddle: function (): Rate {
+                //从视点到起点的距离
+                return this.viewPoint.x / (this.viewBox.width * this.realScale)
+            },
+
+            //当前屏幕左边在全部时间轴的比重
             rateCurrentMin: function (): Rate {
-                return this.viewPoint.x / this.viewBox.width / this.scale * 100
+                return this.rateCurrentMiddle - (1 / this.realScale) * (1 / 2)
+            },
+
+            //当前屏幕右边在全部时间轴的比重
+            rateCurrentMax: function (): Rate {
+                return this.rateCurrentMiddle + (1 / this.realScale) * (1 / 2)
+            },
+
+            //当前鼠标位置的比重
+            rateMouseOn: function (): Rate {
+                let padding = this.leftPadding;
+                let x = (this.mousePosition.x - this.viewBox.start.x - padding) / (this.viewBox.width - padding * 2)
+                return this.countCurrentRate(x)
             },
 
             //slider的样式
             styleSlider: function (): CSSProp {
                 let addition: CSSProp;
-                this.scale > 100
+                this.scale >= 100
                     ? addition = {
                         position: 'relative',
-                        left: -this.currentMin * this.scale + '%'
+                        left: -(this.viewPoint.x - this.viewBox.width / 2) + 'px'
                     }
                     : addition = {
                         alignSelf: 'center'
@@ -324,7 +370,8 @@
                 return {
                     ...addition,
                     height: this.timelineTop + 'px',
-                    width: this.scale + '%'
+                    width: this.scale + '%',
+                    zIndex: 2
                 }
             },
 
@@ -341,10 +388,31 @@
                 }
             },
 
-            styleTimeTab: function(): CSSProp {
+            styleTimeTab: function (): CSSProp {
                 return {
                     position: 'relative',
-                    top: this.timeTabTop + 'px',
+                    top: '16px',
+                }
+            },
+
+            styleTimeTickGroup: function (): CSSProp {
+                return {
+                    position: 'relative',
+                    top: '-18px',
+                    width: this.viewBox.width - 4 + 'px'
+                }
+            },
+
+            styleCard: function (): CSSProp {
+                let position: AreaRect = this.nodeMouseOnPosition
+                let deltaY = position.y > this.viewBox.height * 0.5
+                    ? -160
+                    : 0
+                return {
+                    position: 'absolute',
+                    left: this.viewBox.start.x + position.x + position.width / 2 + 'px',
+                    top: this.viewBox.start.y + position.y + position.height / 2 + deltaY + 'px',
+                    zIndex: 16
                 }
             }
         },
@@ -353,42 +421,42 @@
                 window.requestAnimationFrame(() => {
                     this.mousePosition = getPoint($event)
                 })
-                if ($event.ctrlKey) {
+                if ($event.ctrlKey && this.isMoving) {
                     window.requestAnimationFrame(() => {
-                        let {movementX} = $event
-                        let delta = movementX / this.viewBox.width / this.scale * 100
-                        this.currentMin += delta
-                        this.currentMin <= 0 && (this.currentMin = 0)
-                        this.currentMax += delta
-                        this.currentMax >= 1 && (this.currentMax = 1)
+                        let {movementX, movementY} = $event
+                        let x = this.viewPoint.x - movementX
+                        let y = this.viewPoint.y - movementY
+                        this.viewPoint = getPoint(this.checkViewPoint({x, y}))
                     })
                 }
             },
             mouseDown() {
-
+                this.isMoving = true
+            },
+            mouseUp() {
+                this.isMoving = false
+            },
+            checkViewPoint(point: PointObject) {
+                let {x, y} = point
+                let xMin = 0;
+                let xMax = this.realScale * this.viewBox.width;
+                x < xMin && (x = xMin)
+                x > xMax && (x = xMax)
+                return {x, y}
             },
             onScroll($event: WheelEvent) {
-                let oldScale = this.scale;
-                let delta;
+                let oldScale = this.realScale;
                 let [min, max] = [100, 1000];
-                $event.deltaY < 0
-                    ? delta = 20
-                    : delta = -20;
-                this.scale += delta;
+                let scrollDelta = $event.deltaY < 0
+                    ? 20
+                    : -20;
+                this.scale += scrollDelta;
                 this.scale < min && (this.scale = min);
                 this.scale > max && (this.scale = max);
-                let point = getPoint($event).decrease(this.viewBox.start);
-                // 横向坐标的比例
-                let x = point.x / this.viewBox.width;
-                // 计算坐标代表的现在的值
-                let currentValue = this.currentRangeCount(x);
-                let newMin = currentValue - (currentValue - this.currentMin) / this.scale * oldScale;
-                let newMax = currentValue + (this.currentMax - currentValue) / this.scale * oldScale;
-                // 边界处理
-                (newMin < 0 || this.scale <= 100) && (newMin = 0);
-                (newMax > 1 || this.scale <= 100) && (newMax = 1);
-                this.currentMin = newMin;
-                this.currentMax = newMax;
+                let delta = this.viewBox.midPoint().copy().decrease(this.mousePosition)
+                let newX = (this.viewPoint.x * this.realScale - delta.x * (this.realScale - oldScale)) / oldScale
+                let newY = this.viewPoint.y
+                this.viewPoint = getPoint(this.checkViewPoint({x: newX, y: newY}))
             },
             infoToTimeItem(info: NodeInfoPart | MediaInfoPart) {
                 let result: TimelineItem[] = [];
@@ -444,29 +512,24 @@
             },
 
             //根据比例计算min max之间的值
-            rangeCount(a: Time, b: Time, v: Rate): Time {
-                return (a - b) * v + b
+            rangeCount(max: number, min: number, v: Rate): number {
+                return (max - min) * v + min
             },
 
-            //总时间跨度比例的计算
-            totalRangeCount(v: Rate) {
+            //计算某个rate的时间
+            countTotalTime(v: Rate): Time {
                 return this.rangeCount(this.timeMax, this.timeMin, v)
             },
 
-            //现有时间跨度比例的计算
-            currentRangeCount(v: Rate) {
-                return this.rangeCount(this.currentMax, this.currentMin, v)
-            },
-
-            //计算全局比例
-            totalRateCount(v: Time) {
-                return (v - this.timeMin) / (this.timeDelta) as Rate;
+            //计算某个rate对应的现在的rate
+            countCurrentRate(v: Rate): Rate {
+                return this.rangeCount(this.rateCurrentMax, this.rateCurrentMin, v)
             },
 
             //计算屏幕内比例
-            currentRateCount(v: Time) {
-                let min = this.totalRangeCount(this.currentMin);
-                let max = this.totalRangeCount(this.currentMax);
+            countTimeToRate(v: Time) {
+                let min = this.countTotalTime(this.rateCurrentMin);
+                let max = this.countTotalTime(this.rateCurrentMax);
                 let delta = max - min;
                 return (v - min) / (delta) as Rate;
             },
@@ -479,6 +542,28 @@
             },
             checkInRange(value: number) {
                 return value >= this.range[0] && this.range[1] >= value
+            },
+            doNothing() {
+
+            },
+
+            mouseEnterNode(node: FakeNodeSettingPart<TimelineItem>, position?: AreaRect) {
+                this.nodeMouseOn = node
+                position && (this.nodeMouseOnPosition = position)
+            },
+
+            cancelNodeLeave() {
+                clearTimeout(this.nodeLeaveTimer)
+            },
+
+            mouseLeaveNode(node: FakeNodeSettingPart<TimelineItem>) {
+                if (this.nodeMouseOn) {
+                    if (node.Setting._id === this.nodeMouseOn.Setting._id && node._origin.key === this.nodeMouseOn._origin.key) {
+                        this.nodeLeaveTimer = setTimeout(() => {
+                            this.nodeMouseOn = null
+                        }, 1500)
+                    }
+                }
             }
         },
         record: {
@@ -487,7 +572,7 @@
         },
         mounted(): void {
             this.onResize();
-            this.viewPoint = this.viewBox.midPoint();
+            this.viewPoint = this.viewBox.midPoint().decrease(this.viewBox.start);
             window.requestAnimationFrame(() => {
                 this.range[0] = this.timeItemMin;
                 this.range[1] = this.timeItemMax;

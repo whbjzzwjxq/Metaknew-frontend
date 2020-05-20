@@ -9,7 +9,8 @@ export interface TimelineItem {
     key: string
 }
 
-export interface FakeNodeSettingPart {
+export interface FakeNodeSettingPart<T> {
     State: NodeState,
-    Setting: NodeSetting
+    Setting: NodeSetting,
+    _origin: T
 }

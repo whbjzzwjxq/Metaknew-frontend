@@ -83,6 +83,7 @@
             :node-setting="getTargetInfo(node)"
             :node="node"
             :hide="!(node.State.isMouseOn && showNode[index] && realScale >= 0.4)"
+            :edit-mode="editMode"
             @mouseenter.native="mouseEnter(node, index)"
             @mouseleave.native="mouseLeave(node)"
             @add-link="addLink(node)"
@@ -450,9 +451,7 @@
 
             //渲染按钮
             renderNodeButtons: function (): NodeSettingPart[] {
-                return this.editMode
-                    ? this.nodes
-                    : []
+                return this.nodes
             },
 
             renderMediaButtons: function (): MediaSettingPart[] {

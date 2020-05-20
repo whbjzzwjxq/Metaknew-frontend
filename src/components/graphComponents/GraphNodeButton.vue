@@ -77,8 +77,11 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            boundDocument: function (): DocumentSelfPart {
+            boundDocument: function (): DocumentSelfPart | undefined {
                 return this.node.boundDocument
+            },
+            currentDocument: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             },
             buttonGroup: function (): IconItem[] {
                 // 是否可以删除
@@ -91,30 +94,20 @@
                     : deleteIcon = true;
 
                 let explodeIcon: IconItem;
-                if (!this.boundDocument) {
-                    if (this.node.remoteDocument) {
-                        explodeIcon = {
-                            name: getIcon("i-explode", 'goto'),
-                            _func: this.goto,
-                            toolTip: '转到对应专题',
-                            render: this.node._type === 'document',
-                            disabled: this.node.remoteDocument._id === this.dataManager.currentDocument._id
-                        }
-                    } else {
-                        explodeIcon = {
-                            name: getIcon("i-explode", 'unload'),
-                            _func: this.loadDocument,
-                            toolTip: '加载专题',
-                            render: this.node._type === 'document'
-                        }
-                    }
-                } else {
+                if (this.boundDocument) {
                     explodeIcon = {
                         name: getIcon("i-explode", !this.boundDocument.isExplodeState),
                         _func: this.explode,
                         toolTip: !this.boundDocument.isExplodeState ? '展开专题' : '关闭专题',
                         render: this.node._type === 'document',
-                        disabled: this.boundDocument.isRoot
+                        disabled: this.boundDocument._id === this.currentDocument._id
+                    }
+                } else {
+                    explodeIcon = {
+                        name: getIcon("i-explode", 'unload'),
+                        _func: this.loadDocument,
+                        toolTip: '加载专题',
+                        render: this.node._type === 'document'
                     }
                 }
                 return [
@@ -145,11 +138,8 @@
             loadDocument() {
                 this.$emit('load-document', this.node)
             },
-            goto() {
-                this.$emit('goto', this.node.remoteDocument)
-            },
             explode() {
-                this.boundDocument.explode()
+                this.boundDocument && this.boundDocument.explode()
             }
         },
         watch: {},
