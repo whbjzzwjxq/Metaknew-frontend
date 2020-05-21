@@ -170,20 +170,25 @@
                         视角重置
                     </v-chip>
                 </div>
+                <div class="py-2">
+                    <v-chip @click="changeShowLink" class="unselected">
+                        {{ showNoLinkText }}
+                    </v-chip>
+                </div>
             </div>
-            <div class="pa-4">
+            <div class="pl-4" style="width: 36px">
                 <v-slider
+                    height="100%"
                     v-model="scale"
                     :min="20"
                     :max="500"
                     color="grey"
                     thumb-size="small"
-                    background-color="black"
                     track-color="black"
                     vertical>
 
                 </v-slider>
-
+                <p class="ma-0 align-center"> {{ scale + '%'}}</p>
             </div>
         </div>
     </div>
@@ -193,7 +198,7 @@
     import Vue from 'vue'
     import {
         DocumentSelfPart,
-        ItemSettingPart,
+        DocumentItemSettingPart,
         LinkSettingPart,
         MediaSettingPart,
         NodeSettingPart,
@@ -290,7 +295,9 @@
                 //卡片左上角的位置
                 cardPosition: {x: 0, y: 0},
                 //鼠标在什么东西上面
-                isMouseOn: false
+                isMouseOn: false,
+
+                showNoLink: false
             }
         },
         props: {
@@ -460,11 +467,6 @@
                     : []
             },
 
-            //是否渲染卡片
-            showCard: function (): boolean {
-                return this.renderCard && !this.isDragging && !this.editMode && this.isMouseOn
-            },
-
             // nodesIdList
             nodeIdList: function (): id[] {
                 let result = this.nodes.map(node => node._id);
@@ -601,11 +603,11 @@
                 } as Record<DocumentItemType, string[]>
             },
 
-            allItems: function (): ItemSettingPart[] {
+            allItems: function (): DocumentItemSettingPart[] {
                 return this.graph.itemsAllSubDoc
             },
 
-            selectedItems: function (): ItemSettingPart[] {
+            selectedItems: function (): DocumentItemSettingPart[] {
                 return this.allItems.filter(item => item.State.isSelected)
             },
 
@@ -725,6 +727,7 @@
             //显示边
             showLink: function (): boolean[] {
                 return this.links.map(link =>
+                    !this.showNoLink &&
                     link.isFatherExplode && // 父组件要炸开
                     this.labelViewDict.link[link._label] &&
                     this.getTargetInfo(link.Setting._start).show &&
@@ -759,6 +762,10 @@
 
             importanceChipText: function (): string {
                 return this.importanceOn ? '重要度模式: 开' : '重要度模式: 关'
+            },
+
+            showNoLinkText: function (): string {
+                return this.showNoLink ? "纯节点模式：开" : '纯节点模式：关'
             },
 
             graphContainerWidth: function (): number {
@@ -956,7 +963,7 @@
                 this.clearSelected('all')
             },
 
-            clearSelected(items: 'all' | ItemSettingPart[]) {
+            clearSelected(items: 'all' | DocumentItemSettingPart[]) {
                 if (items === 'all') {
                     Object.values(this.dataManager.documentManager).map(document => {
                         document.itemsAll.map(item => item.updateState('isSelected', false))
@@ -1104,7 +1111,7 @@
             },
 
             selectLabel(_type: DocumentItemType, _label: string) {
-                let list: ItemSettingPart[] = this.getItemList(_type);
+                let list: DocumentItemSettingPart[] = this.getItemList(_type);
                 list.filter(item => item._label === _label).map(item => item.updateState('isSelected'))
             },
 
@@ -1123,10 +1130,9 @@
                 this.lastViewPoint.update(point)
             },
 
-            //显示节点或者关系卡片
-            cardOn(node: NodeSettingPart | LinkSettingPart, location: PointObject) {
-
-            },
+            changeShowLink() {
+                this.showNoLink = !this.showNoLink
+            }
         },
 
         watch: {

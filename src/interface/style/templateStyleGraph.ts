@@ -451,7 +451,7 @@ export const mediaSettingInGraph = () => {
             }
         }
     };
-    mergeObject(result, replace);
+    mergeObject(result, replace, {rewriteValue: true});
     return result as SettingConfAll
 };
 
@@ -470,7 +470,7 @@ export const noteSettingGroupInGraph = () => {
             }
         }
     };
-    mergeObject(result, replace);
+    mergeObject(result, replace, {rewriteValue: true});
     return result as SettingConfAll
 };
 
@@ -511,7 +511,7 @@ export const textSettingGroupInGraph = () => {
             }
         }
     };
-    mergeObject(result, replace);
+    mergeObject(result, replace, {rewriteValue: true});
     return result as SettingConfAll
 };
 

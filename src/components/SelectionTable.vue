@@ -27,7 +27,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {ItemSettingPart} from "@/class/settingBase";
+    import {DocumentItemSettingPart} from "@/class/settingBase";
 
     interface setting {
         index: number,
@@ -44,13 +44,13 @@
         },
         props: {
             settingList: {
-                type: Array as () => ItemSettingPart[],
+                type: Array as () => DocumentItemSettingPart[],
                 required: true
             },
         },
         computed: {
             settingItem: function(): setting[] {
-                return this.settingList.map((setting: ItemSettingPart, index: number) => {
+                return this.settingList.map((setting: DocumentItemSettingPart, index: number) => {
                     let name: string = setting._name;
                     return {
                         index: index,

@@ -1,5 +1,5 @@
 <template>
-    <v-card :class="`${className}-card`" flat>
+    <v-card :class="[`${className}-card`, 'unselected']" flat>
         <div>
             <div class="d-flex flex-row">
                 <div :class="[`${className}-card-avatar`]">
@@ -8,10 +8,10 @@
                     </node-avatar>
                 </div>
                 <div :class="[`${className}-card-label`]">
-                    <p class="ma-0"> Name </p>
-                    <p class="ma-0 text--black"> {{ name }}</p>
-                    <p class="ma-0"> PrimaryLabel </p>
-                    <p class="ma-0 text--black"> {{ label }}</p>
+                    <p :class="[`${className}-card-label-title`, 'ma-0']"> Name </p>
+                    <p :class="[`${className}-card-label-content`, 'ma-0']"> {{ name }}</p>
+                    <p :class="[`${className}-card-label-title`, 'ma-0']"> PrimaryLabel </p>
+                    <p :class="[`${className}-card-label-content`, 'ma-0']"> {{ label }}</p>
                 </div>
             </div>
         </div>

@@ -11,7 +11,7 @@ import {userEditDataQuery} from "@/api/user/dataApi";
 import store from '@/store/index'
 import Vue from "vue";
 import {InfoPart} from "@/class/info";
-import {ItemSettingPart} from "@/class/settingBase";
+import {DocumentItemSettingPart} from "@/class/settingBase";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -223,7 +223,7 @@ export const itemEqual = (itemA: { _id: id, _type: DocumentItemType }, itemB: { 
     itemA._id === itemB._id && itemA._type === itemB._type;
 
 // 在一个List里找Item
-export const findItem = (list: ItemSettingPart[], _id: id, _type: DocumentItemType) =>
+export const findItem = (list: DocumentItemSettingPart[], _id: id, _type: DocumentItemType) =>
     list.filter(item => item._id === _id && item._type === _type);
 
 export const getIsSelf = (ctrl: BaseCtrl) =>
@@ -303,30 +303,37 @@ export const currentTime = () => {
     return time.getTime();
 };
 
-const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];
+const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol', 'undefined'];
 
-export function mergeObject<T extends Record<string, any>>(target: T, source: any, passive?: boolean, deepClone?: boolean) {
-    // 递归对象
-    // source里有target没有的值是否强制覆盖
-    passive || (passive = false);
+export interface MergeObjectConfig {
+    rewriteValue?: boolean, //是否覆盖已有值
+    rewriteUndefined?: boolean, //是否覆盖undefined和null
+    deepClone?: boolean //深拷贝
+}
+
+export function mergeObject<T extends Record<string, any>>(target: T, source: any, config: MergeObjectConfig) {
+    let {rewriteValue, rewriteUndefined, deepClone} = config;
+    rewriteValue || (rewriteValue = false);
     deepClone || (deepClone = false);
-    Object.entries(source).map(([key, value]) => {
-        if (target[key] === undefined) {
-            //@ts-ignore
-            passive && (target[key] = value)
-        } else {
-            let typeInTarget = typeof target[key];
-            let typeValue = typeof value;
-            if (jsBaseType.includes(typeInTarget) && typeInTarget === typeValue) {
+    rewriteUndefined || (rewriteUndefined = true);
+    if (typeof source === 'object' && source !== null) {
+        Object.entries(source).map(([key, value]) => {
+            let prop = key as keyof T
+            if (!target.hasOwnProperty(prop)) {
                 //@ts-ignore
-                target[key] = value;
-            } else if (typeInTarget !== typeValue) {
-                // doNothing
+                rewriteUndefined && (target[prop] = value)
             } else {
-                mergeObject(target[key], value, passive)
+                let typeInTarget = typeof target[prop];
+                let typeValue = typeof value;
+                if (jsBaseType.includes(typeInTarget)) {
+                    //@ts-ignore
+                    (typeInTarget === typeValue || rewriteValue) && (target[prop] = value);
+                } else {
+                    mergeObject(target[prop], value, config)
+                }
             }
-        }
-    });
+        });
+    }
     return target
 }
 

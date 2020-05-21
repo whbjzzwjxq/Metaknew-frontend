@@ -1,4 +1,4 @@
-import {ItemSettingPart} from "@/class/settingBase";
+import {DocumentItemSettingPart} from "@/class/settingBase";
 
 const setNumberInRange = (num: number, min: number, max: number) =>
     num < min
@@ -75,7 +75,7 @@ export interface PaperRowBackend {
     _pos: PaperItemPosition
 }
 //列级别
-export class PaperRow extends PaperOrderObject<PaperSection, ItemSettingPart> {
+export class PaperRow extends PaperOrderObject<PaperSection, DocumentItemSettingPart> {
     //列级别通过数组排序控制位置
     Setting: PaperRowCtrlSetting
     static minHeight: number = 120
@@ -95,7 +95,7 @@ export class PaperRow extends PaperOrderObject<PaperSection, ItemSettingPart> {
         this._children = value
     }
 
-    protected constructor(position: PaperItemPosition, setting: PaperRowCtrlSetting, parent: PaperSection, children: ItemSettingPart[]) {
+    protected constructor(position: PaperItemPosition, setting: PaperRowCtrlSetting, parent: PaperSection, children: DocumentItemSettingPart[]) {
         super(position, parent, children);
         this.Setting = setting
     }
@@ -122,13 +122,13 @@ export class PaperRow extends PaperOrderObject<PaperSection, ItemSettingPart> {
         return new PaperRow(position, setting, parent, [])
     }
 
-    static initFromBackend(row: PaperRowBackend, parent: PaperSection, children: ItemSettingPart[]) {
+    static initFromBackend(row: PaperRowBackend, parent: PaperSection, children: DocumentItemSettingPart[]) {
         let {Setting, _pos} = row
         let _children = children.filter(item => item.StyleInPaper.Base.row === _pos.order)
         return new PaperRow(_pos, Setting, parent, _children)
     }
 
-    exchangeItem(item: ItemSettingPart, targetRow: PaperRow, targetItem?: ItemSettingPart) {
+    exchangeItem(item: DocumentItemSettingPart, targetRow: PaperRow, targetItem?: DocumentItemSettingPart) {
         let index = this.children.indexOf(item)
         let targetIndex = targetItem !== undefined
             ? targetRow.children.indexOf(targetItem)
@@ -138,7 +138,7 @@ export class PaperRow extends PaperOrderObject<PaperSection, ItemSettingPart> {
         targetItem && this.replaceItem(index, targetItem)
     }
 
-    replaceItem(index: number, item: ItemSettingPart) {
+    replaceItem(index: number, item: DocumentItemSettingPart) {
         if (this.itemIndexValid(index)) {
             this.children.splice(index, 1, item)
             //isVirtual false -> true true -> false undefined -> true
@@ -149,7 +149,7 @@ export class PaperRow extends PaperOrderObject<PaperSection, ItemSettingPart> {
         }
     }
 
-    deleteItem(item: ItemSettingPart) {
+    deleteItem(item: DocumentItemSettingPart) {
         let index = this.children.indexOf(item)
         if (this.itemIndexValid(index)) {
             this.children.splice(index, 1)
@@ -190,7 +190,7 @@ export class PaperRow extends PaperOrderObject<PaperSection, ItemSettingPart> {
         this.parent.addRow(order + 1)
     }
 
-    injectItems(itemList: ItemSettingPart[]) {
+    injectItems(itemList: DocumentItemSettingPart[]) {
         let matchedItem = itemList.filter(item =>
             item.StyleInPaper.Base.section === this.parent.order &&
             item.StyleInPaper.Base.row === this.order)
@@ -231,7 +231,7 @@ export interface PaperSectionBackend {
     _children: PaperRowBackend[]
 }
 //节级别
-export class PaperSection extends PaperOrderObject<PaperComponent, PaperRow> {
+export class PaperSection extends PaperOrderObject<PaperComponentSection, PaperRow> {
     Setting: PaperSectionCtrlSetting
     State: PaperSectionState
     static minHeight: number = 120
@@ -243,7 +243,7 @@ export class PaperSection extends PaperOrderObject<PaperComponent, PaperRow> {
         return this._children
     }
 
-    protected constructor(position: PaperItemPosition, setting: PaperSectionCtrlSetting, state: PaperSectionState, parent: PaperComponent, children: PaperRow[]) {
+    protected constructor(position: PaperItemPosition, setting: PaperSectionCtrlSetting, state: PaperSectionState, parent: PaperComponentSection, children: PaperRow[]) {
         super(position, parent, children);
         this.Setting = setting
         this.State = state
@@ -276,7 +276,7 @@ export class PaperSection extends PaperOrderObject<PaperComponent, PaperRow> {
         }
     }
 
-    static initEmptySection(order: number, parent: PaperComponent) {
+    static initEmptySection(order: number, parent: PaperComponentSection) {
         let position = this.sectionPositionDefault(order)
         let setting = this.sectionSettingDefault()
         let state = this.sectionStateDefault()
@@ -285,7 +285,7 @@ export class PaperSection extends PaperOrderObject<PaperComponent, PaperRow> {
         return sectionNew
     }
 
-    static initFromBackend(section: PaperSectionBackend, parent: PaperComponent) {
+    static initFromBackend(section: PaperSectionBackend, parent: PaperComponentSection) {
         let {Setting, _children, _pos} = section
         let sectionNew = new PaperSection(_pos, Setting, this.sectionStateDefault(), parent, [])
         //匹配这一节的内容
@@ -329,7 +329,7 @@ export interface PaperComponentBackend {
     _children: PaperSectionBackend[]
 }
 //组件级别
-export class PaperComponent extends PaperOrderObject<null, PaperSection> {
+export class PaperComponentSection extends PaperOrderObject<null, PaperSection> {
     get children() {
         return this._children
     }
@@ -350,12 +350,12 @@ export class PaperComponent extends PaperOrderObject<null, PaperSection> {
             height: 2880,
             order: 0
         } as PaperItemPosition
-        return new PaperComponent(defaultPosition, [])
+        return new PaperComponentSection(defaultPosition, [])
     }
 
     static initFromBackend(comp: PaperComponentBackend) {
         let {_children, _pos} = comp
-        let compNew = new PaperComponent(_pos, [])
+        let compNew = new PaperComponentSection(_pos, [])
         compNew._children = _children.map(section => PaperSection.initFromBackend(section, compNew))
         return compNew
     }
@@ -367,9 +367,10 @@ export class PaperComponent extends PaperOrderObject<null, PaperSection> {
         this._children.push(sectionNew)
     }
 
-    compress() {
+    compress(): PaperComponentBackend {
         return {
-            _children: this.children.map(section => section.compress())
+            _children: this.children.map(section => section.compress()),
+            _pos: this._pos
         }
     }
 }

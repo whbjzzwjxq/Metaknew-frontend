@@ -44,6 +44,21 @@
     overflow: hidden;
 }
 
+.xSmall-card-label-title {
+    font-size: xx-small;
+    line-height: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.xSmall-card-label-content {
+    font-size: medium;
+    font-weight: bold;
+    line-height: 120%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 .xSmall-card-content {
     width: 200px;
     height: 64px;

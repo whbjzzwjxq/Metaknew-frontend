@@ -49,7 +49,7 @@
     import CardPaperAll from "@/components/paperComponents/CardPaperAll.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {getIcon} from "@/utils/icon";
-    import {ItemSettingPart} from "@/class/settingBase";
+    import {DocumentItemSettingPart} from "@/class/settingBase";
     import {DragEventWithTarget} from "@/interface/interfaceInComponent";
     import {PaperRow} from "@/class/settingPaper";
 
@@ -188,27 +188,27 @@
                 this.row.deleteSelf()
             },
 
-            _deleteItem: function (item: ItemSettingPart) {
+            _deleteItem: function (item: DocumentItemSettingPart) {
                 this.row.deleteItem(item)
             },
 
-            _emit: function (name: string, $event: DragEvent, item?: ItemSettingPart) {
+            _emit: function (name: string, $event: DragEvent, item?: DocumentItemSettingPart) {
                 this.$emit(name, {
                     event: $event,
                     item,
                     row: this.row,
                 })
             },
-            dragCard: function ($event: DragEvent, item: ItemSettingPart) {
+            dragCard: function ($event: DragEvent, item: DocumentItemSettingPart) {
                 this._emit('drag-card', $event, item)
             },
-            dragEndCard: function ($event: DragEvent, item: ItemSettingPart) {
+            dragEndCard: function ($event: DragEvent, item: DocumentItemSettingPart) {
                 this._emit('drag-end-card', $event, item)
             },
-            dragStartCard: function ($event: DragEvent, item: ItemSettingPart) {
+            dragStartCard: function ($event: DragEvent, item: DocumentItemSettingPart) {
                 this._emit('drag-start-card', $event, item)
             },
-            dragEnterCard: function ($event: DragEvent, item?: ItemSettingPart) {
+            dragEnterCard: function ($event: DragEvent, item?: DocumentItemSettingPart) {
                 let event = $event as DragEventWithTarget
                 //@ts-ignore
                 event.mouseOnTarget = item !== undefined
@@ -216,7 +216,7 @@
                     : $event.target
                 this._emit('drag-enter-card', event, item)
             },
-            dropCard: function ($event: DragEvent, item: ItemSettingPart) {
+            dropCard: function ($event: DragEvent, item: DocumentItemSettingPart) {
                 this._emit('drop-card', $event, item)
             },
             checkAvailable: function (delta: number) {
@@ -225,7 +225,7 @@
             changeHeight: function (delta: number) {
                 this.checkAvailable(delta) && (this.height += delta)
             },
-            getId: function (item: ItemSettingPart) {
+            getId: function (item: DocumentItemSettingPart) {
                 return 'cardPaperAll' + item._uniqueId
             }
 

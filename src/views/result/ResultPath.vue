@@ -23,7 +23,7 @@
         },
         data: function () {
             return {
-
+                viewBox: new RectByPoint({x: 0, y: 0}, {x: 0, y: 0})
             }
         },
         props: {},

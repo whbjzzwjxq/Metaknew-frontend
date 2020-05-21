@@ -100,7 +100,7 @@
         PropDescriptionDict,
         ResolveType,
     } from "@/utils/fieldResolve"
-    import {deepClone, fieldHandler, getIndex, infoChangePLabel, mergeObject} from "@/utils/utils"
+    import {deepClone, fieldHandler, getIndex, infoChangePLabel} from "@/utils/utils"
     import DataTableImporter from '@/components/DataTableImporter.vue';
     import PLabelSelector from '@/components/PLabelSelector.vue';
     import DataTableButtonGroup from '@/components/DataTableButtonGroup.vue';
@@ -371,9 +371,9 @@
                     }
                 });
                 // 合并Prop
-                mergeObject(node.Description, text, true);
-                mergeObject(node.Translate, translate, true);
-                mergeObject(node.ExtraProps, extraProps, true);
+                Object.assign(node.Description, text);
+                Object.assign(node.Translate, translate);
+                Object.assign(node.ExtraProps, extraProps);
                 this.updateExtraPropsKeyList(node);
                 return node
             },

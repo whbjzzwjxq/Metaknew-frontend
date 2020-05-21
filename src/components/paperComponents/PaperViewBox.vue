@@ -75,7 +75,7 @@
     import Vue from 'vue'
     import {
         DocumentSelfPart,
-        ItemSettingPart,
+        DocumentItemSettingPart,
         LinkSettingPart,
         MediaSettingPart,
         NodeSettingPart,
@@ -96,7 +96,7 @@
 
     interface EventPayloadInPaper {
         event: DragEvent,
-        item?: ItemSettingPart,
+        item?: DocumentItemSettingPart,
         row: PaperRow,
         section: PaperSection,
     }
@@ -162,7 +162,7 @@
             texts: function (): TextSettingPart[] {
                 return this.document.texts
             },
-            itemList: function (): ItemSettingPart[] {
+            itemList: function (): DocumentItemSettingPart[] {
                 return this.document.itemsAll
             },
             containerStyle: function (): CSSProp {
@@ -191,7 +191,7 @@
                     zIndex: 4
                 }
             },
-            itemListNotInRow: function (): ItemSettingPart[] {
+            itemListNotInRow: function (): DocumentItemSettingPart[] {
                 return this.document.itemsAll.filter(item => !item.State.isInRow)
             },
             viewBoxRealHeight: function (): number {

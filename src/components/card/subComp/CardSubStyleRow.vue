@@ -91,7 +91,7 @@
     import Vue from 'vue'
     import CardSubStyleNumber from "@/components/card/subComp/CardSubStyleNumber.vue";
     import {SettingConf, SettingConfGroup} from "@/interface/style/interfaceStyleBase";
-    import {ItemSettingPart} from "@/class/settingBase";
+    import {DocumentItemSettingPart} from "@/class/settingBase";
 
     type settingType = 'Color' | 'Number' | 'Boolean' | 'String' | 'Text'
     export default Vue.extend({
@@ -120,7 +120,7 @@
                 required: true
             },
             selection: {
-                type: Array as () => ItemSettingPart[],
+                type: Array as () => DocumentItemSettingPart[],
                 required: true
             }
         },

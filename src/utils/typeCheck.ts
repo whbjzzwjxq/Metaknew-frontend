@@ -1,7 +1,7 @@
 import {DirectoryItemAll, DirectoryNode, ListText, ListTitle} from "@/interface/interfaceInComponent";
 import {InfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
 import {
-    ItemSettingPart,
+    DocumentItemSettingPart,
     LinkSettingPart,
     MediaSettingPart,
     NodeSettingPart,
@@ -21,27 +21,27 @@ export function isDocumentType(str: string): str is DocumentItemType {
         (str as DocumentItemType) === 'text'
 }
 
-export function isNodeSettingPart(item: ItemSettingPart): item is NodeSettingPart {
+export function isNodeSettingPart(item: DocumentItemSettingPart): item is NodeSettingPart {
     return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
 }
 
-export function isMediaSetting(item: ItemSettingPart): item is MediaSettingPart {
+export function isMediaSetting(item: DocumentItemSettingPart): item is MediaSettingPart {
     return (item as MediaSettingPart)._type === 'media'
 }
 
-export function isVisNodeSetting(item: ItemSettingPart): item is VisNodeSettingPart {
+export function isVisNodeSetting(item: DocumentItemSettingPart): item is VisNodeSettingPart {
     return isNodeSettingPart(item) || isMediaSetting(item)
 }
 
-export function isLinkSetting(item: ItemSettingPart): item is LinkSettingPart {
+export function isLinkSetting(item: DocumentItemSettingPart): item is LinkSettingPart {
     return (item as LinkSettingPart)._type === 'link'
 }
 
-export function isTextSetting(item: ItemSettingPart): item is TextSettingPart {
+export function isTextSetting(item: DocumentItemSettingPart): item is TextSettingPart {
     return (item as TextSettingPart)._type === 'text'
 }
 
-export function isVisAreaSetting(item: ItemSettingPart): item is VisAreaSettingPart {
+export function isVisAreaSetting(item: DocumentItemSettingPart): item is VisAreaSettingPart {
     return isVisNodeSetting(item as VisAreaSettingPart) || isTextSetting(item as VisAreaSettingPart)
 }
 

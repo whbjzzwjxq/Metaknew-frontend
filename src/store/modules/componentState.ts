@@ -1,4 +1,4 @@
-import {ItemSettingPart} from "@/class/settingBase";
+import {DocumentItemSettingPart} from "@/class/settingBase";
 import {PaperRow} from "@/class/settingPaper";
 
 declare global {
@@ -26,7 +26,7 @@ declare global {
 
     interface PaperDraggingState {
         isDragging: boolean,
-        draggingItem: null | ItemSettingPart,
+        draggingItem: null | DocumentItemSettingPart,
         draggingRow: null | PaperRow
     }
 }
@@ -119,7 +119,7 @@ const mutations = {
         let {isDragging} = payload;
         state.paperDraggingState.isDragging = isDragging
     },
-    changePaperDraggingItem: (state: ComponentState, payload: {item: ItemSettingPart, row: PaperRow}) => {
+    changePaperDraggingItem: (state: ComponentState, payload: {item: DocumentItemSettingPart, row: PaperRow}) => {
         let {item, row} = payload;
         state.paperDraggingState.draggingRow = row
         state.paperDraggingState.draggingItem = item

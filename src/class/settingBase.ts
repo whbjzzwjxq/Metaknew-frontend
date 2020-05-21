@@ -3,14 +3,23 @@ import store from "@/store";
 import {BackendDocument, BackendGraphWithNode} from "@/api/document/document";
 import {DocumentDraft} from "@/api/subgraph/commonApi";
 import {isDocumentType, isLinkSetting, isMediaSetting, isNodeSettingPart, isTextSetting} from "@/utils/typeCheck";
-import {crucialRegex, deepClone, findItem, frontendIdRegex, getCookie, getIndex, getSrc} from "@/utils/utils";
+import {
+    crucialRegex,
+    deepClone,
+    findItem,
+    frontendIdRegex,
+    getCookie,
+    getIndex,
+    getSrc,
+    mergeObject
+} from "@/utils/utils";
 import {commitDocumentAdd, commitSnackbarOff, commitSnackbarOn} from "@/store/modules/_mutations";
 import {linkStateTemplate, nodeStateTemplate, noteStateTemplate, textStateTemplate} from "@/utils/template";
 import {dispatchNoteInDocPush} from "@/store/modules/_dispatch";
 import {getManager} from "@/store/modules/dataManager";
 import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
 import {nodeSettingGroupInPaper, settingTemplatePaper} from "@/interface/style/templateStylePaper";
-import {PaperComponent} from "@/class/settingPaper";
+import {PaperComponentSection} from "@/class/settingPaper";
 import {
     linkSettingGroupInGraph,
     mediaSettingInGraph,
@@ -72,7 +81,7 @@ export abstract class SettingPart {
     }
 }
 
-export class ItemSettingPart extends SettingPart {
+export class DocumentItemSettingPart extends SettingPart {
     Setting: DocumentItemSetting;
     State: DocumentItemState;
     _parent: DocumentSelfPart;
@@ -153,11 +162,11 @@ export class ItemSettingPart extends SettingPart {
     deepCloneSelf() {
         let setting = deepClone(this.Setting);
         let state = deepClone(this.State);
-        return new ItemSettingPart(setting, state, this.parent)
+        return new DocumentItemSettingPart(setting, state, this.parent)
     }
 }
 
-export class NodeSettingPart extends ItemSettingPart {
+export class NodeSettingPart extends DocumentItemSettingPart {
     Setting: NodeSetting;
     State: NodeState;
     static list: NodeSettingPart[] = [];
@@ -236,7 +245,7 @@ export class NodeSettingPart extends ItemSettingPart {
     }
 }
 
-export class MediaSettingPart extends ItemSettingPart {
+export class MediaSettingPart extends DocumentItemSettingPart {
     Setting: MediaSetting;
     State: MediaState;
     static list: MediaSettingPart[] = [];
@@ -336,7 +345,7 @@ export class MediaSettingPart extends ItemSettingPart {
     }
 }
 
-export class LinkSettingPart extends ItemSettingPart {
+export class LinkSettingPart extends DocumentItemSettingPart {
     Setting: LinkSetting;
     State: LinkState;
     static list: LinkSettingPart[] = [];
@@ -472,7 +481,7 @@ export class LinkSettingPart extends ItemSettingPart {
     }
 }
 
-export class TextSettingPart extends ItemSettingPart {
+export class TextSettingPart extends DocumentItemSettingPart {
     Setting: TextSetting;
     State: TextState;
     static list: TextSettingPart[] = [];
@@ -648,10 +657,11 @@ export class DocumentSelfPart extends SettingPart {
     static documentComponentsDefault() {
         return {
             InGraph: {
-                SubGraph: []
+                SubGraph: [],
+                Layer: []
             },
             InPaper: {
-                Sections: PaperComponent.initEmptyComponent()
+                Sections: PaperComponentSection.initEmptyComponent()
             }
         } as DocumentComponent
     }
@@ -675,12 +685,8 @@ export class DocumentSelfPart extends SettingPart {
 
     static initBackend(data: BackendGraphWithNode, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
         DocumentSelfPart.baseList.push(data);
-        let comps = {
-            InGraph: data.Components.InGraph,
-            InPaper: {
-                Sections: PaperComponent.initFromBackend(data.Components.InPaper.Sections)
-            }
-        } as DocumentComponent;
+        let comps = mergeObject(this.documentComponentsDefault(), data.Components, {rewriteValue: true})
+        comps.InPaper.Sections = PaperComponentSection.initFromBackend(data.Components.InPaper.Sections)
         let meta = data.MetaData;
         let setting = data.Setting;
         let content = this.documentContentDefault();
@@ -700,7 +706,7 @@ export class DocumentSelfPart extends SettingPart {
         return {graph, info}
     }
 
-    static initCollect(payload: DocumentInitPayload, items: ItemSettingPart[], deleteSource: boolean = true) {
+    static initCollect(payload: DocumentInitPayload, items: DocumentItemSettingPart[], deleteSource: boolean = true) {
         let {_id, parent, commitToVuex} = payload;
         let newGraph = DocumentSelfPart.initEmpty(_id, parent, commitToVuex).graph;
         newGraph.collectItems(items, deleteSource);
@@ -883,10 +889,6 @@ export class DocumentSelfPart extends SettingPart {
         return this._treeNode.parentNodeList.map(node => node.boundObject)
     }
 
-    get docRoot() {
-        return this._treeNode.rootNode.boundObject
-    }
-
     get docsChildrenAll(): DocumentSelfPart[] {
         // 所有孩子doc
         return this._treeNode.childrenAll.map(node => node.boundObject)
@@ -896,20 +898,12 @@ export class DocumentSelfPart extends SettingPart {
         return this._treeNode.childrenActive.map(node => node.boundObject)
     }
 
-    get docsChildrenWithSelf() {
-        let result = [] as DocumentSelfPart[]
-        result.push(...this.docsChildren)
-        result.push(this)
-        return result
-    }
-
     get dataQueryObject() {
         return this.queryObject
     }
 
     get dataBackendDocument() {
         let {Content, Components, Setting, MetaData} = this;
-
         //压缩组件在前 隐含了Paper的序列信息
         let componentsCompressed = {
             InGraph: Components.InGraph,
@@ -921,7 +915,7 @@ export class DocumentSelfPart extends SettingPart {
         //压缩Content
         let contentCompressed: Record<string, DocumentItemSetting[]> = {};
         Object.entries(Content).map(([key, items]) => {
-            contentCompressed[key] = items.filter((item: ItemSettingPart) => !item.isDeleted).map((item: ItemSettingPart) => item.compress)
+            contentCompressed[key] = items.filter((item: DocumentItemSettingPart) => !item.isDeleted).map((item: DocumentItemSettingPart) => item.compress)
         });
         return {
             Content: contentCompressed,
@@ -983,7 +977,7 @@ export class DocumentSelfPart extends SettingPart {
         return findItem(itemList, _id, _type).length > 0
     }
 
-    checkExistByItem(item: ItemSettingPart) {
+    checkExistByItem(item: DocumentItemSettingPart) {
         return this.checkExistByIdType(item)
     }
 
@@ -1032,7 +1026,7 @@ export class DocumentSelfPart extends SettingPart {
         }
     }
 
-    addItems(items: ItemSettingPart[]) {
+    addItems(items: DocumentItemSettingPart[]) {
         items.filter(item => !this.checkExistByItem(item)).map(item => {
             // 额外处理专题
             if (isNodeSettingPart(item)) {
@@ -1063,7 +1057,7 @@ export class DocumentSelfPart extends SettingPart {
         })
     }
 
-    collectItems(items: ItemSettingPart[], deleteSource: boolean) {
+    collectItems(items: DocumentItemSettingPart[], deleteSource: boolean) {
         items.map(item => {
             //复制在前 要不然删除了
             let newItem = item.deepCloneSelf();
@@ -1072,7 +1066,7 @@ export class DocumentSelfPart extends SettingPart {
         })
     }
 
-    protected pushItem(item: ItemSettingPart) {
+    protected pushItem(item: DocumentItemSettingPart) {
         item._parent = this;
         isMediaSetting(item)
             ? this.Content.medias.push(item)
@@ -1081,10 +1075,6 @@ export class DocumentSelfPart extends SettingPart {
             : isTextSetting(item)
                 ? this.Content.texts.push(item)
                 : isLinkSetting(item) && this.Content.links.push(item)
-    }
-
-    reGroupPaper() {
-
     }
 
     addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex: boolean = true) {

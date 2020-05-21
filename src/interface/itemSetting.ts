@@ -1,12 +1,12 @@
 import {
-    DocumentSelfPart, ItemSettingPart,
+    DocumentSelfPart, DocumentItemSettingPart,
     LinkSettingPart,
     MediaSettingPart,
     NodeSettingPart,
     NoteSettingPart,
     TextSettingPart
 } from "@/class/settingBase";
-import {PaperComponent, PaperComponentBackend} from "@/class/settingPaper";
+import {PaperComponentSection, PaperComponentBackend} from "@/class/settingPaper";
 
 declare global {
     // 从视觉上来说是Node的对象
@@ -141,12 +141,22 @@ declare global {
         order: number
     }
 
+    interface GraphLayer {
+        Content: DocumentItemSetting[],
+        State: {
+            isShow: boolean,
+            isLock: boolean,
+            isDeleted: boolean
+        }
+    }
+
     interface DocumentComponent {
         InGraph: {
-            SubGraph: SubGraphSetting[]
+            SubGraph: SubGraphSetting[],
+            Layer: GraphLayer[]
         },
         InPaper: {
-            Sections: PaperComponent
+            Sections: PaperComponentSection
         }
     }
 

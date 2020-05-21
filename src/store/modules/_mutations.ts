@@ -1,6 +1,6 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {DocumentSelfPart, ItemSettingPart, NoteSettingPart} from "@/class/settingBase";
+import {DocumentSelfPart, DocumentItemSettingPart, NoteSettingPart} from "@/class/settingBase";
 import {NoteBook} from "@/store/modules/userDataManager";
 import {LinkInfoPart, NodeInfoPart} from "@/class/info";
 import {MarkdownInputState} from "@/components/markdown/_markdownInterface";
@@ -143,6 +143,6 @@ export const commitChangePaperQueue = (payload: {on?: boolean}) => {
     return store.commit('changePaperQueue', payload)
 }
 
-export const commitChangePaperDraggingItem = (payload: {item: ItemSettingPart, row: PaperRow}) => {
+export const commitChangePaperDraggingItem = (payload: {item: DocumentItemSettingPart, row: PaperRow}) => {
     return store.commit('changePaperDraggingItem', payload)
 }
