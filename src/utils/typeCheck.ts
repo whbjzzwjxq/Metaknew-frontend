@@ -8,11 +8,6 @@ import {
     TextSettingPart
 } from "@/class/settingBase";
 
-export function isNodeInfoPart(item: InfoPart): item is NodeInfoPart {
-    return (item as NodeInfoPart)._type === 'node' ||
-        (item as NodeInfoPart)._type === 'document'
-}
-
 export function isDocumentType(str: string): str is DocumentItemType {
     return (str as DocumentItemType) === 'node' ||
         (str as DocumentItemType) === 'link' ||
@@ -21,28 +16,44 @@ export function isDocumentType(str: string): str is DocumentItemType {
         (str as DocumentItemType) === 'text'
 }
 
+export function isNodeSetting(item: DocumentItemSetting): item is NodeSetting {
+    return (item as NodeSetting)._type === 'node' || (item as NodeSetting)._type === 'document'
+}
+
+export function isMediaSetting(item: DocumentItemSetting): item is MediaSetting {
+    return (item as MediaSetting)._type === 'media'
+}
+
+export function isTextSetting(item: DocumentItemSetting): item is TextSetting {
+    return (item as TextSetting)._type === 'text'
+}
+
+export function isLinkSetting(item: DocumentItemSetting): item is LinkSetting {
+    return (item as LinkSetting)._type === 'link'
+}
+
 export function isNodeSettingPart(item: DocumentItemSettingPart): item is NodeSettingPart {
     return (item as NodeSettingPart)._type === 'node' || (item as NodeSettingPart)._type === 'document'
 }
 
-export function isMediaSetting(item: DocumentItemSettingPart): item is MediaSettingPart {
+export function isMediaSettingPart(item: DocumentItemSettingPart): item is MediaSettingPart {
     return (item as MediaSettingPart)._type === 'media'
 }
 
-export function isVisNodeSetting(item: DocumentItemSettingPart): item is VisNodeSettingPart {
-    return isNodeSettingPart(item) || isMediaSetting(item)
+export function isVisNodeSettingPart(item: DocumentItemSettingPart): item is VisNodeSettingPart {
+    return isNodeSettingPart(item) || isMediaSettingPart(item)
 }
 
-export function isLinkSetting(item: DocumentItemSettingPart): item is LinkSettingPart {
+export function isLinkSettingPart(item: DocumentItemSettingPart): item is LinkSettingPart {
     return (item as LinkSettingPart)._type === 'link'
 }
 
-export function isTextSetting(item: DocumentItemSettingPart): item is TextSettingPart {
+export function isTextSettingPart(item: DocumentItemSettingPart): item is TextSettingPart {
     return (item as TextSettingPart)._type === 'text'
 }
 
-export function isVisAreaSetting(item: DocumentItemSettingPart): item is VisAreaSettingPart {
-    return isVisNodeSetting(item as VisAreaSettingPart) || isTextSetting(item as VisAreaSettingPart)
+export function isVisAreaSettingPart(item: DocumentItemSettingPart): item is VisAreaSettingPart {
+    return isVisNodeSettingPart(item as VisAreaSettingPart) || isTextSettingPart(item as VisAreaSettingPart)
 }
 
 export function isBooleanConcern(prop: LevelConcern | BooleanConcern | "Labels"): prop is BooleanConcern {

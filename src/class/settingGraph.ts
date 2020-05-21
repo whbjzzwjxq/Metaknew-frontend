@@ -7,6 +7,8 @@ export interface GraphLayerState {
     isDeleted: boolean
 }
 
+export type GraphLayerStateProp = Exclude<keyof GraphLayerState, 'isDeleted'>
+
 export interface GraphLayerBackend {
     Content: DocumentItemSetting[],
     Setting: GraphLayerSetting
@@ -78,7 +80,7 @@ export class GraphLayer {
         return this.parent.CompInGraph.Group.Layer.indexOf(this)
     }
 
-    changeState(prop: keyof GraphLayerState, value?: boolean) {
+    changeState(prop: GraphLayerStateProp, value?: boolean) {
         value === undefined && (value = !this.State[prop])
         this.State[prop] = value
     }

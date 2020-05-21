@@ -2,7 +2,7 @@ import {TreeNodeDoc} from "@/interface/interfaceTree";
 import store from "@/store";
 import {BackendDocument, BackendGraphWithNode} from "@/api/document/document";
 import {DocumentDraft} from "@/api/subgraph/commonApi";
-import {isDocumentType, isLinkSetting, isMediaSetting, isNodeSettingPart, isTextSetting} from "@/utils/typeCheck";
+import {isDocumentType, isLinkSettingPart, isMediaSettingPart, isNodeSettingPart, isTextSettingPart} from "@/utils/typeCheck";
 import {
     crucialRegex,
     deepClone,
@@ -471,7 +471,7 @@ export class LinkSettingPart extends DocumentItemSettingPart {
         return new LinkSettingPart(setting, state, parent)
     }
 
-    static resolveBackend(linkSetting: BackendLinkSetting, parent: DocumentSelfPart) {
+    static resolveBackend(linkSetting: LinkSettingBackend, parent: DocumentSelfPart) {
         let setting = {
             ...linkSetting,
             _start: parent.getVisNodeById({_id: linkSetting._start.id, _type: linkSetting._start.type}),
@@ -1047,7 +1047,7 @@ export class DocumentSelfPart extends SettingPart {
                 let graph = item.boundDocument;
                 graph && this._treeNode._addNode([graph._treeNode])
                 // 额外处理link
-            } else if (isLinkSetting(item)) {
+            } else if (isLinkSettingPart(item)) {
                 let _start = this.getVisNodeById(item._start.Setting);
                 if (_start === undefined) {
                     let newStart = item._start.deepCloneSelf();
@@ -1082,13 +1082,13 @@ export class DocumentSelfPart extends SettingPart {
 
     protected pushItem(item: DocumentItemSettingPart) {
         item._parent = this;
-        isMediaSetting(item)
+        isMediaSettingPart(item)
             ? this.Content.medias.push(item)
             : isNodeSettingPart(item)
             ? this.Content.nodes.push(item)
-            : isTextSetting(item)
+            : isTextSettingPart(item)
                 ? this.Content.texts.push(item)
-                : isLinkSetting(item) && this.Content.links.push(item)
+                : isLinkSettingPart(item) && this.Content.links.push(item)
     }
 
     addEmptyNode(_type: 'node' | 'document', _label?: string, commitToVuex: boolean = true) {

@@ -63,7 +63,7 @@ declare global {
         InPaper: LinkStyleSettingPaper;
     }
 
-    interface BackendLinkSetting extends DocumentItemSetting {
+    interface LinkSettingBackend extends DocumentItemSetting {
         InGraph: LinkStyleSettingGraph;
         _start: VisNodeQuery;
         _end: VisNodeQuery;

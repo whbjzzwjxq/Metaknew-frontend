@@ -1,5 +1,5 @@
 <template>
-    <div @wheel="onScroll"
+    <div @wheel.native="onScroll"
          style="width: 100%; height: 100%; position: relative; overflow: hidden"
          v-resize="onResize"
          ref="viewBox">
@@ -198,7 +198,7 @@
                 :max-num="4"
             >
                 <template v-slot:content="{item}">
-                    <graph-layer-card></graph-layer-card>
+                    <graph-layer-card :layer="item" :edit-mode="editMode"></graph-layer-card>
                 </template>
             </queue>
         </v-card>
@@ -231,11 +231,11 @@
     import {getPoint, Point, RectByPoint} from '@/class/geometric'
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {
-        isLinkSetting,
-        isMediaSetting,
+        isLinkSettingPart,
+        isMediaSettingPart,
         isNodeSettingPart,
-        isVisAreaSetting,
-        isVisNodeSetting
+        isVisAreaSettingPart,
+        isVisNodeSettingPart
     } from "@/utils/typeCheck";
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
@@ -873,7 +873,7 @@
                         node.StyleInGraph.Base.y += delta.y;
                     };
                     if (this.selectedItems.length >= 1) {
-                        this.selectedItems.map(item => isVisAreaSetting(item) && moveFunc(item))
+                        this.selectedItems.map(item => isVisAreaSettingPart(item) && moveFunc(item))
                     } else {
                         moveFunc(target)
                     }
@@ -906,7 +906,7 @@
             dbClickNode(node: VisAreaSettingPart) {
                 this.selectItem([node]);
                 !this.isLinking && commitSubTabChange('info');
-                if (this.isLinking && isVisNodeSetting(node) && this.startNode) {
+                if (this.isLinking && isVisNodeSettingPart(node) && this.startNode) {
                     if (node.parent._id === this.startNode.parent._id) {
                         // 如果是同一张图里的
                         let document = this.startNode.parent as DocumentSelfPart;
@@ -930,7 +930,7 @@
                 if (itemList.length === 1) {
                     let item = itemList[0];
                     let info;
-                    isLinkSetting(item)
+                    isLinkSettingPart(item)
                         ? info = this.dataManager.linkManager[item._id]
                         : isNodeSettingPart(item)
                         ? info = this.dataManager.nodeManager[item._id]
@@ -1037,7 +1037,7 @@
                     (nodePart._id === nodeSetting.id) && (nodePart.parent._id === nodeSetting.parentId);
                 // 不仅id相同 必须是同一个专题下 或者node本身就是专题节点
                 node
-                    ? isMediaSetting(node)
+                    ? isMediaSettingPart(node)
                     ? result = this.mediaSettingList.filter(item => equal(node, item))[0]
                     : result = this.nodeSettingList.filter(item => equal(node, item))[0]
                     : result = {x: 0, y: 0, show: true};

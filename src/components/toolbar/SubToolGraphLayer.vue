@@ -49,7 +49,7 @@
                         toolTip: '把选中的内容置为一个图层'
                     },
                     {
-                        name: this.layerListOn ? this.layerGroup.search : this.layerGroup.remove,
+                        name: this.layerListOn ? this.layerGroup.search : this.layerGroup.off,
                         _func: this.changeGraphLayerListOn,
                         toolTip: this.layerListOn ? '打开图层列表' : '关闭图层列表'
                     }

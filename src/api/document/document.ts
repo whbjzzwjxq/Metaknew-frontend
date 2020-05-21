@@ -6,7 +6,7 @@ import {DocumentSelfPart} from "@/class/settingBase";
 export interface BackendDocument {
     Content: {
         nodes: Array<NodeSetting>;
-        links: Array<BackendLinkSetting>;
+        links: Array<LinkSettingBackend>;
         medias: Array<MediaSetting>;
         texts: Array<TextSetting>;
     };

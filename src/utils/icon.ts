@@ -60,7 +60,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         select: 'mdi-select',
         mode: 'mdi-state-machine',
         collect: 'mdi-inbox-arrow-down',
-        newOne: 'mdi-new-box'
+        newOne: 'mdi-new-box',
+        clear: 'mdi-notification-clear-all'
     },
     'i-delete-able': {
         true: 'mdi-delete',
@@ -222,7 +223,8 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         minus: 'mdi-layers-minus',
         plus: 'mdi-layers-plus',
         disable: 'mdi-layers-off',
-        search: 'mdi-layers-search'
+        search: 'mdi-layers-search',
+        off: 'mdi-layers-off'
     },
     'i-markdown': {
         redo: 'mdi-redo',

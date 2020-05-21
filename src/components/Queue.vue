@@ -13,7 +13,7 @@
             v-for="item in activeItems"
             :key="getIndex(item)"
             class="py-0 px-1 pt-2"
-            draggable="true"
+            :draggable="draggable"
             @dragstart="dragStart(arguments[0], item)"
             @drag="drag(arguments[0], item)"
             @dragend="dragEnd(arguments[0], item)"
