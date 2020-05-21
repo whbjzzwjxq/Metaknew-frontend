@@ -918,7 +918,7 @@ export class DocumentSelfPart extends SettingPart {
             InGraph: {
                 SubGraph: Components.InGraph.SubGraph,
                 Group: {
-                    Layer: Components.InGraph.Group.Layer.map(layer => layer.compress())
+                    Layer: Components.InGraph.Group.Layer.filter(layer => !layer.isDeleted).map(layer => layer.compress())
                 }
             },
             InPaper: {
@@ -1162,10 +1162,10 @@ export class DocumentSelfPart extends SettingPart {
         this.CompInGraph.Group.Layer.push(layer)
     }
 
-    queryItemLayer(item: DocumentItemSettingPart): GraphLayer | undefined {
+    queryItemLayer(item: DocumentItemSettingPart): (GraphLayer | undefined)[] | undefined {
         let layerIndex = this.CompInGraph.Group.Dict[item._id]
         return layerIndex !== undefined
-            ? this.CompInGraph.Group.Layer[layerIndex]
+            ? layerIndex.map(order => this.CompInGraph.Group.Layer[order])
             : undefined
     }
 }

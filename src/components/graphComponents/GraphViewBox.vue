@@ -1,5 +1,5 @@
 <template>
-    <div @wheel.native="onScroll"
+    <div @wheel="onScroll"
          style="width: 100%; height: 100%; position: relative; overflow: hidden"
          v-resize="onResize"
          ref="viewBox">
@@ -157,22 +157,28 @@
                         :label-view-dict="labelViewDict"
                         @select-label="selectLabel"
                         @reset-label="resetLabel"
-                        @set-label="setLabel">
+                        @set-label="setLabel"
+                        small>
                     </graph-label-selector>
                 </div>
                 <div class="py-2">
-                    <v-chip @click="importanceOn = !importanceOn" class="unselected">
-                        {{importanceChipText}}
-                    </v-chip>
-                </div>
-                <div class="py-2">
-                    <v-chip @click="initViewPoint" class="unselected">
+                    <v-chip @click="initViewPoint" class="unselected" small>
                         视角重置
                     </v-chip>
                 </div>
                 <div class="py-2">
-                    <v-chip @click="changeShowLink" class="unselected">
+                    <v-chip @click="importanceOn = !importanceOn" class="unselected" small>
+                        {{importanceChipText}}
+                    </v-chip>
+                </div>
+                <div class="py-2">
+                    <v-chip @click="changeShowLink" class="unselected" small>
                         {{ showNoLinkText }}
+                    </v-chip>
+                </div>
+                <div>
+                    <v-chip @click="changeShowLayer" class="unselected" small>
+                        {{ showNoLayerText }}
                     </v-chip>
                 </div>
             </div>
@@ -316,7 +322,7 @@
                 //是否显示关系
                 showNoLink: false,
                 //是否使用图层设置
-                showNoLayer: false
+                showNoLayer: true
             }
         },
         props: {
@@ -736,10 +742,11 @@
             //显示节点
             showNode: function (): boolean[] {
                 return this.nodes.map((node) => (
+                    //父亲炸开
                     node.isFatherExplode &&
-                    this.labelViewDict[node._type][node._label]) ||
-                    (node._id === this.graph._id &&
-                        node.parent._id === this.graph._id)
+                    this.labelViewDict[node._type][node._label] &&
+                    this.getItemShowFromLayer(node)) ||
+                    (node._id === this.graph._id && node.parent._id === this.graph._id)
                 )
             },
 
@@ -750,12 +757,16 @@
                     link.isFatherExplode && // 父组件要炸开
                     this.labelViewDict.link[link._label] &&
                     this.getTargetInfo(link.Setting._start).show &&
-                    this.getTargetInfo(link.Setting._end).show
+                    this.getTargetInfo(link.Setting._end).show &&
+                    this.getItemShowFromLayer(link)
                 )
             },
 
             showMedia: function (): boolean[] {
-                return this.medias.map((media) => this.labelViewDict.media[media._label])
+                return this.medias.map((media) =>
+                    this.labelViewDict.media[media._label] &&
+                    this.getItemShowFromLayer(media)
+                )
             },
 
             showText: function (): boolean[] {
@@ -785,6 +796,10 @@
 
             showNoLinkText: function (): string {
                 return this.showNoLink ? "纯节点模式：开" : '纯节点模式：关'
+            },
+
+            showNoLayerText: function (): string {
+                return this.showNoLayer ? "图层模式：关" : '图层模式：开'
             },
 
             graphContainerWidth: function (): number {
@@ -1174,6 +1189,22 @@
 
             changeShowLink() {
                 this.showNoLink = !this.showNoLink
+            },
+
+            changeShowLayer() {
+                this.showNoLayer = !this.showNoLayer
+            },
+
+            getItemShowFromLayer(item: DocumentItemSettingPart): boolean {
+                let layerList = this.graph.queryItemLayer(item)
+                if (this.showNoLayer) {
+                    return true
+                } else if (layerList === undefined) {
+                    return false
+                } else {
+                    let activeLayerList = layerList.filter(layer => layer !== undefined && !layer.isDeleted) as GraphLayer[]
+                    return activeLayerList.map(layer => layer.State.isShow).reduce((a, b) => a || b)
+                }
             }
         },
 

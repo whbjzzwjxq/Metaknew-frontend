@@ -51,7 +51,7 @@
                     {
                         name: this.layerListOn ? this.layerGroup.search : this.layerGroup.off,
                         _func: this.changeGraphLayerListOn,
-                        toolTip: this.layerListOn ? '打开图层列表' : '关闭图层列表'
+                        toolTip: this.layerListOn ? '关闭图层列表' : '打开图层列表'
                     }
                 ]
             }

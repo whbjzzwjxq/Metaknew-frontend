@@ -1,5 +1,6 @@
 import {DocumentItemSettingPart, DocumentSelfPart} from "@/class/settingBase";
 import Vue from 'vue'
+import {commitSnackbarOn} from "@/store/modules/_mutations";
 
 export interface GraphLayerState {
     isLock: boolean,
@@ -67,7 +68,12 @@ export class GraphLayer {
         let state = this.graphLayerDefaultState();
         let layer = new GraphLayer(Content, state, Setting, parent)
         Content.map(item => {
-            Vue.set(parent.CompInGraph.Group.Dict, item._id, layer.index)
+            let targetList = parent.CompInGraph.Group.Dict[item._id]
+            if (targetList === undefined) {
+                Vue.set(parent.CompInGraph.Group.Dict, item._id, [layer.index])
+            } else {
+                targetList.push(layer.index)
+            }
         })
         return layer
     }
@@ -80,6 +86,10 @@ export class GraphLayer {
         return this.parent.CompInGraph.Group.Layer.indexOf(this)
     }
 
+    get isDeleted() {
+        return this.State.isDeleted
+    }
+
     changeState(prop: GraphLayerStateProp, value?: boolean) {
         value === undefined && (value = !this.State[prop])
         this.State[prop] = value
@@ -90,7 +100,12 @@ export class GraphLayer {
             let target = this.Content.filter(sub => sub._id === item._id)[0]
             if (target === undefined && item.parent._id === this.parent._id) {
                 this.Content.push(item.Setting)
-                Vue.set(this.parent.CompInGraph.Group.Dict, item._id, this.index)
+                let targetList = this.parent.CompInGraph.Group.Dict[item._id]
+                if (targetList === undefined) {
+                    Vue.set(this.parent.CompInGraph.Group.Dict, item._id, [this.index])
+                } else {
+                    targetList.push(this.index)
+                }
             }
         })
     }
@@ -100,7 +115,9 @@ export class GraphLayer {
         if (item) {
             let index = this.Content.indexOf(item)
             this.Content.splice(index, 1)
-            Vue.delete(this.parent.CompInGraph.Group.Dict, query.id)
+            let targetList = this.parent.CompInGraph.Group.Dict[query.id]
+            let targetIndex = targetList.indexOf(index)
+            targetList.splice(targetIndex, 1)
         }
     }
 
@@ -109,5 +126,29 @@ export class GraphLayer {
             Content: this.Content,
             Setting: this.Setting
         }
+    }
+
+    deleteSelf() {
+        this.State.isDeleted = true
+        let payload = {
+            timeout: 3000,
+            color: 'warning',
+            content: '删除了图层',
+            buttonText: '撤销',
+            action: this.rollBackDelete,
+            actionName: 'deleteGraphLayer',
+            once: false
+        } as SnackBarStatePayload;
+        commitSnackbarOn(payload)
+    }
+
+    rollBackDelete() {
+        this.State.isDeleted = false
+    }
+
+    copySelf() {
+        let newLayer = GraphLayer.initBackend(this.parent, this.compress())
+        this.parent.CompInGraph.Group.Layer.push(newLayer)
+        return newLayer
     }
 }

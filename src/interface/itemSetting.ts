@@ -147,7 +147,7 @@ declare global {
             SubGraph: SubGraphSetting[],
             Group: {
                 Layer: GraphLayer[],
-                Dict: Record<id, number> //储存itemId 和 Layer的Dict
+                Dict: Record<id, number[]> //储存itemId 和 Layer的Dict
             }
         },
         InPaper: {

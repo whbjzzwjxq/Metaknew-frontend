@@ -1,8 +1,8 @@
 <template>
-    <v-card width="240" height="200">
+    <v-card width="240" height="200" @scroll.stop="doNothing">
         <div class="d-flex flex-column align-content-space-between">
             <div style="height: 54px" class="px-2 pt-4 pb-0">
-                <field-title :text="layer.Setting._name" label="Layer Name" :edit-mode="editMode">
+                <field-title :text="layer.Setting._name" label="Layer Name" :edit-mode="editMode" @update-text="updateName">
 
                 </field-title>
             </div>
@@ -135,11 +135,15 @@
             },
 
             copyLayer() {
-
+                this.layer.copySelf()
             },
 
             deleteLayer() {
+                this.layer.deleteSelf()
+            },
 
+            updateName(value: string) {
+                this.layer.Setting._name = value
             }
         },
         record: {
