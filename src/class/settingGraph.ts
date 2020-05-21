@@ -1,4 +1,5 @@
-import {DocumentSelfPart} from "@/class/settingBase";
+import {DocumentItemSettingPart, DocumentSelfPart} from "@/class/settingBase";
+import Vue from 'vue'
 
 export interface GraphLayerState {
     isLock: boolean,
@@ -8,17 +9,32 @@ export interface GraphLayerState {
 
 export interface GraphLayerBackend {
     Content: DocumentItemSetting[],
+    Setting: GraphLayerSetting
+}
+
+export interface GraphLayerSetting {
+    _id: id,
+    _name: string
 }
 
 export class GraphLayer {
     Content: DocumentItemSetting[]
     State: GraphLayerState
+    Setting: GraphLayerSetting
     _parent: DocumentSelfPart
 
-    protected constructor(content: DocumentItemSetting[], state: GraphLayerState, parent: DocumentSelfPart) {
+    protected constructor(content: DocumentItemSetting[], state: GraphLayerState, setting: GraphLayerSetting, parent: DocumentSelfPart) {
         this.State = state
         this.Content = content
+        this.Setting = setting
         this._parent = parent
+    }
+
+    static graphLayerDefaultSetting(): GraphLayerSetting {
+        return {
+            _id: '-1',
+            _name: ''
+        }
     }
 
     static graphLayerDefaultState(): GraphLayerState {
@@ -32,22 +48,34 @@ export class GraphLayer {
     static initEmpty(parent: DocumentSelfPart) {
         let state = this.graphLayerDefaultState()
         let content = [] as DocumentItemSetting[]
-        return new GraphLayer(content, state, parent)
+        let setting = this.graphLayerDefaultSetting()
+        return new GraphLayer(content, state, setting, parent)
     }
 
-    static initCollect(parent: DocumentSelfPart, itemList: DocumentItemSetting[]) {
+    static initCollect(parent: DocumentSelfPart, itemList: DocumentItemSettingPart[]) {
         let state = this.graphLayerDefaultState();
-        return new GraphLayer(itemList, state, parent)
+        let setting = this.graphLayerDefaultSetting();
+        let layer = new GraphLayer([], state, setting, parent);
+        layer.addItem(itemList)
+        return layer
     }
 
-    static initBackend(parent: DocumentSelfPart, layer: GraphLayerBackend) {
-        let {Content} = layer;
-        let state = this.graphLayerDefaultState()
-        return new GraphLayer(Content, state, parent)
+    static initBackend(parent: DocumentSelfPart, layerBackend: GraphLayerBackend) {
+        let {Content, Setting} = layerBackend;
+        let state = this.graphLayerDefaultState();
+        let layer = new GraphLayer(Content, state, Setting, parent)
+        Content.map(item => {
+            Vue.set(parent.CompInGraph.Group.Dict, item._id, layer.index)
+        })
+        return layer
     }
 
     get parent() {
         return this._parent
+    }
+
+    get index() {
+        return this.parent.CompInGraph.Group.Layer.indexOf(this)
     }
 
     changeState(prop: keyof GraphLayerState, value?: boolean) {
@@ -55,14 +83,13 @@ export class GraphLayer {
         this.State[prop] = value
     }
 
-    addLayerNext() {
-        this.parent.CompInGraph.Layer.push(GraphLayer.initEmpty(this.parent))
-    }
-
-    addItem(itemList: DocumentItemSetting[]) {
+    addItem(itemList: DocumentItemSettingPart[]) {
         itemList.map(item => {
             let target = this.Content.filter(sub => sub._id === item._id)[0]
-            target === undefined && (this.Content.push(item))
+            if (target === undefined && item.parent._id === this.parent._id) {
+                this.Content.push(item.Setting)
+                Vue.set(this.parent.CompInGraph.Group.Dict, item._id, this.index)
+            }
         })
     }
 
@@ -71,19 +98,14 @@ export class GraphLayer {
         if (item) {
             let index = this.Content.indexOf(item)
             this.Content.splice(index, 1)
+            Vue.delete(this.parent.CompInGraph.Group.Dict, query.id)
         }
-    }
-
-    queryItemToState(query: QueryObject, prop: keyof GraphLayerState) {
-        let item = this.Content.filter(item => item._id === query.id)[0]
-        return item !== undefined
-            ? this.State[prop]
-            : undefined
     }
 
     compress(): GraphLayerBackend {
         return {
-            Content: this.Content
+            Content: this.Content,
+            Setting: this.Setting
         }
     }
 }

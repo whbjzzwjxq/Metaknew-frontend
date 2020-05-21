@@ -146,3 +146,7 @@ export const commitChangePaperQueue = (payload: {on?: boolean}) => {
 export const commitChangePaperDraggingItem = (payload: {item: DocumentItemSettingPart, row: PaperRow}) => {
     return store.commit('changePaperDraggingItem', payload)
 }
+
+export const commitChangeGraphLayerListOn = (payload?: boolean) => {
+    return store.commit('changeGraphLayerListOn', payload)
+}

@@ -7,6 +7,7 @@ import {
     TextSettingPart
 } from "@/class/settingBase";
 import {PaperComponentSection, PaperComponentBackend} from "@/class/settingPaper";
+import {GraphLayer, GraphLayerBackend} from "@/class/settingGraph";
 
 declare global {
     // 从视觉上来说是Node的对象
@@ -141,19 +142,13 @@ declare global {
         order: number
     }
 
-    interface GraphLayer {
-        Content: DocumentItemSetting[],
-        State: {
-            isShow: boolean,
-            isLock: boolean,
-            isDeleted: boolean
-        }
-    }
-
     interface DocumentComponent {
         InGraph: {
             SubGraph: SubGraphSetting[],
-            Layer: GraphLayer[]
+            Group: {
+                Layer: GraphLayer[],
+                Dict: Record<id, number> //储存itemId 和 Layer的Dict
+            }
         },
         InPaper: {
             Sections: PaperComponentSection
@@ -162,7 +157,10 @@ declare global {
 
     interface DocumentComponentBackend {
         InGraph: {
-            SubGraph: SubGraphSetting[]
+            SubGraph: SubGraphSetting[],
+            Group: {
+                Layer: GraphLayerBackend[]
+            }
         },
         InPaper: {
             Sections: PaperComponentBackend

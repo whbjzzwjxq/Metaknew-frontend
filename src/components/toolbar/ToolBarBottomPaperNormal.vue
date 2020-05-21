@@ -11,7 +11,7 @@
 <script lang="ts">
     import Vue from 'vue'
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
-    import SubToolChangeMode from "@/components/toolbar/SubToolChangeMode.vue";
+    import SubToolChangeMode from "@/components/toolbar/SubToolAllChangeMode.vue";
     export default Vue.extend({
         name: "ToolBarBottomPaperNormal",
         components: {

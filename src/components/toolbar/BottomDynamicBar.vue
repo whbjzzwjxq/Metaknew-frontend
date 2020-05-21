@@ -16,7 +16,6 @@
     import Vue from 'vue'
     import IconGroup from "@/components/IconGroup.vue";
     import {RectByPoint} from "@/class/geometric";
-    import {PathSelfPart} from "@/class/settingPath";
     import {getIcon} from "@/utils/icon";
     import {commitBottomDynamicBarChange, commitBottomDynamicBarResize} from "@/store/modules/_mutations";
     export default Vue.extend({

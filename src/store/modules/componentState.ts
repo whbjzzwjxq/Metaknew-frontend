@@ -14,7 +14,8 @@ declare global {
         bottomDynamicBarOn: boolean,
         bottomDynamicBarType: BottomDynamicBarType,
         paperQueueOn: boolean,
-        paperDraggingState: PaperDraggingState
+        paperDraggingState: PaperDraggingState,
+        graphLayerListOn: boolean
     }
 
     type RootTabName = 'ecoSystem' | 'document' | 'metaKnowledge';
@@ -68,7 +69,8 @@ const state = {
         isDragging: false,
         draggingItem: null,
         draggingRow: null
-    }
+    },
+    graphLayerListOn: false
 } as ComponentState;
 
 const mutations = {
@@ -115,21 +117,15 @@ const mutations = {
         on === undefined && (on = !state.paperQueueOn)
         state.paperQueueOn = on
     },
-    changePaperIsDragging: (state: ComponentState, payload: {isDragging: boolean}) => {
-        let {isDragging} = payload;
-        state.paperDraggingState.isDragging = isDragging
-    },
     changePaperDraggingItem: (state: ComponentState, payload: {item: DocumentItemSettingPart, row: PaperRow}) => {
         let {item, row} = payload;
         state.paperDraggingState.draggingRow = row
         state.paperDraggingState.draggingItem = item
     },
-    clearPaperDraggingState: (state: ComponentState) => {
-        state.paperDraggingState = {
-            draggingRow: null,
-            draggingItem: null,
-            isDragging: false
-        }
+
+    changeGraphLayerListOn: (state: ComponentState, payload?: boolean) => {
+        payload === undefined && (payload = !state.graphLayerListOn)
+        state.graphLayerListOn = payload
     }
 };
 const actions = {};

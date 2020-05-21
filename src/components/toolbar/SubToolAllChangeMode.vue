@@ -1,7 +1,7 @@
 <template>
     <sub-tool-block :icon="modeIconGroup.state" text="Change Mode">
         <template v-slot:subToolContent>
-            <icon-group :icon-list="iconList" small></icon-group>
+            <icon-group :icon-list="iconList" small class-token="flex-wrap"></icon-group>
         </template>
     </sub-tool-block>
 </template>

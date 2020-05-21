@@ -29,6 +29,7 @@ import {
 } from "@/interface/style/templateStyleGraph";
 import {handleSettingConfAllToValue} from "@/interface/style/interfaceStyleBase";
 import PDFJS from "pdfjs-dist";
+import {GraphLayer} from "@/class/settingGraph";
 
 export abstract class SettingPart {
     Setting: Setting;
@@ -658,7 +659,10 @@ export class DocumentSelfPart extends SettingPart {
         return {
             InGraph: {
                 SubGraph: [],
-                Layer: []
+                Group: {
+                    Dict: {},
+                    Layer: []
+                }
             },
             InPaper: {
                 Sections: PaperComponentSection.initEmptyComponent()
@@ -686,13 +690,18 @@ export class DocumentSelfPart extends SettingPart {
     static initBackend(data: BackendGraphWithNode, parent: DocumentSelfPart | null, commitToVuex: boolean = true) {
         DocumentSelfPart.baseList.push(data);
         let comps = mergeObject(this.documentComponentsDefault(), data.Components, {rewriteValue: true})
-        comps.InPaper.Sections = PaperComponentSection.initFromBackend(data.Components.InPaper.Sections)
         let meta = data.MetaData;
         let setting = data.Setting;
         let content = this.documentContentDefault();
         let state = this.documentStateDefault();
         let graph = new DocumentSelfPart(content, comps, meta, setting, state, parent);
         let info = NodeInfoPart.resolveBackend(data.Base, commitToVuex);
+        //进入resolve环节 不再使用data
+        //comp-section
+        graph.CompInPaper.Sections = PaperComponentSection.initFromBackend(graph.CompInPaper.Sections)
+
+        //comp-graph-layer
+        graph.CompInGraph.Group.Layer = graph.CompInGraph.Group.Layer.map(layer => GraphLayer.initBackend(graph, layer))
 
         let {nodes, links, medias, texts} = data.Content;
         graph.Content.nodes = nodes.map(setting => NodeSettingPart.initFromBackend(setting, graph));
@@ -906,7 +915,12 @@ export class DocumentSelfPart extends SettingPart {
         let {Content, Components, Setting, MetaData} = this;
         //压缩组件在前 隐含了Paper的序列信息
         let componentsCompressed = {
-            InGraph: Components.InGraph,
+            InGraph: {
+                SubGraph: Components.InGraph.SubGraph,
+                Group: {
+                    Layer: Components.InGraph.Group.Layer.map(layer => layer.compress())
+                }
+            },
             InPaper: {
                 Sections: Components.InPaper.Sections.compress()
             }
@@ -1136,5 +1150,22 @@ export class DocumentSelfPart extends SettingPart {
             _points: []
         }, this);
         this.addItems([rect])
+    }
+
+    addEmptyGraphLayer() {
+        let layer = GraphLayer.initEmpty(this)
+        this.CompInGraph.Group.Layer.push(layer)
+    }
+
+    addCollectGraphLayer(itemList: DocumentItemSettingPart[]) {
+        let layer = GraphLayer.initCollect(this, itemList)
+        this.CompInGraph.Group.Layer.push(layer)
+    }
+
+    queryItemLayer(item: DocumentItemSettingPart): GraphLayer | undefined {
+        let layerIndex = this.CompInGraph.Group.Dict[item._id]
+        return layerIndex !== undefined
+            ? this.CompInGraph.Group.Layer[layerIndex]
+            : undefined
     }
 }

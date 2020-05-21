@@ -16,7 +16,7 @@
                 <sub-tool-change-mode></sub-tool-change-mode>
             </v-col>
             <v-col cols="2" class="pa-0 ma-0">
-                <sub-tool-doc-save></sub-tool-doc-save>
+                <sub-tool-edit-document></sub-tool-edit-document>
             </v-col>
         </template>
     </toolbar-bottom>
@@ -25,11 +25,11 @@
 <script lang="ts">
     import Vue from 'vue'
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
-    import SubToolNewItem from "@/components/toolbar/SubToolNewItem.vue";
+    import SubToolNewItem from "@/components/toolbar/SubToolAllNewItem.vue";
     import SubToolPath from "@/components/toolbar/SubToolPath.vue";
-    import SubToolDocSave from "@/components/toolbar/SubToolDocSave.vue";
+    import SubToolEditDocument from "@/components/toolbar/SubToolAllEditDocument.vue";
     import SubToolPaperMethod from "@/components/toolbar/SubToolPaperMethod.vue";
-    import SubToolChangeMode from "@/components/toolbar/SubToolChangeMode.vue";
+    import SubToolChangeMode from "@/components/toolbar/SubToolAllChangeMode.vue";
 
     export default Vue.extend({
         name: "ToolBarBottomPaperEdit",
@@ -37,7 +37,7 @@
             ToolbarBottom,
             SubToolNewItem,
             SubToolPath,
-            SubToolDocSave,
+            SubToolEditDocument,
             SubToolPaperMethod,
             SubToolChangeMode
         },

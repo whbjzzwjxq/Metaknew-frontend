@@ -6,7 +6,7 @@ declare global {
         'i-eye' | 'i-media-type' | 'i-collapse' | 'i-arrow' | 'i-knowledge-level' |
         'i-resize' | 'i-item' | 'i-add-media-method' | 'i-note-type' | 'i-is-dark' | 'i-is-locked' |
         'i-path' | 'i-style' | 'i-page' | 'i-eco-system' | 'i-document-comp' | 'i-meta-knowledge' | 'i-shape' | 'i-save' |
-        'i-mode' | 'i-paper' | 'i-card' | 'i-markdown'
+        'i-mode' | 'i-paper' | 'i-card' | 'i-markdown' | 'i-graph-layer'
 
     type IconAlias = 'i-show' | 'i-normal'
 
@@ -212,6 +212,17 @@ export const iconMap: Record<IconGroup, Record<string, string>> = {
         radius: 'mdi-square-outline',
         outlined: 'mdi-square-off-outline',
         reset: 'mdi-refresh'
+    },
+    'i-graph-layer': {
+        add: 'mdi-layers-plus',
+        remove: 'mdi-layers-remove',
+        list: 'mdi-layers-triple',
+        triple: 'mdi-layers-triple',
+        layers: 'mdi-layers',
+        minus: 'mdi-layers-minus',
+        plus: 'mdi-layers-plus',
+        disable: 'mdi-layers-off',
+        search: 'mdi-layers-search'
     },
     'i-markdown': {
         redo: 'mdi-redo',

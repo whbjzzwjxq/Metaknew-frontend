@@ -191,11 +191,33 @@
                 <p class="ma-0 align-center"> {{ scale + '%'}}</p>
             </div>
         </div>
+
+        <v-card :style="styleFloatBar" class="plugin float" v-show="graphLayerListOn" color="grey lighten-4">
+            <queue
+                :items="graphLayerList"
+                :max-num="4"
+            >
+                <template v-slot:content="{item}">
+                    <graph-layer-card></graph-layer-card>
+                </template>
+            </queue>
+        </v-card>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
+    import GraphNode from './GraphNode.vue';
+    import GraphLink from './GraphLink.vue';
+    import GraphMedia from './GraphMedia.vue';
+    import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
+    import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
+    import GraphNote from "@/components/graphComponents/GraphNote.vue";
+    import GraphText from "@/components/graphComponents/GraphText.vue";
+    import GraphMediaButton from "@/components/graphComponents/GraphMediaButton.vue";
+    import Queue from "@/components/Queue.vue";
+    import RectContainer from "@/components/container/RectContainer.vue";
+    import GraphLayerCard from "@/components/graphComponents/GraphLayerCard.vue";
     import {
         DocumentSelfPart,
         DocumentItemSettingPart,
@@ -207,14 +229,6 @@
     } from '@/class/settingBase'
     import {maxN, minN} from "@/utils/utils"
     import {getPoint, Point, RectByPoint} from '@/class/geometric'
-    import GraphNode from './GraphNode.vue';
-    import GraphLink from './GraphLink.vue';
-    import GraphMedia from './GraphMedia.vue';
-    import GraphNodeButton from '@/components/graphComponents/GraphNodeButton.vue';
-    import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
-    import GraphNote from "@/components/graphComponents/GraphNote.vue";
-    import GraphText from "@/components/graphComponents/GraphText.vue";
-    import GraphMediaButton from "@/components/graphComponents/GraphMediaButton.vue";
     import {GraphMetaData, LabelViewDict} from '@/interface/interfaceInComponent'
     import {
         isLinkSetting,
@@ -225,9 +239,9 @@
     } from "@/utils/typeCheck";
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
     import {dispatchNodeExplode} from "@/store/modules/_dispatch";
-    import RectContainer from "@/components/container/RectContainer.vue";
     import {NodeInfoPart} from "@/class/info";
     import {documentLabel} from "@/utils/fieldResolve";
+    import {GraphLayer} from "@/class/settingGraph";
 
     export default Vue.extend({
         name: "GraphViewBox",
@@ -240,7 +254,9 @@
             RectContainer,
             GraphNote,
             GraphText,
-            GraphMediaButton
+            GraphMediaButton,
+            Queue,
+            GraphLayerCard
         },
         data() {
             return {
@@ -297,7 +313,10 @@
                 //鼠标在什么东西上面
                 isMouseOn: false,
 
-                showNoLink: false
+                //是否显示关系
+                showNoLink: false,
+                //是否使用图层设置
+                showNoLayer: false
             }
         },
         props: {
@@ -779,6 +798,29 @@
             graphContainerFontsize: function (): CSSProp {
                 return {
                     fontSize: 16 * this.realScale + 'px'
+                }
+            },
+
+            graphLayerListOn: function (): boolean {
+                return this.$store.state.componentState.graphLayerListOn
+            },
+
+            graphLayerList: function(): GraphLayer[] {
+                return this.graph.CompInGraph.Group.Layer
+            },
+
+            bottomBarHeight: function (): number {
+                return this.$store.state.styleComponentSize.bottomBar.height
+            },
+
+            styleFloatBar: function (): CSSProp {
+                return {
+                    position: "fixed",
+                    bottom: this.bottomBarHeight + 12 + 'px',
+                    width: this.viewBox.width - 96 + 'px',
+                    height: '216px',
+                    right: '12px',
+                    zIndex: 4
                 }
             },
 
