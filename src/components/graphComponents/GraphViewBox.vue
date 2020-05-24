@@ -1058,17 +1058,26 @@
             },
 
             //取得link所用数据
-            getTargetInfo(node: VisNodeSettingPart | null) {
+            getTargetInfo(node: VisNodeSettingPart): NodeSettingSimply {
                 //注意这里index肯定不能是-1
                 let result;
                 const equal = (nodePart: VisNodeSettingPart, nodeSetting: NodeSettingSimply) =>
                     (nodePart._id === nodeSetting.id) && (nodePart.parent._id === nodeSetting.parentId);
                 // 不仅id相同 必须是同一个专题下 或者node本身就是专题节点
-                node
-                    ? isMediaSettingPart(node)
-                    ? result = this.mediaSettingList.filter(item => equal(node, item))[0]
-                    : result = this.nodeSettingList.filter(item => equal(node, item))[0]
-                    : result = {x: 0, y: 0, show: true};
+                isMediaSettingPart(node)
+                    ? result = this.mediaSettingList.filter(item => equal(node, item))[0] as NodeSettingSimply
+                    : result = this.nodeSettingList.filter(item => equal(node, item))[0] as NodeSettingSimply;
+                result === undefined && (result = {
+                    id: '$-100',
+                    parentId: '$-101',
+                    height: 0,
+                    width: 0,
+                    x: 0,
+                    y: 0,
+                    show: false,
+                    isSelected: false,
+                    isDeleted: true
+                } as NodeSettingSimply);
                 return result
             },
 
