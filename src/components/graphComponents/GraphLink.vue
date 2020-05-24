@@ -92,7 +92,7 @@
                 // delta的Point形式
                 let deltaToPoint = getPoint(source).decrease(target).divide(distance);
                 // 算出起点位置和终点位置的变化量
-                const extraDelta = 1.4; // 变化量稍微放大
+                const extraDelta = 1; // 变化量稍微放大
                 let startDelta = deltaToPoint.copy().multi(sourceR).multi(extraDelta);
                 // 终点是减小 所以有个负号
                 let endDelta = startDelta.copy().multi(-targetR / sourceR).multi(extraDelta);

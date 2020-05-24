@@ -31,7 +31,7 @@
                 :position="nodeLocation[index].positiveRect()"
                 :item-setting="nodeRewriteSettingList[index]"
                 :state="node.State"
-                @mouseenter.native.stop="mouseEnter(node, index)"
+                @mouseenter.native.stop="mouseEnter(node)"
                 @mouseleave.native.stop="mouseLeave(node)"
                 @mousedown.passive.native.stop="dragStart"
                 @mousemove.passive.native.stop="drag(node, $event)"
@@ -84,7 +84,7 @@
             :node="node"
             :hide="!(node.State.isMouseOn && showNode[index] && realScale >= 0.4)"
             :edit-mode="editMode"
-            @mouseenter.native="mouseEnter(node, index)"
+            @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
             @add-link="addLink(node)"
             @explode="explode(node)"
@@ -116,7 +116,7 @@
             :media-setting="getTargetInfo(media)"
             :media="media"
             :hide="!(media.State.isMouseOn && showMedia[index] && realScale >= 0.4)"
-            @mouseenter.native="mouseEnter(media, index)"
+            @mouseenter.native="mouseEnter(media)"
             @mouseleave.native="mouseLeave(media)"
             @add-link="addLink(media)"
             @update-size="updateSize(arguments[0], arguments[1], media.Setting)"
@@ -559,11 +559,18 @@
                         ...InGraph.Base,
                         size
                     } as BaseSizeInGraph;
+                    let textSize = (InGraph.Text.textSize) * this.realScale
+                    textSize < 10 && (textSize = 10)
+                    let Text = {
+                        ...InGraph.Text,
+                        textSize
+                    }
                     return {
                         ...media.Setting,
                         InGraph: {
                             ...InGraph,
-                            Base
+                            Base,
+                            Text
                         }
                     } as MediaSetting
                 })
@@ -903,13 +910,8 @@
             },
 
             //node的原生事件
-            mouseEnter(node: SubItemSettingPart, index?: number) {
+            mouseEnter(node: SubItemSettingPart) {
                 node.mouseOn(true);
-                if (index) {
-                    let {x, y} = this.nodeLocation[index].end;
-                    this.cardPosition.x = x + 12;
-                    this.cardPosition.y = y + 12;
-                }
             },
 
             //node的原生事件

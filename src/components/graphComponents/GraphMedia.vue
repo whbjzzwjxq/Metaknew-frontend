@@ -16,7 +16,7 @@
             >
 
             </media-viewer>
-            <p class="text-center title" v-show="showTitle"> {{ setting._name }}</p>
+            <p class="text-center" v-show="showTitle" :style="styleText"> {{ setting._name }}</p>
         </template>
     </rect-container>
 </template>
@@ -75,7 +75,18 @@
             showTitle: function (): boolean {
                 let {showAll, showName} = this.setting.InGraph.Show
                 return showAll && showName && !this.state.isMouseOn
-            }
+            },
+            styleText: function(): CSSProp {
+                return {
+                    'MozUserSelect': 'none',
+                    'userSelect': 'none',
+                    'fill': 'opposite',
+                    'fontSize': this.setting.InGraph.Text.textSize + 'px',
+                    'textAlign': 'center',
+                    'wordBreak': 'break-all',
+                    'color': this.setting.InGraph.Text.textColor
+                }
+            },
         },
         methods: {
             updateSize(start: PointMixed, end: PointMixed) {

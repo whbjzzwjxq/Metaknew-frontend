@@ -87,10 +87,6 @@ declare global {
             inlineTextColor: Color,
             inlineTextSize: number,
             inlineTextBreak: boolean,
-            appendText: string,
-            appendTextColor: Color,
-            appendTextSize: number,
-            appendTextBreak: string,
             textSize: number,
             textColor: Color,
             textBreak: boolean

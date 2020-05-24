@@ -436,8 +436,8 @@ export const mediaSettingInGraph = () => {
     let result = {
         Base: BaseSettingGroup(),
         Border: BorderSettingGroup(),
-        Show: mergeSetting(showAll(), showBorder(), showAppendText()),
-        Text: mergeSetting(text(), TextSettingGroup(), inlineText(), InlineTextSettingGroup()),
+        Show: mergeSetting(showAll(), showBorder(), showAppendText(), showName(), showInlineText()),
+        Text: mergeSetting(TextSettingGroup(), inlineText(), InlineTextSettingGroup()),
         View: mergeSetting(opacity())
     };
     let replace = {
