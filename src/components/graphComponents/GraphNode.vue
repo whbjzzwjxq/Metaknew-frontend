@@ -234,6 +234,7 @@
                     'fontSize': this.textSetting.size + 'px',
                     'textAlign': 'center',
                     'wordBreak': 'break-all',
+                    'wordWrap': "break-word",
                     'color': this.setting.Text.textColor
                 }
             },

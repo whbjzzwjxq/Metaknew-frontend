@@ -565,12 +565,20 @@
                         ...InGraph.Text,
                         textSize
                     }
+                    let showName = this.realScale >= 0.6
+                        ? InGraph.Show.showName
+                        : false
+                    let Show = {
+                        ...InGraph.Show,
+                        showName
+                    }
                     return {
                         ...media.Setting,
                         InGraph: {
                             ...InGraph,
                             Base,
-                            Text
+                            Text,
+                            Show
                         }
                     } as MediaSetting
                 })

@@ -52,13 +52,17 @@ export class GraphLayer {
         let state = this.graphLayerDefaultState()
         let content = [] as DocumentItemSetting[]
         let setting = this.graphLayerDefaultSetting()
-        return new GraphLayer(content, state, setting, parent)
+        let layer = new GraphLayer(content, state, setting, parent)
+        layer.parent.CompInGraph.Group.Layer.push(layer)
+        return layer
     }
 
     static initCollect(parent: DocumentSelfPart, itemList: DocumentItemSettingPart[]) {
         let state = this.graphLayerDefaultState();
         let setting = this.graphLayerDefaultSetting();
         let layer = new GraphLayer([], state, setting, parent);
+        //先push
+        layer.parent.CompInGraph.Group.Layer.push(layer)
         layer.addItem(itemList)
         return layer
     }
@@ -98,6 +102,7 @@ export class GraphLayer {
     addItem(itemList: DocumentItemSettingPart[]) {
         itemList.map(item => {
             let target = this.Content.filter(sub => sub._id === item._id)[0]
+            //如果图层中没有该内容 同时在一个document之下
             if (target === undefined && item.parent._id === this.parent._id) {
                 this.Content.push(item.Setting)
                 let targetList = this.parent.CompInGraph.Group.Dict[item._id]

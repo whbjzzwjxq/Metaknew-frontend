@@ -1153,13 +1153,11 @@ export class DocumentSelfPart extends SettingPart {
     }
 
     addEmptyGraphLayer() {
-        let layer = GraphLayer.initEmpty(this)
-        this.CompInGraph.Group.Layer.push(layer)
+        return GraphLayer.initEmpty(this)
     }
 
     addCollectGraphLayer(itemList: DocumentItemSettingPart[]) {
-        let layer = GraphLayer.initCollect(this, itemList)
-        this.CompInGraph.Group.Layer.push(layer)
+        return GraphLayer.initCollect(this, itemList)
     }
 
     queryItemLayer(item: DocumentItemSettingPart): (GraphLayer | undefined)[] | undefined {

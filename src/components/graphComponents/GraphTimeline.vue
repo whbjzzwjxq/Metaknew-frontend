@@ -218,7 +218,8 @@
             nodes: function (): FakeNodeSettingPart<TimelineItem>[] {
                 return this.availableTimeItems.map(item => {
                     let _image = item.info.image;
-                    let _name = item.info._name;
+                    // let _name = item.info._name;
+                    let _name = `${item.info._name} ${item.key} ${this.getTimeCount(item.time)}`;
                     let _isMain = false;
                     let {_id, _label} = item.info;
                     let node = {
@@ -238,13 +239,27 @@
                         size: this.nodeHeight,
                         scaleX: 1
                     }
+                    node.Setting.InGraph.Text = {
+                        ...node.Setting.InGraph.Text,
+                        textBreak: true
+                    }
                     return node
                 })
             },
             nodePosition: function (): AreaRect[] {
                 return this.availableTimeItems.map(item => {
                     let x = this.countTimeToRate(item.time) * this.viewBox.width; // 屏幕上的 0 - 1
-                    let y = this.infoIdList.indexOf(item.info._id) * (this.nodeHeight * 2 + 24) + (this.viewBox.midPoint().y - this.viewPoint.y)
+                    let indexY = this.infoIdList.indexOf(item.info._id) //屏幕上的y位置
+
+                    //相同位置的同样时间属性的节点
+                    let samePositionInfoItem = this.availableTimeItems.filter(subItem => subItem.info._id === item.info._id).filter(subItem => {
+                        let widthA = this.countTimeToRate(subItem.time) * this.viewBox.width
+                        return Math.abs(widthA - x) <= this.nodeWidth
+                    })
+                    let indexDelta = samePositionInfoItem.indexOf(item)
+                    indexDelta < 0 && (indexDelta = 0)
+                    indexY += indexDelta
+                    let y = indexY * (this.nodeHeight * 2 + 24) + (this.viewBox.midPoint().y - this.viewPoint.y)
                     return {
                         x,
                         y,
