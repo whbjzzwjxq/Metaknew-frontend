@@ -2,7 +2,13 @@ import {TreeNodeDoc} from "@/interface/interfaceTree";
 import store from "@/store";
 import {BackendDocument, BackendGraphWithNode} from "@/api/document/document";
 import {DocumentDraft} from "@/api/subgraph/commonApi";
-import {isDocumentType, isLinkSettingPart, isMediaSettingPart, isNodeSettingPart, isTextSettingPart} from "@/utils/typeCheck";
+import {
+    isDocumentType,
+    isLinkSettingPart,
+    isMediaSettingPart,
+    isNodeSettingPart,
+    isTextSettingPart
+} from "@/utils/typeCheck";
 import {
     crucialRegex,
     deepClone,
@@ -696,12 +702,10 @@ export class DocumentSelfPart extends SettingPart {
         let state = this.documentStateDefault();
         let graph = new DocumentSelfPart(content, comps, meta, setting, state, parent);
         let info = NodeInfoPart.resolveBackend(data.Base, commitToVuex);
-        //进入resolve环节 不再使用data
         //comp-section
         graph.CompInPaper.Sections = PaperComponentSection.initFromBackend(graph.CompInPaper.Sections)
-
         //comp-graph-layer
-        graph.CompInGraph.Group.Layer = graph.CompInGraph.Group.Layer.map(layer => GraphLayer.initBackend(graph, layer))
+        graph.GraphLayerList = graph.GraphLayerList.map(layer => GraphLayer.initBackend(graph, layer))
 
         let {nodes, links, medias, texts} = data.Content;
         graph.Content.nodes = nodes.map(setting => NodeSettingPart.initFromBackend(setting, graph));
@@ -804,6 +808,14 @@ export class DocumentSelfPart extends SettingPart {
 
     get CompInPaper() {
         return this.Components.InPaper
+    }
+
+    get GraphLayerList() {
+        return this.CompInGraph.Group.Layer
+    }
+
+    set GraphLayerList(value: GraphLayer[]) {
+        this.CompInGraph.Group.Layer = value
     }
 
     get selfSettingInGraph() {
@@ -1160,10 +1172,7 @@ export class DocumentSelfPart extends SettingPart {
         return GraphLayer.initCollect(this, itemList)
     }
 
-    queryItemLayer(item: DocumentItemSettingPart): (GraphLayer | undefined)[] | undefined {
-        let layerIndex = this.CompInGraph.Group.Dict[item._id]
-        return layerIndex !== undefined
-            ? layerIndex.map(order => this.CompInGraph.Group.Layer[order])
-            : undefined
+    queryItemLayer(item: DocumentItemSettingPart): GraphLayer[] | undefined {
+        return this.CompInGraph.Group.Dict[item._id]
     }
 }

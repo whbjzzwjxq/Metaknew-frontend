@@ -25,7 +25,7 @@
                 </sub-tool-edit-document>
             </v-col>
             <v-col cols="2" class="pa-0 ma-0">
-                <sub-tool-graph-layer>
+                <sub-tool-graph-layer edit-mode>
 
                 </sub-tool-graph-layer>
             </v-col>

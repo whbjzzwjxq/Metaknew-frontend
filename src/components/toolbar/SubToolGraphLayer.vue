@@ -25,7 +25,12 @@
                 layerGroup: iconMap['i-graph-layer']
             }
         },
-        props: {},
+        props: {
+            editMode: {
+                type: Boolean,
+                default: false
+            }
+        },
         computed: {
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
@@ -41,12 +46,14 @@
                     {
                         name: this.layerGroup.add,
                         _func: this.addLayer,
-                        toolTip: '新建一个图层'
+                        toolTip: '新建一个图层',
+                        render: this.editMode
                     },
                     {
                         name: getIcon('i-edit', 'collect'),
                         _func: this.collectItemsToLayer,
-                        toolTip: '把选中的内容置为一个图层'
+                        toolTip: '把选中的内容置为一个图层',
+                        render: this.editMode
                     },
                     {
                         name: this.layerListOn ? this.layerGroup.search : this.layerGroup.off,

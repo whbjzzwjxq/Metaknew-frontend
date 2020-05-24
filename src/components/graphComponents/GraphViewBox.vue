@@ -94,6 +94,7 @@
 
         <graph-media
             v-for="(media, index) in medias"
+            v-show="showMedia[index]"
             :key="media._id"
             :setting="mediaRewriteSettingList[index]"
             :state="media.State"
@@ -687,10 +688,12 @@
             midLocation: function (): PointObject[] {
                 return this.links.map(link => {
                     let result;
-                    let x1 = this.getTargetInfo(link._start).x;
-                    let y1 = this.getTargetInfo(link._start).y;
-                    let x2 = this.getTargetInfo(link._end).x;
-                    let y2 = this.getTargetInfo(link._end).y;
+                    let start = this.getTargetInfo(link._start);
+                    let end = this.getTargetInfo(link._end);
+                    let x1 = start.x;
+                    let y1 = start.y;
+                    let x2 = end.x;
+                    let y2 = end.y;
                     switch (link.StyleInGraph.View.viewType) {
                         case "curve":
                             link.StyleInGraph.View.direct === 'top'
@@ -836,7 +839,7 @@
             },
 
             graphLayerList: function(): GraphLayer[] {
-                return this.graph.CompInGraph.Group.Layer.filter(layer => !layer.isDeleted)
+                return this.graph.GraphLayerList.filter(layer => !layer.isDeleted)
             },
 
             bottomBarHeight: function (): number {
@@ -1214,7 +1217,7 @@
                 } else if (layerList === undefined) {
                     return false
                 } else {
-                    let activeLayerList = layerList.filter(layer => layer !== undefined && !layer.isDeleted) as GraphLayer[]
+                    let activeLayerList = layerList.filter(layer => !layer.isDeleted) as GraphLayer[]
                     return activeLayerList.map(layer => layer.State.isShow).reduce((a, b) => a || b)
                 }
             }
