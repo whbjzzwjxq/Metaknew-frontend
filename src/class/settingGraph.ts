@@ -136,19 +136,27 @@ export class GraphLayer {
             content: '删除了图层',
             buttonText: '撤销',
             action: this.rollBackDelete,
+            actionObject: this,
             actionName: 'deleteGraphLayer',
             once: false
         } as SnackBarStatePayload;
         commitSnackbarOn(payload)
     }
 
-    rollBackDelete() {
-        this.State.isDeleted = false
+    rollBackDelete(self: GraphLayer) {
+        self.State.isDeleted = false
     }
 
     copySelf() {
-        let newLayer = GraphLayer.initBackend(this.parent, this.compress())
-        this.parent.CompInGraph.Group.Layer.push(newLayer)
+        let {Content, Setting} = this.compress()
+        let newContent = []
+        newContent.push(...Content)
+        let newSetting = {
+            ...Setting,
+            _name: Setting._name + 'copy'
+        }
+        let newLayer = GraphLayer.initBackend(this.parent, {Content: newContent, Setting: newSetting})
+        this.parent.CompInGraph.Group.Layer.splice(this.index + 1, 0, newLayer)
         return newLayer
     }
 }

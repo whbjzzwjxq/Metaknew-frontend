@@ -821,7 +821,7 @@
             },
 
             graphLayerList: function(): GraphLayer[] {
-                return this.graph.CompInGraph.Group.Layer
+                return this.graph.CompInGraph.Group.Layer.filter(layer => !layer.isDeleted)
             },
 
             bottomBarHeight: function (): number {
@@ -1074,20 +1074,22 @@
             },
 
             onScroll($event: WheelEvent) {
-                let oldScale = this.realScale;
-                let delta;
-                $event.deltaY < 0
-                    ? delta = 10
-                    : delta = -10;
-                this.scale += delta;
-                this.scale < 20 && (this.scale = 20);
-                this.scale > 500 && (this.scale = 500);
-                let event = this.getPointInBox($event);
-                let eventCopy = event.copy();
-                // 先后顺序很重要
-                event.decrease(this.lastViewPoint).divide(oldScale);
-                this.viewPoint.add(event);
-                this.lastViewPoint.update(eventCopy);
+                if (!this.graphLayerListOn) {
+                    let oldScale = this.realScale;
+                    let delta;
+                    $event.deltaY < 0
+                        ? delta = 10
+                        : delta = -10;
+                    this.scale += delta;
+                    this.scale < 20 && (this.scale = 20);
+                    this.scale > 500 && (this.scale = 500);
+                    let event = this.getPointInBox($event);
+                    let eventCopy = event.copy();
+                    // 先后顺序很重要
+                    event.decrease(this.lastViewPoint).divide(oldScale);
+                    this.viewPoint.add(event);
+                    this.lastViewPoint.update(eventCopy);
+                }
             },
 
             getPointInBox($event: MouseEvent | WheelEvent) {
