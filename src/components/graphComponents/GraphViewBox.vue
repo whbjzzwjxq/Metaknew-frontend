@@ -87,7 +87,6 @@
             @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
             @add-link="addLink(node)"
-            @explode="explode(node)"
         >
 
         </graph-node-button>
@@ -245,7 +244,6 @@
         isVisNodeSettingPart
     } from "@/utils/typeCheck";
     import {commitItemChange, commitSnackbarOn, commitSubTabChange} from "@/store/modules/_mutations";
-    import {dispatchNodeExplode} from "@/store/modules/_dispatch";
     import {NodeInfoPart} from "@/class/info";
     import {documentLabel} from "@/utils/fieldResolve";
     import {GraphLayer} from "@/class/settingGraph";
@@ -323,7 +321,8 @@
                 //是否显示关系
                 showNoLink: false,
                 //是否使用图层设置
-                showNoLayer: true
+                showNoLayer: true,
+                showNameScale: 0.4
             }
         },
         props: {
@@ -530,7 +529,7 @@
                         ...InGraph.Text,
                         textSize
                     };
-                    let showName = this.realScale >= 0.6
+                    let showName = this.realScale >= this.showNameScale
                         ? InGraph.Show.showName
                         : false
                     let Show = {
@@ -566,7 +565,7 @@
                         ...InGraph.Text,
                         textSize
                     }
-                    let showName = this.realScale >= 0.6
+                    let showName = this.realScale >= this.showNameScale
                         ? InGraph.Show.showName
                         : false
                     let Show = {
@@ -1116,10 +1115,6 @@
 
             getPointInBox($event: MouseEvent | WheelEvent) {
                 return getPoint($event).decrease(this.viewBox.start)
-            },
-
-            explode(node: NodeSettingPart) {
-                dispatchNodeExplode({node, document: this.graph})
             },
 
             getGraphMetaData: function (_id: id) {

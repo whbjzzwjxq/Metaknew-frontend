@@ -16,6 +16,7 @@
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
     import {DocumentSelfPart, NodeSettingPart} from "@/class/settingBase";
+    import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "GraphNodeButton",
@@ -136,7 +137,7 @@
                 this.$emit('add-link', this.node)
             },
             loadDocument() {
-                this.$emit('load-document', this.node)
+                dispatchGraphQuery({_id: this.node._id, parent: this.node.parent})
             },
             explode() {
                 this.boundDocument && this.boundDocument.explode()
