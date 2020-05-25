@@ -3,7 +3,9 @@
         :container="container"
         expand
         @update-size="updateSize"
-        :is-selected="isSelected">
+        :is-selected="isSelected"
+        v-show="setting.Show.showAll"
+    >
         <template v-slot:full-content>
             <svg :width="rect.width" :height="rect.height">
                 <polyline
@@ -35,8 +37,10 @@
                 <foreignObject :x="borderWidth" :y="borderWidth" :height="inlineRect.height" :width="inlineRect.width">
                     <div :style="divStyle">
                         <markdown-render
-                            :edit-mode="isSelected"
-                            v-model="itemSetting._text"
+                            :edit-base="isSelected"
+                            control-edit-by-parent
+                            :value="itemSetting._text"
+                            @input="updateText"
                         >
 
                         </markdown-render>
@@ -82,7 +86,7 @@
             },
 
             originPoints: function (): PointObject[] {
-                return this.itemSetting._points
+                return this.setting.Transition.points
             },
 
             label: function (): TextLabel {
@@ -153,11 +157,11 @@
         },
         methods: {
             updateSize(start: PointMixed, end: PointMixed) {
-                this.$emit('update-size', start, end, this.setting)
+                this.$emit('update-size', start, end, this.itemSetting)
             },
 
-            updateText(propName: string, value: string) {
-                this.itemSetting._text = value
+            updateText(value: string) {
+                this.$emit('update-text', value)
             }
         },
         record: {

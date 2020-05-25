@@ -537,6 +537,10 @@ export class TextSettingPart extends DocumentItemSettingPart {
         let state = deepClone(this.State);
         return new TextSettingPart(setting, state, this.parent)
     }
+
+    get compress(): DocumentItemSetting {
+        return super.compress;
+    }
 }
 
 export class NoteSettingPart extends SettingPart {
@@ -1159,7 +1163,6 @@ export class DocumentSelfPart extends SettingPart {
             _label: 'rect',
             _isMain: false,
             _text: '',
-            _points: []
         }, this);
         this.addItems([rect])
     }

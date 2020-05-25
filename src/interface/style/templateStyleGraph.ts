@@ -489,11 +489,6 @@ export const textSettingGroupInGraph = () => {
                 range: [12, 400]
             },
         },
-        Text: {
-            inlineText: {
-                default: 'Input Here'
-            }
-        },
         Background: {
             color: {
                 default: '#FFFFFF'

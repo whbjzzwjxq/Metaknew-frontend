@@ -31,7 +31,7 @@ declare global {
         _label: string
     }
 
-    type SettingComponent = Record<string, number | string | boolean>
+    type SettingComponent = Record<string, number | string | boolean | PointObject[]>
     type SettingGroup = Record<string, SettingComponent>;
 
     interface DocumentItemSetting extends Setting {
@@ -98,7 +98,6 @@ declare global {
     interface TextSetting extends DocumentItemSetting {
         _type: 'text',
         _label: TextLabel,
-        _points: PointObject[],
         _text: string,
         InGraph: TextStyleSettingGraph,
         InPaper: TextStyleSettingPaper

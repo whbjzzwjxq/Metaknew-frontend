@@ -114,6 +114,7 @@ declare global {
         };
         Transition: {
             rotate: number,
+            points: PointObject[]
         }
     }
 }

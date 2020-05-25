@@ -16,7 +16,7 @@
             >
 
             </media-viewer>
-            <p class="text-center" v-show="showTitle" :style="styleText"> {{ setting._name }}</p>
+            <p class="text-center" v-show="showTitle" :style="styleText" draggable="false"> {{ setting._name }}</p>
         </template>
     </rect-container>
 </template>

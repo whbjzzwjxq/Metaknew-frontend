@@ -150,3 +150,7 @@ export const commitChangePaperDraggingItem = (payload: {item: DocumentItemSettin
 export const commitChangeGraphLayerListOn = (payload?: boolean) => {
     return store.commit('changeGraphLayerListOn', payload)
 }
+
+export const commitChangeBottomToolBarOn = (payload?: boolean) => {
+    return store.commit('changeBottomToolBarOn', payload)
+}

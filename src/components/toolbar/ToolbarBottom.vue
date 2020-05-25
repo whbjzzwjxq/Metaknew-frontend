@@ -42,7 +42,7 @@
     import {getIcon} from "@/utils/icon";
     import FragmentList from "@/components/FragmentList.vue";
     import PersonalNote from "@/components/PersonalNote.vue";
-    import {commitBottomBarCollapse} from "@/store/modules/_mutations";
+    import {commitBottomBarCollapse, commitChangeBottomToolBarOn} from "@/store/modules/_mutations";
     export default Vue.extend({
         name: "ToolbarBottom",
         components: {
@@ -51,7 +51,6 @@
         },
         data() {
             return {
-                toolbarOn: true,
                 fragmentIcon: getIcon('i-item', 'fragment'),
                 noteIcon: getIcon('i-item', 'note')
             }
@@ -85,6 +84,9 @@
             },
             arrowIcon: function (): string {
                 return getIcon('i-arrow-double', !this.toolbarOn)
+            },
+            toolbarOn: function(): boolean {
+                return this.$store.state.componentState.bottomToolBarOn
             }
         },
         methods: {
@@ -94,7 +96,7 @@
                     ? height = 8
                     : height = 108;
                 commitBottomBarCollapse(height);
-                this.toolbarOn = !this.toolbarOn
+                commitChangeBottomToolBarOn();
             },
         },
         watch: {},

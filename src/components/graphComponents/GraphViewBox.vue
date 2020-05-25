@@ -82,7 +82,7 @@
             :key="index"
             :node-setting="getTargetInfo(node)"
             :node="node"
-            :hide="!(node.State.isMouseOn && showNode[index] && realScale >= 0.4)"
+            :hide="!(node.State.isMouseOn && showNode[index] && realScale >= showNameScale)"
             :edit-mode="editMode"
             @mouseenter.native="mouseEnter(node)"
             @mouseleave.native="mouseLeave(node)"
@@ -112,10 +112,10 @@
 
         <graph-media-button
             v-for="(media, index) in renderMediaButtons"
-            :key="'media-button' + index"
+            :key="`media-button${index}`"
             :media-setting="getTargetInfo(media)"
             :media="media"
-            :hide="!(media.State.isMouseOn && showMedia[index] && realScale >= 0.4)"
+            :hide="!(media.State.isMouseOn && showMedia[index] && realScale >= showNameScale)"
             @mouseenter.native="mouseEnter(media)"
             @mouseleave.native="mouseLeave(media)"
             @add-link="addLink(media)"
@@ -126,9 +126,10 @@
 
         <graph-text
             v-for="(text, index) in texts"
+            v-show="showText[index]"
             :key="text._id"
             :state="text.State"
-            :item-setting="text.Setting"
+            :item-setting="textRewriteSettingList[index]"
             :container="textLocation[index]"
             @mouseenter.native="mouseEnter(text)"
             @mouseleave.native="mouseLeave(text)"
@@ -136,9 +137,23 @@
             @mousemove.native="drag(text, $event)"
             @mouseup.native="dragEnd(text, $event)"
             @dblclick.native.stop="dbClickNode(text)"
-            @update-size="updateSize">
+            @update-size="updateSize(arguments[0], arguments[1], text.Setting)"
+            @update-text="updateText(arguments[0], text)">
 
         </graph-text>
+
+        <graph-text-button
+            v-for="(text, index) in texts"
+            :key="`text-button${index}`"
+            :text="text"
+            :text-setting="textSettingList[index]"
+            :hide="!(text.State.isMouseOn && showText[index] && realScale >= showNameScale)"
+            :edit-mode="editMode"
+            @mouseenter.native="mouseEnter(text)"
+            @mouseleave.native="mouseLeave(text)"
+            >
+
+        </graph-text-button>
 
         <graph-note
             v-for="note in notes"
@@ -149,7 +164,7 @@
 
         </graph-note>
 
-        <div class="d-flex flex-row" style="position: absolute; left: 80%; top: 55%">
+        <div class="d-flex flex-row plugin" :style="stylePlugin">
             <div class="d-flex flex-column align-end">
                 <div class="py-2">
                     <graph-label-selector
@@ -173,7 +188,7 @@
                 </div>
                 <div class="py-2">
                     <v-chip @click="changeShowLink" class="unselected" small>
-                        {{ showNoLinkText }}
+                        {{ showOnlyNodeMediaText }}
                     </v-chip>
                 </div>
                 <div>
@@ -220,13 +235,14 @@
     import GraphLabelSelector from '@/components/graphComponents/GraphLabelSelector.vue';
     import GraphNote from "@/components/graphComponents/GraphNote.vue";
     import GraphText from "@/components/graphComponents/GraphText.vue";
+    import GraphTextButton from "@/components/graphComponents/GraphTextButton.vue";
     import GraphMediaButton from "@/components/graphComponents/GraphMediaButton.vue";
     import Queue from "@/components/Queue.vue";
     import RectContainer from "@/components/container/RectContainer.vue";
     import GraphLayerCard from "@/components/graphComponents/GraphLayerCard.vue";
     import {
-        DocumentSelfPart,
         DocumentItemSettingPart,
+        DocumentSelfPart,
         LinkSettingPart,
         MediaSettingPart,
         NodeSettingPart,
@@ -261,7 +277,8 @@
             GraphText,
             GraphMediaButton,
             Queue,
-            GraphLayerCard
+            GraphLayerCard,
+            GraphTextButton
         },
         data() {
             return {
@@ -318,8 +335,8 @@
                 //鼠标在什么东西上面
                 isMouseOn: false,
 
-                //是否显示关系
-                showNoLink: false,
+                //是否显示关系和文字
+                showOnlyNodeMedia: false,
                 //是否使用图层设置
                 showNoLayer: true,
                 showNameScale: 0.4
@@ -586,7 +603,20 @@
 
             textRewriteSettingList: function (): TextSetting[] {
                 return this.texts.map((text) => {
-                    return text.Setting
+                    let {InGraph} = text.Setting
+                    let size = (InGraph.Base.size) * this.realScale;
+                    size <= 30 && (size = 30);
+                    let Base = {
+                        ...InGraph.Base,
+                        size
+                    } as BaseSizeInGraph;
+                    return {
+                        ...text.Setting,
+                        InGraph: {
+                            ...InGraph,
+                            Base
+                        }
+                    }
                 })
             },
 
@@ -756,10 +786,29 @@
                 })
             },
 
+            textSettingList: function(): NodeSettingSimply[] {
+                return this.texts.map((text, index) => {
+                    let id = text._id;
+                    let parentId = text.parent._id;
+                    let {x, y, width, height} = this.textLocation[index].positiveRect();
+                    return {
+                        id,
+                        parentId,
+                        height,
+                        width,
+                        x,
+                        y,
+                        show: this.showText[index],
+                        isSelected: text.State.isSelected,
+                        isDeleted: text.isDeleted
+                    }
+                })
+            },
+
             //显示节点
             showNode: function (): boolean[] {
                 return this.nodes.map((node) => (
-                    //父亲炸开
+                        //父亲炸开
                     node.isFatherExplode &&
                     this.labelViewDict[node._type][node._label] &&
                     this.getItemShowFromLayer(node)) ||
@@ -770,7 +819,7 @@
             //显示边
             showLink: function (): boolean[] {
                 return this.links.map(link =>
-                    !this.showNoLink &&
+                    !this.showOnlyNodeMedia &&
                     link.isFatherExplode && // 父组件要炸开
                     this.labelViewDict.link[link._label] &&
                     this.getTargetInfo(link.Setting._start).show &&
@@ -787,7 +836,11 @@
             },
 
             showText: function (): boolean[] {
-                return this.texts.map(() => true)
+                return this.texts.map((text) =>
+                    !this.showOnlyNodeMedia &&
+                    this.getItemShowFromLayer(text) &&
+                    this.realScale >= this.showNameScale
+                )
             },
 
             //选择框的相关设置
@@ -811,8 +864,8 @@
                 return this.importanceOn ? '重要度模式: 开' : '重要度模式: 关'
             },
 
-            showNoLinkText: function (): string {
-                return this.showNoLink ? "纯节点模式：开" : '纯节点模式：关'
+            showOnlyNodeMediaText: function (): string {
+                return this.showOnlyNodeMedia ? "纯节点模式：开" : '纯节点模式：关'
             },
 
             showNoLayerText: function (): string {
@@ -820,7 +873,7 @@
             },
 
             graphContainerWidth: function (): number {
-                return this.realScale < 0.4
+                return this.realScale < this.showNameScale
                     ? 1
                     : this.realScale > 4
                         ? 4
@@ -837,7 +890,7 @@
                 return this.$store.state.componentState.graphLayerListOn
             },
 
-            graphLayerList: function(): GraphLayer[] {
+            graphLayerList: function (): GraphLayer[] {
                 return this.graph.GraphLayerList.filter(layer => !layer.isDeleted)
             },
 
@@ -855,6 +908,19 @@
                     zIndex: 4
                 }
             },
+
+            toolbarOn: function(): boolean {
+                return this.$store.state.componentState.bottomToolBarOn
+            },
+
+            stylePlugin: function(): CSSProp {
+                return {
+                    position: "absolute",
+                    left: "80%",
+                    top: "55%",
+                    opacity: this.toolbarOn ? '100%' : 0
+                }
+            }
 
         },
         methods: {
@@ -1057,22 +1123,22 @@
             },
 
             //取得link所用数据
-            getTargetInfo(node: VisNodeSettingPart): NodeSettingSimply {
-                //注意这里index肯定不能是-1
-                let result;
+            getTargetInfo(node: VisNodeSettingPart | null): NodeSettingSimply {
                 const equal = (nodePart: VisNodeSettingPart, nodeSetting: NodeSettingSimply) =>
                     (nodePart._id === nodeSetting.id) && (nodePart.parent._id === nodeSetting.parentId);
                 // 不仅id相同 必须是同一个专题下 或者node本身就是专题节点
-                isMediaSettingPart(node)
-                    ? result = this.mediaSettingList.filter(item => equal(node, item))[0] as NodeSettingSimply
-                    : result = this.nodeSettingList.filter(item => equal(node, item))[0] as NodeSettingSimply;
+                let result = node !== null
+                        ? isMediaSettingPart(node)
+                            ? this.mediaSettingList.filter(item => equal(node, item))[0] as NodeSettingSimply
+                            : this.nodeSettingList.filter(item => equal(node, item))[0] as NodeSettingSimply
+                        : undefined
                 result === undefined && (result = {
                     id: '$-100',
                     parentId: '$-101',
-                    height: 0,
-                    width: 0,
-                    x: 0,
-                    y: 0,
+                    height: 1,
+                    width: 1,
+                    x: 1,
+                    y: 1,
                     show: false,
                     isSelected: false,
                     isDeleted: true
@@ -1138,7 +1204,7 @@
                 setting.Base.y = (height * y - start.y / scale) / (graph.rect.height);
             },
 
-            updateSize: function (start: PointMixed, end: PointMixed, setting: NodeSetting | MediaSetting) {
+            updateSize: function (start: PointMixed, end: PointMixed, setting: NodeSetting | MediaSetting | TextSetting) {
                 // 视觉上的更新尺寸start, end
                 let scale = this.realScale;
                 // 更新起始点
@@ -1158,6 +1224,10 @@
                     scaleX,
                     size
                 }
+            },
+
+            updateText(value: string, text: TextSettingPart) {
+                text.Setting._text = value
             },
 
             getItemList(_type: DocumentItemType) {
@@ -1207,7 +1277,7 @@
             },
 
             changeShowLink() {
-                this.showNoLink = !this.showNoLink
+                this.showOnlyNodeMedia = !this.showOnlyNodeMedia
             },
 
             changeShowLayer() {

@@ -12,8 +12,9 @@
                     :placeholder="placeholder"
                     :rows="rows"
                     :value="value"
+                    @input="input"
                     @focus="updateState"
-                    @focusout="update"
+                    @focusout="focusOut"
                     @select="updateState"
                     auto-grow
                     filled
@@ -66,6 +67,10 @@
                 type: Boolean,
                 default: false
             },
+            controlEditByParent: {
+                type: Boolean,
+                default: false
+            },
             //只支持基础语法
             simply: {
                 type: Boolean,
@@ -84,10 +89,11 @@
                 type: Boolean,
                 default: false
             },
+            //占位符
             placeholder: {
                 type: String,
                 default: ''
-            }
+            },
         },
         computed: {
             renderer: function (): MarkdownIt {
@@ -96,7 +102,9 @@
                     : this.renderDict['all']
             },
             editMode: function (): boolean {
-                return this.instance.editMode
+                return this.controlEditByParent
+                    ? this.editBase
+                    : this.instance.editMode
             },
             renderHtml: function (): Function {
                 let _vm = this;
@@ -106,8 +114,8 @@
             },
         },
         methods: {
-            update: function ($event: string) {
-                this.$emit('update', $event)
+            input: function ($event: string) {
+                this.$emit('input', $event)
             },
             updateState: function () {
                 //@ts-ignore
@@ -116,7 +124,10 @@
             },
             changeEditMode: function () {
                 this.instance.editMode = !this.instance.editMode
-            }
+            },
+            focusOut: function() {
+                this.renderHtml()
+            },
         },
         created(): void {
             this.renderHtml()

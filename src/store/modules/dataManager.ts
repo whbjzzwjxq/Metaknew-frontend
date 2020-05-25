@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import {filePutBlob} from '@/api/fileUpload';
-import {DocumentSelfPart, NodeSettingPart} from "@/class/settingBase";
+import {DocumentSelfPart, NodeSettingPart, TextSettingPart} from "@/class/settingBase";
 import {
     commitDocumentAdd,
     commitDocumentIdChange,
@@ -30,6 +30,7 @@ import {gateDocumentBulkCreate, gateDocumentBulkUpdate, gateDocumentQuery} from 
 import {mediaCreate, mediaQueryMulti} from "@/api/subgraph/media";
 import {draftUpdate} from "@/api/subgraph/commonApi";
 import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
+import {textBulkCreate} from "@/api/subgraph/text";
 
 export const getManager = (_type: ItemType) =>
     _type === 'link'
@@ -393,6 +394,7 @@ const actions = {
         // 保存Link和Node
         await dispatchVisNodeCreate();
         await linkBulkCreate(getters.links);
+        await textBulkCreate(TextSettingPart.list);
         //处理专题 分成需要update和需要create的内容
         let documentList: DocumentSelfPart[] = getters.documentList;
         let updateDataList = documentList.filter(document => document.isRemote);

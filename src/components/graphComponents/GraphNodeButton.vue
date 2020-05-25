@@ -48,6 +48,12 @@
             }
         },
         computed: {
+            x: function (): number {
+                return this.nodeSetting.x + this.nodeSetting.width + 12
+            },
+            y: function (): number {
+                return this.nodeSetting.y - this.nodeSetting.height - 12
+            },
             divStyle: function (): CSSProp {
                 return {
                     width: '24px',
@@ -65,12 +71,6 @@
                     top: 0,
                     position: 'absolute',
                 }
-            },
-            x: function (): number {
-                return this.nodeSetting.x + this.nodeSetting.width + 12
-            },
-            y: function (): number {
-                return this.nodeSetting.y - this.nodeSetting.height - 12
             },
             showNode: function (): boolean {
                 return this.nodeSetting.show
