@@ -1292,7 +1292,7 @@
                     return false
                 } else {
                     let activeLayerList = layerList.filter(layer => !layer.isDeleted) as GraphLayer[]
-                    return activeLayerList.map(layer => layer.State.isShow).reduce((a, b) => a || b)
+                    return activeLayerList.map(layer => layer.State.isShow).reduce((a, b) => a || b, false)
                 }
             }
         },
