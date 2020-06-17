@@ -1,5 +1,5 @@
 <template>
-    <v-card :height="container.height" :width="container.width" class="cardItem">
+    <v-card :height="container.height" :width="container.width" class="scrollY cardItem">
         <v-card-title>
             Your Fragment
         </v-card-title>
@@ -13,8 +13,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {FragmentInfoPart} from "@/class/graphItem";
     import CardPageFragment from "@/components/card/page/CardPageFragment.vue";
+    import {FragmentInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: "FragmentList",

@@ -1,23 +1,30 @@
 <template>
     <div :style="styleWithOpacity" :class="classContent">
-        <v-tooltip bottom v-for="(icon, index) in activeIconList" :key="index">
-            <template v-slot:activator="{ on }">
-                <v-btn
-                    icon
-                    :small="small"
-                    :x-small="xSmall"
-                    :large="large"
-                    :x-large="xLarge"
-                    :color="icon.color ? icon.color : color"
-                    :disabled="(icon.name === '' || icon.disabled) || hide"
-                    @click="doSomething(icon)"
-                    v-on="on"
-                >
-                    <v-icon>{{ icon.name }}</v-icon>
-                </v-btn>
-            </template>
-            <span> {{ icon.toolTip }} </span>
-        </v-tooltip>
+        <div v-for="(icon, index) in activeIconList" :key="index">
+            <v-tooltip bottom>
+                <template v-slot:activator="{ on }">
+                    <div class="d-flex flex-row">
+                        <v-btn
+                            icon
+                            :small="small"
+                            :x-small="xSmall"
+                            :large="large"
+                            :x-large="xLarge"
+                            :color="icon.color ? icon.color : color"
+                            :disabled="(icon.name === '' || icon.disabled) || hide"
+                            @click="doSomething(icon)"
+                            v-on="on"
+                        >
+                            <v-icon>{{ icon.name }}</v-icon>
+                        </v-btn>
+                        <slot name="text" :icon="icon">
+
+                        </slot>
+                    </div>
+                </template>
+                <span> {{ icon.toolTip }} </span>
+            </v-tooltip>
+        </div>
     </div>
 </template>
 
@@ -66,6 +73,10 @@
                     return {}
                 }
             },
+            classToken: {
+                type: String,
+                default: ''
+            },
             color: {
                 type: String as () => string,
                 default: 'grey'
@@ -77,8 +88,8 @@
             },
             classContent: function (): string {
                 return this.vertical
-                    ? "d-flex flex-column"
-                    : "d-flex flex-row"
+                    ? "d-flex flex-column " + this.classToken
+                    : "d-flex flex-row " + this.classToken
             },
             styleWithOpacity: function (): CSSProp {
                 return Object.assign({opacity: this.hide ? 0 : 1}, this.containerStyle)
@@ -86,8 +97,10 @@
         },
         methods: {
             doSomething: function (icon: IconItem) {
-                icon._func
-                    ? icon.payload
+                icon._isTrigger && icon._eventName
+                    ? this.$emit(icon._eventName, icon)
+                    : icon._func
+                    ? icon.payload !== undefined
                         ? icon._func(icon.payload)
                         : icon._func()
                     : doNothing()
@@ -97,7 +110,6 @@
         record: {
             status: 'done',
             description: 'Icon的排列'
-            // todo Icon的提示
         }
     })
 </script>

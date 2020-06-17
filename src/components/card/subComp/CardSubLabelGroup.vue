@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-chip-group column class="">
+        <v-chip-group column class="d-flex flex-column">
             <v-chip
                 ripple
                 outlined
@@ -113,7 +113,6 @@
         record: {
             status: 'done',
             description: '一组标签，带有增删功能',
-            // todo 标签跳转
         }
     })
 </script>

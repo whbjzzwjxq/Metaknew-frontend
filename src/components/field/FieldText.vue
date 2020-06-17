@@ -25,29 +25,22 @@
             </v-tab>
 
             <v-tab-item v-for="(value, key) in text" :key="key" :value="'tab-'+ key">
-                <field-text-render
-                    :prop-name="key"
-                    :disabled="!setting.editable"
+                <markdown-render
+                    :edit-base="setting.editable"
                     :placeholder="placeholder"
-                    :width="width"
-                    :single-line="setting.singleLine"
-                    :label="label"
-                    :value="value"
-                    @update-text="updateText">
+                    v-model="text[key]"
+                >
 
-                </field-text-render>
+                </markdown-render>
             </v-tab-item>
 
             <v-tab-item :value="'tab-default'">
-                <field-text-render
-                    :single-line="setting.singleLine"
-                    :label="label"
+                <markdown-render
                     value=""
-                    prop-name="default"
                     placeholder="请在上方输入语言类型"
                     disabled>
 
-                </field-text-render>
+                </markdown-render>
             </v-tab-item>
         </v-tabs>
 
@@ -55,18 +48,11 @@
             <div style="height: 24px">
 
             </div>
-            <field-text-render
-                :value="text[singleKey]"
-                :prop-name="singleKey"
-                :disabled="!setting.editable"
-                :single-line="setting.singleLine"
-                :label="label"
-                :placeholder="placeholder"
-                :width="width"
-                :rows="rows"
-                @update-text="updateText">
+            <markdown-render
+                v-model="text[singleKey]"
+                :edit-base="setting.editable">
 
-            </field-text-render>
+            </markdown-render>
         </template>
 
         <v-card-actions v-if="setting.showSetter" class="pa-0" style="height: 24px">
@@ -85,11 +71,13 @@
 <script lang="ts">
     import Vue from 'vue'
     import {deepClone} from '@/utils/utils'
-    import FieldTextRender from "@/components/field/FieldTextRender.vue";
+    import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
 
     export default Vue.extend({
         name: 'FieldText',
-        components: {FieldTextRender},
+        components: {
+            MarkdownRender
+        },
         data() {
             return {
                 cacheText: '',
@@ -109,8 +97,8 @@
                 required: true
             },
             width: {
-                type: [String, Number],
-                default: 400
+                type: [Number, String],
+                default: '100%'
             },
             defaultValue: {
                 type: Object,
@@ -179,13 +167,14 @@
         },
         methods: {
             updateText(key: string, value: string) {
-                this.$set(this.text, key, value);
+                this.text[key] = value;
                 this.$emit('update-value', this.propName, this.text, this.status)
             },
 
             createNewText() {
                 if (this.newLang) {
-                    this.$set(this.text, this.newLang, '');
+                    //Vue.set检查过
+                    Vue.set(this.text, this.newLang, '');
                     this.$emit('update-value', this.propName, this.text, this.status);
                     this.newLang = ''
                 }
@@ -202,7 +191,7 @@
         record: {
             status: 'done',
             description: '翻译文本编辑器'
-            //todo 样式优化
+            //todo 样式优化 已经列入文档
         }
     })
 </script>

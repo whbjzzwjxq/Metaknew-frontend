@@ -8,7 +8,7 @@
                             <v-icon color="#111111"> {{ noteIcon }}</v-icon>
                         </v-btn>
                     </template>
-                    <personal-note @add-empty-note="addNoteToDocument"></personal-note>
+                    <personal-note></personal-note>
                 </v-menu>
             </div>
             <div class="button-normal pb-4">
@@ -42,8 +42,7 @@
     import {getIcon} from "@/utils/icon";
     import FragmentList from "@/components/FragmentList.vue";
     import PersonalNote from "@/components/PersonalNote.vue";
-    import {leftCardPadding} from "@/store/modules/styleComponentSize";
-    import {commitBottomBarCollapse} from "@/store/modules/_mutations";
+    import {commitBottomBarCollapse, commitChangeBottomToolBarOn} from "@/store/modules/_mutations";
     export default Vue.extend({
         name: "ToolbarBottom",
         components: {
@@ -52,7 +51,6 @@
         },
         data() {
             return {
-                toolbarOn: true,
                 fragmentIcon: getIcon('i-item', 'fragment'),
                 noteIcon: getIcon('i-item', 'note')
             }
@@ -65,9 +63,13 @@
             toolbarStyle: function (): CSSProp {
                 return {
                     height: this.styleManager.bottomBar.height + 'px',
-                    width: this.styleManager.bottomBar.width,
                     backgroundColor: 'white',
-                    overflow: "hidden"
+                    overflow: "hidden",
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    left: this.styleManager.leftCard.width + 'px',
+                    zIndex: 2
                 }
             },
             buttonGroupStyle: function (): CSSProp {
@@ -82,6 +84,9 @@
             },
             arrowIcon: function (): string {
                 return getIcon('i-arrow-double', !this.toolbarOn)
+            },
+            toolbarOn: function(): boolean {
+                return this.$store.state.componentState.bottomToolBarOn
             }
         },
         methods: {
@@ -91,12 +96,8 @@
                     ? height = 8
                     : height = 108;
                 commitBottomBarCollapse(height);
-                this.toolbarOn = !this.toolbarOn
+                commitChangeBottomToolBarOn();
             },
-
-            addNoteToDocument() {
-                this.$emit('add-empty-note')
-            }
         },
         watch: {},
         record: {

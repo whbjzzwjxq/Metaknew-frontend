@@ -1,95 +1,63 @@
 <template>
-    <v-edit-dialog v-if="fieldType === 'StringField'">
-        <v-chip label tile small :color="status">
-            {{ textView(baseValue) }}
+    <v-edit-dialog v-if="fieldType !== 'BooleanField'">
+        <v-chip label tile small :color="status" :disabled="!editable">
+            {{ statusText }}
         </v-chip>
         <template v-slot:input>
             <field-string
+                v-if="fieldType === 'StringField'"
                 :prop-name="propName"
                 :base-text="baseValue"
+                :editable="editable"
                 v-bind="setting[propName]"
                 @update-value="update">
 
             </field-string>
-        </template>
-    </v-edit-dialog>
 
-    <v-edit-dialog v-else-if="fieldType === 'ArrayField'">
-        <v-chip label outlined small :color="status">
-            {{ baseValue.length }}
-        </v-chip>
-        <template v-slot:input>
             <field-array
+                v-else-if="fieldType === 'ArrayField'"
                 :prop-name="propName"
                 :base-array="baseValue"
+                :editable="editable"
                 v-bind="setting[propName]"
                 @update-value="update">
 
             </field-array>
-        </template>
-    </v-edit-dialog>
 
-    <v-edit-dialog v-else-if="fieldType === 'NumberField'">
-        <v-chip
-            label outlined
-            small :color="status">
-            {{ baseValue }}
-        </v-chip>
-        <template v-slot:input>
             <field-number
+                v-else-if="fieldType === 'NumberField'"
                 :prop-name="propName"
                 :base-num="baseValue"
+                :editable="editable"
                 v-bind="setting[propName]"
                 @update-value="update">
 
             </field-number>
-        </template>
-    </v-edit-dialog>
 
-    <v-edit-dialog v-else-if="fieldType === 'JsonField'">
-        <v-chip
-            label outlined
-            small :color="status">
-            {{ jsonView(baseValue) }}
-        </v-chip>
-        <template v-slot:input>
             <field-json
+                v-else-if="fieldType === 'JsonField'"
                 :prop-name="propName"
                 :base-props="baseValue"
                 :change-type="true"
                 :p-label="pLabel"
+                :editable="editable"
                 v-bind="setting[propName]"
                 @update-value="update">
 
             </field-json>
-        </template>
-    </v-edit-dialog>
 
-    <v-edit-dialog v-else-if="fieldType === 'TextField'">
-        <v-chip
-            label outlined
-            small :color="status">
-            {{ Object.keys(baseValue).length }}
-        </v-chip>
-        <template v-slot:input>
             <field-text
+                v-else-if="fieldType === 'TextField'"
                 :prop-name="propName"
                 :base-text="baseValue"
+                :editable="editable"
                 v-bind="setting[propName]"
                 @update-value="update">
 
             </field-text>
-        </template>
-    </v-edit-dialog>
 
-    <v-edit-dialog v-else-if="fieldType === 'FileField'">
-        <v-chip
-            label outlined
-            small :color="status">
-            {{ baseValue.length }}
-        </v-chip>
-        <template v-slot:input>
             <field-file
+                v-else-if="fieldType === 'FileField'"
                 :prop-name="propName"
                 :base-files="baseValue"
                 v-bind="setting[propName]"
@@ -97,17 +65,9 @@
                 upload-mode>
 
             </field-file>
-        </template>
-    </v-edit-dialog>
 
-    <v-edit-dialog v-else-if="fieldType === 'ImageField'">
-        <v-chip
-            label outlined
-            small :color="status">
-            {{ baseValue ? 'done' : 'empty' }}
-        </v-chip>
-        <template v-slot:input>
             <node-avatar
+                v-else-if="fieldType === 'ImageField'"
                 :image-list="[]"
                 :source-url="baseValue"
                 @new-main-image="update(propName, arguments[0])"
@@ -119,8 +79,11 @@
         </template>
     </v-edit-dialog>
 
-    <v-checkbox v-else-if="fieldType === 'BooleanField'" :value="baseValue"
-                @change="update(propName, !baseValue, 'default')">
+    <v-checkbox
+        v-else-if="fieldType === 'BooleanField'"
+        :value="baseValue"
+        :disabled="!editable"
+        @change="update(propName, !baseValue, 'default')">
 
     </v-checkbox>
 
@@ -161,7 +124,28 @@
                 }
             }
         },
-        computed: {},
+        computed: {
+            statusText: function (): string {
+                switch (this.fieldType) {
+                    case 'StringField':
+                        return this.textView(this.baseValue);
+                    case 'ArrayField':
+                        return this.baseValue.length;
+                    case 'NumberField':
+                        return this.baseValue;
+                    case 'JsonField':
+                        return this.jsonView(this.baseValue).toString();
+                    case 'TextField':
+                        return this.jsonView(this.baseValue).toString();
+                    case 'FileField':
+                        return this.baseValue.length;
+                    case 'ImageField':
+                        return this.baseValue ? 'done' : 'empty';
+                    default:
+                        return 'default'
+                }
+            }
+        },
         props: {
             propName: {
                 type: String,
@@ -190,6 +174,10 @@
                 default() {
                     return fieldSetting
                 }
+            },
+            editable: {
+                type: Boolean,
+                default: true
             }
         },
 

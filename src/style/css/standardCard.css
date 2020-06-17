@@ -1,0 +1,87 @@
+.small-card {
+    width: 240px;
+    height: 200px;
+}
+.small-card-avatar {
+    width: 96px;
+    height: 96px;
+    padding: 8px;
+}
+.small-card-label {
+    width: 128px;
+    height: 96px;
+    font-size: small;
+    line-height: 120%;
+    padding: 8px;
+}
+.small-card-content {
+    width: 240px;
+    height: 60px;
+}
+.small-card-foot {
+    width: 240px;
+    height: 36px;
+}
+
+.xSmall-card {
+    width: 200px;
+    height: 160px;
+}
+
+.xSmall-card-avatar {
+    width: 72px;
+    height: 72px;
+    padding: 8px 4px 4px 8px;
+}
+
+.xSmall-card-label {
+    width: 128px;
+    height: 72px;
+    font-size: x-small;
+    line-height: 135%;
+    padding: 8px 4px 4px 4px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.xSmall-card-label-title {
+    font-size: xx-small;
+    line-height: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.xSmall-card-label-content {
+    font-size: medium;
+    font-weight: bold;
+    line-height: 120%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.xSmall-card-content {
+    width: 200px;
+    height: 64px;
+    padding: 2px 8px 2px 8px;
+}
+
+.xSmall-card-foot {
+    width: 200px;
+    height: 24px;
+    padding: 2px 2px 2px 2px;
+}
+
+.normal-card {
+    width: 360px;
+    height: 300px;
+}
+
+.large-card {
+    width: 480px;
+    height: 400px;
+}
+
+.xLarge-card {
+    width: 600px;
+    height: 500px;
+}

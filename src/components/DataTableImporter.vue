@@ -153,7 +153,7 @@
         record: {
             status: 'done',
             description: 'DataTable的输入栏',
-            //todo 从别的数据类型解析
+            //todo 从别的数据类型解析 已经列入文档
         }
     })
 </script>

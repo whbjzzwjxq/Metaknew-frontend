@@ -8,7 +8,7 @@
         @update:search-input="updateText"
         autofocus
         persistent-hint
-        label="PrimaryLabel Select">
+        label="PrimaryLabel">
         <template v-slot:no-data>
             <v-list-item>
                 <v-list-item-title>
@@ -26,7 +26,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {availableLabel} from "@/utils/fieldResolve";
+    import {availableLabel, documentLabel} from "@/utils/fieldResolve";
     import {getIcon} from "@/utils/icon";
 
     export default Vue.extend({
@@ -37,7 +37,7 @@
                 availableLabel: availableLabel,
                 text: '',
                 plusIcon: getIcon('i-edit', 'add'),
-                documentLabel: ['DocGraph', 'DocPaper']
+                documentLabel: documentLabel
             }
         },
         props: {

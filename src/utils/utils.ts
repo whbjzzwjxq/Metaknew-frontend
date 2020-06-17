@@ -1,16 +1,17 @@
-import {GraphItemSettingPart, InfoPart} from "@/class/graphItem";
 import {SortProp} from "@/interface/interfaceInComponent";
 import {
     commitFileTokenRefresh,
-    commitGlobalIndexPlus,
     commitLoginDialogChange,
-    commitLoginOut,
-    commitLoginIn
+    commitLoginIn,
+    commitLoginOut
 } from "@/store/modules/_mutations";
 import {AxiosResponse} from "axios";
-import {FieldType} from "@/utils/fieldResolve";
+import {ExtraProps, fieldDefaultValue, FieldType, nodeLabelToStandardProps} from "@/utils/fieldResolve";
 import {userEditDataQuery} from "@/api/user/dataApi";
 import store from '@/store/index'
+import Vue from "vue";
+import {InfoPart} from "@/class/info";
+import {DocumentItemSettingPart} from "@/class/settingBase";
 
 export type cookieName = 'user_name' | 'user_id' | 'token';
 
@@ -40,7 +41,8 @@ export function delCookie(name: cookieName) {
 }
 
 // 深拷贝
-export function deepClone<T>(item: T): T {
+export function deepClone<T>(item: T, exclude: string[] = []): T {
+    //exclude 等于原样复制
     // null, undefined values check
     if (!item) {
         return item;
@@ -74,7 +76,9 @@ export function deepClone<T>(item: T): T {
                 result = {};
                 Object.entries(item)
                     .forEach(([prop, value]) => {
-                        result[prop] = deepClone(value);
+                        !exclude.includes(prop)
+                            ? (result[prop] = deepClone(value))
+                            : (result[prop] = value)
                     });
             }
         } else {
@@ -117,7 +121,9 @@ export function guid() {
     return (S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4());
 }
 
-export const randomNumberInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+export function randomNumber(min: number, max: number) {
+    return Math.random() * (max - min) + min
+}
 
 export const indexToColor = (index: number) => rainBowColor[index % 7];
 
@@ -181,7 +187,7 @@ export function fileCheck(file: File, size?: number, formats?: string[], filePoo
     return rules.map(rule => rule()).filter(result => result !== '')
 }
 
-export function getInfoPart(_id: id, _type: GraphItemType, dataManager: DataManagerState) {
+export function getInfoPart(_id: id, _type: DocumentItemType, dataManager: DataManagerState) {
     let manager;
     _type === 'link'
         ? manager = dataManager.linkManager
@@ -213,12 +219,13 @@ export const getIndex = () => {
 };
 
 // 两个Item是否一样
-export const itemEqual = (itemA: { _id: id, _type: GraphItemType }, itemB: { _id: id, _type: GraphItemType }) =>
+export const itemEqual = (itemA: { _id: id, _type: DocumentItemType }, itemB: { _id: id, _type: DocumentItemType }) =>
     itemA._id === itemB._id && itemA._type === itemB._type;
-export const findItem = (list: Array<GraphItemSettingPart>, _id: id, _type: GraphItemType) =>
-    list.filter(
-        item => item._id === _id && item._type === _type // 在一个List里找Item
-    );
+
+// 在一个List里找Item
+export const findItem = (list: DocumentItemSettingPart[], _id: id, _type: DocumentItemType) =>
+    list.filter(item => item._id === _id && item._type === _type);
+
 export const getIsSelf = (ctrl: BaseCtrl) =>
     ctrl.CreateUser.toString() === getCookie("user_id");
 
@@ -296,39 +303,37 @@ export const currentTime = () => {
     return time.getTime();
 };
 
-export const emptyContent = () => {
-    return {
-        nodes: [],
-        links: [],
-        medias: [],
-        texts: []
-    } as DocumentContent
-};
+const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol', 'undefined'];
 
-const jsBaseType = ['number', 'string', 'bigint', 'boolean', 'function', 'symbol'];
+export interface MergeObjectConfig {
+    rewriteValue?: boolean, //是否覆盖已有值
+    rewriteUndefined?: boolean, //是否覆盖undefined和null
+    deepClone?: boolean //深拷贝
+}
 
-export function mergeObject<T extends Record<string, any>>(target: T, source: any, passive?: boolean, deepClone?: boolean) {
-    // 递归对象
-    // source里有target没有的值是否强制覆盖
-    passive || (passive = false);
+export function mergeObject<T extends Record<string, any>>(target: T, source: any, config: MergeObjectConfig) {
+    let {rewriteValue, rewriteUndefined, deepClone} = config;
+    rewriteValue || (rewriteValue = false);
     deepClone || (deepClone = false);
-    Object.entries(source).map(([key, value]) => {
-        if (target[key] === undefined) {
-            //@ts-ignore
-            passive && (target[key] = value)
-        } else {
-            let typeInTarget = typeof target[key];
-            let typeValue = typeof value;
-            if (jsBaseType.includes(typeInTarget) && typeInTarget === typeValue) {
+    rewriteUndefined || (rewriteUndefined = true);
+    if (typeof source === 'object' && source !== null) {
+        Object.entries(source).map(([key, value]) => {
+            let prop = key as keyof T
+            if (!target.hasOwnProperty(prop)) {
                 //@ts-ignore
-                target[key] = value;
-            } else if (typeInTarget !== typeValue) {
-                // doNothing
+                rewriteUndefined && (target[prop] = value)
             } else {
-                mergeObject(target[key], value, passive)
+                let typeInTarget = typeof target[prop];
+                let typeValue = typeof value;
+                if (jsBaseType.includes(typeInTarget)) {
+                    //@ts-ignore
+                    (typeInTarget === typeValue || rewriteValue) && (target[prop] = value);
+                } else {
+                    mergeObject(target[prop], value, config)
+                }
             }
-        }
-    });
+        });
+    }
     return target
 }
 
@@ -343,7 +348,6 @@ export const setLoginIn = (res: AxiosResponse<UserLoginResponse>, loginSevenDays
     setCookie('token', data.token, day);
     commitLoginIn(data);
     commitFileTokenRefresh(data.fileToken);
-    commitGlobalIndexPlus(data.personalId);
     commitLoginDialogChange(false);
     (store && !store.state.userDataManager.userEditDataLoad) && userEditDataQuery()
 };
@@ -375,3 +379,32 @@ export const fieldHandler = () => ({
     "BooleanField": (value: any) => value === 'false' ? false : Boolean(value),
     "ImageField": (value: any) => value.toString(),
 } as Record<FieldType, (value: any) => any>);
+
+export function infoChangePLabel(info: BaseNodeInfo, newLabel: string) {
+    let {StandardProps, ExtraProps} = info;
+    let standKeys = Object.keys(StandardProps);
+    let extraKeys = Object.keys(ExtraProps);
+    let newProps: ExtraProps = {};
+    Object.entries(nodeLabelToStandardProps(newLabel)).map(([prop, description]) => {
+        let {resolve, type} = description;
+        let value;
+        if (standKeys.indexOf(prop) >= 0) {
+            // 继承值
+            value = StandardProps[prop].value;
+            delete StandardProps[prop]
+        } else if (extraKeys.indexOf(prop) >= 0) {
+            // 从extraProps里取出来
+            value = ExtraProps[prop].value;
+            delete ExtraProps[prop]
+        } else {
+            // 默认值
+            value = fieldDefaultValue[type]
+        }
+        newProps[prop] = {resolve, type, value};
+    });
+    //把剩下的属性移到ExtraProps里
+    Object.assign(ExtraProps, StandardProps);
+    //Vue.set检查过
+    Vue.set(info, "StandardProps", newProps);
+    info.PrimaryLabel = newLabel;
+}

@@ -28,7 +28,7 @@
     import CardSubStyleRow from '@/components/card/subComp/CardSubStyleRow.vue';
     import SelectionTable from "@/components/SelectionTable.vue";
     import {ToPascalCase} from "@/utils/utils";
-    import {typeSetting} from "@/interface/itemSetting";
+    import {typeSettingDictGraph} from "@/interface/style/templateStyleGraph";
 
     export default Vue.extend({
         name: "CardPageStyleEditor",
@@ -39,7 +39,7 @@
         },
         data() {
             return {
-                setting: typeSetting[this.compType]
+                setting: typeSettingDictGraph[this.compType]
             }
         },
         props: {
@@ -48,7 +48,7 @@
                 required: true
             },
             compType: {
-                type: String as () => GraphItemType,
+                type: String as () => DocumentItemType,
                 required: true
             }
         },
@@ -62,7 +62,7 @@
         record: {
             status: 'done',
             description: '样式编辑器'
-            //todo 更加细化的样式编辑器
+            //todo 更加细化的样式编辑器比如模板 已经列入文档
         }
     })
 </script>

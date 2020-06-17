@@ -89,8 +89,8 @@
 
             //宽度
             width: {
-                type: Number,
-                default: 200
+                type: [Number, String],
+                default: '100%'
             },
 
             //是否可编辑
@@ -157,7 +157,7 @@
         record: {
             status: 'done',
             description: '字符编辑器'
-            //todo 字符解析
+            //todo 字符解析 已经列入文档
         }
 
     })

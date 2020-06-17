@@ -1,4 +1,3 @@
-import {FragmentInfoPart, NoteSettingPart} from "@/class/graphItem";
 import {ActionContext} from "vuex";
 import {RootState} from '@/store';
 import Vue from 'vue';
@@ -19,6 +18,8 @@ import {
     commitUserConcernAdd, commitUserLabelPropsChange,
     commitUserPropResolveAdd
 } from "@/store/modules/_mutations";
+import {FragmentInfoPart} from "@/class/info";
+import {NoteSettingPart} from "@/class/settingBase";
 
 declare global {
     interface UserSetting {
@@ -35,9 +36,10 @@ declare global {
         PLabelExtraProps: LabelProps // 用户对某个标签的额外属性
     }
 
+    type ConcernType = "node" | "link" | "media" | "document"
     interface UserDataManagerState {
         // userConcern 部分
-        userConcernDict: Record<GraphItemType, Record<id, UserConcern>>, // 基础的数据仓库
+        userConcernDict: Record<ConcernType, Record<id, UserConcern>>, // 基础的数据仓库
         userConcernLoadingList: id[], // 正在加载的List
         timerForConcern?: number, // 计时器
         fragments: Array<FragmentInfoPart>, // user收集的碎片
@@ -50,13 +52,13 @@ declare global {
 
     interface UserConcernKey {
         id: id,
-        type: GraphItemType,
+        type: ConcernType,
         isModeled: boolean
     }
 
     interface UserConcernPayload {
         id: id,
-        type: GraphItemType,
+        type: ConcernType,
         userConcern: UserConcern,
         strict?: boolean
     }
@@ -87,8 +89,7 @@ const state: UserDataManagerState = {
         node: {},
         link: {},
         media: {},
-        document: {},
-        text: {}
+        document: {}
     },
     userConcernLoadingList: [],
     timerForConcern: undefined,
@@ -111,10 +112,11 @@ const state: UserDataManagerState = {
 };
 
 const mutations = {
-    // //todo 改写成为queue list
+    // todo 改写成为queue list 已经列入文档
     userConcernAdd(state: UserDataManagerState, payload: UserConcernPayload) {
         let {id, type, userConcern, strict} = payload;
         strict === undefined && (strict = false);
+        //Vue.set检查过
         (strict || state.userConcernDict[type][id] === undefined) && Vue.set(state.userConcernDict[type], id, userConcern)
     },
 
@@ -141,6 +143,7 @@ const mutations = {
     userPropResolveAdd(state: UserDataManagerState, payload: PropDescriptionPayload) {
         let {prop, resolve, strict} = payload;
         strict === undefined && (strict = false);
+        //Vue.set检查过
         (strict || !state.userEditData.UserPropResolve[prop]) && Vue.set(state.userEditData.UserPropResolve, prop, resolve);
     },
 

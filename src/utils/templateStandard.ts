@@ -8,7 +8,6 @@ export const nodeTemplateTheme: Record<string, () => Record<string, Record<strin
             color: '#eaecee',
             opacity: 0.5,
             type: 'ellipse',
-            isMain: false
         },
         Border: {
             width: 1,

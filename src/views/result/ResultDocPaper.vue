@@ -1,36 +1,34 @@
- <template>
-    <div>
-        <div :style="viewBoxStyle" class="cardItem">
-            <paper-view-box>
+<template>
+    <div class="pa-0 d-flex flex-column" style="overflow: hidden">
+        <v-card outlined tile height="48">
+            <graph-top-navigation :document="document" class="d-inline-flex pa-4">
 
-            </paper-view-box>
+            </graph-top-navigation>
+        </v-card>
+        <div class="flex-grow-1">
+            <router-view name="content" :document="document"></router-view>
         </div>
-        <toolbar-bottom @add-empty-note="newNote">
-            <template v-slot:subTool>
-                <div style="width: 100%; height: 100%" class="d-flex flex-row">
-                    <div style="width: 80px; height: 100%">
+        <router-view name="toolbarBottom">
 
-                    </div>
-                    <v-col cols="2" class="pa-0 ma-0">
-                    </v-col>
-                </div>
-            </template>
-        </toolbar-bottom>
+        </router-view>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {PaperSelfPart} from "@/class/paperItem";
-    import {RectByPoint} from "@/class/geometric";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import ToolbarBottom from "@/components/toolbar/ToolbarBottom.vue";
     import PaperViewBox from "@/components/paperComponents/PaperViewBox.vue";
-    import {NoteSettingPart} from "@/class/graphItem";
+    import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
+    import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
+
     export default Vue.extend({
         name: "ResultDocPaper",
         components: {
             ToolbarBottom,
-            PaperViewBox
+            PaperViewBox,
+            BottomDynamicBar,
+            GraphTopNavigation
         },
         data() {
             return {
@@ -45,23 +43,12 @@
             editMode: function (): boolean {
                 return this.editPageRegex.test(String(this.$route.name))
             },
-            paper: function (): PaperSelfPart {
-                return this.dataManager.currentPaper
-            },
-            allComponentsStyle: function (): StyleManagerState {
-                return this.$store.state.styleComponentSize
-            },
-            viewBox: function (): RectByPoint {
-                return this.allComponentsStyle.viewBox
-            },
-            viewBoxStyle: function (): CSSProp {
-                return this.viewBox.getDivCSS({overflow: "hidden"})
-            },
+            document: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
+            }
         },
         methods: {
-            newNote: function () {
-                NoteSettingPart.emptyNoteSetting('note', '', '', this.paper._id, true)
-            },
+
         },
         watch: {},
         record: {

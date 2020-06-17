@@ -1,12 +1,7 @@
 import store from '../index';
-import {
-    FragmentInfoPart,
-    GraphSelfPart,
-    MediaInfoPart,
-    GraphNodeSettingPart,
-    NoteSettingPart
-} from "@/class/graphItem";
+import {DocumentSelfPart, NodeSettingPart, NoteSettingPart} from "@/class/settingBase";
 import {NoteBook} from "@/store/modules/userDataManager";
+import {FragmentInfoPart, MediaInfoPart} from "@/class/info";
 
 export function dispatchUploadFile(payload: {
     item?: MediaInfoPart,
@@ -17,11 +12,11 @@ export function dispatchUploadFile(payload: {
     return store.dispatch('fileUpload', payload)
 }
 
-export function dispatchGraphQuery(payload: { _id: id, parent: GraphSelfPart | null }) {
+export function dispatchGraphQuery(payload: { _id: id, parent: DocumentSelfPart | null }) {
     return store.dispatch('graphQuery', payload)
 }
 
-export function dispatchNodeExplode(payload: { node: GraphNodeSettingPart, document: GraphSelfPart }) {
+export function dispatchNodeExplode(payload: { node: NodeSettingPart, document: DocumentSelfPart }) {
     return store.dispatch('nodeExplode', payload)
 }
 
@@ -33,12 +28,12 @@ export function dispatchVisNodeCreate() {
     return store.dispatch('visNodeCreate')
 }
 
-export function dispatchDocumentSave(payload: {isDraft: boolean, isAuto: boolean}) {
-    return store.dispatch('documentSave', payload)
+export function dispatchAllInfoUpdate(payload: { isDraft: boolean, isAuto: boolean }) {
+    return store.dispatch('allInfoUpdate', payload)
 }
 
-export function dispatchLinkBulkCreate(payload: CompressLinkInfo[]) {
-    return store.dispatch('linkBulkCreate', payload)
+export function dispatchDocumentSave(payload: { isDraft: boolean, isAuto: boolean }) {
+    return store.dispatch('documentSave', payload)
 }
 
 export function dispatchNodeQuery(payload: NodeSetting[]) {
@@ -61,7 +56,7 @@ export function dispatchUserConcernQuery(payload: id[]) {
     return store.dispatch('userConcernQuery', payload)
 }
 
-export function dispatchInfoDraftSaveAll(payload: {isAuto: boolean}) {
+export function dispatchInfoDraftSaveAll(payload: { isAuto: boolean }) {
     return store.dispatch('draftSaveAll', payload)
 }
 
@@ -69,10 +64,10 @@ export const dispatchUserLabelProps = (payload: LabelProps) => {
     return store.dispatch('userLabelPropsPush', payload)
 };
 
-export function dispatchNoteInDocPush(payload: {note: NoteSettingPart}) {
+export function dispatchNoteInDocPush(payload: { note: NoteSettingPart }) {
     return store.dispatch('noteInDocPush', payload)
 }
 
-export function dispatchNoteBookPush(payload: {note: NoteBook}) {
+export function dispatchNoteBookPush(payload: { note: NoteBook }) {
     return store.dispatch('noteBookPush', payload)
 }

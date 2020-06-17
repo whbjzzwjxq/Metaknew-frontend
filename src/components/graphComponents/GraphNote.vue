@@ -58,7 +58,7 @@
     import {getIcon} from "@/utils/icon";
     import {randomIntegerInRange} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
-    import {NoteSettingPart} from "@/class/graphItem";
+    import {NoteSettingPart} from "@/class/settingBase";
 
     export default Vue.extend({
         name: 'GraphNote',
@@ -102,8 +102,8 @@
         },
 
         computed: {
-            setting: function (): NoteSetting {
-                return this.note.Setting
+            setting: function (): {Base: BaseSizeInGraph} {
+                return this.note.Setting.InGraph
             },
             containerRect: function (): AreaRect {
                 return this.container.positiveRect()
@@ -121,10 +121,10 @@
             },
             content: {
                 get: function (): string {
-                    return this.setting._content
+                    return this.note.Setting._content
                 },
                 set: function (value: string) {
-                    this.setting._content = value
+                    this.note.Setting._content = value
                 }
             },
             isDark: function (): boolean {

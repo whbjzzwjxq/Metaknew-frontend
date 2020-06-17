@@ -2,15 +2,13 @@
     <g>
         <defs>
             <marker :id="arrowSetting._id"
-                    refX="0"
-                    :refY="arrowSetting.refY"
-                    :markerWidth="arrowSetting.length"
-                    :markerHeight="arrowSetting.length"
+                    :markerWidth="arrowLength * 2"
+                    :markerHeight="arrowLength * 2"
                     orient="auto"
                     markerUnits="userSpaceOnUse"
                     :viewBox="arrowSetting.container">
                 <path :d="arrowSetting.pathD"
-                      :fill="setting.View.color"
+                      :fill="setting.Arrow.arrowColor"
                       :fill-opacity="0.8"
                 ></path>
             </marker>
@@ -35,14 +33,13 @@
 
         <foreignObject :x="midLocation.x - textSetting.width / 2" :y="midLocation.y"
                        :width="textSetting.width" :height="textSetting.height">
-            <p :style="textStyle">{{ setting._label }}</p>
+            <p :style="textStyle">{{ itemSetting._label }}</p>
         </foreignObject>
     </g>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {LinkSettingPart} from "@/class/graphItem";
     import {getPoint, getPointDistance, rectDiagonalDistance} from "@/class/geometric";
 
     export default Vue.extend({
@@ -51,32 +48,33 @@
             return {}
         },
         props: {
-            link: {
-                type: Object as () => LinkSettingPart,
-                required: true
-            },
             source: {
-                type: Object as () => VisualNodeSetting,
+                type: Object as () => NodeSettingSimply,
                 required: true
             },
             target: {
-                type: Object as () => VisualNodeSetting,
+                type: Object as () => NodeSettingSimply,
                 required: true
-            },
-
-            scale: {
-                type: Number as () => number,
-                default: 1
             },
 
             midLocation: {
                 type: Object as () => PointObject,
                 required: true
+            },
+
+            state: {
+                type: Object as () => LinkState,
+                required: true
+            },
+
+            itemSetting: {
+                type: Object as () => LinkSetting,
+                required: true
             }
         },
         computed: {
-            setting: function (): LinkSetting {
-                return this.link.Setting
+            setting: function (): LinkStyleSettingGraph {
+                return this.itemSetting.InGraph
             },
 
             // 说的是线型 不是'link'
@@ -88,33 +86,35 @@
                 let source = this.source;
                 let target = this.target;
                 let distance = getPointDistance(source, target);
-                // 算出起点位置和终点位置的半径
+                // 算出起点位置和终点位置的大致半径
                 let sourceR = rectDiagonalDistance(source) / 2;
                 let targetR = rectDiagonalDistance(target) / 2;
-
+                // delta的Point形式
+                let deltaToPoint = getPoint(source).decrease(target).divide(distance);
                 // 算出起点位置和终点位置的变化量
-                let startDelta = getPoint(source).decrease(target)
-                    .multi(sourceR).divide(distance);
+                const extraDelta = 1; // 变化量稍微放大
+                let startDelta = deltaToPoint.copy().multi(sourceR).multi(extraDelta);
                 // 终点是减小 所以有个负号
-                let endDelta = startDelta.copy().multi(-targetR / sourceR);
+                let endDelta = startDelta.copy().multi(-targetR / sourceR).multi(extraDelta);
 
                 //关系实际的起点终点位置
                 const locationDelta = function (
                     pointLoc: 'top' | 'bottom' | 'left' | 'right' | 'center',
                     rect: AreaRect, delta: PointMixed) {
                     let result = getPoint(rect);
+                    const extraDelta2 = 2;
                     switch (pointLoc) {
                         case 'top':
-                            result.decrease({x: 0, y: rect.height / 2});
+                            result.decrease({x: extraDelta2, y: rect.height + extraDelta2});
                             break;
                         case 'bottom':
-                            result.add({x: 0, y: rect.height / 2});
+                            result.add({x: extraDelta2, y: rect.height + extraDelta2});
                             break;
                         case 'left':
-                            result.decrease({x: rect.width / 2, y: 0});
+                            result.decrease({x: rect.width + extraDelta2, y: extraDelta2});
                             break;
                         case 'right':
-                            result.add({x: rect.width / 2, y: 0});
+                            result.add({x: rect.width + extraDelta2, y: extraDelta2});
                             break;
                         case 'center':
                             result.decrease(delta);
@@ -131,7 +131,7 @@
             },
 
             isSelected: function (): boolean {
-                return this.link.isSelected
+                return this.state.isSelected
             },
 
             drawStyle: function (): CSSProp {
@@ -150,7 +150,7 @@
                     'stroke': this.drawStyle.stroke,
                     'strokeWidth': this.setting.View.width + 12 + 'px',
                     'fill': 'none',
-                    'strokeOpacity': this.isSelected ? 0.05 : 0
+                    'strokeOpacity': this.isSelected || this.state.isMouseOn ? 0.1 : 0
                 }
             },
 
@@ -190,26 +190,30 @@
                 ].join(' ')
             },
 
+            arrowLength: function (): number {
+                return Math.floor(this.setting.Arrow.arrowLength)
+            },
+
             arrowSetting: function (): Record<string, any> {
                 let setting = this.setting.Arrow;
-                let length = setting.arrowLength;
-                let refY = length * 0.2; // y方向上的变化量
-                let L1 = 'L0,' + 0.4 * length + ' ';
-                let L2 = 'L' + 0.7 * length + ',' + refY + ' ';
-                let _id = 'arrow_' + this.link._id;
+                let length = this.arrowLength;
+                let refX = length;
+                let refY = length * 0.3;
+                let L1 = `L${-refX}, ${-refY} `;
+                let L2 = `L${-refX}, ${refY} `;
+                let _id = 'arrow_' + this.itemSetting._id;
                 return {
                     _id,
-                    length: length * this.scale,
-                    container: '0 0 ' + length + ' ' + length,
+                    length: length,
+                    container: `${-length} ${-length} ${length * 2} ${length * 2}`,
                     pathD: 'M0,0 ' + L1 + L2 + 'z',
-                    show: setting.arrowShow ? 'url(#' + _id + ')' : '',
-                    refY
+                    show: setting.arrowShow ? 'url(#' + _id + ')' : ''
                 }
             },
 
             textSetting: function (): Record<string, any> {
                 return {
-                    width: this.link._label.length * 12,
+                    width: this.itemSetting._label.length * 12,
                     height: 20
                 }
             },
@@ -219,7 +223,7 @@
         record: {
             status: 'done',
             description: '关系显示',
-            //todo 关系按钮和简要卡片
+            //todo 关系按钮和简要卡片 已经列入文档 已经列入文档
         }
     })
 </script>

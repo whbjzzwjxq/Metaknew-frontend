@@ -1,7 +1,10 @@
 import {userLoginPayload} from "@/store/modules/userInfo";
 import store from '../index';
-import {DocumentSelfPart, GraphSelfPart, LinkInfoPart, NodeInfoPart, NoteSettingPart} from "@/class/graphItem";
+import {DocumentSelfPart, DocumentItemSettingPart, NoteSettingPart} from "@/class/settingBase";
 import {NoteBook} from "@/store/modules/userDataManager";
+import {LinkInfoPart, NodeInfoPart} from "@/class/info";
+import {MarkdownInputState} from "@/components/markdown/_markdownInterface";
+import {PaperRow} from "@/class/settingPaper";
 
 export const commitLoginIn = (payload: userLoginPayload) => {
     return store.commit('loginSet', payload)
@@ -47,12 +50,12 @@ export const commitItemChange = (payload: NodeInfoPart | LinkInfoPart) => {
     return store.commit('currentItemChange', payload)
 };
 
-export const commitGraphChange = (payload: { graph: GraphSelfPart }) => {
-    return store.commit('currentGraphChange', payload)
+export const commitDocumentChange = (payload: { graph: DocumentSelfPart }) => {
+    return store.commit('currentDocumentChange', payload)
 };
 
-export const commitRootGraph = (payload: { graph: GraphSelfPart }) => {
-    return store.commit('rootGraphChange', payload)
+export const commitRootDocPush = (payload: { document: DocumentSelfPart }) => {
+    return store.commit('rootDocumentPush', payload)
 };
 
 export const commitInfoAdd = (payload: { item: InfoPartInDataManager, strict?: boolean }) => {
@@ -67,7 +70,7 @@ export const commitInfoIdChange = (payload: { _type: string, idMap: IdMap }) => 
     return store.commit('infoIdChange', payload)
 };
 
-export const commitDocumentAdd = (payload: { document: GraphSelfPart | DocumentSelfPart, strict?: boolean }) => {
+export const commitDocumentAdd = (payload: { document: DocumentSelfPart, strict?: boolean }) => {
     return store.commit('documentAdd', payload)
 };
 
@@ -87,10 +90,6 @@ export const commitSubTabChange = (payload: SubTabName) => {
     return store.commit('subTabChange', payload)
 };
 
-export const commitGlobalIndexPlus = (payload: number) => {
-    return store.commit('userIndexPlus', payload)
-};
-
 export const commitLoginDialogChange = (payload: boolean) => {
     return store.commit('loginDialogChange', payload)
 };
@@ -98,10 +97,6 @@ export const commitLoginDialogChange = (payload: boolean) => {
 export const commitLoginDialogOn = (payload: 0 | 1) => {
     // 0 是登录 1是注册
     return store.commit('loginDialogTabOn', payload)
-};
-
-export const commitEditModeChange = (payload: boolean) => {
-    return store.commit('editModeChange', payload)
 };
 
 export const commitUserConcernAdd = (payload: UserConcernPayload) => {
@@ -124,10 +119,38 @@ export const commitUserEditDataLoadDone = (payload: UserEditData) => {
     return store.commit('userEditDataChange', payload)
 };
 
-export const commitNoteBookAdd = (payload: {note: NoteBook}) => {
+export const commitNoteBookAdd = (payload: { note: NoteBook }) => {
     return store.commit('noteBookAdd', payload)
 };
 
-export const commitBottomDynamicBarChange = (payload: {on?: boolean, type?: BottomDynamicBarType}) => {
+export const commitBottomDynamicBarChange = (payload: { on?: boolean, type?: BottomDynamicBarType }) => {
     return store.commit('bottomDynamicBarChange', payload)
 };
+
+export const commitLangChange = (payload: string) => {
+    return store.commit('langChange', payload)
+};
+
+export const commitMarkdownState = (payload: MarkdownInputState) => {
+    return store.commit('updateMarkdownState', payload)
+}
+
+export const commitClearMarkdownState = () => {
+    return store.commit('clearMarkdownState')
+}
+
+export const commitChangePaperQueue = (payload: {on?: boolean}) => {
+    return store.commit('changePaperQueue', payload)
+}
+
+export const commitChangePaperDraggingItem = (payload: {item: DocumentItemSettingPart, row: PaperRow}) => {
+    return store.commit('changePaperDraggingItem', payload)
+}
+
+export const commitChangeGraphLayerListOn = (payload?: boolean) => {
+    return store.commit('changeGraphLayerListOn', payload)
+}
+
+export const commitChangeBottomToolBarOn = (payload?: boolean) => {
+    return store.commit('changeBottomToolBarOn', payload)
+}

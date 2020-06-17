@@ -16,27 +16,28 @@
                 <tr v-for="(item, key) in dict" :key="key">
                     <td>
                         <v-text-field
-                            :value="key"
+                            :disabled="!changeType || !editable"
                             :rules="rules"
-                            @input="inputKey"
+                            :value="key"
                             @blur="updateKey(key, item)"
-                            :disabled="!changeType"
+                            @input="inputKey"
+                            class="pt-4"
                             dense
                             height="16px"
-                            style="width: 100px;"
-                            class="pt-4">
+                            style="width: 100px;">
 
                         </v-text-field>
                     </td>
 
                     <td>
                         <data-table-field
-                            :prop-name="key"
                             :base-value="item.value"
+                            :editable="editable"
                             :field-type="item.type"
+                            :p-label="pLabel"
+                            :prop-name="key"
                             :resolve="item.resolve"
                             :setting="fieldSetting"
-                            :p-label="pLabel"
                             @update="updateValue(key, $event)">
 
                         </data-table-field>
@@ -44,9 +45,10 @@
 
                     <td v-if="changeType">
                         <v-select
+                            :disabled="!editable"
+                            :items="types"
                             :value="item.type"
                             @change="updateType(item, key, $event)"
-                            :items="types"
                             dense>
 
                         </v-select>
@@ -54,9 +56,10 @@
 
                     <td v-if="changeType">
                         <v-select
+                            :disabled="!editable"
+                            :items="resolves"
                             :value="item.resolve"
-                            @change="updateResolveType(item, key, $event)"
-                            :items="resolves">
+                            @change="updateResolveType(item, key, $event)">
 
                         </v-select>
                     </td>
@@ -78,13 +81,13 @@
         <template v-if="changeType">
             <div class="d-flex flex-row">
                 <v-col cols="3">
-                    <v-btn text small @click="addNewProp">
+                    <v-btn text small @click="addNewProp" :disabled="!editable">
                         New Item
                         <v-icon right small>mdi-plus</v-icon>
                     </v-btn>
                 </v-col>
                 <v-col cols="3">
-                    <v-btn text small @click="update">
+                    <v-btn text small @click="update" :disabled="!editable">
                         Save
                         <v-icon right small>mdi-content-save</v-icon>
                     </v-btn>
@@ -100,7 +103,7 @@
     import {deepClone, fieldHandler} from '@/utils/utils';
     import {validGroup} from "@/utils/validation";
     import {Rule} from "@/interface/interfaceInComponent";
-    import {dispatchUserLabelProps, dispatchUserPropResolveChange} from "@/store/modules/_dispatch";
+    import {dispatchUserPropResolveChange} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: 'FieldJson',
@@ -134,7 +137,7 @@
             },
             width: {
                 type: [Number, String],
-                default: 360
+                default: '100%'
             },
             // 是否是原生属性
             changeType: {
@@ -212,7 +215,7 @@
             },
 
             updateValue(item: string, value: any) {
-                this.$set(this.dict[item], 'value', value);
+                this.dict[item]['value'] = value;
                 this.update()
             },
 
@@ -222,7 +225,8 @@
             },
 
             addProp(key: string, item: any) {
-                this.$set(this.dict, key, item);
+                //Vue.set检查过
+                Vue.set(this.dict, key, item);
                 this.update()
             },
 

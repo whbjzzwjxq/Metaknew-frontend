@@ -1,26 +1,27 @@
 <template>
     <div class="pa-0 d-flex flex-column">
+        <graph-top-navigation :document="graph" class="d-inline-flex pt-4 pl-4">
+
+        </graph-top-navigation>
         <div class="flex-grow-1">
             <router-view name="content" :graph="graph"></router-view>
         </div>
         <router-view name="toolbarBottom" :graph="graph">
 
         </router-view>
-        <bottom-dynamic-bar>
-
-        </bottom-dynamic-bar>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {RectByPoint} from "@/class/geometric";
-    import {GraphSelfPart} from "@/class/graphItem";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import BottomDynamicBar from "@/components/toolbar/BottomDynamicBar.vue";
+    import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
     export default Vue.extend({
         name: "ResultDocGraph",
         components: {
-            BottomDynamicBar
+            BottomDynamicBar,
+            GraphTopNavigation
         },
         data() {
             return {}
@@ -30,14 +31,8 @@
             allComponentsStyle: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
             },
-            viewBox: function (): RectByPoint {
-                return this.allComponentsStyle.viewBox
-            },
-            viewBoxStyle: function (): CSSProp {
-                return this.viewBox.getDivCSS({overflow: "hidden"})
-            },
-            graph: function (): GraphSelfPart {
-                return this.$store.state.dataManager.currentGraph
+            graph: function (): DocumentSelfPart {
+                return this.$store.state.dataManager.currentDocument
             }
         },
         methods: {},

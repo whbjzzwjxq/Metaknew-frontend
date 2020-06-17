@@ -4,12 +4,6 @@
 
         </card-root>
         <div class="d-flex flex-column flex-grow-1">
-            <graph-top-navigation
-                :document="currentDocument"
-                :style="navigationStyle"
-                class="unselected">
-
-            </graph-top-navigation>
             <router-view class="flex-grow-1"></router-view>
         </div>
     </div>
@@ -18,19 +12,15 @@
 <script lang="ts">
     import Vue from 'vue'
     import CardRoot from '@/components/card/CardRoot.vue';
-    import GraphTopNavigation from "@/components/graphComponents/GraphTopNavigation.vue";
-    import {commitGraphChange, commitRootGraph} from "@/store/modules/_mutations";
+    import {commitDocumentChange, commitRootDocPush} from "@/store/modules/_mutations";
     import {getIndex} from "@/utils/utils";
-    import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
-    import {PaperSelfPart} from "@/class/paperItem";
+    import {DocumentSelfPart} from "@/class/settingBase";
     import {dispatchGraphQuery} from "@/store/modules/_dispatch";
-    import {RectByPoint} from "@/class/geometric";
 
     export default Vue.extend({
         name: "Result",
         components: {
-            CardRoot,
-            GraphTopNavigation
+            CardRoot
         },
         data() {
             return {
@@ -44,58 +34,62 @@
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            graph: function (): GraphSelfPart {
-                return this.dataManager.currentGraph
-            },
-            paper: function (): PaperSelfPart {
-                return this.dataManager.currentPaper
-            },
             currentDocument: function (): DocumentSelfPart {
-                return this.graphRouteRegex.test(String(this.$route.name))
-                    ? this.graph
-                    : this.paper
+                return this.dataManager.currentDocument
             },
             editMode: function (): boolean {
                 return this.editRegex.test(String(this.$route.name))
             },
             allComponentsStyle: function (): StyleManagerState {
                 return this.$store.state.styleComponentSize
-            },
-            navigationStyle: function (): CSSProp {
-                let {width} = this.allComponentsStyle.leftCard;
-                let {height} = this.allComponentsStyle.toolBar;
-                return {
-                    position: 'absolute',
-                    left: width + 'px',
-                    top: height + 'px'
+            }
+        },
+        methods: {
+            fetchData() {
+                let id = this.$route.params.id;
+                const commitGraph = (graph: DocumentSelfPart) => {
+                    commitDocumentChange({graph});
+                    commitRootDocPush({document: graph});
+                    this.loading = false;
+                    return true
+                };
+                if (id) {
+                    let graph = this.dataManager.documentManager[id]
+                    if (graph !== undefined) {
+                        return commitGraph(graph)
+                    } else {
+                        return dispatchGraphQuery({_id: id, parent: null}).then(() => {
+                            let graph = this.dataManager.documentManager[id];
+                            return commitGraph(graph)
+                        })
+                    }
+                } else {
+                    if (this.currentDocument._id === '$_-1') {
+                        let _id = getIndex();
+                        let {graph} = DocumentSelfPart.initEmpty(_id, null);
+                        graph.addEmptyNode('node', 'BaseNode')
+                        return commitGraph(graph)
+                    } else {
+                        this.loading = false
+                        return true
+                    }
                 }
             }
         },
-        methods: {},
-        watch: {},
-        created(): void {
-            let id = this.$route.params.id;
-            if (id) {
-                dispatchGraphQuery({_id: id, parent: null}).then(() => {
-                        let graph = this.dataManager.graphManager[id];
-                        commitGraphChange({graph});
-                        commitRootGraph({graph});
-                        this.loading = false;
-                    }
-                )
-            } else {
-                if (this.graph._id === '$_-1') {
-                    let _id = getIndex();
-                    let {graph, info} = GraphSelfPart.emptyGraphSelfPart(_id, null);
-                    commitGraphChange({graph});
-                    commitRootGraph({graph});
-                    this.loading = false
-                } else {
-                    this.loading = false
-                }
+        watch: {
+            $route() {
+                this.fetchData()
             }
+        },
+
+        created(): void {
+            this.fetchData()
         },
         mounted(): void {
+
+        },
+        updated(): void {
+
         },
         record: {
             status: 'done',

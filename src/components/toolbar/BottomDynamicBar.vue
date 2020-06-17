@@ -8,30 +8,24 @@
             <icon-group :icon-list="bottomSheetIconList" color="white"></icon-group>
         </v-card-title>
         <v-card-text class="pa-0 ma-0">
-            <path-drawer :container="pathContentRect" :path="path">
-
-            </path-drawer>
         </v-card-text>
     </v-card>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import PathDrawer from "@/components/path/PathDrawer.vue";
     import IconGroup from "@/components/IconGroup.vue";
     import {RectByPoint} from "@/class/geometric";
-    import {PathSelfPart} from "@/class/path";
     import {getIcon} from "@/utils/icon";
     import {commitBottomDynamicBarChange, commitBottomDynamicBarResize} from "@/store/modules/_mutations";
     export default Vue.extend({
         name: "BottomDynamicBar",
         components: {
-            PathDrawer,
             IconGroup
         },
         data: function () {
             return {
-                path: PathSelfPart.emptyPathSelfPart()
+
             }
         },
         props: {},

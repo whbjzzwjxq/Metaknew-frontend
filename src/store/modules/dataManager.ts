@@ -1,13 +1,6 @@
 import Vue from 'vue'
 import {filePutBlob} from '@/api/fileUpload';
-import {
-    DocumentSelfPart,
-    GraphSelfPart,
-    LinkInfoPart,
-    MediaInfoPart,
-    NodeInfoPart,
-    GraphNodeSettingPart
-} from "@/class/graphItem";
+import {DocumentSelfPart, NodeSettingPart, TextSettingPart} from "@/class/settingBase";
 import {
     commitDocumentAdd,
     commitDocumentIdChange,
@@ -17,28 +10,27 @@ import {
     commitInfoIdChange,
     commitInfoRemove,
     commitItemChange,
-    commitSnackbarOn
+    commitSnackbarOn, commitSubTabChange
 } from "@/store/modules/_mutations";
 import {Commit, Dispatch} from "vuex";
-import {isGraphSelfPart} from "@/utils/typeCheck";
 import {
-    dispatchGraphQuery, dispatchInfoDraftSaveAll,
-    dispatchLinkBulkCreate,
+    dispatchGraphQuery,
+    dispatchInfoDraftSaveAll,
     dispatchLinkQuery,
     dispatchMediaQuery,
     dispatchNodeQuery,
     dispatchVisNodeCreate
 } from "@/store/modules/_dispatch";
-import {PathSelfPart} from "@/class/path";
-import {PaperSelfPart} from "@/class/paperItem";
+import {PathSelfPart} from "@/class/settingPath";
 import {loginCookie} from "@/api/user/loginApi";
 import {settingToQuery} from "@/utils/utils";
-import {userConcernTemplate} from "@/utils/template";
-import {nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
-import {linkBulkCreate, linkQueryBulk} from "@/api/subgraph/link";
-import {documentBulkCreate, documentBulkUpdate, documentQuery} from "@/api/document/document";
+import {nodeBulkUpdate, nodeQueryBulk, visNodeBulkCreate} from "@/api/subgraph/node";
+import {linkBulkCreate, linkBulkUpdate, linkQueryBulk} from "@/api/subgraph/link";
+import {gateDocumentBulkCreate, gateDocumentBulkUpdate, gateDocumentQuery} from "@/api/document/document";
 import {mediaCreate, mediaQueryMulti} from "@/api/subgraph/media";
 import {draftUpdate} from "@/api/subgraph/commonApi";
+import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
+import {textBulkCreate} from "@/api/subgraph/text";
 
 export const getManager = (_type: ItemType) =>
     _type === 'link'
@@ -47,42 +39,46 @@ export const getManager = (_type: ItemType) =>
         ? state.mediaManager
         : state.nodeManager;
 
-const getDocumentManager = (document: DocumentSelfPart) =>
-    isGraphSelfPart(document)
-        ? state.graphManager
-        : state.paperManager;
+const initGraph = DocumentSelfPart.initEmpty('$_-1', null, false);
 
 declare global {
     interface DataManagerState {
-        currentGraph: GraphSelfPart,
+        currentDocument: DocumentSelfPart,
         currentItem: NodeInfoPart | LinkInfoPart,
-        currentPaper: PaperSelfPart,
-        graphManager: Record<id, GraphSelfPart>,
-        paperManager: Record<id, PaperSelfPart>,
+        documentManager: Record<id, DocumentSelfPart>,
         nodeManager: Record<id, NodeInfoPart>,
         linkManager: Record<id, LinkInfoPart>,
         mediaManager: Record<id, MediaInfoPart>,
         pathManager: Record<id, PathSelfPart>,
         fileToken: FileToken,
         newIdRegex: RegExp,
-        rootGraph: GraphSelfPart
+        rootDocument: DocumentSelfPart[]
     }
 
     interface Context {
         state: DataManagerState,
         commit: Commit,
         dispatch: Dispatch,
-        getters: any
+        getters: DataManagerGetters
+    }
+
+    interface DataManagerGetters {
+        nodes: NodeInfoPart[],
+        links: LinkInfoPart[],
+        medias: MediaInfoPart[],
+        graphs: DocumentSelfPart[],
+        papers: DocumentSelfPart[],
+        currentGraphInfo: NodeInfoPart,
+        documentList: DocumentSelfPart[],
+        allInfoPart: InfoPartInDataManager[]
     }
 }
 
 const state: DataManagerState = {
-    currentGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
-    currentPaper: PaperSelfPart.emptyPaperSelfPart('$_-1', null, false).paper,
-    currentItem: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).info,
-    rootGraph: GraphSelfPart.emptyGraphSelfPart('$_-1', null, false).graph,
-    graphManager: {},
-    paperManager: {},
+    currentDocument: initGraph.graph,
+    currentItem: initGraph.info,
+    rootDocument: [],
+    documentManager: {},
     pathManager: {},
     nodeManager: {},
     linkManager: {},
@@ -96,33 +92,37 @@ const state: DataManagerState = {
     newIdRegex: new RegExp('\\$_[0-9]*')
 };
 const getters = {
-    currentGraphInfo: (state: DataManagerState) => {
-        return state.nodeManager[state.currentGraph._id]
+    nodes: (state: DataManagerState) => {
+        return Object.values(state.nodeManager)
     },
 
-    documentList: (state: DataManagerState) => {
-        let result = [] as DocumentSelfPart[];
-        result.push(...Object.values(state.graphManager));
-        result.push(...Object.values(state.paperManager));
-        return result
+    links: (state: DataManagerState) => {
+        return Object.values(state.linkManager)
     },
 
-    allInfoPart: (state: DataManagerState) => {
+    medias: (state: DataManagerState) => {
+        return Object.values(state.mediaManager)
+    },
+
+    allInfoPart: (state: DataManagerState, getters: DataManagerGetters) => {
         let result = [] as InfoPartInDataManager[];
-        result.push(...Object.values(state.nodeManager));
-        result.push(...Object.values(state.linkManager));
-        result.push(...Object.values(state.mediaManager));
+        result.push(...getters.nodes);
+        result.push(...getters.links);
+        result.push(...getters.medias);
         return result
+    },
+    documentList: (state: DataManagerState) => {
+        return Object.values(state.documentManager)
     }
 };
 const mutations = {
 
     // ------------单纯的操作------------
-    currentGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
+    currentDocumentChange(state: DataManagerState, payload: { graph: DocumentSelfPart }) {
         let {graph} = payload;
         let _id = graph._id; // 这里payload是document
-        graph.isExplode = true;
-        state.currentGraph = graph;
+        graph.explode(true)
+        state.currentDocument = graph;
         let node = state.nodeManager[_id];
         commitItemChange(node);
         commitSnackbarOn({
@@ -133,43 +133,39 @@ const mutations = {
         })
     },
 
-    rootGraphChange(state: DataManagerState, payload: { graph: GraphSelfPart }) {
-        let {graph} = payload;
-        graph.isExplode = true;
-        state.rootGraph = graph
+    rootDocumentPush(state: DataManagerState, payload: { document: DocumentSelfPart }) {
+        let {document} = payload;
+        document.isRoot = true
+        let current = state.rootDocument.filter(doc => doc._id === document._id)[0]
+        current === undefined && state.rootDocument.push(document)
     },
 
     currentItemChange(state: DataManagerState, payload: NodeInfoPart | LinkInfoPart) {
         state.currentItem = payload;
-    },
-
-    currentPaperChange(state: DataManagerState, payload: { paper: PaperSelfPart }) {
-        let {paper} = payload;
-        let _id = paper._id;
-        state.currentPaper = paper;
-        commitItemChange(state.nodeManager[_id]);
+        commitSubTabChange('info')
     },
 
     // ------------Graph And Paper ------------
     // Push Graph
-    documentAdd(state: DataManagerState, payload: { document: GraphSelfPart | PaperSelfPart, strict?: boolean }) {
+    documentAdd(state: DataManagerState, payload: { document: DocumentSelfPart, strict?: boolean }) {
         let {document, strict} = payload;
-        let manager = getDocumentManager(document);
+        let manager = state.documentManager;
         strict || (strict = true);
         strict
+            //Vue.set检查过
             ? Vue.set(manager, document._id, document)
             : !manager[document._id] && Vue.set(manager, document._id, document)
     },
 
     documentRemove(state: DataManagerState, payload: id) {
-        Vue.delete(state.graphManager, payload)
+        Vue.delete(state.documentManager, payload)
     },
 
     documentIdChange(state: DataManagerState, payload: { oldId: id, newId: id }) {
         let {oldId, newId} = payload;
-        let oldGraph = state.graphManager[oldId];
+        let oldGraph = state.documentManager[oldId];
         if (oldGraph) {
-            oldGraph.Conf._id = newId;
+            oldGraph._id = newId;
             commitDocumentAdd({document: oldGraph});
             commitDocumentRemove(oldId);
         } else {
@@ -184,6 +180,7 @@ const mutations = {
         let manager = getManager(_type);
         strict || (strict = true);
         strict
+            //Vue.set检查过
             ? Vue.set(manager, _id, item)
             : !manager[_id] && Vue.set(manager, _id, item);
     },
@@ -219,16 +216,21 @@ const actions = {
 
     // 请求Graph
     async graphQuery(context: { commit: Commit, state: DataManagerState, dispatch: Dispatch },
-                     payload: { _id: id, parent: GraphSelfPart | null }) {
+                     payload: { _id: id, parent: DocumentSelfPart | null }) {
         let {_id, parent} = payload;
         // 先绘制Graph
-        await documentQuery(_id).then(res => {
-            let {data} = res;
-            let {graph} = GraphSelfPart.resolveFromBackEnd(data, parent);
-            dispatchNodeQuery(graph.nodeListNoSelf.map(item => item.Setting));
-            dispatchLinkQuery(graph.Content.links.map(item => item.Setting));
-            dispatchMediaQuery(graph.Content.medias.map(item => item._id));
-        });
+        if (context.state.documentManager[_id] === undefined) {
+            await gateDocumentQuery(_id).then(res => {
+                let {data} = res;
+                let {graph} = DocumentSelfPart.initBackend(data, parent);
+                dispatchNodeQuery(graph.nodesWithoutSelf.map(item => item.Setting));
+                dispatchLinkQuery(graph.links.map(item => item.Setting));
+                dispatchMediaQuery(graph.medias.map(item => item._id));
+            });
+            return true
+        } else {
+            return true
+        }
     },
 
     // 异步请求Node
@@ -273,7 +275,7 @@ const actions = {
     // 请求Media
     mediaQuery(context: Context, payload: Array<id>) {
         payload || (payload = []);
-        let noCacheMedia = payload.filter(_id => !state.nodeManager[_id]);
+        let noCacheMedia = payload.filter(_id => !state.mediaManager[_id]);
 
         if (noCacheMedia.length > 0) {
             noCacheMedia.map(_id => {
@@ -304,7 +306,7 @@ const actions = {
                 fileToken = res.data.fileToken;
             })
                 .catch(() => {
-                    alert('暂时无法上传')
+
                 })
         }
 
@@ -324,16 +326,16 @@ const actions = {
         } else return filePutBlob(fileToken, realFile, storeName);
     },
 
-    async nodeExplode(context: Context, payload: { node: GraphNodeSettingPart, document: GraphSelfPart }) {
+    async nodeExplode(context: Context, payload: { node: NodeSettingPart, document: DocumentSelfPart }) {
         let {node, document} = payload;
         let _id = node._id;
-        let subGraph = state.graphManager[_id];
+        let subGraph = state.documentManager[_id];
         if (subGraph === undefined) {
             dispatchGraphQuery({
                 _id,
                 parent: document,
             }).then(() => {
-                let subGraph = state.graphManager[_id];
+                let subGraph = state.documentManager[_id];
                 subGraph.explode(true)
             });
         } else {
@@ -342,8 +344,9 @@ const actions = {
     },
 
     async visNodeCreate(context: Context) {
-        let nodeList = Object.values(state.nodeManager).filter(node => !node.isRemote).map(item => item.Info);
-        let mediaList = Object.values(state.mediaManager).filter(media => !media.isRemote).map(item => item.Info);
+        let {getters} = context;
+        let nodeList = getters.nodes.filter(node => !node.isRemote).map(item => item.Info);
+        let mediaList = getters.medias.filter(media => !media.isRemote).map(item => item.Info);
         if (nodeList.length + mediaList.length > 0) {
             return visNodeBulkCreate(nodeList, mediaList).then(res => {
                 Object.entries(res.data).map(([_type, idMap]) => {
@@ -355,15 +358,13 @@ const actions = {
         }
     },
 
-    async linkBulkCreate(context: Context, payload: CompressLinkInfo[]) {
-        if (payload.length > 0) {
-            return linkBulkCreate(payload, 'USER').then(res => {
-                let idMap = res.data;
-                idMap && commitInfoIdChange({_type: 'link', idMap})
-            })
-        } else {
-            return true
-        }
+    async linkCreate(context: Context, payload?: LinkInfoPart[]) {
+        let {getters} = context;
+        let links = payload === undefined
+            ? getters.links
+            : payload;
+        let linkList = links.filter(link => !link.isRemote);
+        let Links = linkList.map(link => link.compress());
     },
 
     draftSaveAll(context: Context, payload: { isAuto: boolean }) {
@@ -388,28 +389,30 @@ const actions = {
     },
 
     async documentSave(context: Context, payload: { isDraft: boolean, isAuto: boolean }) {
+        let {getters} = context;
         let {isDraft, isAuto} = payload;
+        // 保存Link和Node
         await dispatchVisNodeCreate();
-        await dispatchLinkBulkCreate(
-            Object.values(state.linkManager).filter(link => !link.isRemote).map(item => item.compress())
-        );
-        let documentList: DocumentSelfPart[] = context.getters.documentList;
-        let dataList = documentList.filter(document => !document.DocumentData.isRemote)
-            .map(document => document.backendDocument);
-        let updateDataList = documentList.filter(document => document.DocumentData.isRemote);
+        await linkBulkCreate(getters.links);
+        await textBulkCreate(TextSettingPart.list);
+        //处理专题 分成需要update和需要create的内容
+        let documentList: DocumentSelfPart[] = getters.documentList;
+        let updateDataList = documentList.filter(document => document.isRemote);
+        //
         if (isDraft) {
             dispatchInfoDraftSaveAll({isAuto}).then()
         } else {
-            // todo
+            // todo 保存所有信息 重构 已经列入文档
         }
         if (updateDataList.length > 0) {
             if (isDraft) {
-                let data = updateDataList.map(doc => doc.draftObject);
+                let data = updateDataList.map(doc => doc.dataDraftObject);
                 draftUpdate(data, isAuto).then(res => {
                     let {DraftIdMap} = res.data;
                     updateDataList.map(doc => {
                         let newDraftId = DraftIdMap[doc._id];
-                        doc.DocumentData.draftId === undefined && (doc.DocumentData.draftId = newDraftId);
+                        //todo 草稿保存
+                        // doc.MetaData.draftId === undefined && (doc.MetaData.draftId = newDraftId);
                     });
                     let payload = {
                         actionName: `DraftUpdateDocument`,
@@ -420,29 +423,21 @@ const actions = {
                     commitSnackbarOn(payload)
                 })
             } else {
-                documentBulkUpdate(updateDataList.map(doc => doc.backendDocument)).then(res => {
-                    let idList = res.data;
-                    idList.map(id => {
-                        let graph = state.graphManager[id];
-                        graph && (graph.updateStateUpdate())
-                    })
-                });
+                gateDocumentBulkUpdate(documentList)
             }
         }
-        if (dataList.length > 0) {
-            await documentBulkCreate(dataList).then(res => {
-                let idList = res.data;
-                idList.map(id => {
-                    let graph = state.graphManager[id];
-                    graph && (graph.updateStateSave())
-                });
-                let payload: SnackBarStatePayload = {
-                    color: 'success',
-                    actionName: 'documentCreate',
-                    content: '专题保存成功',
-                };
-                commitSnackbarOn(payload)
-            })
+        await gateDocumentBulkCreate(documentList)
+    },
+
+    async allInfoUpdate(context: Context, payload: { isDraft: boolean, isAuto: boolean }) {
+        let {isDraft, isAuto} = payload;
+        let {getters} = context;
+        let draftUpdate = isDraft || isAuto; // 如果是自动保存 那么也是草稿
+        let {nodes, links, medias} = getters;
+        if (!draftUpdate) {
+            nodeBulkUpdate(nodes).then();
+            linkBulkUpdate(links).then();
+        } else {
         }
     }
 };

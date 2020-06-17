@@ -14,6 +14,7 @@ const mutations = {
     labelColorAdd(state: labelColorState, labels: Array<string>) {
         labels.filter(label => !state[label]).map(label => {
             let newColor = darkColorScaleSet[randomIntegerInRange(0, 8)];
+            //Vue.set检查过
             Vue.set(state, label, newColor);
         });
     }

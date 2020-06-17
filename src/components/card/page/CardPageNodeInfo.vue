@@ -1,20 +1,22 @@
 <template>
-    <div v-if="!loading">
-        <card-sub-row :text="nameTrans[type] + '标题'">
+    <div class="unselected">
+        <card-sub-row :text="nameTrans[type] + '标题'" :close-able="editInPaper" v-model="settingInPaper.showTitle">
             <template v-slot:content>
-                <v-col cols="5" class="pa-0 ma-0">
+                <v-row no-gutters>
+                <v-col class="pa-2" cols="5">
                     <node-avatar
                         :source-url="mainImage"
                         :imageList="imageList"
                         :edit-mode="editable"
+                        :given-avatar-size="1440"
                         @new-main-image="mainImage = arguments[0]">
 
                     </node-avatar>
                 </v-col>
-                <v-col cols="7" class="pa-0 ma-0 pt-2">
+                <v-col class="pa-2" cols="7">
                     <v-text-field
                         v-model="name"
-                        class="pr-2 font-weight-bold"
+                        class="pr-2 pt-2 font-weight-bold"
                         :style="simplifySetting.titleSize"
                         :disabled="!editable"
                         label="Name"
@@ -24,25 +26,47 @@
                     <p-label-selector
                         :label="info.PrimaryLabel"
                         @update-label="label = $event"
-                        :disabled="!typeSelectable"
+                        :disabled="!typeSelectable || !editMode"
                         class="mt-n2">
 
                     </p-label-selector>
-                    <item-sharer :base-data="baseData" :user-concern="userConcern" class="mt-n2">
+                    <item-sharer :base-data="baseData" :user-concern="userConcern" class="mt-n2" :x-small="editInPaper">
 
                     </item-sharer>
-                    <icon-group :icon-list="editIcon" v-show="!editMode">
-
-                    </icon-group>
                 </v-col>
+                </v-row>
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '的别名与翻译'">
+        <card-sub-row :text="'保存与记录'" v-if="isUserControl && !editInPaper">
+            <template v-slot:content>
+                <div class="d-flex flex-row">
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on }">
+                            <v-btn text v-on="on" coor="primary">Save</v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
+                            <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                    <icon-group :icon-list="editIcon" v-show="!editMode">
+
+                    </icon-group>
+                </div>
+            </template>
+        </card-sub-row>
+
+        <card-sub-row
+            :text="nameTrans[type] + '的别名与翻译'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showTranslate"
+        >
             <template v-slot:content>
                 <v-text-field
                     :disabled="!editable"
-                    class="pt-2 font-weight-bold"
+                    class="pa-2 font-weight-bold"
                     dense
                     label="Alias"
                     placeholder="使用;分割多个别名"
@@ -54,9 +78,13 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '相关话题'">
+        <card-sub-row
+            :text="nameTrans[type] + '相关话题'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showTopic"
+        >
             <template v-slot:content>
-                <v-chip-group column>
+                <v-chip-group column class="pa-2">
                     <global-chip
                         v-for="(label, index) in info.Topic"
                         :key="label"
@@ -64,7 +92,7 @@
                         :small="simplifySetting.chipSize === 'small'"
                         :x-small="simplifySetting.chipSize === 'xSmall'"
                         :index="index"
-                        :closeable="baseData.isSelf"
+                        :closeable="isUserControl"
                         @close-chip="removeTopic">
 
                     </global-chip>
@@ -91,7 +119,11 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '有关的标签'">
+        <card-sub-row
+            :text="nameTrans[type] + '有关的标签'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showLabels"
+        >
             <template v-slot:content>
                 <card-sub-label-group
                     :editable="group.editable"
@@ -101,6 +133,7 @@
                     :name="group.name"
                     @add-label="addItem(arguments[0], group.prop)"
                     @remove-label="removeItem"
+                    class="pa-2"
                     small
                     v-for="(group, index) in labelGroup">
 
@@ -108,7 +141,11 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="'你的评分'">
+        <card-sub-row
+            :text="'你的评分'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showRating"
+        >
             <template v-slot:content>
                 <v-col v-for="(level, index) in levelGroup"
                        :key="index"
@@ -123,7 +160,11 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '属性'">
+        <card-sub-row
+            :text="nameTrans[type] + '属性'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showProps"
+        >
             <template v-slot:content>
                 <field-json
                     :base-props="editProps"
@@ -137,10 +178,14 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row :text="nameTrans[type] + '描述'">
+        <card-sub-row
+            :text="nameTrans[type] + '描述'"
+            :close-able="editInPaper"
+            v-model="settingInPaper.showDescription"
+        >
             <template v-slot:content>
                 <field-text
-                    class="pa-1"
+                    class="pa-2"
                     :base-text="info.Description"
                     :prop-name="'Description'"
                     :editable="editable"
@@ -150,26 +195,14 @@
                 </field-text>
             </template>
         </card-sub-row>
+        <slot name="footContent">
 
-        <card-sub-row :text="'保存与记录'" v-if="editable">
-            <template v-slot:content>
-                <v-menu offset-y>
-                    <template v-slot:activator="{ on }">
-                        <v-btn text v-on="on" coor="primary">Save</v-btn>
-                    </template>
-                    <v-list>
-                        <v-list-item @click="saveItem(false)">Save and Publish</v-list-item>
-                        <v-list-item @click="saveItem(true)" :disabled="!baseData.isRemote">Save as Draft</v-list-item>
-                    </v-list>
-                </v-menu>
-            </template>
-        </card-sub-row>
+        </slot>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
-    import {MediaInfoPart, NodeInfoPart} from "@/class/graphItem";
     import FieldArray from "@/components/field/FieldArray.vue";
     import FieldJson from "@/components/field/FieldJson.vue";
     import FieldText from "@/components/field/FieldText.vue";
@@ -185,11 +218,12 @@
     import {availableLabel, EditProps, FieldType, labelItems, ResolveType, topicItems} from "@/utils/fieldResolve";
     import {LabelGroup} from "@/interface/interfaceInComponent"
     import {deepClone} from "@/utils/utils";
-    import {commitInfoIdChange, commitSnackbarOn} from "@/store/modules/_mutations";
     import {nodeBulkCreate, nodeBulkUpdate} from "@/api/subgraph/node";
-    import {dispatchMediaQuery, dispatchUserConcernQuery, dispatchUserLabelProps} from "@/store/modules/_dispatch";
+    import {dispatchUserConcernQuery, dispatchUserLabelProps} from "@/store/modules/_dispatch";
     import {getIcon} from "@/utils/icon";
     import {userConcernTemplate} from "@/utils/template";
+    import {MediaInfoPart, NodeInfoPart} from "@/class/info";
+    import {nodeShowInPaperTemplate} from "@/interface/style/templateStylePaper";
 
     export default Vue.extend({
         name: "CardPageNodeInfo",
@@ -216,7 +250,6 @@
                 nodeLabels: availableLabel,
                 topicItems: topicItems,
                 labelItems: labelItems,
-                loading: true,
                 plusIcon: getIcon('i-edit', 'add'),
                 userConcern: userConcernTemplate(),
                 editBase: false
@@ -231,10 +264,14 @@
                 type: Boolean,
                 default: false
             },
-            isSimplify: {
-                type: Boolean as () => boolean,
+            editInPaper: {
+                type: Boolean,
                 default: false
-            }
+            },
+            settingInPaper: {
+                type: Object,
+                default: () => nodeShowInPaperTemplate()
+            },
         },
         computed: {
             info: function (): BaseNodeInfo {
@@ -252,7 +289,7 @@
                 return this.$store.state.userDataManager
             },
 
-            type: function (): GraphItemType {
+            type: function (): DocumentItemType {
                 return this.info.type
             },
 
@@ -261,29 +298,28 @@
             },
 
             simplifySetting: function (): Record<string, any> {
-                return this.isSimplify
-                    ? {
-                        titleSize: 'font-size: 14px',
-                        chipSize: 'xSmall',
-                        renderAlias: true
-                    }
-                    : {
-                        titleSize: 'font-size: 18px',
-                        chipSize: 'small',
-                        renderAlias: true
-                    }
+                return {
+                    titleSize: 'font-size: 18px',
+                    chipSize: 'small',
+                    renderAlias: true
+                }
+            },
+
+            isUserControl: function (): boolean {
+                return this.baseData.isSelf
             },
 
             editable: function (): boolean {
-                return this.editMode || this.editBase
+                // 既处于
+                return this.isUserControl && (this.editMode || this.editBase)
             },
 
             editIcon: function (): IconItem[] {
                 return [{
-                    name: getIcon('i-edit', this.baseData.isSelf),
-                    disabled: !this.baseData.isSelf,
+                    name: getIcon('i-edit-able', !this.editBase),
+                    disabled: !this.isUserControl,
                     _func: this.edit,
-                    toolTip: '编辑内容'
+                    toolTip: !this.editBase ? '编辑内容' : '停止编辑'
                 }]
             },
 
@@ -292,7 +328,8 @@
                     return this.info.Name
                 },
                 set(value: string) {
-                    this.baseData.changeName(value)
+                    let node = this.baseData as NodeInfoPart;
+                    node.changeName(value)
                 }
             },
 
@@ -312,7 +349,8 @@
                     return this.baseData._label
                 },
                 set(value: string) {
-                    this.baseData.changePrimaryLabel(value)
+                    let node = this.baseData as NodeInfoPart;
+                    node.changePrimaryLabel(value)
                 }
             },
 
@@ -383,22 +421,18 @@
             },
 
             levelGroup: function () {
-                //todo 评分机制
+                //todo 评分机制 已经列入文档
                 return {}
             },
 
             imageList: function (): MediaInfoPart[] {
                 let result: MediaInfoPart[] = [];
-                if (this.isSimplify) {
-                    result = [];
-                } else {
-                    this.info.IncludedMedia.map(_id => {
-                        let media = this.dataManager.mediaManager[_id];
-                        if (media && media._label === 'image') {
-                            result.push(media)
-                        }
-                    })
-                }
+                this.info.IncludedMedia.map(_id => {
+                    let media = this.dataManager.mediaManager[_id];
+                    if (media && media._label === 'image') {
+                        result.push(media)
+                    }
+                })
                 return result;
             },
         },
@@ -408,44 +442,33 @@
             },
 
             removeItem(removedLabel: string, prop: string) {
-                this.$set(this.baseData, 'isEdit', true);
+                this.baseData.isEdit = true
             },
 
             removeTopic(index: number) {
                 this.info.Topic.splice(index, 1);
-                this.$set(this.baseData, 'isEdit', true)
+                this.baseData.isEdit = true
             },
 
             addItem(value: string[], prop: string) {
                 prop === 'Info'
                     ? this.baseData.updateValue('Labels', value)
-                    : this.$set(this.userConcern, 'Labels', value)
+                    : (this.userConcern.Labels = value)
             },
 
             updateRating(prop: LevelConcern, rating: number) {
-                // todo
+
             },
 
             saveItem(isDraft: boolean, isAuto: boolean = false) {
                 if (isDraft) {
                     this.baseData.draftSave(isAuto)
                 } else {
-                    let data = [this.info];
+                    let data = [this.baseData];
                     if (this.baseData.isRemote) {
-                        nodeBulkUpdate(data).then(res => {
-                            let payload = {
-                                actionName: 'nodeBulkUpdate',
-                                color: 'success',
-                                once: false,
-                                content: '更新成功'
-                            } as SnackBarStatePayload;
-                            commitSnackbarOn(payload)
-                        })
+                        nodeBulkUpdate(data)
                     } else {
-                        nodeBulkCreate(data).then(res => {
-                            let idMap = res.data;
-                            commitInfoIdChange({_type: this.type, idMap});
-                        })
+                        nodeBulkCreate(data)
                     }
                 }
             },
@@ -454,17 +477,13 @@
                 this.editBase = !this.editBase
             }
         },
-        watch: {},
+        watch: {
+
+        },
         created(): void {
-            dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
-                this.loading = false
-            });
         },
 
         mounted(): void {
-            dispatchMediaQuery(this.baseData.Info.IncludedMedia).then(() => {
-                this.loading = false
-            });
             if (this.baseData.isRemote) {
                 dispatchUserConcernQuery([this.baseData._id]).then(() => {
                     let concern = this.userDataManager.userConcernDict[this.baseData._type][this.baseData._id];
@@ -479,7 +498,7 @@
         record: {
             status: 'done',
             description: 'NodeInfo'
-            //todo 收藏 分享 单个点赞
+            //todo 收藏 分享 单个点赞 已经列入文档
         }
     })
 </script>

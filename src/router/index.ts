@@ -2,15 +2,16 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 Vue.use(VueRouter);
-export const IndexUrl = '/index';
-export const ResultUrl = '/result';
-export const EditUrl = '/edit';
-export const TestUrl = '/test';
+const IndexUrl = '/index';
+const ResultUrl = '/result';
+const EditUrl = '/edit';
+const TestUrl = '/test';
+const PathUrl = '/path';
 
 const routes = [
     {
         path: '',
-        redirect: {name: 'home'}
+        redirect: {name: 'index'}
     },
     {
         path: IndexUrl + '/about',
@@ -19,7 +20,7 @@ const routes = [
     },
     {
         path: IndexUrl,
-        name: 'home',
+        name: 'index',
         component: () => import(/* webpackChunkName: "group-index" */ '@/views/index/Home.vue'),
     },
     {
@@ -66,9 +67,7 @@ const routes = [
                             toolbarBottom: () => import(/* webpackChunkName: "result-graph" */ '@/components/toolbar/ToolbarBottomGraphNormal.vue')
                         },
                         props: {
-                            content: {
-
-                            }
+                            content: {}
                         }
                     },
                     {
@@ -89,21 +88,44 @@ const routes = [
                                 dragAble: true
                             },
                             toolbarBottom: {}
-                        },
+                        }
                     }
                 ]
             },
             {
-                path: 'paper/id=:id',
+                path: 'paper',
                 name: 'paper',
                 component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocPaper.vue'),
-                props: true
+                children: [
+                    {
+                        path: 'id=:id/normal',
+                        alias: 'normal',
+                        name: 'paper-normal',
+                        components: {
+                            content: () => import('@/components/paperComponents/PaperViewBox.vue'),
+                            toolbarBottom: () => import('@/components/toolbar/ToolBarBottomPaperNormal.vue')
+                        }
+                    },
+                    {
+                        path: 'edit',
+                        name: 'paper-edit',
+                        components: {
+                            content: () => import('@/components/paperComponents/PaperViewBox.vue'),
+                            toolbarBottom: () => import('@/components/toolbar/ToolBarBottomPaperEdit.vue')
+                        },
+                        props: {
+                            content: {
+                                editMode: true,
+                            },
+                            toolbarBottom: {}
+                        }
+                    }
+                ]
             },
             {
-                path: 'paper/edit',
-                name: 'paper-edit',
-                component: () => import(/* webpackChunkName: "group-result" */ '@/views/result/ResultDocPaper.vue'),
-                props: true
+                path: 'path',
+                name: 'path',
+                component: () => import('@/views/result/ResultPath.vue')
             }
         ]
     },

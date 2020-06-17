@@ -1,3 +1,6 @@
+import {DocumentItemSettingPart} from "@/class/settingBase";
+import {PaperRow} from "@/class/settingPaper";
+
 declare global {
     interface ComponentState {
         leftCardTab: {
@@ -8,9 +11,12 @@ declare global {
         loginTab: {
             root: number
         },
-        editMode: boolean,
         bottomDynamicBarOn: boolean,
-        bottomDynamicBarType: BottomDynamicBarType
+        bottomDynamicBarType: BottomDynamicBarType,
+        paperQueueOn: boolean,
+        paperDraggingState: PaperDraggingState,
+        graphLayerListOn: boolean,
+        bottomToolBarOn: boolean
     }
 
     type RootTabName = 'ecoSystem' | 'document' | 'metaKnowledge';
@@ -19,6 +25,12 @@ declare global {
     type MetaKnowledgeTabName = 'info' | 'mediaList' | 'relative'
     type SubTabName = EcoTabName | DocumentTabName | MetaKnowledgeTabName
     type BottomDynamicBarType = 'path'
+
+    interface PaperDraggingState {
+        isDragging: boolean,
+        draggingItem: null | DocumentItemSettingPart,
+        draggingRow: null | PaperRow
+    }
 }
 
 export const tabDict: Record<RootTabName, string[]> = {
@@ -52,7 +64,15 @@ const state = {
     },
     editMode: false,
     bottomDynamicBarOn: false,
-    bottomDynamicBarType: 'path'
+    bottomDynamicBarType: 'path',
+    paperQueueOn: false,
+    paperDraggingState: {
+        isDragging: false,
+        draggingItem: null,
+        draggingRow: null
+    },
+    graphLayerListOn: false,
+    bottomToolBarOn: true
 } as ComponentState;
 
 const mutations = {
@@ -87,14 +107,32 @@ const mutations = {
         state.loginTab.root = payload;
         state.loginDialogOn = true;
     },
-    editModeChange: (state: ComponentState, payload: boolean) => {
-        state.editMode = payload
-    },
 
     bottomDynamicBarChange: (state: ComponentState, payload: {on?: boolean, type?: BottomDynamicBarType}) => {
         let {type, on} = payload;
         on !== undefined && (state.bottomDynamicBarOn = on);
         type !== undefined && (state.bottomDynamicBarType = type)
+    },
+
+    changePaperQueue: (state: ComponentState, payload: {on?: boolean}) => {
+        let {on} = payload
+        on === undefined && (on = !state.paperQueueOn)
+        state.paperQueueOn = on
+    },
+    changePaperDraggingItem: (state: ComponentState, payload: {item: DocumentItemSettingPart, row: PaperRow}) => {
+        let {item, row} = payload;
+        state.paperDraggingState.draggingRow = row
+        state.paperDraggingState.draggingItem = item
+    },
+
+    changeGraphLayerListOn: (state: ComponentState, payload?: boolean) => {
+        payload === undefined && (payload = !state.graphLayerListOn)
+        state.graphLayerListOn = payload
+    },
+
+    changeBottomToolBarOn: (state: ComponentState, payload?: boolean) => {
+        payload === undefined && (payload = !state.bottomToolBarOn)
+        state.bottomToolBarOn = payload
     }
 };
 const actions = {};

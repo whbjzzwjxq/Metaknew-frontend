@@ -117,9 +117,9 @@
     import {guid} from '@/utils/utils'
     import CardPageMediaInfo from '../card/page/CardPageMediaInfo.vue';
     import MediaResolver from '../media/MediaResolver.vue';
-    import {MediaInfoPart} from '@/class/graphItem'
     import {commitInfoAdd, commitInfoIdChange} from '@/store/modules/_mutations'
     import {dispatchUploadFile} from "@/store/modules/_dispatch";
+    import {MediaInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: 'FieldFile',
@@ -150,8 +150,8 @@
                 required: true
             },
             width: {
-                type: Number as () => number,
-                default: 600
+                type: [Number, String],
+                default: '100%'
             },
             // 规则组
             rules: {
@@ -161,6 +161,10 @@
             uploadMode: {
                 type: Boolean,
                 default: false
+            },
+            editable: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
@@ -231,7 +235,7 @@
         record: {
             status: 'done',
             description: "文件上传编辑器",
-            //todo 从收藏获取File
+            //todo 从收藏获取File 已经列入文档
         }
     })
 </script>

@@ -10,13 +10,13 @@
             </template>
         </card-sub-row>
 
-        <card-sub-row text="Current Media">
+        <card-sub-row text="Current Media" v-if="!isLoading">
             <template v-slot:content>
-                <div v-for="(file, index) in reRankedList" :key="index">
+                <div v-for="(media, index) in reRankedList" :key="index">
                     <v-row class="ma-0 justify-content-between">
                         <keep-alive>
                             <card-page-media-info
-                                :media="file"
+                                :media="media"
                                 :nodeIsSelf="nodeIsSelf"
                                 :width="width"
                                 @add-media-to-graph="addMediaToGraph">
@@ -34,13 +34,15 @@
     import Vue from 'vue'
     import CardSubRow from "@/components/card/subComp/CardSubRow.vue";
     import CardPageMediaInfo from "@/components/card/page/CardPageMediaInfo.vue";
-    import {NodeInfoPart, MediaInfoPart, MediaSettingPart} from "@/class/graphItem";
-    import {commitFileTokenRefresh} from "@/store/modules/_mutations";
+    import {commitFileTokenRefresh, commitSnackbarOn} from "@/store/modules/_mutations";
     import MediaAdder from "@/components/media/MediaAdder.vue";
     import {SortProp} from "@/interface/interfaceInComponent";
     import {sortCtrl} from "@/utils/utils";
     import {loginCookie} from "@/api/user/loginApi";
     import {mediaAppendToNode} from "@/api/subgraph/media";
+    import {MediaInfoPart, NodeInfoPart} from "@/class/info";
+    import {MediaSettingPart} from "@/class/settingBase";
+    import {dispatchMediaQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "CardPageMediaList",
@@ -60,6 +62,7 @@
                 },
                 loading: true,
                 reRankedList: [] as MediaInfoPart[],
+                isLoading: true
             }
         },
         props: {
@@ -95,8 +98,16 @@
                     mediaAppendToNode(node, mediaIdList).then(res => {
                         let num = res.data.length;
                         num === 0
-                            ? alert('保存成功')
-                            : alert('有一些没有保存成功，自动重试');
+                            ? commitSnackbarOn({
+                                actionName: 'mediaAppendToNodeSuccess',
+                                color: 'success',
+                                content: '添加媒体成功'
+                            })
+                            : commitSnackbarOn({
+                                actionName: 'mediaAppendToNodeError',
+                                color: 'error',
+                                content: '有一些媒体未成功，自动重试'
+                            })
                         this.baseData.updateValue('IncludedMedia', mediaIdList);
                     })
                 } else {
@@ -104,22 +115,31 @@
                 }
             },
             addMediaToGraph: function (media: MediaInfoPart) {
-                let graph = this.dataManager.currentGraph;
+                let graph = this.dataManager.currentDocument;
                 let newMediaSetting = MediaSettingPart.emptyMediaSettingFromInfo(media, graph);
-                this.dataManager.currentGraph.addItems([newMediaSetting])
+                this.dataManager.currentDocument.addItems([newMediaSetting])
             },
             reRankFile: function () {
                 let sorter = sortCtrl(this.filterProp);
                 this.reRankedList = this.mediaList;
                 this.reRankedList.sort(sorter);
-            }
-        },
-        watch: {
-            mediaList() {
+            },
+            loadMedia: function() {
+                this.mediaIdList !== []
+                    ? dispatchMediaQuery(this.mediaIdList).then(() => {
+                        this.isLoading = false
+                    })
+                    : (this.isLoading = false)
                 this.reRankFile()
             }
         },
+        watch: {
+            mediaIdList: function(): void {
+                this.loadMedia()
+            }
+        },
         created(): void {
+            this.loadMedia()
             let fileToken = this.fileToken;
             let now = (new Date()).valueOf();
             //先判断Token情况
@@ -128,17 +148,21 @@
                     if (res.status === 200) {
                         commitFileTokenRefresh(res.data.fileToken);
                     } else {
-                        alert("与图片服务器连接暂时中断")
+                        let payload = {
+                            actionName: 'fileTokenError',
+                            content: '与图片服务器连接中断',
+                            color: 'error'
+                        } as SnackBarStatePayload
+                        commitSnackbarOn(payload)
                     }
                 })
                     .catch()
             }
-            this.reRankedList = this.mediaList;
         },
         record: {
             status: 'done',
             description: '媒体列表'
-            //todo 还没有做排序按钮
+            //todo 还没有做排序按钮 已经列入文档
         },
     })
 </script>

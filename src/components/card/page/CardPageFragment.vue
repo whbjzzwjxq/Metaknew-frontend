@@ -34,12 +34,12 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {FragmentInfoPart} from "@/class/graphItem";
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
     import FieldText from "@/components/field/FieldText.vue";
     import FieldArray from "@/components/field/FieldArray.vue";
     import FieldTitle from "@/components/field/FieldTitle.vue";
+    import {FragmentInfoPart} from "@/class/info";
     export default Vue.extend({
         name: "CardPageFragment",
         components: {
@@ -68,7 +68,7 @@
                 return this.baseFragment
             },
             label: function (): string {
-                return this.fragment.PrimaryLabel
+                return this.fragment._label
             },
             iconList: function (): IconItem[] {
                 return [

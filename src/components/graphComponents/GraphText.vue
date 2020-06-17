@@ -3,18 +3,20 @@
         :container="container"
         expand
         @update-size="updateSize"
-        :is-selected="isSelected">
-        <template v-slot:content>
+        :is-selected="isSelected"
+        v-show="setting.Show.showAll"
+    >
+        <template v-slot:full-content>
             <svg :width="rect.width" :height="rect.height">
                 <polyline
                     v-if="label === 'polyline'"
-                    :points="setting.Point"
+                    :points="originPoints"
                 >
 
                 </polyline>
                 <polygon
                     v-else-if="label === 'polygon'"
-                    :points="setting.Point">
+                    :points="originPoints">
 
                 </polygon>
                 <rect
@@ -34,16 +36,14 @@
                 </ellipse>
                 <foreignObject :x="borderWidth" :y="borderWidth" :height="inlineRect.height" :width="inlineRect.width">
                     <div :style="divStyle">
-                        <field-text-render
-                            :disabled="!isSelected"
-                            render-as-markdown
-                            :value="setting._text"
-                            :rows="4"
-                            :row-height="14"
-                            @update-text="updateText"
+                        <markdown-render
+                            :edit-base="isSelected"
+                            control-edit-by-parent
+                            :value="itemSetting._text"
+                            @input="updateText"
                         >
 
-                        </field-text-render>
+                        </markdown-render>
                     </div>
                 </foreignObject>
             </svg>
@@ -53,28 +53,27 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {TextSettingPart} from "@/class/graphItem";
     import {RectByPoint} from "@/class/geometric";
     import RectContainer from "@/components/container/RectContainer.vue";
-    import FieldTextRender from "@/components/field/FieldTextRender.vue";
+    import MarkdownRender from "@/components/markdown/MarkdownRender.vue";
 
     export default Vue.extend({
         name: "GraphText",
         components: {
             RectContainer,
-            FieldTextRender
+            MarkdownRender
         },
         data: function () {
             return {}
         },
         props: {
-            svg: {
-                type: Object as () => TextSettingPart,
+            itemSetting: {
+                type: Object as () => TextSetting,
                 required: true
             },
-            scale: {
-                type: Number as () => number,
-                default: 1
+            state: {
+                type: Object as () => TextState,
+                required: true
             },
             container: {
                 type: Object as () => RectByPoint,
@@ -82,16 +81,16 @@
             }
         },
         computed: {
-            setting: function (): TextSetting {
-                return this.svg.Setting
+            setting: function (): TextStyleSettingGraph {
+                return this.itemSetting.InGraph
             },
 
             originPoints: function (): PointObject[] {
-                return this.setting._points
+                return this.setting.Transition.points
             },
 
             label: function (): TextLabel {
-                return this.setting._label
+                return this.itemSetting._label
             },
 
             rect: function (): AreaRect {
@@ -153,16 +152,16 @@
             },
 
             isSelected: function (): boolean {
-                return this.svg.isSelected
+                return this.state.isSelected
             }
         },
         methods: {
             updateSize(start: PointMixed, end: PointMixed) {
-                this.$emit('update-size', start, end, this.setting)
+                this.$emit('update-size', start, end, this.itemSetting)
             },
 
-            updateText(propName: string, value: string) {
-                this.setting._text = value
+            updateText(value: string) {
+                this.$emit('update-text', value)
             }
         },
         record: {

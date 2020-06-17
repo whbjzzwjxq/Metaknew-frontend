@@ -68,7 +68,7 @@
             :y="textSetting.offsetY"
             :width="textSetting.width"
             :height="textSetting.height">
-            <p :style="textStyle">{{ setting._name }}</p>
+            <p :style="textStyle">{{ itemSetting._name }}</p>
         </foreignObject>
 
         <foreignObject
@@ -86,7 +86,6 @@
 <script lang="ts">
     import {getSrc} from '@/utils/utils'
     import Vue from 'vue'
-    import {RectByPoint} from "@/class/geometric";
 
     export default Vue.extend({
         name: 'GraphNode',
@@ -95,20 +94,14 @@
             return {}
         },
         props: {
-            //缩放情况
-            scale: {
-                type: Number as () => number,
-                default: 1
-            },
-
             //位置
             position: {
                 type: Object as () => PointMixed,
                 required: true
             },
 
-            setting: {
-                type: Object as () => NodeSettingGraph,
+            itemSetting: {
+                type: Object as () => NodeSetting,
                 required: true
             },
 
@@ -119,15 +112,24 @@
         },
         computed: {
             id: function(): id {
-                return this.setting._id
+                return this.itemSetting._id
             },
+
             transform: function (): string {
                 let {x, y} = this.position;
                 return 'translate(' + x + ' ' + y + ')'
             },
 
+            setting: function(): NodeStyleSettingGraph {
+                return this.itemSetting.InGraph
+            },
+
             isSelected: function (): boolean {
                 return this.state.isSelected
+            },
+
+            isMain: function (): boolean {
+                return this.itemSetting._isMain
             },
 
             getId: function (): string {
@@ -170,7 +172,7 @@
                         ? 0
                         : this.isSelected
                             ? 1
-                            : this.setting.View.isMain
+                            : this.isMain
                                 ? 0.7
                                 : 0.5
                 }
@@ -183,7 +185,7 @@
                 return this.setting.Show.showAll && this.setting.Show.showInlineText
             },
             showPicture: function (): boolean {
-                return this.setting._image !== '' && this.setting.Show.showAll && this.setting.Show.showImage
+                return this.itemSetting._image !== '' && this.setting.Show.showAll && this.setting.Show.showImage
             },
             showFill: function (): boolean {
                 return this.setting.Show.showAll && this.setting.Show.showBackground
@@ -204,7 +206,7 @@
                 }
             },
             hoverColor: function (): string {
-                return this.setting.View.isMain
+                return this.isMain
                     ? '#FFCA28'
                     : this.setting.View.color
             },
@@ -232,22 +234,21 @@
                     'fontSize': this.textSetting.size + 'px',
                     'textAlign': 'center',
                     'wordBreak': 'break-all',
+                    'wordWrap': "break-word",
                     'color': this.setting.Text.textColor
                 }
             },
             textSetting: function (): Record<string, any> {
-                let size = this.setting.Text.textSize * this.scale >= 10
-                    ? this.setting.Text.textSize * this.scale
-                    : 10;
+                let size = this.setting.Text.textSize;
                 let width = this.setting.Text.textBreak
-                    ? this.setting._name.length * 18 * this.scale
-                    : this.setting._name.length * 36 * this.scale;
+                    ? this.itemSetting._name.length * size / 2
+                    : this.itemSetting._name.length * size;
                 let height = this.setting.Text.textBreak
-                    ? (size + 5) * 2
-                    : (size + 5);
+                    ? size * 1.5 * 2
+                    : size * 1.5;
                 return {
                     offsetX: -width * 0.5,
-                    offsetY: this.height + (this.borderSetting.width + 5) * this.scale,
+                    offsetY: this.height + (this.borderSetting.width + 5),
                     width,
                     height,
                     size
@@ -288,7 +289,7 @@
             },
 
             getMainPic: function (): string {
-                return getSrc(this.setting._image)
+                return getSrc(this.itemSetting._image)
             },
             getClipId: function (): string {
                 return 'clipPath_' + this.id

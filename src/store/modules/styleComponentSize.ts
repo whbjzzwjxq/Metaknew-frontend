@@ -1,7 +1,7 @@
-import Vue from 'vue'
 import {RectByPoint} from "@/class/geometric";
 import {commitBottomDynamicBarResize, commitViewBoxResize} from "@/store/modules/_mutations";
 export const leftCardPadding = 4;
+export const leftCardWidth = 360;
 export const bottomDynamicBarHeight = 360;
 declare global {
     interface StyleManagerState {
@@ -49,7 +49,7 @@ const state: StyleManagerState = {
         height: 48
     },
     leftCard: {
-        width: 400 + leftCardPadding, // 4px的边距
+        width: leftCardWidth + leftCardPadding, // 4px的边距
         height: document.documentElement.clientHeight - 48
     },
     bottomBar: {
@@ -75,10 +75,6 @@ const mutations = {
         commitBottomDynamicBarResize();
     },
 
-    leftCardReset: (state: StyleManagerState, payload: number) => {
-        state.leftCard.width = payload
-    },
-
     bottomBarReset: (state: StyleManagerState, payload: number) => {
         state.bottomBar.height = payload
     },
@@ -91,11 +87,11 @@ const mutations = {
 
     bottomDynamicBarReset: (state: StyleManagerState, payload?: number) => {
         // 改变底部动态Bar的高度
-        if (payload) {
+        if (payload !== undefined) {
             payload <= (state.toolBar.height + 4) && (payload = state.toolBar.height + 4); // 最高
             payload >= state.screenY - bottomDynamicBarHeight && (payload = state.screenY - bottomDynamicBarHeight); // 最矮
         } else {
-            (payload = state.screenY - bottomDynamicBarHeight) // doNothing
+            (payload = state.screenY - bottomDynamicBarHeight as number) // doNothing
         }
         state.bottomDynamicBar.start.update({x: state.leftCard.width, y: payload});
         state.bottomDynamicBar.end.update({x: state.screenX, y: state.screenY})

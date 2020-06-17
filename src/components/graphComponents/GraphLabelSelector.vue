@@ -1,7 +1,7 @@
 <template>
     <v-menu offset-y open-on-click top :close-on-content-click="false">
             <template v-slot:activator="{ on: menu }">
-                <v-chip v-on="{...menu}" :style="chipStyle">label selector</v-chip>
+                <v-chip v-on="{...menu}" :style="chipStyle" :small="small">标签选择器</v-chip>
             </template>
             <v-list dense>
                 <v-list-group v-for="(value, _type) in labelViewDict" :key="_type">
@@ -81,6 +81,10 @@
             labelViewDict: {
                 type: Object as () => LabelViewDict,
                 required: true,
+            },
+            small: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {},

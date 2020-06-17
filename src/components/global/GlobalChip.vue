@@ -119,19 +119,19 @@
                 commitSnackbarOff()
             },
             resetChip() {
-                this.$set(this, 'show', true);
+                this.show = true;
                 clearTimeout(this.closeChip)
             },
 
             jump(label: string) {
-                //todo 标签跳转
+                //todo 标签跳转 已经列入文档
             }
         },
         watch: {},
         record: {
             status: 'editing',
             description: '全局用的跳转chip'
-            //todo 样式设置和跳转
+            //todo 样式设置和跳转 已经列入文档
         }
     })
 </script>

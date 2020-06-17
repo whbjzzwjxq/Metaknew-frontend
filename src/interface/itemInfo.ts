@@ -1,30 +1,23 @@
 import {ExtraProps} from "@/utils/fieldResolve";
-import {
-    LinkInfoPart,
-    LinkSettingPart,
-    MediaInfoPart,
-    MediaSettingPart,
-    NodeInfoPart,
-    GraphNodeSettingPart,
-    TextSettingPart
-} from "@/class/graphItem";
-import {PathNodeSettingPart} from "@/class/path";
+import {LinkInfoPart, MediaInfoPart, NodeInfoPart} from "@/class/info";
 
 declare global {
     type id = number | string;
     type ItemType = "node" | "link" | "media" | "document" // 基础的type
-    type GraphItemType = ItemType | "text"; // Graph里使用的type
-    type AllType = GraphItemType | "fragment" | "path" | "note";
-    type GraphTypeS = 'nodes' | 'medias' | 'links' | "texts";
+    type DocumentItemType = ItemType | "text" | "note"; // Graph里使用的type
+    type AllType = DocumentItemType | "fragment" | "path";
+    type ContentTypeS = 'nodes' | 'medias' | 'links' | "texts";
     type MediaStatus = "new" | "uploading" | "error" | "success" | "warning";
     type IdMap = Record<id, id>; // 新旧id的Map
     //带有翻译的格式
     type Translate = Record<string, string>
+
     interface InfoState {
-        remoteNotFound: boolean // 远端模型是否被删除
+        remoteNotFound: boolean // 远端模型是否被删除/禁止
         isEdit: boolean // 自上次保存后，是否编辑过
         draftId?: number // 对应草稿的versionId 如果没有那么就是undefined
     }
+
     //InfoPart相关
     interface BaseInfo {
         id: id;
@@ -105,35 +98,14 @@ declare global {
     }
 
     interface BaseLinkCtrl extends PublicCtrl {
-        Start: GraphNodeSettingPart;
-        End: GraphNodeSettingPart;
-    }
-
-    //Graph
-    interface DocumentContent {
-        nodes: Array<GraphNodeSettingPart>;
-        links: Array<LinkSettingPart>;
-        medias: Array<MediaSettingPart>;
-        texts: Array<TextSettingPart>;
-    }
-
-    interface DocumentData {
-        draftId?: number;
-        isRemote: boolean;
-        lastSave: number;
-    }
-
-    interface PathConf extends Setting {
-        _type: 'document',
-        _label: 'path'
+        Start: VisNodeSettingPart;
+        End: VisNodeSettingPart;
     }
 
     interface BasePathInfo extends BaseNodeInfo {
         type: 'document',
-        PrimaryLabel: 'path',
+        PrimaryLabel: '_Path',
     }
-
-    type PathArray = (PathNodeSettingPart | null)[][];
 
     type InfoPartInDataManager = NodeInfoPart | LinkInfoPart | MediaInfoPart
 
@@ -143,33 +115,28 @@ declare global {
         pLabel: string;
     } // 用于Query
 
-    interface NodeQuery extends QueryObject{
+    interface NodeQuery extends QueryObject {
         type: 'node' | 'document'
     }
 
     type VisNodeQuery = NodeQuery | MediaQuery
 
-    interface LinkQuery extends QueryObject{
+    interface LinkQuery extends QueryObject {
         type: 'link'
     }
 
-    interface MediaQuery extends QueryObject{
+    interface MediaQuery extends QueryObject {
         type: 'media'
     }
 
-    type DocumentLabel = 'DocPaper' | 'DocGraph' | 'Path'
-    interface DocumentQuery extends NodeQuery{
+    enum DocumentLabel {
+        document = '_Document',
+        path = '_Path'
+    }
+
+    interface DocumentQuery extends NodeQuery {
         type: 'document'
         pLabel: DocumentLabel
     }
-
-    type ExtractType<O, T> = { [K in keyof O]: O[K] extends T ? O[K] : unknown }
-
-    type Diff<T extends string, U> = ({ [P in T]: P } &
-        { [P in keyof U]: U[P] extends string ? string : never } & {
-        [x: string]: never
-    })[T]
-
-    type ExtractStringKey<A> = Diff<Extract<keyof A, string>, ExtractType<A, string>>
 
 }

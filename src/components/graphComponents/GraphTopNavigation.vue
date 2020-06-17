@@ -3,7 +3,7 @@
         <v-breadcrumbs
             :items="navigationList"
             :divider="'->'"
-            class="pa-4">
+            class="pa-0">
             <template v-slot:item="{item}">
                 <v-breadcrumbs-item
                     :disabled="item.disabled"
@@ -19,14 +19,14 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {DocumentSelfPart, GraphSelfPart} from "@/class/graphItem";
-    import {commitGraphChange} from "@/store/modules/_mutations";
+    import {DocumentSelfPart} from "@/class/settingBase";
+    import {commitDocumentChange} from "@/store/modules/_mutations";
 
     interface NavigationItem {
         disabled: boolean;
         document: DocumentSelfPart;
         text: string;
-        color: string
+        color: string;
     }
 
     export default Vue.extend({
@@ -35,8 +35,7 @@
         data: function () {
             return {
                 topNavigationStyle: {
-                    width: '100%',
-                    height: '54px'
+                    height: '36px'
                 } as CSSProp,
             }
         },
@@ -48,7 +47,7 @@
         },
         computed: {
             navigationList: function (): NavigationItem[] {
-                let result: DocumentSelfPart[] = (this.document.rootList).concat([this.document]);
+                let result: DocumentSelfPart[] = (this.document.docsRootList).concat([this.document]);
                 return result.map(doc => ({
                     disabled: doc._id === this.document._id,
                     document: doc,
@@ -58,8 +57,8 @@
             },
         },
         methods: {
-            gotoDocument(graph: GraphSelfPart) {
-                commitGraphChange({graph})
+            gotoDocument(graph: DocumentSelfPart) {
+                commitDocumentChange({graph})
             },
         },
         record: {

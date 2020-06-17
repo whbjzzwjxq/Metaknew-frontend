@@ -36,7 +36,7 @@
         record: {
             status: 'editing',
             description: '',
-            //todo Resolve Source
+            //todo Resolve Source 已经列入文档
         }
     })
 </script>

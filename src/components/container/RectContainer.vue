@@ -1,10 +1,13 @@
 <template>
     <div :style="startPointStyle" class="rect-start-point">
         <div :style="contentStyle" v-if="!renderAsBorder">
-            <slot name="content">
+            <slot name="full-content">
 
             </slot>
         </div>
+        <slot name="content">
+
+        </slot>
         <div
             v-for="(border, name) in borderDict"
             :key="name"

@@ -15,7 +15,8 @@
     import Vue from 'vue'
     import {getIcon} from "@/utils/icon";
     import IconGroup from "@/components/IconGroup.vue";
-    import {GraphSelfPart, GraphNodeSettingPart} from "@/class/graphItem";
+    import {DocumentSelfPart, NodeSettingPart} from "@/class/settingBase";
+    import {dispatchGraphQuery} from "@/store/modules/_dispatch";
 
     export default Vue.extend({
         name: "GraphNodeButton",
@@ -27,12 +28,12 @@
         },
         props: {
             nodeSetting: {
-                type: Object as () => VisualNodeSetting,
+                type: Object as () => NodeSettingSimply,
                 required: true
             },
 
             node: {
-                type: Object as () => GraphNodeSettingPart,
+                type: Object as () => NodeSettingPart,
                 required: true
             },
 
@@ -47,6 +48,12 @@
             }
         },
         computed: {
+            x: function (): number {
+                return this.nodeSetting.x + this.nodeSetting.width + 12
+            },
+            y: function (): number {
+                return this.nodeSetting.y - this.nodeSetting.height - 12
+            },
             divStyle: function (): CSSProp {
                 return {
                     width: '24px',
@@ -65,78 +72,75 @@
                     position: 'absolute',
                 }
             },
-            x: function (): number {
-                return this.nodeSetting.x + this.nodeSetting.width + 12
-            },
-            y: function (): number {
-                return this.nodeSetting.y - this.nodeSetting.height - 12
-            },
             showNode: function (): boolean {
                 return this.nodeSetting.show
             },
             dataManager: function (): DataManagerState {
                 return this.$store.state.dataManager
             },
-            boundGraph: function (): GraphSelfPart {
-                return this.dataManager.graphManager[this.node._id]
+            boundDocument: function (): DocumentSelfPart | undefined {
+                return this.node.boundDocument
+            },
+            currentDocument: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             },
             buttonGroup: function (): IconItem[] {
                 // 是否可以删除
                 let editMode = this.editMode;
                 let deleteIcon;
-                this.node._id === this.dataManager.currentGraph._id
+                this.node._id === this.dataManager.currentDocument._id
                     ? deleteIcon = false
                     : this.node.isDeleted
                     ? deleteIcon = 'rollback'
                     : deleteIcon = true;
 
-                // 是否可以爆炸
-                let explodeAble =
-                    this.boundGraph
-                        ? this.boundGraph._id === this.dataManager.currentGraph._id
-                        : false;
-                let explodeIcon;
-                !this.boundGraph
-                    ? explodeIcon = 'unload'
-                    : explodeIcon = !this.boundGraph.isExplode;
+                let explodeIcon: IconItem;
+                if (this.boundDocument) {
+                    explodeIcon = {
+                        name: getIcon("i-explode", !this.boundDocument.isExplodeState),
+                        _func: this.explode,
+                        toolTip: !this.boundDocument.isExplodeState ? '展开专题' : '关闭专题',
+                        render: this.node._type === 'document',
+                        disabled: this.boundDocument._id === this.currentDocument._id
+                    }
+                } else {
+                    explodeIcon = {
+                        name: getIcon("i-explode", 'unload'),
+                        _func: this.loadDocument,
+                        toolTip: '加载专题',
+                        render: this.node._type === 'document'
+                    }
+                }
                 return [
                     {
                         name: getIcon("i-delete-able", deleteIcon),
-                        _func: this.deleteItem,
+                        _func: this.delSingleNode,
                         disabled: !deleteIcon,
                         render: editMode
                     },
                     {name: 'mdi-arrow-top-right', _func: this.addLink, render: editMode},
-                    {
-                        name: getIcon("i-explode", explodeIcon),
-                        _func: this.explode,
-                        render: this.node._type === 'document',
-                        disabled: explodeAble
-                    },
-                    {name: getIcon('i-eye', this.node.Setting.Show.showAll), _func: this.unShow},
+                    explodeIcon,
+                    {name: getIcon('i-eye', this.node.StyleInGraph.Show.showAll), _func: this.unShow},
                 ]
             }
         },
         methods: {
-            deleteItem() {
-                this.node.updateState('isDeleted');
-                let graph = this.dataManager.graphManager[this.node._id];
-                if (graph) {
-                    this.node.isDeleted
-                        ? Vue.set(graph.Conf, 'parent', null)
-                        : Vue.set(graph.Conf, 'parent', this.node.parent)
-                }
+            delSingleNode() {
+                this.node.parent.deleteItem(this.node)
             },
             unShow() {
-                let current = this.node.Setting.Show.showAll;
-                this.node.updateSetting('Show', 'showAll', !current);
+                let current = this.node.StyleInGraph.Show.showAll;
+                this.node.updateGraphSetting('Show', 'showAll', !current);
             },
 
             addLink() {
                 this.$emit('add-link', this.node)
             },
+            loadDocument() {
+                dispatchGraphQuery({_id: this.node._id, parent: this.node.parent})
+            },
             explode() {
-                this.$emit('explode', this.node)
+                this.boundDocument && this.boundDocument.explode()
             }
         },
         watch: {},

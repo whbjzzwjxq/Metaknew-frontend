@@ -10,8 +10,8 @@
 
 <script lang="ts">
     import Vue from 'vue'
-    import {MediaInfoPart} from "@/class/graphItem"
     import {getIndex} from "@/utils/utils";
+    import {MediaInfoPart} from "@/class/info";
 
     export default Vue.extend({
         name: "MediaResolver",
@@ -37,7 +37,7 @@
         methods: {
             resolveFile(file: File) {
                 let _id = getIndex();
-                 // todo thumb缩略图
+                 // todo 媒体缩略图 已经列入文档
                 return MediaInfoPart.emptyMediaInfo(_id, file)
             },
 

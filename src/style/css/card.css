@@ -13,14 +13,22 @@
 }
 
 .cardItem {
+
+}
+
+.scrollY {
   overflow-y: scroll;
   overflow-x: hidden;
-  background: white;
+}
+
+.scrollX {
+  overflow-y: hidden;
+  overflow-x: scroll;
 }
 
 .cardItem::-webkit-scrollbar {
   width: 4px;
-  height: 1px;
+  height: 4px;
 }
 
 .cardItem::-webkit-scrollbar-thumb {

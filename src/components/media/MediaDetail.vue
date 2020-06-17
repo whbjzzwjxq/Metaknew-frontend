@@ -39,18 +39,6 @@
 
                 <div v-if="media.PrimaryLabel === 'markdown'"
                      :style="{height:scrollHeight}">
-                    <mavon-editor
-                        ref="md"
-                        :style="{height:scrollHeight}"
-                        :value="mdText"
-                        :subfield="this.prop.subfield"
-                        :defaultOpen="this.prop.defaultOpen"
-                        :toolbarsFlag="this.prop.toolbarsFlag"
-                        :editable="this.prop.editable"
-                        :boxShadow="false"
-                        :toolbars="toolbarsValue"
-                    >
-                    </mavon-editor>
                 </div>
 
                 <v-bottom-navigation :value="activeBtn" grow color="teal" height="40px">
@@ -70,18 +58,14 @@
 <script>
     import {getSrc} from '@/utils/utils'
     import 'viewerjs/dist/viewer.css'
-    // import Viewer from 'v-viewer'
     import pdf from 'vue-pdf'
     import axios from 'axios'
-    import {mavonEditor} from "mavon-editor";
-    import "mavon-editor/dist/css/index.css";
     import Viewer from "viewerjs";
 
     export default {
         name: "mediaDetail",
         components: {
-            pdf,
-            mavonEditor,
+            pdf
         },
         data() {
             return {
@@ -242,7 +226,7 @@
                     let updateValue = [];
                     updateValue.push(currentValue);
                     let newUrl = URL.createObjectURL(new Blob(updateValue, {type: "‘text/markdown,charset=UTF-8"}));
-                    this.$set(this.media.Ctrl, 'FileName', newUrl)
+                    this.media.Ctrl.FileName = newUrl
                 } else {
                     this.doNothing()
                 }

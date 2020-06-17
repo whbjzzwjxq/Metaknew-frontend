@@ -21,7 +21,8 @@ declare global {
         height: number,
     }
 
-    interface VisualNodeSetting extends AreaRect {
+    //  简化过的节点设置
+    interface NodeSettingSimply extends AreaRect {
         id: id,
         parentId: id,
         height: number,
@@ -190,7 +191,7 @@ export class RectByPoint {
         return new RectByPoint({x: 0, y: 0}, {x: 0, y: 0})
     }
 
-    static fromBase(base: BaseSize) {
+    static fromBase(base: BaseSizeInGraph) {
         let {x, y, size, scaleX} = base;
         let height = size * scaleX;
         let _start = new Point(x - size / 2, x + size / 2);
@@ -273,7 +274,6 @@ export const transformBorderToRect = (rect: RectByPoint, border: number, inner: 
                 borderColor: 'white',
                 borderStyle: 'solid',
                 cursor: borderType + '-resize',
-                // todo 半透明边框
             } as CSSProp, baseCSS, rect.getDivCSS({}))
         }
     });
@@ -299,7 +299,7 @@ export const getPositiveRect = (pointA: PointMixed, pointB: PointMixed) => {
     } as AreaRect
 };
 
-export const getPostRectFromBase = (base: BaseSize) => {
+export const getPostRectFromBase = (base: BaseSizeInGraph) => {
     let {x, y, size, scaleX} = base;
     let height = size * scaleX;
     return {
@@ -311,10 +311,7 @@ export const getPostRectFromBase = (base: BaseSize) => {
 };
 
 export const getMidPoint = (pointA: PointMixed, pointB: PointMixed) => {
-    return {
-        x: (pointA.x + pointB.x) / 2,
-        y: (pointA.y + pointB.y) / 2
-    }
+    return new Point((pointA.x + pointB.x) / 2, (pointA.y + pointB.y) / 2)
 };
 
 export const getPointDistance = (pointA: PointObject, pointB: PointObject) => {

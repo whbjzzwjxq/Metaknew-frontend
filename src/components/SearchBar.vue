@@ -1,6 +1,6 @@
 <template>
     <div class="d-flex flex-row" style="width: 100%; height: 100%">
-        <v-col cols="11" class="pa-0 pt-1 pl-4 pr-2">
+        <div class="pa-0 pt-1 flex-grow-1">
             <v-autocomplete
                 :dense="editMode"
                 :items="activeItems"
@@ -54,25 +54,26 @@
                     </template>
                 </template>
             </v-autocomplete>
-        </v-col>
-        <v-col class="pl-2 pr-2">
+        </div>
+        <div class="pa-2 pt-3 px-sm-1 px-xs-1">
             <icon-group :icon-list="appendIconList" :small="editMode">
 
             </icon-group>
-        </v-col>
+        </div>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
     import {HomePageSearchResponse, queryHomePage, SearchQueryObject} from '@/api/search/search'
-    import {GraphSelfPart, MediaSettingPart, GraphNodeSettingPart} from '@/class/graphItem'
+    import {DocumentSelfPart, MediaSettingPart, NodeSettingPart} from '@/class/settingBase'
     import {getIcon} from "@/utils/icon";
     import {getSrc} from "@/utils/utils";
     import IconGroup from "@/components/IconGroup.vue";
     import {ListItem, ListText, ListTitle} from "@/interface/interfaceInComponent";
     import {isListText} from "@/utils/typeCheck";
     import {dispatchMediaQuery, dispatchNodeQuery} from "@/store/modules/_dispatch";
+    import {documentLabel} from "@/utils/fieldResolve";
 
     export default Vue.extend({
         name: "SearchBar",
@@ -120,8 +121,8 @@
                 return this.$store.state.dataManager
             },
 
-            currentGraph: function (): GraphSelfPart {
-                return this.dataManager.currentGraph
+            currentDocument: function (): DocumentSelfPart {
+                return this.dataManager.currentDocument
             },
             buildQueryObject: function (): SearchQueryObject {
                 let index = this.keyword.search(this.regexSymbol);
@@ -151,8 +152,16 @@
 
             appendIconList: function (): IconItem[] {
                 return [
-                    {name: getIcon('i-edit', this.editMode ? 'add' : 'search'), _func: this.addItemToGraph},
-                    {name: getIcon('i-edit', 'close'), _func: this.clear}
+                    {
+                        name: getIcon('i-edit', this.editMode ? 'add' : 'search'),
+                        _func: this.addItemToGraph,
+                        toolTip: '添加选中的内容到专题中'
+                    },
+                    {
+                        name: getIcon('i-edit', 'close'),
+                        _func: this.clear,
+                        toolTip: '清除选择集'
+                    }
                 ]
             },
 
@@ -211,28 +220,40 @@
             },
 
             addItemToGraph() {
-                let unDuplicateItems = this.selection.filter(item => !this.currentGraph.checkExist(item.id, item.type));
-                let nodes = unDuplicateItems.filter(item => item.type !== 'media');
+                let unDuplicateItems = this.selection.filter(item => !this.currentDocument.checkExistByIdType({
+                    _id: item.id,
+                    _type: item.type
+                }));
+                let nodes = unDuplicateItems.filter(item => item.type === 'node' || item.type === 'document');
                 let medias = unDuplicateItems.filter(item => item.type === 'media');
-                let nodeSettingList = nodes.map(node => GraphNodeSettingPart.emptyNodeSetting(
-                    node.id,
-                    node.type,
-                    node.PrimaryLabel,
-                    node.Name['auto'],
-                    node.MainPic,
-                    this.currentGraph)
+                let nodeSettingList = nodes.map(node => NodeSettingPart.initEmpty(
+                        {
+                            _id: node.id,
+                            //@ts-ignore 检查过
+                            _type: node.type,
+                            _label: node.PrimaryLabel,
+                            _name: node.Name['auto'],
+                            _image: node.MainPic,
+                            _isMain: false
+                        },
+                        this.currentDocument)
                 );
-                this.currentGraph.addItems(nodeSettingList);
+                this.currentDocument.addItems(nodeSettingList);
                 dispatchNodeQuery(nodeSettingList.map(item => item.Setting));
-                let mediaSettingList = medias.map(media => MediaSettingPart.emptyMediaSetting(
-                    media.id,
-                    media.PrimaryLabel,
-                    media.Name['auto'],
-                    '',
-                    this.currentGraph
+                let mediaSettingList = medias.map(media => MediaSettingPart.initEmpty(
+                    {
+                        _id: media.id,
+                        _type: 'media',
+                        _label: media.PrimaryLabel,
+                        _name: media.Name['auto'],
+                        _src: '',
+                        _isMain: false,
+                    } as MediaInitPayload,
+                    this.currentDocument
                 ));
                 dispatchMediaQuery(medias.map(media => media.id));
-                this.currentGraph.addItems(mediaSettingList)
+                this.currentDocument.addItems(mediaSettingList);
+                this.selection = []
             },
 
             getHeaderNameHtml(name: string, length: number) {
@@ -281,7 +302,7 @@
             selection(): void {
                 if (!this.editMode) {
                     if (this.singleSelect && this.selection.length > 0) {
-                        if (this.selection[0].PrimaryLabel === 'DocGraph') {
+                        if (documentLabel.includes(this.selection[0].PrimaryLabel)) {
                             this.$router.push({
                                 name: "graph-normal",
                                 path: "graph/id=:id/normal",

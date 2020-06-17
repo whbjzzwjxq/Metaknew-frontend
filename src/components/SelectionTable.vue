@@ -27,6 +27,7 @@
 
 <script lang="ts">
     import Vue from 'vue'
+    import {DocumentItemSettingPart} from "@/class/settingBase";
 
     interface setting {
         index: number,
@@ -43,24 +44,18 @@
         },
         props: {
             settingList: {
-                type: Array as () => AllSettingPart[],
+                type: Array as () => DocumentItemSettingPart[],
                 required: true
             },
         },
         computed: {
             settingItem: function(): setting[] {
-                return this.settingList.map((setting: AllSettingPart, index: number) => {
-                    let name: string;
-                    let type = setting._type;
-                    if (type === 'link') {
-                        name = setting.Setting._start.Setting._name + '->' + setting.Setting._end.Setting._name
-                    } else {
-                        name = setting.Setting._name
-                    }
+                return this.settingList.map((setting: DocumentItemSettingPart, index: number) => {
+                    let name: string = setting._name;
                     return {
                         index: index,
                         name,
-                        isMain: setting.Setting.View.isMain,
+                        isMain: setting.isMain,
                         label: setting._label
                     }
                 })

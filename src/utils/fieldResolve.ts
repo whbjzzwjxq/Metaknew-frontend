@@ -115,9 +115,7 @@ export const baseNodeProp: () => PropDescriptionDict = () => ({
 });
 
 // node的属性
-export const nodePropType: PLabelPropsDict = {
-    DocGraph:
-        {},
+export const nodeWithLabelProp: () => PLabelPropsDict = () => ({
     ArchProject:
         {
             PeriodStart: {
@@ -190,9 +188,8 @@ export const nodePropType: PLabelPropsDict = {
                 type: 'ArrayField',
                 resolve: 'name'
             }
-        },
-    BaseNode: {},
-};
+        }
+});
 
 // link的属性
 export const linkPropType: PLabelPropsDict = {
@@ -209,16 +206,18 @@ export const linkPropType: PLabelPropsDict = {
 };
 
 export const mediaPropType: PLabelPropsDict = {
-    // todo 媒体属性获取
+    // todo 媒体属性获取 已经列入文档
 };
 
-export function nodeLabelToProp(pLabel: string) {
-    return nodePropType[pLabel]
-        ? Object.assign({}, nodePropType[pLabel])
+export function nodeLabelToStandardProps(pLabel: string) {
+    // 返回标准的属性
+    let propGroup = nodeWithLabelProp()[pLabel];
+    return propGroup !== undefined
+        ? propGroup
         : {};
 }
-
-export var availableLabel = ['ArchProject', 'Person', 'Project', 'BaseNode', 'DocGraph', 'DocPaper'];
+export const documentLabel = ['_Document', '_Path']
+export var availableLabel = ['ArchProject', 'Person', 'Project', 'BaseNode', '_Document', '_Path'];
 
 // 以下是预设 测试用
 export const topicItems = {
