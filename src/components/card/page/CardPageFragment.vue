@@ -1,19 +1,19 @@
 <template>
     <v-card flat outlined tile>
         <v-card-title class="pa-0 px-2" style="height: 32px;">
-            <field-title
-                :text="fragment.Info.Name"
-                :edit-mode="editMode"
-                :font-css="fontCSS"
-                :div-css="divStyle"
-                @update-text="updateValue('Name', $event)">
+            <div class="d-flex flex-row">
+                <field-title
+                    :text="fragment.Info.Name"
+                    :edit-mode="editMode"
+                    :font-css="fontCSS"
+                    @update-text="updateValue('Name', $event)">
 
-            </field-title>
+                </field-title>
+                <v-spacer></v-spacer>
+                <icon-group :icon-list="iconList" small>
 
-            <v-spacer></v-spacer>
-            <icon-group :icon-list="iconList" small>
-
-            </icon-group>
+                </icon-group>
+            </div>
         </v-card-title>
         <v-card-text class="pa-2" style="">
             <field-text
@@ -40,6 +40,7 @@
     import FieldArray from "@/components/field/FieldArray.vue";
     import FieldTitle from "@/components/field/FieldTitle.vue";
     import {FragmentInfoPart} from "@/class/info";
+
     export default Vue.extend({
         name: "CardPageFragment",
         components: {
@@ -78,12 +79,6 @@
                     {name: getIcon('i-edit', 'save'), _func: this.saveFragment}
                 ]
             },
-
-            divStyle: function (): CSSProp {
-                return {
-                    width: '120px'
-                }
-            }
         },
         methods: {
             edit() {
