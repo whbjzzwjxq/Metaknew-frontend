@@ -223,6 +223,10 @@ export class LinkInfoPart extends InfoPart {
         return result
     }
 
+    get _name() {
+        return this.Ctrl.Start._name + '->' + this.Ctrl.End._name
+    }
+
     get _type() {
         return this.Info.type
     }
@@ -420,7 +424,7 @@ export class FragmentInfoPart extends InfoPart {
             id: _id,
             type: 'fragment',
             PrimaryLabel: isMediaInfoPart(baseData) ? 'image' : 'text',
-            Name: baseData.Info.Name === '' ? baseData.Info.Name : 'NewFragment From ' + baseData._type + baseData._id,
+            Name: baseData.Info.Name === '' ? baseData.Info.Name : 'Fragment From ' + baseData._name,
             Labels: baseData.Info.Labels,
             Src: isMediaInfoPart(baseData) ? baseData.Ctrl.Thumb : '',
             Description: baseData.Info.Description

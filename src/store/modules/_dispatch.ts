@@ -21,7 +21,7 @@ export function dispatchNodeExplode(payload: { node: NodeSettingPart, document: 
 }
 
 export function dispatchFragmentAdd(payload: FragmentInfoPart) {
-    return store.dispatch('fragmentAdd', payload)
+    return store.dispatch('fragmentPush', payload)
 }
 
 export function dispatchVisNodeCreate() {

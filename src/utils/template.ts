@@ -54,7 +54,7 @@ export function userConcernTemplate() {
         NumShared: false,
         Labels: [],
         isModeled: false,
-        isConfirm: false
+        isConfirm: true
     };
 }
 

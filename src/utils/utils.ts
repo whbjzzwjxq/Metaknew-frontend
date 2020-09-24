@@ -319,9 +319,9 @@ export function mergeObject<T extends Record<string, any>>(target: T, source: an
     if (typeof source === 'object' && source !== null) {
         Object.entries(source).map(([key, value]) => {
             let prop = key as keyof T
+            let value0 = value as any
             if (!target.hasOwnProperty(prop)) {
-                //@ts-ignore
-                rewriteUndefined && (target[prop] = value)
+                rewriteUndefined && (target[prop] = value0)
             } else {
                 let typeInTarget = typeof target[prop];
                 let typeValue = typeof value;
