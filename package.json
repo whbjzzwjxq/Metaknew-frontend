@@ -63,7 +63,7 @@
     "vuetify": "^2.2.8",
     "vuex": "^3.0.1",
     "webpack": "^4.41.2",
-    "xlsx": "^0.15.2",
+    "xlsx": "^0.17.0",
     "yarn": "^1.21.0"
   },
   "devDependencies": {
